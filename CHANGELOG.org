@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.0.5
+Files on a WebDAV server can now be read, saved, listed and deleted, so your own server works as well as GitHub. Saves are checked against the version you last saw and refused when the server copy has changed, and missing folders are created for you. Offline saving and conflict handling work the same way as for GitHub.
+
 * 0.0.4
 Saves made while offline are now kept and sent when you are back online, so you can keep working on a train and nothing is lost. If someone changed the same file on the server in the meantime, you get both versions and the original to merge or choose from, and a delete you made offline is treated the same way. Files you have already opened stay readable offline.
 

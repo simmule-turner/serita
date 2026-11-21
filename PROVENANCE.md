@@ -53,6 +53,12 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 ### `app/storage/github.js`
 - Written from: GitHub's published REST documentation for repository contents (get, create or update, delete) and git trees, fetched 2026-11-21 from docs.github.com. Endpoint paths, headers, body fields, the 1 MB inline limit and the tree limits come from it. The documentation does not say which status a stale or missing sha produces, so the provider decides conflicts by re-reading the file; that rule is the session's own design. Statement as above.
 
+### `app/storage/webdav.js`, `app/storage/xml.js`
+- Written from: RFC 4918 (WebDAV) and RFC 9110 (HTTP semantics) as read from rfc-editor.org on 2026-11-21: PROPFIND with Depth 1 and the 207 multi-status structure, collections marked in resourcetype, hrefs as absolute paths or URIs and percent-encoded, PUT failing with 409 when the parent collection is missing, MKCOL status codes, If-Match (strong comparison) and If-None-Match: * with 412 on failure. The RFC text read did not state the success codes for PUT and DELETE, so any 2xx is accepted. The conflict rule (re-read after 404 or 412) and the ETag requirements are the session's own design. The XML reader is original, written from the XML structure those replies use. No WebDAV client, library or server source was read. Statement as above.
+
+### `test/fake-webdav.js`, `test/webdav.test.js`, `test/xml.test.js`
+- Written from: the same RFC text (the fake follows the rules listed above) and the module descriptions. Statement as above.
+
 ### `app/storage/cached.js`
 - Written from: SPEC 13.1 (offline cache for the GitHub and WebDAV providers, one commit per save, a three-way prompt on conflict) and the session's own design: a cache record per file holding the last server copy, an unsent local edit with a version token, and a queued delete; a sync that returns conflicts with base, mine and theirs. Only a typed network error counts as offline. Statement as above.
 
