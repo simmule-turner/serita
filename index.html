@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f6e56">
+<title>Serita</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<header id="toolbar">
+  <button id="btn-files" aria-label="Files" title="Files">📁</button>
+  <button id="btn-save" aria-label="Save" title="Save">💾</button>
+  <span class="grow"></span>
+  <button id="btn-find" aria-label="Find" title="Find">🔍</button>
+  <span class="grow"></span>
+  <button id="btn-view" aria-label="View" title="View">👁</button>
+  <button id="btn-menu" aria-label="Menu" title="Menu">⋮</button>
+</header>
+<nav id="tabs" aria-label="Buffers"></nav>
+<main><div id="hl" aria-hidden="true"></div><textarea id="editor" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="Editor"></textarea></main>
+<div id="modeline"></div>
+<div id="findbar" hidden></div>
+<div id="message" role="status"></div>
+<div id="layer"></div>
+<div id="mirror" aria-hidden="true"></div>
+<input id="import-file" type="file" accept=".org,text/plain" hidden>
+<script type="module" src="app/main.js"></script>
+</body>
+</html>
