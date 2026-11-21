@@ -12,9 +12,10 @@ const CHECKBOX = /^([ \t]*(?:[-+*]|\d+[.)])[ \t]+(?:\[@\d+\][ \t]+)?)\[([ X-])\]
  *   on: { cycle(line: number): void, todo(line: number): void, actions(line: number): void, checkbox(line: number): void } }} o
  */
 export function renderOutline(root, { text, folds, hideStars, on }) {
-  const { heads, nodes, todo } = analyze(text);
-  const hidden = hiddenLines(heads, folds);
-  const dots = ellipsisLines(heads, folds);
+  const { heads, items, foldables, nodes, todo } = analyze(text);
+  const hidden = hiddenLines(foldables, folds);
+  const dots = ellipsisLines(foldables, folds);
+  const itemAt = new Map(items.map((x) => [x.line, x]));
   const headAt = new Map(heads.map((x) => [x.line, x]));
   const rows = [];
   nodes.forEach((node, line) => {
@@ -34,7 +35,9 @@ export function renderOutline(root, { text, folds, hideStars, on }) {
     }
     const raw = node.line.text;
     const m = CHECKBOX.exec(raw);
-    rows.push(h('div', { class: 'ol-line' }, m ? [m[1], h('button', { class: 'box', 'aria-label': m[2] === 'X' ? 'Checked' : 'Unchecked', onclick: () => on.checkbox(line) }, `[${m[2]}]`), m[3]] : raw === '' ? ' ' : raw));
+    const it = itemAt.get(line);
+    const chev = it && it.end > it.line + 1 ? h('button', { class: 'ichev', 'aria-label': folds[line] ? 'Show' : 'Hide', onclick: () => on.cycle(line) }, folds[line] ? '▸' : '▾') : null;
+    rows.push(h('div', { class: 'ol-line' }, chev, m ? [m[1], h('button', { class: 'box', 'aria-label': m[2] === 'X' ? 'Checked' : 'Unchecked', onclick: () => on.checkbox(line) }, `[${m[2]}]`), m[3]] : raw === '' ? ' ' : raw));
   });
   root.replaceChildren(...rows);
 }

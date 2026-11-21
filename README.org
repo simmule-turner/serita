@@ -18,17 +18,22 @@ The toolbar has Files and Save at the left, Find in the middle, and View and Men
 ** Views
 View switches between Outline and Text; both show the same document and the same folding.
 
-The Outline view lists headings as a tree. The arrow at the left of a heading cycles its visibility, like TAB in Emacs: folded, children, whole subtree. Tap a TODO word to change its state, a checkbox to toggle it, and a heading's title for its actions: change TODO state, promote, demote, promote or demote the subtree, move up, move down, insert a heading below, set tags, and edit in the Text view.
+The Outline view lists headings as a tree. The arrow at the left of a heading cycles its visibility, like TAB in Emacs: folded, children, whole subtree. Tap a TODO word to change its state, a checkbox to toggle it, and a heading's title for its actions: change TODO state, promote, demote, promote or demote the subtree, move up, move down, insert a heading below, set tags, and edit the title. Edit title and Insert heading below open a popup with a text field; Enter accepts it.
+
+A checkbox toggles when you tap it. The checkbox of the item above it, and the ~[2/4]~ or ~[50%]~ counts of that item and of the heading, follow. A list item folds with its arrow, like a heading.
 
 The Text view shows the raw Org text, with ~...~ after a folded heading. A file's ~#+STARTUP:~ line sets what is folded when it opens; without one, everything is shown.
 
 ** Emacs keys
 Settings, Emacs keys, turns on these keys in the Text view:
-- TAB :: cycles the heading at the cursor; S-TAB cycles the whole buffer: overview, contents, show all.
-- M-up, M-down :: move the subtree up or down.
-- M-left, M-right :: promote or demote the heading; with Shift, its whole subtree.
+- TAB :: cycles the heading or list item at the cursor; S-TAB cycles the whole buffer: overview, contents, show all.
+- M-up, M-down :: move the subtree, or the list item with its sub-items, up or down.
+- M-left, M-right :: promote or demote the heading; on a list item, change its indentation and leave its sub-items; with Shift, the whole subtree or the sub-items too.
 - C-RET :: inserts a heading after the current subtree.
 - C-c C-t :: changes the TODO state.
+- C-c C-c :: toggles the checkbox on the line.
+
+To type C-c, use Ctrl on the key row and then c; a keyboard's own C-c still copies.
 
 Above the mode line, a row of keys stands in for a keyboard: Meta, Ctrl and Shift apply to the next key; Tab and the arrows follow. The keyboard button shows or hides the on-screen keyboard. Float turns the row into a panel you can drag; Dock puts it back. Pressing a key never opens the keyboard.
 

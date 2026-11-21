@@ -76,3 +76,8 @@ main { flex: 1; min-height: 0; display: flex; position: relative; background: va
 #keyrow.float { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 #keyrow.float .grip { grid-column: 1 / -1; }
 #keyrow.float button { min-width: 0; }
+.sheet textarea { width: 100%; min-height: 140px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: 15px/1.5 ui-monospace, Menlo, Consolas, monospace; resize: vertical; }
+.sheet textarea:focus { outline: 2px solid var(--fg); outline-offset: 0; }
+.ol-line { position: relative; }
+.ol-line .ichev { position: absolute; left: 12px; top: 0; min-height: 32px; width: 32px; padding: 0; border: 0; background: transparent; color: var(--muted); }
+.ol-line .dots { color: var(--muted); }

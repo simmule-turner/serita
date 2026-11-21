@@ -29,3 +29,9 @@ test('a key with no binding after a prefix says so, and C-g quits', () => {
   assert.deepEqual(k.press('C-g'), { kind: 'none', echo: 'Quit' });
   assert.deepEqual(k.press('C-x'), { kind: 'none' });
 });
+
+test('C-c C-c toggles a checkbox', () => {
+  const m = createKeymap(TEXT_KEYS);
+  m.press('C-c');
+  assert.deepEqual(m.press('C-c'), { kind: 'run', command: 'toggle-checkbox' });
+});

@@ -27,7 +27,7 @@ export function todoOptions(text) {
 
 /**
  * @typedef {{ line: number, level: number, parent: Head|null, children: Head[], end: number, bodyEnd: number,
- *   todo: string|null, title: string, tags: string[], priority: string|null }} Head
+ *   todo: string|null, title: string, tags: string[], priority: string|null, comment: boolean }} Head
  */
 
 /**
@@ -45,7 +45,7 @@ export function analyze(text) {
       nodes.push(node);
       if (node.type !== 'headline') continue;
       const h = { line: nodes.length - 1, level: node.level, parent, children: [], end: 0, bodyEnd: 0,
-        todo: node.todo, title: node.title, tags: node.tags, priority: node.priority };
+        todo: node.todo, title: node.title, tags: node.tags, priority: node.priority, comment: node.comment };
       heads.push(h);
       parent?.children.push(h);
       walk(node.children, h);
@@ -54,7 +54,50 @@ export function analyze(text) {
     }
   };
   walk(root.children, null);
-  return { heads, nodes, total: nodes.length, todo };
+  const items = listItems(nodes);
+  return { heads, items, foldables: [...heads, ...items].sort((a, b) => a.line - b.line), nodes, total: nodes.length, todo };
+}
+
+const indentOf = (s) => s.match(/^[ \t]*/)[0].length;
+
+/**
+ * List items, with the lines each one owns: the lines after it that are indented deeper, up to a heading,
+ * a line at or left of its own indentation, or a second blank line. They fold like headings do.
+ * @returns {{ line: number, indent: number, level: number, parent: any, children: any[], end: number, bodyEnd: number, isItem: true }[]}
+ */
+function listItems(nodes) {
+  const items = [];
+  const stack = [];
+  nodes.forEach((n, i) => {
+    if (n.type !== 'list-item') return;
+    let last = i + 1;
+    let blank = 0;
+    let inBlock = false;
+    for (let j = i + 1; j < nodes.length; j++) {
+      const m = nodes[j];
+      if (m.type === 'headline') break;
+      if (m.type === 'blank') { if (++blank >= 2) break; continue; }
+      if (m.type === 'block-line' || m.type === 'block-end') {
+        if (!inBlock) break;
+        if (m.type === 'block-end') inBlock = false;
+        last = j + 1;
+        blank = 0;
+        continue;
+      }
+      if (indentOf(m.line.text) <= n.indent) break;
+      if (m.type === 'block-begin') inBlock = true;
+      last = j + 1;
+      blank = 0;
+    }
+    while (stack.length && (stack[stack.length - 1].end <= i || stack[stack.length - 1].indent >= n.indent)) stack.pop();
+    const parent = stack.length ? stack[stack.length - 1] : null;
+    const item = { line: i, indent: n.indent, level: n.indent, parent, children: [], end: last, bodyEnd: last, isItem: true };
+    parent?.children.push(item);
+    items.push(item);
+    stack.push(item);
+  });
+  for (const it of items) if (it.children.length) it.bodyEnd = it.children[0].line;
+  return items;
 }
 
 const range = (a, b) => Array.from({ length: Math.max(0, b - a) }, (_, i) => a + i);

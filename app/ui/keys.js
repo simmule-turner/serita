@@ -50,4 +50,5 @@ export const TEXT_KEYS = Object.freeze({
   'M-S-<right>': 'demote-subtree',
   'C-RET': 'insert-heading',
   'C-c C-t': 'todo',
+  'C-c C-c': 'toggle-checkbox',
 });

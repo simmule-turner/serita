@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { analyze, contents, cycle, cycleGlobal, diff, ellipsisLines, hiddenLines, overview, remapFolds, reveal, startupFolds, todoOptions, validFolds } from '../core/outline.js';
-import { changeLevel, cycleTodo, insertHeadingAfter, moveSubtree, setTags, toggleCheckbox } from '../core/outline-edit.js';
+import { changeLevel, cycleTodo, indentItem, insertHeadingAfter, moveItem, moveSubtree, setTags, setTitle, toggleCheckbox } from '../core/outline-edit.js';
 
 const DOC = '#+TITLE: x\n* A\nbody\n** B\nb body\n** C\n* D\nd body\n';
 const heads = analyze(DOC).heads;
@@ -125,4 +125,53 @@ test('a checkbox toggles between [ ] and [X]', () => {
   assert.equal(toggleCheckbox('- [ ] a\n', 0).text, '- [X] a\n');
   assert.equal(toggleCheckbox('  1. [X] a\n', 0).text, '  1. [ ] a\n');
   assert.equal(toggleCheckbox('- plain\n', 0), null);
+});
+
+test('list items own the deeper-indented lines under them, and fold like headings', () => {
+  const doc = '* H\n- a\n  - b\n  text\n- c\n';
+  const a = analyze(doc);
+  assert.deepEqual(a.items.map((i) => [i.line, i.indent, i.end]), [[1, 0, 4], [2, 2, 3], [4, 0, 5]]);
+  assert.equal(a.items[1].parent, a.items[0]);
+  assert.deepEqual([...hiddenLines(a.foldables, { 1: 'all' })], [2, 3]);
+  assert.equal(cycle(a.foldables, {}, 1).state, 'folded');
+});
+
+test('a second blank line ends a list item', () => {
+  assert.equal(analyze('- a\n  b\n\n\n  c\n').items[0].end, 2);
+});
+
+test('toggling a checkbox updates the parent checkbox and the cookies', () => {
+  const t = '* Todo [0/1]\n- [ ] Parent [0/2]\n  - [ ] a\n  - [ ] b\n- plain\n';
+  const one = toggleCheckbox(t, 2).text;
+  assert.equal(one, '* Todo [0/1]\n- [-] Parent [1/2]\n  - [X] a\n  - [ ] b\n- plain\n');
+  const two = toggleCheckbox(one, 3).text;
+  assert.equal(two, '* Todo [1/1]\n- [X] Parent [2/2]\n  - [X] a\n  - [X] b\n- plain\n');
+  assert.equal(toggleCheckbox(two, 2).text.split('\n')[1], '- [-] Parent [1/2]');
+  assert.equal(toggleCheckbox('- [ ] a [0%]\n  - [ ] b\n', 1).text, '- [X] a [100%]\n  - [X] b\n');
+});
+
+test('list items move with their sub-items, and an ordered list keeps its numbers', () => {
+  assert.equal(moveItem('1. a\n   - x\n2. b\n3. c\n', 0, 1).text, '1. b\n2. a\n   - x\n3. c\n');
+  assert.equal(moveItem('- a\n- b', 0, 1).text, '- b\n- a');
+  assert.throws(() => moveItem('- a\n- b\n', 0, -1), /Cannot move the item further/);
+});
+
+test('indenting a list item makes it a sub-item; outdenting moves it out; sub-items stay unless asked', () => {
+  assert.equal(indentItem('- a\n- b\n', 1, 1, false).text, '- a\n  - b\n');
+  assert.equal(indentItem('- a\n  - b\n', 1, -1, false).text, '- a\n- b\n');
+  assert.equal(indentItem('- a\n- b\n  - c\n', 1, 1, true).text, '- a\n  - b\n    - c\n');
+  assert.equal(indentItem('- a\n- b\n  - c\n', 1, 1, false).text, '- a\n  - b\n  - c\n');
+  assert.throws(() => indentItem('- a\n', 0, 1, false), /Cannot indent/);
+  assert.throws(() => indentItem('- a\n', 0, -1, false), /Cannot outdent/);
+});
+
+test('a heading title is replaced without touching the stars, TODO word, priority or tags', () => {
+  const t = setTitle('** TODO [#A] Old title :x:\n', 0, 'New\ntitle').text;
+  assert.ok(t.startsWith('** TODO [#A] New title '));
+  assert.ok(t.trimEnd().endsWith(':x:') && t.trimEnd().length === 77);
+  assert.equal(setTitle('* A\n', 0, '  B  ').text, '* B\n');
+});
+
+test('a new heading can be given its title', () => {
+  assert.equal(insertHeadingAfter('* A\n', 0, 'New one').text, '* A\n* New one');
 });

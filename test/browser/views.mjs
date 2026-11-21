@@ -16,7 +16,7 @@ const value = () => page.locator('#editor').inputValue();
 const caretAt = (needle) => page.evaluate((n) => { const e = document.getElementById('editor'); const i = e.value.indexOf(n); e.setSelectionRange(i, i); }, needle);
 const view = async (name) => { await page.click('#btn-view'); await btn(name).click(); };
 
-await page.fill('#editor', '#+TITLE: t\n* TODO A\nbody\n** B\nb body\n* D\n');
+await page.fill('#editor', '#+TITLE: t\n* TODO A\nbody\n** B\nb body\n* D\n- [ ] one\n- [ ] two\n');
 await view('Outline');
 ok((await page.locator('.ol-head').count()) === 3, 'the Outline view lists the three headings');
 ok((await page.locator('.ol-line').allTextContents()).some((t) => t.includes('b body')), 'the text under an open heading is shown');
@@ -44,8 +44,22 @@ await btn('Move up').click();
 ok((await page.locator('.ol-head .title').allTextContents())[0] === 'Dx', 'Move up moves the subtree above its sibling');
 
 await page.locator('.ol-head .title').first().click();
-await btn('Edit in Text view').click();
-ok((await page.locator('#editor').isVisible()) && (await value()).startsWith('#+TITLE: t\n* Dx'), 'Edit in Text view switches to the text');
+await btn('Edit title').click();
+ok(await page.locator('.sheet textarea').inputValue() === 'Dx', 'Edit title opens a popup holding only the title');
+await page.locator('.sheet textarea').fill('Done list');
+await page.locator('.sheet textarea').press('Enter');
+ok((await page.locator('.ol-head .title').first().textContent()) === 'Done list' && (await page.locator('#editor').isHidden()), 'Enter accepts it, and the Outline view stays');
+
+await page.locator('.ol-head .title').first().click();
+await btn('Insert heading below').click();
+await page.locator('.sheet textarea').fill('Fresh');
+await sheet.getByRole('button', { name: 'OK', exact: true }).click();
+ok((await page.locator('.ol-head .title').allTextContents()).includes('Fresh') && (await page.locator('#editor').isHidden()), 'Insert heading below adds a heading from the popup, without leaving the Outline view');
+
+await page.locator('.ol-line .box').first().click();
+ok((await page.locator('.ol-line .box').first().textContent()) === '[X]', 'tapping a checkbox in the Outline view toggles it');
+await view('Text');
+ok((await value()).includes('- [X] one') && (await value()).includes('- [ ] two'), 'the Text view shows the same checkbox');
 
 // Emacs keys and the key row
 ok(!(await page.locator('#keyrow').isVisible()), 'the key row is hidden while Emacs keys are off');
@@ -55,7 +69,7 @@ ok(await page.locator('#keyrow').isVisible(), 'Emacs keys on shows the key row')
 ok((await page.locator('#keyrow button').allTextContents()).join(',') === 'Meta,Ctrl,Shift,Tab,←,↑,↓,→,⌨,Float', 'the key row has the keys in order, with the keyboard and Float buttons last');
 
 await page.evaluate(() => document.getElementById('editor').blur());
-await caretAt('* TODO A');
+await caretAt('* DONE A');
 await page.locator('#keyrow button', { hasText: 'Tab' }).click();
 ok(await page.evaluate(() => document.activeElement !== document.getElementById('editor')), 'pressing a key-row button does not bring up the keyboard');
 const afterTab = await msg();
@@ -75,9 +89,32 @@ await page.keyboard.press('Shift+Tab');
 ok((await msg()) === 'SHOW ALL' && (await value()).includes('b body'), 'S-TAB a third time shows everything');
 
 await page.keyboard.press('Control+c');
-ok((await msg()) === 'C-c-', 'C-c shows the pending prefix in the message line');
+ok((await msg()) !== 'C-c-', 'a keyboard\'s own C-c is left alone, so it still copies');
+await page.locator('#keyrow button', { hasText: 'Ctrl' }).click();
+await page.keyboard.press('c');
+ok((await msg()) === 'C-c-', 'Ctrl on the key row, then c, starts the C-c prefix');
 await page.keyboard.press('Control+g');
 ok((await msg()) === 'Quit', 'C-g quits the prefix');
+
+await caretAt('- [ ] two');
+await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await page.keyboard.press('c');
+await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await page.keyboard.press('c');
+ok((await value()).includes('- [X] two'), 'C-c C-c from the key row toggles the checkbox at the cursor');
+
+await caretAt('- [X] two');
+await page.keyboard.press('Alt+ArrowUp');
+ok((await value()).includes('- [X] two\n- [X] one'), 'M-up moves a list item above its neighbor');
+
+await page.keyboard.press('Shift+Tab');
+ok((await msg()) === 'OVERVIEW' && !(await value()).includes('b body'), 'S-TAB shows only the top-level headings');
+await page.click('#btn-find');
+await page.getByLabel('Search', { exact: true }).fill('b body');
+ok((await value()).includes('b body'), 'Find opens the fold that hides a match');
+await page.getByLabel('Cancel search').click();
+ok(!(await value()).includes('b body'), 'cancelling the search closes it again');
+await page.locator('#editor').focus();
+await page.keyboard.press('Shift+Tab'); await page.keyboard.press('Shift+Tab');
+ok((await msg()) === 'SHOW ALL', 'S-TAB twice more shows everything');
 
 await page.locator('#keyrow button', { hasText: 'Float' }).click();
 ok((await page.locator('#keyrow.float').count()) === 1 && (await page.locator('#keyrow button', { hasText: 'Dock' }).count()) === 1, 'Float makes the keys a floating panel');

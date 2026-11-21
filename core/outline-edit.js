@@ -27,43 +27,46 @@ export function changeLevel(text, line, delta, subtree) {
   return { text: join(lines), line, remap: same };
 }
 
+/**
+ * Swaps two blocks of lines (a before b); lines between them stay where they are. The file's last line may lack a
+ * line ending, which stays at the end of the file. `remap` moves a line number of the old text to the new one.
+ */
+function swapBlocks(lines, a, b) {
+  const first = lines.slice(a.from, a.to);
+  const gap = lines.slice(a.to, b.from);
+  const second = lines.slice(b.from, b.to);
+  if (b.to === lines.length && lines[lines.length - 1].eol === '') {
+    second[second.length - 1] = { ...second[second.length - 1], eol: '\n' };
+    first[first.length - 1] = { ...first[first.length - 1], eol: '' };
+  }
+  const shift = second.length + gap.length;
+  const remap = (n) => {
+    if (n >= a.from && n < a.to) return n + shift;
+    if (n >= b.from && n < b.to) return n - (b.from - a.from);
+    if (n >= a.to && n < b.from) return n + second.length - first.length;
+    return n;
+  };
+  return { lines: [...lines.slice(0, a.from), ...second, ...gap, ...first, ...lines.slice(b.to)], remap, firstAt: a.from + shift, secondAt: a.from };
+}
+
 /** Moves a heading's subtree before its previous sibling (dir -1) or after its next one (dir 1). */
 export function moveSubtree(text, line, dir) {
   const { h } = headOf(text, line);
   const sibs = h.parent ? h.parent.children : analyze(text).heads.filter((x) => !x.parent);
-  const at = sibs.findIndex((x) => x.line === h.line);
-  const other = sibs[at + dir];
+  const other = sibs[sibs.findIndex((x) => x.line === h.line) + dir];
   if (!other) throw new Error('Cannot move past superior level or buffer limit');
-  const lines = splitLines(text);
-  const size = h.end - h.line;
-  const osize = other.end - other.line;
-  const lastNoEol = lines[lines.length - 1].eol === '';
-  const first = dir < 0 ? other : h;
-  const second = dir < 0 ? h : other;
-  const a = lines.slice(first.line, first.end);
-  const b = lines.slice(second.line, second.end);
-  // The file's last line may lack a line ending; after the swap that is the end of the other block.
-  if (lastNoEol && second.end === lines.length) {
-    b[b.length - 1] = { ...b[b.length - 1], eol: '\n' };
-    a[a.length - 1] = { ...a[a.length - 1], eol: '' };
-  }
-  const out = [...lines.slice(0, first.line), ...b, ...a, ...lines.slice(second.end)];
-  const newLine = dir < 0 ? h.line - osize : h.line + osize;
-  const remap = (n) => {
-    if (n >= h.line && n < h.end) return n - h.line + newLine;
-    if (n >= other.line && n < other.end) return dir < 0 ? n + size : n - size;
-    return n;
-  };
-  return { text: join(out), line: newLine, remap };
+  const [first, second] = dir < 0 ? [other, h] : [h, other];
+  const r = swapBlocks(splitLines(text), { from: first.line, to: first.end }, { from: second.line, to: second.end });
+  return { text: join(r.lines), line: dir < 0 ? r.secondAt : r.firstAt, remap: r.remap };
 }
 
 /** Adds an empty sibling heading after the subtree of the one at `line`. The new heading's line is returned. */
-export function insertHeadingAfter(text, line) {
+export function insertHeadingAfter(text, line, title = '') {
   const { h } = headOf(text, line);
   const lines = splitLines(text);
   const stars = '*'.repeat(h.level);
   if (h.end > 0 && lines[h.end - 1].eol === '') lines[h.end - 1] = { ...lines[h.end - 1], eol: '\n' };
-  lines.splice(h.end, 0, { text: `${stars} `, eol: lines.length > h.end ? '\n' : '' });
+  lines.splice(h.end, 0, { text: `${stars} ${oneLine(title)}`, eol: lines.length > h.end ? '\n' : '' });
   return { text: join(lines), line: h.end, remap: (n) => (n >= h.end ? n + 1 : n) };
 }
 
@@ -82,24 +85,127 @@ export function cycleTodo(text, line) {
 }
 
 const TAGS_COLUMN = 77;
+const oneLine = (s) => s.replace(/\s*[\r\n]+\s*/g, ' ').trim();
 
-/** Sets the heading's tags. They are aligned so the line ends at column 77, as Emacs does by default. */
+/** A headline's text with its tags aligned so the line ends at column 77, as Emacs does by default. */
+function withTags(base, tags) {
+  const tagText = tags.length ? `:${tags.join(':')}:` : '';
+  return tagText === '' ? base : base + ' '.repeat(Math.max(1, TAGS_COLUMN - base.length - tagText.length)) + tagText;
+}
+
+/** Sets the heading's tags. */
 export function setTags(text, line, tags) {
   headOf(text, line);
   const lines = splitLines(text);
-  const base = lines[line].text.replace(new RegExp(TAGS.source, 'u'), '');
-  const tagText = tags.length ? `:${tags.join(':')}:` : '';
-  const pad = tagText === '' ? '' : ' '.repeat(Math.max(1, TAGS_COLUMN - base.length - tagText.length));
-  lines[line] = { ...lines[line], text: base + pad + tagText };
+  lines[line] = { ...lines[line], text: withTags(lines[line].text.replace(new RegExp(TAGS.source, 'u'), ''), tags) };
   return { text: join(lines), line, remap: same };
 }
 
-/** Turns a checkbox on or off: [ ] and [-] become [X], [X] becomes [ ]. Returns null when the line has no checkbox. */
-export function toggleCheckbox(text, line) {
+/** Replaces a heading's title; the stars, TODO word, priority and tags stay. */
+export function setTitle(text, line, title) {
+  const { h } = headOf(text, line);
   const lines = splitLines(text);
-  const l = lines[line];
-  const m = l && /^([ \t]*(?:[-+*]|\d+[.)])[ \t]+(?:\[@\d+\][ \t]+)?\[)([ X-])\]/.exec(l.text);
-  if (!m) return null;
-  lines[line] = { ...l, text: `${m[1]}${m[2] === 'X' ? ' ' : 'X'}${l.text.slice(m[0].length - 1)}` };
+  const base = `${'*'.repeat(h.level)} ${h.todo ? `${h.todo} ` : ''}${h.priority ? `[#${h.priority}] ` : ''}${h.comment ? 'COMMENT ' : ''}${oneLine(title)}`;
+  lines[line] = { ...lines[line], text: withTags(base, h.tags) };
   return { text: join(lines), line, remap: same };
 }
+
+const CHECKBOX = /^([ \t]*(?:[-+*]|\d+[.)])[ \t]+(?:\[@\d+\][ \t]+)?\[)([ X-])\]/;
+const COOKIE = /\[(\d*)\/(\d*)\]|\[(\d*)%\]/;
+
+/** Rewrites the first statistics cookie in a line: [done/total] or [percent%]. */
+function withCookie(text, done, total) {
+  return text.replace(COOKIE, (all, a, b) => (a !== undefined ? `[${done}/${total}]` : `[${total ? Math.floor((100 * done) / total) : 0}%]`));
+}
+
+/**
+ * Turns a checkbox on or off: [ ] and [-] become [X], [X] becomes [ ]. The checkboxes of the items above it, and the
+ * cookies ([2/4], [50%]) of those items and of the heading, are brought up to date. Returns null when the line has no checkbox.
+ */
+export function toggleCheckbox(text, line) {
+  const a = analyze(text);
+  const lines = splitLines(text);
+  const item = a.items.find((x) => x.line === line);
+  const m = item && CHECKBOX.exec(lines[line].text);
+  if (!m) return null;
+  const set = (n, patch) => { lines[n] = { ...lines[n], text: patch(lines[n].text) }; };
+  set(line, (t) => `${m[1]}${m[2] === 'X' ? ' ' : 'X'}${t.slice(m[0].length - 1)}`);
+  const boxes = (list) => list.map((c) => CHECKBOX.exec(lines[c.line].text)).filter(Boolean);
+  const count = (list) => { const b = boxes(list); return { done: b.filter((x) => x[2] === 'X').length, open: b.filter((x) => x[2] === '-').length, total: b.length }; };
+  for (let p = item.parent; p; p = p.parent) {
+    const { done, open, total } = count(p.children);
+    if (total === 0) continue;
+    const state = done === total ? 'X' : done === 0 && open === 0 ? ' ' : '-';
+    set(p.line, (t) => withCookie(t.replace(CHECKBOX, (all, pre) => `${pre}${state}]`), done, total));
+  }
+  const head = a.heads.filter((x) => x.line < line && x.bodyEnd > line).pop();
+  if (head) {
+    const { done, total } = count(a.items.filter((x) => !x.parent && x.line > head.line && x.line < head.bodyEnd));
+    if (total > 0) set(head.line, (t) => withCookie(t, done, total));
+  }
+  return { text: join(lines), line, remap: same };
+}
+
+const markerOf = (t) => /^[ \t]*(?:[-+*]|\d+[.)])[ \t]+/.exec(t)[0];
+
+/** The item next to this one in the same list, in direction dir (-1 above, 1 below), when nothing but one blank line is between. */
+function neighbor(items, lines, it, dir) {
+  const same = items.filter((x) => x.parent === it.parent && x.indent === it.indent);
+  const other = same[same.findIndex((x) => x.line === it.line) + dir];
+  if (!other) return null;
+  const [a, b] = dir < 0 ? [other, it] : [it, other];
+  const gap = lines.slice(a.end, b.line);
+  return gap.length <= 1 && gap.every((l) => l.text.trim() === '') ? other : null;
+}
+
+const ITEM_LOST = new Error('Not on a list item');
+
+/** Moves a list item, with its sub-items, above or below its neighbor. Numbers of an ordered list stay in order. */
+export function moveItem(text, line, dir) {
+  const a = analyze(text);
+  const it = a.items.find((x) => x.line === line);
+  if (!it) throw ITEM_LOST;
+  const lines = splitLines(text);
+  const other = neighbor(a.items, lines, it, dir);
+  if (!other) throw new Error('Cannot move the item further');
+  const [first, second] = dir < 0 ? [other, it] : [it, other];
+  const num = (n) => /^([ \t]*)(\d+)([.)])/.exec(lines[n].text);
+  const n1 = num(first.line);
+  const n2 = num(second.line);
+  if (n1 && n2) {
+    const renumber = (n, m, v) => { lines[n] = { ...lines[n], text: lines[n].text.replace(/^([ \t]*)\d+/, `$1${v}`) }; return m; };
+    renumber(first.line, n1, n2[2]);
+    renumber(second.line, n2, n1[2]);
+  }
+  const r = swapBlocks(lines, { from: first.line, to: first.end }, { from: second.line, to: second.end });
+  return { text: join(r.lines), line: dir < 0 ? r.secondAt : r.firstAt, remap: r.remap };
+}
+
+/**
+ * Changes a list item's indentation: delta 1 makes it a sub-item of the item above, -1 moves it out to its parent's level.
+ * The sub-items stay where they are unless withChildren is set.
+ */
+export function indentItem(text, line, delta, withChildren) {
+  const a = analyze(text);
+  const it = a.items.find((x) => x.line === line);
+  if (!it) throw ITEM_LOST;
+  const lines = splitLines(text);
+  let to;
+  if (delta > 0) {
+    const above = neighbor(a.items, lines, it, -1);
+    if (!above) throw new Error('Cannot indent the first item of a list');
+    to = above.indent + markerOf(lines[above.line].text).length - above.indent;
+  } else {
+    if (!it.parent) throw new Error('Cannot outdent a top-level item');
+    to = it.parent.indent;
+  }
+  const d = to - it.indent;
+  for (let n = it.line; n < (withChildren ? it.end : it.line + 1); n++) {
+    const t = lines[n].text;
+    if (t.trim() === '') continue;
+    lines[n] = { ...lines[n], text: d > 0 ? ' '.repeat(d) + t : t.slice(Math.min(-d, indentOf(t))) };
+  }
+  return { text: join(lines), line, remap: same };
+}
+
+const indentOf = (s) => s.match(/^[ \t]*/)[0].length;

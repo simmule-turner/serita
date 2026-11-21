@@ -45,7 +45,7 @@ export function createSession({ app }) {
     let folds;
     if (remap) folds = Object.fromEntries(Object.entries(b.folds).map(([k, v]) => [remap(Number(k)), v]).filter(([k]) => k !== null));
     else { const d = diff(b.text, text); folds = remapFolds(b.folds, b.text, d.from, d.to, d.insert); }
-    return { text, folds: validFolds(analyze(text).heads, folds) };
+    return { text, folds: validFolds(analyze(text).foldables, folds) };
   };
 
   const session = {

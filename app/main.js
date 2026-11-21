@@ -13,7 +13,7 @@ import { formatSize } from '../core/bytes.js';
 import { VERSION } from './version.js';
 import { h, kept } from './ui/dom.js';
 import { analyze, cycle, cycleGlobal, diff, ellipsisLines, hiddenLines, reveal } from '../core/outline.js';
-import { changeLevel, cycleTodo, insertHeadingAfter, moveSubtree, setTags, toggleCheckbox } from '../core/outline-edit.js';
+import { changeLevel, cycleTodo, indentItem, insertHeadingAfter, moveItem, moveSubtree, setTags, setTitle, toggleCheckbox } from '../core/outline-edit.js';
 import { lineAt, project, toFull, toShown, touchedFold } from '../core/projection.js';
 import { renderOutline } from './ui/outline-view.js';
 import { TEXT_KEYS, chordOf, createKeymap } from './ui/keys.js';
@@ -145,7 +145,7 @@ function render() {
   editor.disabled = !shown;
   if (shown) {
     const a = analyze(shown.text);
-    const proj = project(shown.text, hiddenLines(a.heads, shown.folds), ellipsisLines(a.heads, shown.folds), { hideStars: hideStars() });
+    const proj = project(shown.text, hiddenLines(a.foldables, shown.folds), ellipsisLines(a.foldables, shown.folds), { hideStars: hideStars() });
     cur = { id: shown.id, a, proj };
     if (editor.value !== proj.value) {
       editor.value = proj.value;
@@ -396,11 +396,11 @@ let finding = null;
 function startFind() {
   if (finding || shownId === null) return;
   if (viewMode() === 'outline') setView('text');
-  finding = { start: toFull(cur.proj, editor.selectionStart), end: toFull(cur.proj, editor.selectionEnd) };
+  finding = { start: toFull(cur.proj, editor.selectionStart), end: toFull(cur.proj, editor.selectionEnd), folds: currentBuffer().folds };
   const input = h('input', { 'aria-label': 'Search', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' });
   const show = (found) => {
     const b = currentBuffer();
-    const opened = reveal(cur.a.heads, b.folds, b.text.slice(0, found.start).split('\n').length - 1);
+    const opened = reveal(cur.a.foldables, b.folds, b.text.slice(0, found.start).split('\n').length - 1);
     if (JSON.stringify(opened) !== JSON.stringify(b.folds)) session.setFolds(b.id, opened);
     const start = toShown(cur.proj, found.start);
     const m = { start, end: start + (found.end - found.start) };
@@ -424,7 +424,10 @@ function startFind() {
     show(m);
   };
   const end = (restore) => {
-    if (restore) editor.setSelectionRange(toShown(cur.proj, finding.start), toShown(cur.proj, finding.end));
+    if (restore) {
+      if (JSON.stringify(currentBuffer().folds) !== JSON.stringify(finding.folds)) session.setFolds(shownId, finding.folds);
+      editor.setSelectionRange(toShown(cur.proj, finding.start), toShown(cur.proj, finding.end));
+    }
     finding = null;
     $('hl').replaceChildren();
     $('findbar').hidden = true;
@@ -660,41 +663,57 @@ function runEdit(fn) {
   } catch (e) { failure(e); return null; }
 }
 
-const headingAtCursor = () => {
+/** The line at the cursor and what it is: a heading, a list item, or neither. */
+const kindAtCursor = () => {
   const line = lineAt(cur.proj, editor.selectionStart);
-  return cur.a.heads.some((x) => x.line === line) ? line : null;
+  return { line, kind: cur.a.heads.some((x) => x.line === line) ? 'heading' : cur.a.items.some((x) => x.line === line) ? 'item' : null };
 };
 
-function editAtHeading(fn, atEnd = false) {
-  const line = headingAtCursor();
-  if (line === null) { message('Not at a heading'); return; }
+/** Runs the edit for the heading or list item at the cursor, then puts the cursor on the line it ends on. */
+function editHere(onHeading, onItem, atEnd = false) {
+  const { line, kind } = kindAtCursor();
+  const fn = kind === 'heading' ? onHeading : kind === 'item' ? onItem : null;
+  if (!fn) { message(kind === null ? 'Not at a heading or list item' : kind === 'item' ? 'Not at a heading' : 'Not at a list item'); return; }
   const r = runEdit((t) => fn(t, line));
   if (r) placeCursor(r.line, atEnd);
 }
 
 function cycleHeading(line) {
   const b = currentBuffer();
-  const r = cycle(cur.a.heads, b.folds, line);
+  const r = cycle(cur.a.foldables, b.folds, line);
   if (r) { session.setFolds(b.id, r.folds); message(r.state.toUpperCase()); }
 }
 
 const COMMANDS = {
-  'cycle': () => { const line = headingAtCursor(); if (line === null) message('Not at a heading'); else cycleHeading(line); },
+  'cycle': () => { const { line, kind } = kindAtCursor(); if (kind === null) message('Not at a heading or list item'); else cycleHeading(line); },
   'cycle-global': () => {
     const b = currentBuffer();
     const r = cycleGlobal(cur.a.heads, b.folds);
     session.setFolds(b.id, r.folds);
     message(r.state.toUpperCase());
   },
-  'move-up': () => editAtHeading((t, l) => moveSubtree(t, l, -1)),
-  'move-down': () => editAtHeading((t, l) => moveSubtree(t, l, 1)),
-  'promote': () => editAtHeading((t, l) => changeLevel(t, l, -1, false)),
-  'demote': () => editAtHeading((t, l) => changeLevel(t, l, 1, false)),
-  'promote-subtree': () => editAtHeading((t, l) => changeLevel(t, l, -1, true)),
-  'demote-subtree': () => editAtHeading((t, l) => changeLevel(t, l, 1, true)),
-  'insert-heading': () => editAtHeading(insertHeadingAfter, true),
-  'todo': () => editAtHeading(cycleTodo),
+  'move-up': () => editHere((t, l) => moveSubtree(t, l, -1), (t, l) => moveItem(t, l, -1)),
+  'move-down': () => editHere((t, l) => moveSubtree(t, l, 1), (t, l) => moveItem(t, l, 1)),
+  'promote': () => editHere((t, l) => changeLevel(t, l, -1, false), (t, l) => indentItem(t, l, -1, false)),
+  'demote': () => editHere((t, l) => changeLevel(t, l, 1, false), (t, l) => indentItem(t, l, 1, false)),
+  'promote-subtree': () => editHere((t, l) => changeLevel(t, l, -1, true), (t, l) => indentItem(t, l, -1, true)),
+  'demote-subtree': () => editHere((t, l) => changeLevel(t, l, 1, true), (t, l) => indentItem(t, l, 1, true)),
+  'insert-heading': () => editHere(insertHeadingAfter, null, true),
+  'todo': () => editHere(cycleTodo, null),
+  'toggle-checkbox': () => { if (!runEdit((t) => toggleCheckbox(t, kindAtCursor().line))) message('Nothing to do here'); },
 };
+
+/** A popup with a text field for a heading's title. Resolves with the text, or undefined when cancelled. */
+function askTitle(title, initial) {
+  return panel((sheet, close) => {
+    const input = h('textarea', { rows: '4', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Title' });
+    input.value = initial;
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); close(input.value); } });
+    put(sheet, h('h2', {}, title), input,
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { onclick: () => close(input.value) }, 'OK')));
+    input.focus();
+  });
+}
 
 async function setTagsDialog(line) {
   const hd = cur.a.heads.find((x) => x.line === line);
@@ -725,7 +744,7 @@ async function headingActions(line) {
     { label: 'Move down', value: 'move-down' },
     { label: 'Insert heading below', value: 'insert' },
     { label: 'Set tags', meta: hd.tags.length ? `:${hd.tags.join(':')}:` : null, value: 'tags' },
-    { label: 'Edit in Text view', value: 'edit' },
+    { label: 'Edit title', value: 'edit' },
   ]);
   const run = {
     todo: () => cycleTodo, promote: () => (t, l) => changeLevel(t, l, -1, false), demote: () => (t, l) => changeLevel(t, l, 1, false),
@@ -735,12 +754,12 @@ async function headingActions(line) {
   if (what === undefined) return;
   if (run[what]) runEdit((t) => run[what]()(t, line));
   else if (what === 'tags') await setTagsDialog(line);
-  else if (what === 'edit' || what === 'insert') {
-    const r = what === 'insert' ? runEdit((t) => insertHeadingAfter(t, line)) : { line };
-    if (!r) return;
-    setView('text');
-    placeCursor(r.line, what === 'insert');
-    editor.focus();
+  else if (what === 'edit') {
+    const title = await askTitle('Edit heading title', hd.title);
+    if (title !== undefined) runEdit((t) => setTitle(t, line, title));
+  } else if (what === 'insert') {
+    const title = await askTitle('New heading', '');
+    if (title !== undefined) runEdit((t) => insertHeadingAfter(t, line, title));
   }
 }
 
@@ -790,6 +809,7 @@ editor.addEventListener('keydown', (e) => {
   const held = keyRow.sticky();
   const fromRow = held.ctrl || held.meta || held.shift;
   const chord = chordOf({ key: e.key, ctrl: e.ctrlKey || held.ctrl, meta: e.altKey || e.metaKey || held.meta, shift: e.shiftKey || held.shift });
+  if (chord === 'C-c' && !held.ctrl && keymap.pending() === '') return; // a keyboard's own C-c stays copy; the prefix comes from the key row
   if (chord) runChord(chord, e, fromRow);
   else if (keymap.pending() && e.key.length === 1) runChord(e.key, e, false);
   if (fromRow && !MODIFIER_KEYS.includes(e.key)) keyRow.clear();
