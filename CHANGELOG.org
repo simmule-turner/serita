@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.0.7
+Settings can now be written to an Org file and read back on another device, so a second install starts configured the same way. Tokens and passwords go in too; with a passphrase they are encrypted, and without one the file says so and should be kept private. A wrong passphrase stops the import and changes nothing. The Settings panel buttons arrive with the app shell.
+
 * 0.0.6
 File lists now carry each file's size, so Open can show how big a file is before you pick it. GitHub and the app's own storage always know the size; a WebDAV server that leaves it out shows a blank instead of a guess. Unsent edits and files created offline show their own size.
 

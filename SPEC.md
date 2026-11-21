@@ -372,6 +372,7 @@ Every open item had an answer by 2026-11-21.
 | Markdown and OpenDocument export | Not in the plan (not in the guide) |
 | Tokens and passwords | Native apps: Keychain (iOS) and Keystore (Android). Browser: the browser's own storage on this device, stated plainly on the setup screen |
 | Saving | Manual Save; no autosave. The save button saves the current tab; the file menu has "Save some buffers" for the others |
+| Settings export | Settings panel has Export and Import. The export is an Org file, downloaded through the browser; import reads a local file only (no storage provider). Secrets (tokens, passwords) are included, optionally encrypted with a passphrase; without a passphrase they are written in plain text and the dialog says so. A passphrase is never required. Import replaces all settings on the device; a wrong or missing passphrase stops the import and changes nothing. The Export and Import buttons sit in a "Settings file" row at the bottom of the Settings panel. The file is named `serita-settings-YYYY-MM-DD.org`. Encryption uses Web Crypto: PBKDF2 (SHA-256) to derive the key, AES-GCM to encrypt |
 | File menu (folder button) | New (a new buffer named *scratch*), Open (an existing file from local storage, GitHub or WebDAV), Save (to the existing file), Save As (the current buffer to another storage and/or name), Save some buffers |
 
 Open: whether LaTeX export (a guide chapter) stays after the three; what format Slides produces; whether the guide's Introduction chapter is documentation only.

@@ -62,6 +62,9 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 ### `core/bytes.js`, `app/storage/browse.js`, `test/sizes.test.js`
 - Written from: the author's request (Open shows a file's size when it can) and RFC 4918 section 15.4 as read on 2026-11-21 (the getcontentlength property carries the HTTP Content-Length value; the RFC does not say when it may be absent, so a missing size is null) and GitHub's tree documentation (blob entries include size). Folder browsing from a flat file list is the session's own design. Statement as above.
 
+### `core/settings-file.js`, `test/settings-file.test.js`
+- Written from: the author's decisions of 2026-11-21 (SPEC.md, "Settings export") and the Web Crypto API as documented (PBKDF2 key derivation, AES-GCM). The Org layout and the encrypted block are this project's own design. Statement as above.
+
 ### `app/storage/cached.js`
 - Written from: SPEC 13.1 (offline cache for the GitHub and WebDAV providers, one commit per save, a three-way prompt on conflict) and the session's own design: a cache record per file holding the last server copy, an unsent local edit with a version token, and a queued delete; a sync that returns conflicts with base, mine and theirs. Only a typed network error counts as offline. Statement as above.
 
