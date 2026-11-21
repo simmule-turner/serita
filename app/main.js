@@ -33,7 +33,7 @@ function h(tag, props = {}, ...kids) {
 }
 
 const config = createConfig(localStorage);
-const { providers, rebuild } = await createProviders({ config, indexedDB, isOnline: () => navigator.onLine });
+const { providers, rebuild } = await createProviders({ config, indexedDB, env: window, isOnline: () => navigator.onLine });
 const app = createBrowserInterface({ providers, env: window });
 const session = createSession({ app });
 const recent = createRecent(localStorage);
@@ -99,7 +99,7 @@ function cursorPosition() {
   return { line, col: before.length - (before.lastIndexOf('\n') + 1) };
 }
 
-const STORAGE_LABEL = { local: 'Local', github: 'GitHub', webdav: 'WebDAV' };
+const STORAGE_LABEL = { local: 'App storage', device: 'Device', github: 'GitHub', webdav: 'WebDAV' };
 
 /** Where the window is in the text, as Emacs's mode line says it: All, Top, Bot or a percentage. */
 function scrollPosition() {
@@ -283,21 +283,21 @@ async function clashList(found) {
 
 // ---- File browser (Open and Save as) -------------------------------------------------------------
 
-function providerLabel(p) { return { local: 'This device', github: 'GitHub', webdav: 'WebDAV' }[p]; }
+function providerLabel(p) { return { local: 'App storage', device: 'Device files', github: 'GitHub', webdav: 'WebDAV' }[p]; }
 
 /** @returns {Promise<string|undefined>} the chosen storage name */
 function browse({ mode, suggested = '', current = null }) {
   let provider = current ? parseName(current).provider : 'local';
-  if (!(provider in providers)) provider = 'local';
+  if (!(provider in providers) || (mode === 'open' && provider === 'device')) provider = 'local';
   let dir = current ? parseName(current).path.replace(/[^/]*$/, '') : '';
   return panel((sheet, close) => {
     let listing = { folders: [], files: [] };
     let loadError = null;
     const nameInput = mode === 'saveas' ? h('input', { value: suggested, 'aria-label': 'File name', oninput: () => draw() }) : null;
     const ok = h('button', { class: 'primary' });
-    const note = h('p', { class: 'tag' });
 
     async function load() {
+      if (provider === 'device') { listing = { folders: [], files: [] }; loadError = null; draw(); return; }
       try {
         const all = await app.storage.entries(`${provider}:`);
         listing = children(all.map((e) => ({ path: parseName(e.name).path, size: e.size })), dir);
@@ -306,10 +306,14 @@ function browse({ mode, suggested = '', current = null }) {
       draw();
     }
     async function change() {
-      const items = ['local', 'github', 'webdav'].map((p) => ({
-        value: p, label: providerLabel(p), meta: p in providers ? '' : 'set up' }));
+      const items = ['local', 'device', 'github', 'webdav'].map((p) => ({
+        value: p, label: providerLabel(p), meta: p === 'device' ? 'picker' : p in providers ? '' : 'set up' }));
       const p = await choose('Storage', items);
       if (!p) return;
+      if (p === 'device' && mode === 'open') {
+        try { const path = await providers.device.pickOpen(); if (path) close(`device:${path}`); } catch (e) { loadError = e.message; draw(); }
+        return;
+      }
       if (!(p in providers)) { await setup(p); if (!(p in providers)) return; }
       provider = p; dir = ''; load();
     }
@@ -319,7 +323,7 @@ function browse({ mode, suggested = '', current = null }) {
       put(sheet, 
         h('h2', {}, mode === 'open' ? 'Open' : 'Save as'),
         h('div', { class: 'list' }, h('button', { class: 'item', onclick: change }, h('span', {}, `Storage: ${providerLabel(provider)}`), h('span', { class: 'meta' }, 'Change'))),
-        h('div', { class: 'path' }, `${provider}:${dir}`),
+        provider === 'device' ? h('p', {}, 'A file dialog opens when you tap Save.') : h('div', { class: 'path' }, `${provider}:${dir}`),
         loadError ? h('p', { class: 'tag' }, loadError) : null,
         h('div', { class: 'list' },
           dir ? h('button', { class: 'item', onclick: () => { dir = parentDir(dir); load(); } }, h('span', {}, 'Up'), h('span', { class: 'meta' }, '..')) : null,
@@ -331,8 +335,11 @@ function browse({ mode, suggested = '', current = null }) {
         nameInput,
         there ? h('p', { class: 'tag' }, `${there.name} exists${there.size === null ? '' : ` (${formatSize(there.size)})`}. Saving replaces it.`) : null,
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'),
-          mode === 'saveas' ? Object.assign(ok, { textContent: there ? 'Replace' : 'Save', onclick: () => { if (typed) close(`${provider}:${dir}${typed}`); } }) : null));
-      note.remove();
+          mode === 'saveas' ? Object.assign(ok, { textContent: there ? 'Replace' : 'Save', onclick: async () => {
+            if (!typed) return;
+            if (provider !== 'device') { close(`${provider}:${dir}${typed}`); return; }
+            try { const path = await providers.device.pickSave(typed); if (path) close(`device:${path}`); } catch (e) { loadError = e.message; draw(); }
+          } }) : null));
     }
     load();
   });

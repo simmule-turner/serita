@@ -71,6 +71,9 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 ### `test/sw.test.js`, `test/config.test.js`, `test/find.test.js`, `test/recent.test.js`, `test/session.test.js`, `test/browser/app.mjs`, `test/browser/harness.mjs`
 - Written from: the modules above and the author's decisions; expected values are hand-derived from those decisions, not from any other program. Statement as above.
 
+### `app/storage/device.js`, `test/device.test.js`
+- Written from: the author's request (open and save files on a Chromebook) and the File System Access API as documented (file handles, permissions, createWritable). Names, versions by last-modified time and the permission handling are this project's own design. Statement as above.
+
 ### `app/storage/cached.js`
 - Written from: SPEC 13.1 (offline cache for the GitHub and WebDAV providers, one commit per save, a three-way prompt on conflict) and the session's own design: a cache record per file holding the last server copy, an unsent local edit with a version token, and a queued delete; a sync that returns conflicts with base, mine and theirs. Only a typed network error counts as offline. Statement as above.
 

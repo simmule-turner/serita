@@ -1,7 +1,7 @@
-// Storage names: "provider:path". A bare path means local app storage.
+// Storage names: "provider:path". A bare path means local app storage; device is a file picked on the device.
 
 /** Providers the app knows. A prefix that is not in this list is part of a local path. */
-export const PROVIDERS = Object.freeze(['local', 'github', 'webdav']);
+export const PROVIDERS = Object.freeze(['local', 'device', 'github', 'webdav']);
 
 /**
  * @param {string} name

@@ -23,7 +23,7 @@ await page.click('#btn-files'); await btn('Save as').click();
 await sheet.getByLabel('File name').fill('notes.org');
 await btn('Save').click();
 await page.waitForFunction(() => document.getElementById('message').textContent.startsWith('Wrote local:notes.org'));
-ok((await page.locator('#modeline').textContent()).includes('notes.org (Local)'), 'Save as names the buffer and the mode line shows the storage');
+ok((await page.locator('#modeline').textContent()).includes('notes.org (App storage)'), 'Save as names the buffer and the mode line shows the storage');
 
 await page.click('#btn-files'); await btn('New').click();
 await page.click('#btn-files'); await btn('Open').click();
@@ -33,7 +33,7 @@ await btn(/notes\.org/).click();
 ok((await page.locator('.tab').count()) === 2, 'Open switches to the already open file instead of opening it twice');
 
 await page.click('#btn-files');
-ok((await sheet.textContent()).includes('notes.org (Local)') && (await sheet.textContent()).includes('open'), 'the File sheet lists recent files with their storage and whether they are open');
+ok((await sheet.textContent()).includes('notes.org (App storage)') && (await sheet.textContent()).includes('open'), 'the File sheet lists recent files with their storage and whether they are open');
 ok((await page.locator('.sheet .recent').count()) === 1, 'the recent list is its own scrolling area');
 await btn('Cancel').click();
 
@@ -127,6 +127,21 @@ await b2('Keep mine').click();
 await p2.waitForFunction(() => document.getElementById('message').textContent.startsWith('Settled'));
 ok(dav.files.get('q.org')?.text === 'mine\n', 'Keep mine sends the offline copy to the server');
 ok(!(await p2.locator('#modeline').textContent()).includes('to send'), 'the waiting marker goes away');
+
+
+// Device files in a browser without the file picker: the sheet says so instead of doing nothing.
+const ctx3 = await browser.newContext();
+await ctx3.addInitScript(() => { delete window.showOpenFilePicker; delete window.showSaveFilePicker; });
+const p3 = await ctx3.newPage();
+p3.on('pageerror', (e) => errors.push(e.message));
+await p3.goto(`${base}/`);
+await p3.waitForSelector('.tab.current');
+const sheet3 = p3.locator('.sheet');
+await p3.click('#btn-files'); await sheet3.getByRole('button', { name: 'Open', exact: true }).click();
+await sheet3.getByRole('button', { name: /Storage/ }).click();
+await sheet3.getByRole('button', { name: /Device files/ }).click();
+await sheet3.getByText('cannot open and save files on the device').waitFor();
+ok(true, 'Device files says plainly when the browser has no file picker');
 
 ok(errors.length === 0, `no page errors${errors.length ? ': ' + errors.join('; ') : ''}`);
 await close();

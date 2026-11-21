@@ -6,16 +6,20 @@ import { createLocalProvider } from '../storage/local.js';
 import { createGithubProvider } from '../storage/github.js';
 import { createWebdavProvider } from '../storage/webdav.js';
 import { createCachedProvider } from '../storage/cached.js';
+import { createDeviceProvider } from '../storage/device.js';
 import { openIdbKv } from '../storage/kv-idb.js';
 
 const slug = (s) => s.replace(/[^A-Za-z0-9._-]+/g, '_');
 
 /**
- * @param {{ config: ReturnType<import('./config.js').createConfig>, indexedDB: IDBFactory, isOnline: () => boolean }} opts
+ * @param {{ config: ReturnType<import('./config.js').createConfig>, indexedDB: IDBFactory, env: any, isOnline: () => boolean }} opts
  * @returns {Promise<{ providers: Record<string, any>, rebuild: () => Promise<void> }>}
  */
-export async function createProviders({ config, indexedDB, isOnline }) {
-  const providers = { local: createLocalProvider(await openIdbKv({ indexedDB, name: 'serita-local' })) };
+export async function createProviders({ config, indexedDB, env, isOnline }) {
+  const providers = {
+    local: createLocalProvider(await openIdbKv({ indexedDB, name: 'serita-local' })),
+    device: createDeviceProvider({ kv: await openIdbKv({ indexedDB, name: 'serita-device' }), env }),
+  };
   async function rebuild() {
     delete providers.github;
     delete providers.webdav;

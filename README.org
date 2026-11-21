@@ -10,9 +10,9 @@ The toolbar has Files and Save at the left, Find in the middle, and View and Men
 
 ** Files
 - New :: opens a ~*scratch*~ buffer.
-- Open :: picks a file from this device, GitHub or WebDAV, with its size.
+- Open :: picks a file from app storage, GitHub or WebDAV, with its size. Under Change, Device files opens your device's own file picker.
 - Save :: writes the current tab to its file.
-- Save as :: writes it to another storage or name.
+- Save as :: writes it to another storage or name; with Device files, your device's save dialog opens.
 - Save some buffers :: asks about each unsaved tab: Yes, No, Save all or Cancel.
 
 ** Find

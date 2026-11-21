@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.1.3
+Files on your device can now be opened and saved: under Change, Device files opens the device's own file picker, and Save writes back to the same file. The app's own storage is now called App storage, so the name says what it is; before, "local" could be mistaken for the files on your Chromebook. Reconnecting after a restart asks your permission again before writing.
+
 * 0.1.2
 Saves you made offline are now sent when you reconnect, and the mode line shows how many are waiting. If the server copy changed in the meantime, a list names the files and you settle each one with Merge, Keep mine or Use theirs, so an offline session can no longer end in a lost edit. A file open in a tab reloads with the settled text.
 

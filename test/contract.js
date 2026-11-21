@@ -94,7 +94,7 @@ export function runContract(label, make) {
   });
 
   test(`${label}: providers lists the three`, () => {
-    assert.deepEqual(make().storage.providers().sort(), ['github', 'local', 'webdav']);
+    assert.deepEqual(make().storage.providers().sort(), ['device', 'github', 'local', 'webdav']);
   });
 
   test(`${label}: clock gives a Date and a zone name`, () => {

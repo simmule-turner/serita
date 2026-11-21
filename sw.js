@@ -1,6 +1,6 @@
 // Offline cache. The version below must equal package.json's version (a test checks this),
 // so every release gets a new cache and replaces the old one.
-const VERSION = '0.1.2';
+const VERSION = '0.1.3';
 const CACHE = `serita-${VERSION}`;
 const FILES = [
   './',
@@ -16,6 +16,7 @@ const FILES = [
   'app/storage/browse.js',
   'app/storage/cached.js',
   'app/storage/conflict.js',
+  'app/storage/device.js',
   'app/storage/github.js',
   'app/storage/kv-idb.js',
   'app/storage/local.js',

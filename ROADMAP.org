@@ -14,6 +14,9 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Incremental reparse on edit (the document model reparses fully today).
 - Reopen the list of unsent clashes on demand; today it reappears at the next start or reconnect.
 
+- Try Device files on a real Chromebook, including reopening a device file from Recents after a restart (the tests use fake file handles).
+- The app interface's ~files~ picker functions overlap with the device storage; settle which one stays when the native apps are built.
+
 * Decisions pending
 - Whether LaTeX export stays after HTML, Slides and ASCII.
 - What format Slides produces.
