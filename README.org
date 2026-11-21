@@ -27,6 +27,9 @@ If someone changes a file on the server before you save, you can merge the two c
 
 Saves made offline are sent when you are back online; the mode line shows how many are waiting. If one clashed with a newer server copy, a list names the files and each is settled the same way.
 
+** Updates
+When a new version is ready, the message line says so. Menu, then Restart to update, switches to it; until you do, the version you have keeps running. Settings shows the installed version and, when one is waiting, the new one.
+
 * Run the checks and tests
 Needs Node 22 or later and no packages.
 

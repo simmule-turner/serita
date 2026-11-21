@@ -15,7 +15,8 @@ function graph(entry, seen = new Set()) {
   return seen;
 }
 
-test('the cache version equals the package version', () => {
+test('the cache version equals the package version and app/version.js', () => {
+  assert.equal(/VERSION = '([^']+)'/.exec(read('app/version.js'))[1], version);
   assert.equal(/const VERSION = '([^']+)'/.exec(sw)[1], version);
 });
 

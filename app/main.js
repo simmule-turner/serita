@@ -10,6 +10,8 @@ import { createRecent } from './ui/recent.js';
 import { children, parentDir } from './storage/browse.js';
 import { parseName } from '../core/names.js';
 import { formatSize } from '../core/bytes.js';
+import { VERSION } from './version.js';
+import { askVersion, watchUpdates } from './ui/update.js';
 import { exportSettings, importSettings, inspectSettingsFile, settingsFileName, SettingsFileError } from '../core/settings-file.js';
 
 const $ = (id) => document.getElementById(id);
@@ -443,6 +445,10 @@ async function settings() {
           h('button', { class: 'item', onclick: () => close('webdav') }, h('span', {}, 'WebDAV'), h('span', { class: 'meta' }, `${summary('webdav')} ›`)),
           h('div', { class: 'item', style: 'display:flex;align-items:center;justify-content:space-between;padding:4px 0' }, h('span', {}, 'Settings file'),
             h('span', { class: 'row' }, h('button', { onclick: () => close('export') }, 'Export'), h('button', { onclick: () => close('import') }, 'Import')))),
+        h('div', { class: 'list' },
+          h('div', { class: 'item' }, h('span', {}, 'Installed version'), h('span', { class: 'meta' }, VERSION)),
+          waiting ? h('div', { class: 'item' }, h('span', {}, 'New version'), h('span', { class: 'meta' }, waiting.version)) : null),
+        waiting ? h('div', { class: 'row' }, h('button', { class: 'primary', onclick: () => { close(undefined); restart(); } }, 'Restart to update')) : null,
         h('p', {}, 'Tokens and passwords are kept in this browser, on this device.'),
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Close')));
     });
@@ -559,8 +565,11 @@ $('btn-save').addEventListener('click', () => { if (shownId !== null) saveBuffer
 $('btn-find').addEventListener('click', startFind);
 $('btn-view').addEventListener('click', () => choose(null, [{ label: 'Text', value: 'text' }]));
 $('btn-menu').addEventListener('click', async () => {
-  const what = await choose(null, [{ label: 'Settings', value: 'settings' }]);
-  if (what === 'settings') await settings();
+  const what = await choose(null, [
+    waiting ? { label: 'Restart to update', meta: `${VERSION} to ${waiting.version}`, value: 'restart' } : null,
+    { label: 'Settings', value: 'settings' }].filter(Boolean));
+  if (what === 'restart') restart();
+  else if (what === 'settings') await settings();
 });
 
 window.addEventListener('beforeunload', (e) => { if (session.unsavedIds().length) e.preventDefault(); });
@@ -586,7 +595,32 @@ async function sendQueued() {
 window.addEventListener('online', sendQueued);
 if (navigator.onLine) sendQueued();
 
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(failure);
+// ---- Updates: a new version waits until the user taps Restart ------------------------------------------
+
+/** @type {{ worker: any, version: string } | null} */
+let waiting = null;
+let restarting = false;
+
+async function updateFound(worker) {
+  waiting = { worker, version: await askVersion(worker) };
+  message(`Version ${waiting.version} is ready. Menu, then Restart to update.`);
+}
+
+function restart() {
+  restarting = true;
+  waiting.worker.postMessage({ type: 'skip-waiting' });
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (restarting) location.reload(); });
+  navigator.serviceWorker.register('sw.js').then((registration) => {
+    watchUpdates(registration, navigator.serviceWorker, (w) => updateFound(w).catch(failure));
+    const look = () => registration.update().catch(() => {});
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') look(); });
+    window.addEventListener('online', look);
+    window.__serita = { look };
+  }).catch(failure);
+}
 
 session.newScratch();
 message('Welcome to Serita');

@@ -71,6 +71,9 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 ### `test/sw.test.js`, `test/config.test.js`, `test/find.test.js`, `test/recent.test.js`, `test/session.test.js`, `test/browser/app.mjs`, `test/browser/harness.mjs`
 - Written from: the modules above and the author's decisions; expected values are hand-derived from those decisions, not from any other program. Statement as above.
 
+### `app/ui/update.js`, `app/version.js`, `test/update.test.js`, `test/browser/update.mjs`
+- Written from: the author's request (see an update, choose when to restart) and the service worker API as documented (waiting worker, updatefound, message ports, skipWaiting). Statement as above.
+
 ### `app/storage/device.js`, `test/device.test.js`
 - Written from: the author's request (open and save files on a Chromebook) and the File System Access API as documented (file handles, permissions, createWritable). Names, versions by last-modified time and the permission handling are this project's own design. Statement as above.
 

@@ -1,6 +1,6 @@
 // Offline cache. The version below must equal package.json's version (a test checks this),
 // so every release gets a new cache and replaces the old one.
-const VERSION = '0.1.3';
+const VERSION = '0.1.4';
 const CACHE = `serita-${VERSION}`;
 const FILES = [
   './',
@@ -27,6 +27,8 @@ const FILES = [
   'app/ui/providers.js',
   'app/ui/recent.js',
   'app/ui/session.js',
+  'app/ui/update.js',
+  'app/version.js',
   'core/bytes.js',
   'core/names.js',
   'core/parse.js',
@@ -34,13 +36,19 @@ const FILES = [
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)).then(() => self.skipWaiting()));
+  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(FILES)));
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(caches.keys()
     .then((keys) => Promise.all(keys.filter((k) => k.startsWith('serita-') && k !== CACHE).map((k) => caches.delete(k))))
     .then(() => self.clients.claim()));
+});
+
+// A new version waits until the page asks it to take over (the user chose Restart).
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'version') event.ports[0].postMessage(VERSION);
+  else if (event.data?.type === 'skip-waiting') self.skipWaiting();
 });
 
 self.addEventListener('fetch', (event) => {

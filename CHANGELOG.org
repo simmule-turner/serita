@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.1.4
+A new version no longer replaces the running one on its own. The message line says a version is ready, Menu and Settings show the installed and the new version, and Restart to update switches over when you choose, so an update never arrives in the middle of editing. The app also looks for updates when you return to it or come back online.
+
 * 0.1.3
 Files on your device can now be opened and saved: under Change, Device files opens the device's own file picker, and Save writes back to the same file. The app's own storage is now called App storage, so the name says what it is; before, "local" could be mistaken for the files on your Chromebook. Reconnecting after a restart asks your permission again before writing.
 
