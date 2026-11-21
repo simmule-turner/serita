@@ -13,7 +13,8 @@ input, select { min-height: 44px; padding: 0 12px; border: 1px solid var(--line)
 .grow { flex: 1; }
 #tabs { display: flex; overflow-x: auto; gap: 0; padding: 0; background: var(--bar); border-bottom: 1px solid var(--line); min-height: 52px; }
 .tab { display: inline-flex; align-items: center; gap: 2px; flex: none; border-bottom: 3px solid transparent; padding-left: 14px; }
-.tab.current { background: var(--bg); border-bottom-color: var(--accent); }
+.tab.current { background: var(--bg); border-bottom-color: var(--accent); color: var(--accent); }
+.tab.current .title { font-weight: 600; }
 .tab button { border: 0; border-radius: 0; background: transparent; min-height: 48px; padding: 0 12px; color: inherit; }
 .tab .title { max-width: 14em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0; }
 main { flex: 1; min-height: 0; display: flex; position: relative; background: var(--bg); }
@@ -50,3 +51,28 @@ main { flex: 1; min-height: 0; display: flex; position: relative; background: va
 #hl mark { background: var(--hit); color: transparent; }
 .sheet .recent { max-height: 310px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; }
 .sheet .recent .item.current { background: var(--bar); }
+#outline { flex: 1; min-width: 0; overflow-y: auto; padding: 6px 4px 20px; }
+#outline[hidden], #editor[hidden], #keyrow[hidden] { display: none; }
+.ol-head { display: flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 6px; border-bottom: 1px solid var(--line); }
+.ol-head button { min-height: 44px; border: 0; background: transparent; padding: 0 6px; }
+.ol-head .chev { width: 40px; padding: 0; color: var(--muted); }
+.ol-head .stars { color: var(--muted); font-family: ui-monospace, Menlo, Consolas, monospace; white-space: pre; }
+.ol-head .title { flex: 1; justify-content: flex-start; text-align: left; font-weight: 600; color: var(--accent); min-width: 0; overflow-wrap: anywhere; }
+.ol-head .st { min-height: 28px; padding: 0 8px; border: 1px solid; border-radius: 8px; font-size: 13px; }
+.ol-head .st.todo { color: var(--danger); }
+.ol-head .st.done { color: #3b6d11; }
+.ol-head .tags, .ol-head .dots { color: var(--muted); font-size: 13px; }
+.ol-line { padding: 6px 12px 6px 52px; white-space: pre-wrap; overflow-wrap: anywhere; font: 14px/1.5 ui-monospace, Menlo, Consolas, monospace; border-bottom: 1px solid var(--bar); }
+.ol-line .box { display: inline; min-height: 0; padding: 0 2px; border: 0; background: transparent; font: inherit; color: var(--accent); }
+#keyrow { display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: var(--bar); border-top: 1px solid var(--line); }
+#keyrow .grip { display: none; }
+#keyrow .keys { display: flex; gap: 6px; flex: 1; overflow-x: auto; min-width: 0; }
+#keyrow .pin { display: flex; gap: 6px; flex: none; }
+#keyrow button { min-height: 44px; min-width: 52px; padding: 0 10px; flex: none; }
+#keyrow button.on { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+#keyrow.float { position: fixed; z-index: 5; display: block; width: 240px; padding: 8px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); touch-action: none; }
+#keyrow.float .grip { display: block; text-align: center; color: var(--muted); line-height: 14px; }
+#keyrow.float .keys, #keyrow.float .pin { display: contents; }
+#keyrow.float { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+#keyrow.float .grip { grid-column: 1 / -1; }
+#keyrow.float button { min-width: 0; }

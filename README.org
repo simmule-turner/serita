@@ -15,6 +15,25 @@ The toolbar has Files and Save at the left, Find in the middle, and View and Men
 - Save as :: writes it to another storage or name; with Device files, your device's save dialog opens.
 - Save some buffers :: asks about each unsaved tab: Yes, No, Save all or Cancel.
 
+** Views
+View switches between Outline and Text; both show the same document and the same folding.
+
+The Outline view lists headings as a tree. The arrow at the left of a heading cycles its visibility, like TAB in Emacs: folded, children, whole subtree. Tap a TODO word to change its state, a checkbox to toggle it, and a heading's title for its actions: change TODO state, promote, demote, promote or demote the subtree, move up, move down, insert a heading below, set tags, and edit in the Text view.
+
+The Text view shows the raw Org text, with ~...~ after a folded heading. A file's ~#+STARTUP:~ line sets what is folded when it opens; without one, everything is shown.
+
+** Emacs keys
+Settings, Emacs keys, turns on these keys in the Text view:
+- TAB :: cycles the heading at the cursor; S-TAB cycles the whole buffer: overview, contents, show all.
+- M-up, M-down :: move the subtree up or down.
+- M-left, M-right :: promote or demote the heading; with Shift, its whole subtree.
+- C-RET :: inserts a heading after the current subtree.
+- C-c C-t :: changes the TODO state.
+
+Above the mode line, a row of keys stands in for a keyboard: Meta, Ctrl and Shift apply to the next key; Tab and the arrows follow. The keyboard button shows or hides the on-screen keyboard. Float turns the row into a panel you can drag; Dock puts it back. Pressing a key never opens the keyboard.
+
+Settings, Hide leading stars, shows only the last star of each heading.
+
 ** Find
 Type to search. The match is highlighted; ▲ and ▼ go to the previous and next match, and the search wraps. A lowercase query ignores case; an uppercase letter makes it exact. Return keeps the cursor on the match, and × returns to where you started.
 

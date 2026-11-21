@@ -29,7 +29,7 @@ export function splitLines(text) {
   return lines;
 }
 
-const TAGS = /(?:^|[ \t]+)(:[\p{L}\p{N}_@#%]+(?::[\p{L}\p{N}_@#%]+)*:)[ \t]*$/u;
+export const TAGS = /(?:^|[ \t]+)(:[\p{L}\p{N}_@#%]+(?::[\p{L}\p{N}_@#%]+)*:)[ \t]*$/u;
 const PRIORITY = /^\[#([A-Z0-9])\](?: +|$)/;
 
 /**

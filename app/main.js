@@ -11,27 +11,22 @@ import { children, parentDir } from './storage/browse.js';
 import { parseName } from '../core/names.js';
 import { formatSize } from '../core/bytes.js';
 import { VERSION } from './version.js';
+import { h, kept } from './ui/dom.js';
+import { analyze, cycle, cycleGlobal, diff, ellipsisLines, hiddenLines, reveal } from '../core/outline.js';
+import { changeLevel, cycleTodo, insertHeadingAfter, moveSubtree, setTags, toggleCheckbox } from '../core/outline-edit.js';
+import { lineAt, project, toFull, toShown, touchedFold } from '../core/projection.js';
+import { renderOutline } from './ui/outline-view.js';
+import { TEXT_KEYS, chordOf, createKeymap } from './ui/keys.js';
+import { createKeyRow } from './ui/keyrow.js';
 import { askVersion, watchUpdates } from './ui/update.js';
 import { exportSettings, importSettings, inspectSettingsFile, settingsFileName, SettingsFileError } from '../core/settings-file.js';
 
 const $ = (id) => document.getElementById(id);
-const kept = (kids) => kids.flat(Infinity).filter((x) => x !== null && x !== undefined && x !== false);
 
 /** Puts the given content in a panel, leaving out anything empty. */
 function put(sheet, ...kids) {
   sheet.replaceChildren(...kept(kids));
   for (const b of sheet.querySelectorAll('button')) if (b.textContent === 'Cancel') b.classList.add('cancel');
-}
-
-function h(tag, props = {}, ...kids) {
-  const el = document.createElement(tag);
-  for (const [k, v] of Object.entries(props)) {
-    if (k === 'class') el.className = v;
-    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
-    else if (v !== undefined && v !== false) el.setAttribute(k, v === true ? '' : v);
-  }
-  el.append(...kept(kids));
-  return el;
 }
 
 const config = createConfig(localStorage);
@@ -42,6 +37,14 @@ const recent = createRecent(localStorage);
 
 const editor = $('editor');
 let shownId = null;
+let cur = null;        // what the views show now: { id, a (the outline), proj (the Text view's projection) }
+let pendingSel = null; // where the cursor goes after the next render, in the real text
+
+const setting = (k) => config.settings()[k];
+const viewMode = () => (setting('view.mode') === 'outline' ? 'outline' : 'text');
+const emacsKeys = () => setting('view.emacsKeys') === 'true';
+const hideStars = () => setting('view.hideStars') === 'true';
+const setView = (mode) => config.update({ settings: { 'view.mode': mode } });
 
 function message(text, isError = false) {
   const el = $('message');
@@ -95,8 +98,12 @@ function ask(title, text, buttons) {
 
 // ---- Tabs, editor, mode line -------------------------------------------------------------
 
+const currentBuffer = () => session.state().buffers.find((x) => x.id === shownId);
+
 function cursorPosition() {
-  const before = editor.value.slice(0, editor.selectionStart);
+  const b = currentBuffer();
+  if (!cur || !b) return { line: 1, col: 0 };
+  const before = b.text.slice(0, toFull(cur.proj, editor.selectionStart));
   const line = before.split('\n').length;
   return { line, col: before.length - (before.lastIndexOf('\n') + 1) };
 }
@@ -118,7 +125,8 @@ function renderModeLine() {
   if (!b) { $('modeline').textContent = ''; return; }
   const { line, col } = cursorPosition();
   const where = b.name === null ? b.title : `${parseName(b.name).path} (${STORAGE_LABEL[parseName(b.name).provider]})`;
-  $('modeline').textContent = `${b.dirty ? '**' : '--'}  ${where}  ${scrollPosition()}  L${line} C${col}${pendingCount > 0 ? `  ${pendingCount} to send` : ''}`;
+  const place = viewMode() === 'outline' ? 'Outline' : `${scrollPosition()}  L${line} C${col}`;
+  $('modeline').textContent = `${b.dirty ? '**' : '--'}  ${where}  ${place}${pendingCount > 0 ? `  ${pendingCount} to send` : ''}`;
 }
 
 function render() {
@@ -127,16 +135,50 @@ function render() {
     h('button', { class: 'title', onclick: () => session.select(b.id), title: b.name ?? b.title }, b.title + (b.dirty ? ' *' : '')),
     h('button', { 'aria-label': `Close ${b.title}`, onclick: () => closeBuffer(b.id) }, '×'))));
   const shown = s.buffers.find((x) => x.id === s.current);
+  const mode = viewMode();
+  const before = cur && cur.id === s.current && editor.value === cur.proj.value
+    ? { start: toFull(cur.proj, editor.selectionStart), end: toFull(cur.proj, editor.selectionEnd) } : null;
   shownId = s.current;
+  editor.hidden = mode !== 'text';
+  $('outline').hidden = mode !== 'outline';
+  $('keyrow').hidden = !(mode === 'text' && emacsKeys() && shown);
   editor.disabled = !shown;
-  if (editor.value !== (shown?.text ?? '')) editor.value = shown?.text ?? '';
+  if (shown) {
+    const a = analyze(shown.text);
+    const proj = project(shown.text, hiddenLines(a.heads, shown.folds), ellipsisLines(a.heads, shown.folds), { hideStars: hideStars() });
+    cur = { id: shown.id, a, proj };
+    if (editor.value !== proj.value) {
+      editor.value = proj.value;
+      const sel = pendingSel !== null ? { start: pendingSel, end: pendingSel } : before;
+      if (sel) editor.setSelectionRange(toShown(proj, sel.start), toShown(proj, sel.end));
+    }
+    pendingSel = null;
+    if (mode === 'outline') renderOutline($('outline'), { text: shown.text, folds: shown.folds, hideStars: hideStars(), on: outlineOn });
+    if (!$('keyrow').hidden) keyRow.layout();
+  } else {
+    cur = null;
+    editor.value = '';
+    $('outline').replaceChildren();
+  }
   renderModeLine();
 }
 
-editor.addEventListener('input', () => { $('hl').replaceChildren(); if (shownId !== null) session.setText(shownId, editor.value); });
+// An edit of the shown text becomes an edit of the real text; a change touching a "..." opens that fold first.
+editor.addEventListener('input', () => {
+  $('hl').replaceChildren();
+  const b = currentBuffer();
+  if (!b || !cur) return;
+  const d = diff(cur.proj.value, editor.value);
+  const open = touchedFold(cur.proj, d.from, d.to, d.insert);
+  const from = toFull(cur.proj, d.from);
+  pendingSel = from + d.insert.length;
+  session.setText(b.id, b.text.slice(0, from) + d.insert + b.text.slice(toFull(cur.proj, d.to)));
+  if (open !== null) { const folds = { ...currentBuffer().folds }; delete folds[open]; session.setFolds(b.id, folds); }
+});
 editor.addEventListener('scroll', () => { $('hl').scrollTop = editor.scrollTop; });
 for (const ev of ['keyup', 'click', 'select', 'scroll']) editor.addEventListener(ev, renderModeLine);
 session.subscribe(render);
+config.onChange(() => render());
 
 // ---- Saving ---------------------------------------------------------------------------------
 
@@ -353,9 +395,15 @@ let finding = null;
 
 function startFind() {
   if (finding || shownId === null) return;
-  finding = { start: editor.selectionStart, end: editor.selectionEnd };
+  if (viewMode() === 'outline') setView('text');
+  finding = { start: toFull(cur.proj, editor.selectionStart), end: toFull(cur.proj, editor.selectionEnd) };
   const input = h('input', { 'aria-label': 'Search', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' });
-  const show = (m) => {
+  const show = (found) => {
+    const b = currentBuffer();
+    const opened = reveal(cur.a.heads, b.folds, b.text.slice(0, found.start).split('\n').length - 1);
+    if (JSON.stringify(opened) !== JSON.stringify(b.folds)) session.setFolds(b.id, opened);
+    const start = toShown(cur.proj, found.start);
+    const m = { start, end: start + (found.end - found.start) };
     editor.setSelectionRange(m.start, m.end);
     const mirror = $('mirror');
     mirror.style.width = `${editor.clientWidth}px`;
@@ -370,13 +418,13 @@ function startFind() {
   const go = (backward, from) => {
     const q = input.value;
     if (q === '') { message(''); return; }
-    const m = search(editor.value, q, { from, backward });
+    const m = search(currentBuffer().text, q, { from, backward });
     if (!m) { message(`Failing I-search: ${q}`, true); return; }
     message(m.wrapped ? 'Wrapped' : '');
     show(m);
   };
   const end = (restore) => {
-    if (restore) editor.setSelectionRange(finding.start, finding.end);
+    if (restore) editor.setSelectionRange(toShown(cur.proj, finding.start), toShown(cur.proj, finding.end));
     finding = null;
     $('hl').replaceChildren();
     $('findbar').hidden = true;
@@ -384,15 +432,17 @@ function startFind() {
     message('');
     renderModeLine();
   };
-  input.addEventListener('input', () => go(false, editor.selectionStart));
+  const selStart = () => toFull(cur.proj, editor.selectionStart);
+  const selEnd = () => toFull(cur.proj, editor.selectionEnd);
+  input.addEventListener('input', () => go(false, selStart()));
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') { e.preventDefault(); end(false); editor.focus(); }
     else if (e.key === 'Escape') { e.stopPropagation(); end(true); }
   });
   $('findbar').replaceChildren(
     h('span', { class: 'label' }, 'I-search:'), input,
-    h('button', { 'aria-label': 'Previous match', onclick: () => go(true, editor.selectionStart) }, '▲'),
-    h('button', { 'aria-label': 'Next match', onclick: () => go(false, editor.selectionEnd) }, '▼'),
+    h('button', { 'aria-label': 'Previous match', onclick: () => go(true, selStart()) }, '▲'),
+    h('button', { 'aria-label': 'Next match', onclick: () => go(false, selEnd()) }, '▼'),
     h('button', { 'aria-label': 'Cancel search', onclick: () => end(true) }, '✕'));
   $('findbar').hidden = false;
   input.focus();
@@ -443,6 +493,8 @@ async function settings() {
         h('div', { class: 'list' },
           h('button', { class: 'item', onclick: () => close('github') }, h('span', {}, 'GitHub'), h('span', { class: 'meta' }, `${summary('github')} ›`)),
           h('button', { class: 'item', onclick: () => close('webdav') }, h('span', {}, 'WebDAV'), h('span', { class: 'meta' }, `${summary('webdav')} ›`)),
+          h('button', { class: 'item', onclick: () => close('emacs') }, h('span', {}, 'Emacs keys'), h('span', { class: 'meta' }, emacsKeys() ? 'On ›' : 'Off ›')),
+          h('button', { class: 'item', onclick: () => close('stars') }, h('span', {}, 'Hide leading stars'), h('span', { class: 'meta' }, hideStars() ? 'On ›' : 'Off ›')),
           h('div', { class: 'item', style: 'display:flex;align-items:center;justify-content:space-between;padding:4px 0' }, h('span', {}, 'Settings file'),
             h('span', { class: 'row' }, h('button', { onclick: () => close('export') }, 'Export'), h('button', { onclick: () => close('import') }, 'Import')))),
         h('div', { class: 'list' },
@@ -454,6 +506,8 @@ async function settings() {
     });
     if (what === undefined) return;
     if (what === 'github' || what === 'webdav') await setup(what);
+    else if (what === 'emacs') config.update({ settings: { 'view.emacsKeys': String(!emacsKeys()) } });
+    else if (what === 'stars') config.update({ settings: { 'view.hideStars': String(!hideStars()) } });
     else if (what === 'export') { await exportDialog(); return; }
     else { $('import-file').click(); return; }
   }
@@ -563,13 +617,194 @@ async function filesMenu() {
 $('btn-files').addEventListener('click', filesMenu);
 $('btn-save').addEventListener('click', () => { if (shownId !== null) saveBuffer(shownId); });
 $('btn-find').addEventListener('click', startFind);
-$('btn-view').addEventListener('click', () => choose(null, [{ label: 'Text', value: 'text' }]));
+$('btn-view').addEventListener('click', async () => {
+  const what = await choose(null, ['outline', 'text'].map((v) => ({ label: v === 'outline' ? 'Outline' : 'Text', meta: viewMode() === v ? 'current' : null, value: v })));
+  if (what) setView(what);
+});
 $('btn-menu').addEventListener('click', async () => {
   const what = await choose(null, [
     waiting ? { label: 'Restart to update', meta: `${VERSION} to ${waiting.version}`, value: 'restart' } : null,
     { label: 'Settings', value: 'settings' }].filter(Boolean));
   if (what === 'restart') restart();
   else if (what === 'settings') await settings();
+});
+
+// ---- Structure commands, the Outline view's taps, and the Emacs keys ------------------------------------
+
+const lineOffset = (text, line) => {
+  let i = 0;
+  for (let n = 0; n < line; n++) {
+    const j = text.indexOf('\n', i);
+    if (j < 0) return text.length;
+    i = j + 1;
+  }
+  return i;
+};
+
+/** Puts the cursor at the start (or end) of a line of the real text, in the Text view. */
+function placeCursor(line, atEnd = false) {
+  const b = currentBuffer();
+  const at = atEnd ? Math.max(lineOffset(b.text, line), lineOffset(b.text, line + 1) - (line + 1 < b.text.split('\n').length ? 1 : 0)) : lineOffset(b.text, line);
+  const p = toShown(cur.proj, at);
+  editor.setSelectionRange(p, p);
+  renderModeLine();
+}
+
+/** Runs an edit on the current buffer; its folds move with the lines. */
+function runEdit(fn) {
+  const b = currentBuffer();
+  try {
+    const r = fn(b.text);
+    if (r) session.apply(b.id, r);
+    return r;
+  } catch (e) { failure(e); return null; }
+}
+
+const headingAtCursor = () => {
+  const line = lineAt(cur.proj, editor.selectionStart);
+  return cur.a.heads.some((x) => x.line === line) ? line : null;
+};
+
+function editAtHeading(fn, atEnd = false) {
+  const line = headingAtCursor();
+  if (line === null) { message('Not at a heading'); return; }
+  const r = runEdit((t) => fn(t, line));
+  if (r) placeCursor(r.line, atEnd);
+}
+
+function cycleHeading(line) {
+  const b = currentBuffer();
+  const r = cycle(cur.a.heads, b.folds, line);
+  if (r) { session.setFolds(b.id, r.folds); message(r.state.toUpperCase()); }
+}
+
+const COMMANDS = {
+  'cycle': () => { const line = headingAtCursor(); if (line === null) message('Not at a heading'); else cycleHeading(line); },
+  'cycle-global': () => {
+    const b = currentBuffer();
+    const r = cycleGlobal(cur.a.heads, b.folds);
+    session.setFolds(b.id, r.folds);
+    message(r.state.toUpperCase());
+  },
+  'move-up': () => editAtHeading((t, l) => moveSubtree(t, l, -1)),
+  'move-down': () => editAtHeading((t, l) => moveSubtree(t, l, 1)),
+  'promote': () => editAtHeading((t, l) => changeLevel(t, l, -1, false)),
+  'demote': () => editAtHeading((t, l) => changeLevel(t, l, 1, false)),
+  'promote-subtree': () => editAtHeading((t, l) => changeLevel(t, l, -1, true)),
+  'demote-subtree': () => editAtHeading((t, l) => changeLevel(t, l, 1, true)),
+  'insert-heading': () => editAtHeading(insertHeadingAfter, true),
+  'todo': () => editAtHeading(cycleTodo),
+};
+
+async function setTagsDialog(line) {
+  const hd = cur.a.heads.find((x) => x.line === line);
+  const value = await panel((sheet, close) => {
+    const input = h('input', { value: hd.tags.join(':'), autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Tags' });
+    put(sheet, h('h2', {}, 'Tags'), h('p', {}, 'Separate tags with a colon, for example work:home.'),
+      h('div', {}, h('label', {}, 'Tags'), input),
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Set')));
+  });
+  if (value === undefined) return;
+  const tags = value.split(':').map((s) => s.trim()).filter(Boolean);
+  if (tags.some((t) => !/^[\p{L}\p{N}_@#%]+$/u.test(t))) { message('Tags can have letters, digits and _ @ # %', true); return; }
+  runEdit((t) => setTags(t, line, tags));
+}
+
+async function headingActions(line) {
+  const b = currentBuffer();
+  const hd = cur.a.heads.find((x) => x.line === line);
+  let next = null;
+  try { next = cycleTodo(b.text, line).state; } catch { /* the heading is gone */ }
+  const what = await choose(hd.title || '(empty heading)', [
+    { label: 'Change TODO state', meta: `${hd.todo ?? 'none'} to ${next ?? 'none'}`, value: 'todo' },
+    { label: 'Promote', meta: hd.level > 1 ? `to level ${hd.level - 1}` : null, value: 'promote' },
+    { label: 'Demote', meta: `to level ${hd.level + 1}`, value: 'demote' },
+    { label: 'Promote subtree', value: 'promote-subtree' },
+    { label: 'Demote subtree', value: 'demote-subtree' },
+    { label: 'Move up', value: 'move-up' },
+    { label: 'Move down', value: 'move-down' },
+    { label: 'Insert heading below', value: 'insert' },
+    { label: 'Set tags', meta: hd.tags.length ? `:${hd.tags.join(':')}:` : null, value: 'tags' },
+    { label: 'Edit in Text view', value: 'edit' },
+  ]);
+  const run = {
+    todo: () => cycleTodo, promote: () => (t, l) => changeLevel(t, l, -1, false), demote: () => (t, l) => changeLevel(t, l, 1, false),
+    'promote-subtree': () => (t, l) => changeLevel(t, l, -1, true), 'demote-subtree': () => (t, l) => changeLevel(t, l, 1, true),
+    'move-up': () => (t, l) => moveSubtree(t, l, -1), 'move-down': () => (t, l) => moveSubtree(t, l, 1),
+  };
+  if (what === undefined) return;
+  if (run[what]) runEdit((t) => run[what]()(t, line));
+  else if (what === 'tags') await setTagsDialog(line);
+  else if (what === 'edit' || what === 'insert') {
+    const r = what === 'insert' ? runEdit((t) => insertHeadingAfter(t, line)) : { line };
+    if (!r) return;
+    setView('text');
+    placeCursor(r.line, what === 'insert');
+    editor.focus();
+  }
+}
+
+const outlineOn = {
+  cycle: cycleHeading,
+  todo: (line) => runEdit((t) => cycleTodo(t, line)),
+  checkbox: (line) => runEdit((t) => toggleCheckbox(t, line)),
+  actions: headingActions,
+};
+
+// Emacs keys in the Text view: a key press becomes a chord, and a chord a command. A key held by the key row
+// (Meta, Ctrl, Shift) applies to the next key only.
+const keymap = createKeymap(TEXT_KEYS);
+
+function runChord(chord, event, fromRow) {
+  const r = keymap.press(chord);
+  if (r.kind === 'run') { event.preventDefault(); message(''); COMMANDS[r.command](); }
+  else if (r.kind === 'prefix') { event.preventDefault(); message(r.echo); }
+  else if (r.echo) { event.preventDefault(); message(r.echo); }
+  else if (fromRow) { event.preventDefault(); message(`${chord} is undefined`); }
+}
+
+function moveCursor(key, extend) {
+  const v = editor.value;
+  const forward = editor.selectionDirection !== 'backward';
+  let anchor = forward ? editor.selectionStart : editor.selectionEnd;
+  let focus = forward ? editor.selectionEnd : editor.selectionStart;
+  const startOf = (p) => (p <= 0 ? 0 : v.lastIndexOf('\n', p - 1) + 1);
+  const start = startOf(focus);
+  const col = focus - start;
+  if (key === 'ArrowLeft') focus = Math.max(0, focus - 1);
+  else if (key === 'ArrowRight') focus = Math.min(v.length, focus + 1);
+  else if (key === 'ArrowUp') { if (start > 0) focus = Math.min(startOf(start - 1) + col, start - 1); }
+  else {
+    const nl = v.indexOf('\n', focus);
+    if (nl >= 0) { const end = v.indexOf('\n', nl + 1); focus = Math.min(nl + 1 + col, end < 0 ? v.length : end); }
+  }
+  if (!extend) anchor = focus;
+  editor.setSelectionRange(Math.min(anchor, focus), Math.max(anchor, focus), focus < anchor ? 'backward' : 'forward');
+  renderModeLine();
+}
+
+const MODIFIER_KEYS = ['Control', 'Alt', 'Meta', 'Shift'];
+
+editor.addEventListener('keydown', (e) => {
+  if (!emacsKeys() || viewMode() !== 'text') return;
+  const held = keyRow.sticky();
+  const fromRow = held.ctrl || held.meta || held.shift;
+  const chord = chordOf({ key: e.key, ctrl: e.ctrlKey || held.ctrl, meta: e.altKey || e.metaKey || held.meta, shift: e.shiftKey || held.shift });
+  if (chord) runChord(chord, e, fromRow);
+  else if (keymap.pending() && e.key.length === 1) runChord(e.key, e, false);
+  if (fromRow && !MODIFIER_KEYS.includes(e.key)) keyRow.clear();
+});
+
+const keyRow = createKeyRow({
+  root: $('keyrow'),
+  store: localStorage,
+  toggleKeyboard: () => { if (document.activeElement === editor) editor.blur(); else editor.focus(); },
+  press(key, mods) {
+    const plainArrow = key.startsWith('Arrow') && !mods.ctrl && !mods.meta;
+    if (plainArrow) { moveCursor(key, mods.shift); return; }
+    const chord = chordOf({ key, ...mods });
+    if (chord) runChord(chord, { preventDefault() {} }, true);
+  },
 });
 
 window.addEventListener('beforeunload', (e) => { if (session.unsavedIds().length) e.preventDefault(); });

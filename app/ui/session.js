@@ -1,11 +1,13 @@
 // The open buffers and what happens when they are opened, edited and saved.
 // No DOM here: the view reads state() and calls these functions.
-// A buffer is { id, name, text, saved, version }:
+// A buffer is { id, name, text, saved, version, folds }:
 //   name     storage name ("github:home.org"), or null for a *scratch* buffer
 //   saved    the text last known to be in storage (the base of a three-way merge)
 //   version  the version token of that text, or null while the file has not been saved yet
+//   folds    what is folded (see core/outline.js); every view reads it, none keeps its own
 
 import { merge3, resolve } from '../storage/conflict.js';
+import { analyze, diff, remapFolds, startupFolds, validFolds } from '../../core/outline.js';
 
 export const SCRATCH = '*scratch*';
 
@@ -37,6 +39,15 @@ export function createSession({ app }) {
   };
   const baseName = (name) => name.slice(name.lastIndexOf('/') + 1).replace(/^[a-z]+:/, '');
 
+  /** The new text of a buffer with its folds moved along. `remap` is given by structure edits; other changes are found by comparing the texts. */
+  const retext = (b, text, remap) => {
+    if (text === b.text) return { text };
+    let folds;
+    if (remap) folds = Object.fromEntries(Object.entries(b.folds).map(([k, v]) => [remap(Number(k)), v]).filter(([k]) => k !== null));
+    else { const d = diff(b.text, text); folds = remapFolds(b.folds, b.text, d.from, d.to, d.insert); }
+    return { text, folds: validFolds(analyze(text).heads, folds) };
+  };
+
   const session = {
     subscribe(cb) { listeners.add(cb); return () => listeners.delete(cb); },
 
@@ -45,7 +56,7 @@ export function createSession({ app }) {
       return {
         current,
         buffers: buffers.map((b) => ({
-          id: b.id, name: b.name, text: b.text, version: b.version,
+          id: b.id, name: b.name, text: b.text, version: b.version, folds: b.folds,
           title: b.name === null ? b.title : baseName(b.name),
           dirty: b.name === null ? b.text !== '' : b.text !== b.saved || b.version === null,
         })),
@@ -55,7 +66,7 @@ export function createSession({ app }) {
     newScratch() {
       const id = nextId++;
       const title = scratchTitle(id);
-      buffers = [...buffers, { id, name: null, title, text: '', saved: '', version: null }];
+      buffers = [...buffers, { id, name: null, title, text: '', saved: '', version: null, folds: {} }];
       current = id;
       changed();
       return id;
@@ -68,7 +79,7 @@ export function createSession({ app }) {
       const r = await app.storage.read(name);
       if (!r) return { ok: false, reason: 'missing' };
       const id = nextId++;
-      buffers = [...buffers, { id, name, text: r.text, saved: r.text, version: r.version }];
+      buffers = [...buffers, { id, name, text: r.text, saved: r.text, version: r.version, folds: startupFolds(r.text) }];
       current = id;
       changed();
       return { ok: true, id };
@@ -76,7 +87,12 @@ export function createSession({ app }) {
 
     select(id) { find(id); current = id; changed(); },
 
-    setText(id, text) { find(id); replace(id, { text }); changed(); },
+    setText(id, text) { replace(id, retext(find(id), text)); changed(); },
+
+    /** Takes the result of a structure edit (core/outline-edit.js); folds move with the lines. */
+    apply(id, result) { replace(id, retext(find(id), result.text, result.remap)); changed(); },
+
+    setFolds(id, folds) { find(id); replace(id, { folds }); changed(); },
 
     /** Closes a buffer. Returns false, leaving it open, when it has unsaved changes and force is not set. */
     close(id, { force = false } = {}) {
@@ -124,7 +140,7 @@ export function createSession({ app }) {
      */
     settle(conflict, text) {
       find(conflict.id);
-      replace(conflict.id, { text, saved: conflict.theirs ?? '', version: conflict.theirsVersion });
+      replace(conflict.id, { ...retext(find(conflict.id), text), saved: conflict.theirs ?? '', version: conflict.theirsVersion });
       changed();
     },
 
@@ -134,7 +150,7 @@ export function createSession({ app }) {
       if (!b || b.text !== b.saved) return;
       const r = await app.storage.read(name);
       if (!r) return;
-      replace(b.id, { text: r.text, saved: r.text, version: r.version });
+      replace(b.id, { ...retext(b, r.text), saved: r.text, version: r.version });
       changed();
     },
 

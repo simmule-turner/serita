@@ -25,6 +25,11 @@ Planned work only. Phase order is in SPEC.md section 12.
 * Later: screen and views
 - Empty folders are not shown when browsing, because storage lists files only.
 - Floating buttons: a back arrow (navigation history) and the extras menu filled from the config's Menu list, once links and capture exist.
-- View menu with Outline, Text, Agenda and TODO list, and the Find buttons, once those views and the Emacs regexp matcher exist.
+- Agenda and TODO list in the View menu, and the Find types of the guide, once those views and the Emacs regexp matcher exist.
 - Keep open buffers across a reload (today the browser asks before you leave with unsaved text).
-- The second toolbar row (undo, redo, outline, wrap, font size, line), the key row for Text mode, and Regex and Replace in the Find prompt.
+- The second toolbar row under the tabs: undo, redo, show or hide line numbers, wrap or unwrap, A-, A+ and Line. Its Lines and text menu: Go to line, Select all, Copy all, Duplicate line, Kill line (into the kill ring), Move line up and down, Indent, Outdent.
+- Regex and Replace in the Find prompt.
+- Emacs keys beyond the heading commands: movement and editing keys, the minibuffer, M-x, universal argument, and TAB and the M-arrows on list items and plain text lines.
+- Statistics cookies ([1/3], [33%]) updating when a checkbox is toggled.
+- Find closing the folds it opened, when the search ends.
+- Emacs is not installed in the build workspace, so the new tests are written by hand from the guide; run them against Emacs 29.3 batch before relying on details such as tag alignment, show2levels and the text shown by the children state.

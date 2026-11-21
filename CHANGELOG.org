@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.1.5
+Org files now have two views over one document: an Outline view of foldable headings with tap actions (change TODO state, promote, demote, move, add a heading, set tags, toggle checkboxes), and the Text view, which folds the same headings and shows "..." after them. Folding follows the file's #+STARTUP line. A new Emacs keys setting adds TAB, S-TAB, M-arrows, C-RET and C-c C-t, with a scrolling key row and a floating, draggable version, for phones without those keys. The current tab is highlighted more clearly.
+
 * 0.1.4
 A new version no longer replaces the running one on its own. The message line says a version is ready, Menu and Settings show the installed and the new version, and Restart to update switches over when you choose, so an update never arrives in the middle of editing. The app also looks for updates when you return to it or come back online.
 

@@ -1,0 +1,201 @@
+// The outline of a document: its headings, which lines are hidden by folding, and how
+// visibility cycles. Folds are { [headline line number]: 'all' | 'body' }: 'all' hides everything
+// under the heading, 'body' hides only its own text and keeps its sub-headings.
+// Every view (Outline, Text) reads this one model; none keeps folding of its own.
+
+import { parse, DEFAULT_TODO } from './parse.js';
+
+/**
+ * Reads #+TODO, #+SEQ_TODO and #+TYP_TODO lines. Each is a sequence "A B | C"; without "|" the last word is the done state.
+ * Fast-selection letters such as "TODO(t)" are dropped. Without any such line the default sequence applies.
+ * @param {string} text
+ * @returns {{ sequences: { open: string[], done: string[] }[], open: string[], done: string[] }}
+ */
+export function todoOptions(text) {
+  const sequences = [];
+  for (const m of text.matchAll(/^[ \t]*#\+(?:SEQ_TODO|TYP_TODO|TODO):[ \t]*(.*)$/gim)) {
+    const words = m[1].trim().split(/\s+/).filter(Boolean);
+    const bar = words.indexOf('|');
+    const clean = (w) => w.replace(/\(.*\)$/, '');
+    const open = (bar === -1 ? words.slice(0, -1) : words.slice(0, bar)).map(clean);
+    const done = (bar === -1 ? words.slice(-1) : words.slice(bar + 1)).map(clean);
+    if (open.length + done.length > 0) sequences.push({ open, done });
+  }
+  if (sequences.length === 0) sequences.push({ open: [...DEFAULT_TODO.open], done: [...DEFAULT_TODO.done] });
+  return { sequences, open: sequences.flatMap((s) => s.open), done: sequences.flatMap((s) => s.done) };
+}
+
+/**
+ * @typedef {{ line: number, level: number, parent: Head|null, children: Head[], end: number, bodyEnd: number,
+ *   todo: string|null, title: string, tags: string[], priority: string|null }} Head
+ */
+
+/**
+ * Headings and per-line nodes, in line order. `end` is the line after the heading's subtree;
+ * `bodyEnd` is the line where its own text ends (the first sub-heading, or `end`).
+ * @param {string} text
+ */
+export function analyze(text) {
+  const todo = todoOptions(text);
+  const { root } = parse(text, { todo: { open: todo.open, done: todo.done } });
+  /** @type {Head[]} */ const heads = [];
+  const nodes = [];
+  const walk = (list, parent) => {
+    for (const node of list) {
+      nodes.push(node);
+      if (node.type !== 'headline') continue;
+      const h = { line: nodes.length - 1, level: node.level, parent, children: [], end: 0, bodyEnd: 0,
+        todo: node.todo, title: node.title, tags: node.tags, priority: node.priority };
+      heads.push(h);
+      parent?.children.push(h);
+      walk(node.children, h);
+      h.end = nodes.length;
+      h.bodyEnd = h.children.length ? h.children[0].line : h.end;
+    }
+  };
+  walk(root.children, null);
+  return { heads, nodes, total: nodes.length, todo };
+}
+
+const range = (a, b) => Array.from({ length: Math.max(0, b - a) }, (_, i) => a + i);
+
+/** The lines hidden by the folds. */
+export function hiddenLines(heads, folds) {
+  const hidden = new Set();
+  for (const h of heads) {
+    const how = folds[h.line];
+    if (how === 'all') for (const i of range(h.line + 1, h.end)) hidden.add(i);
+    else if (how === 'body') for (const i of range(h.line + 1, h.bodyEnd)) hidden.add(i);
+  }
+  return hidden;
+}
+
+/** The headings that show an ellipsis because something under them is hidden. */
+export function ellipsisLines(heads, folds) {
+  const out = new Set();
+  for (const h of heads) {
+    if ((folds[h.line] === 'all' && h.end > h.line + 1) || (folds[h.line] === 'body' && h.bodyEnd > h.line + 1)) out.add(h.line);
+  }
+  return out;
+}
+
+const sameSet = (a, b) => a.size === b.size && [...a].every((x) => b.has(x));
+const hasContent = (h) => h.end > h.line + 1;
+const descendants = (h) => { const out = []; const go = (x) => { for (const c of x.children) { out.push(c); go(c); } }; go(h); return out; };
+
+/** The cycle state of one heading: 'folded', 'children' or 'subtree'. */
+export function stateOf(h, folds) {
+  if (folds[h.line]) return 'folded';
+  if (h.children.length > 0 && h.children.filter(hasContent).every((c) => folds[c.line] === 'all') && h.children.some(hasContent)) return 'children';
+  return 'subtree';
+}
+
+/**
+ * Cycles one heading: folded, then children, then the whole subtree, then folded again.
+ * A state that would look the same as the one before is skipped.
+ * @returns {{ folds: object, state: 'folded'|'children'|'subtree' } | null} null when nothing is under the heading
+ */
+export function cycle(heads, folds, line) {
+  const h = heads.find((x) => x.line === line);
+  if (!h || !hasContent(h)) return null;
+  const apply = (state) => {
+    const f = { ...folds };
+    for (const d of descendants(h)) delete f[d.line];
+    delete f[h.line];
+    if (state === 'folded') f[h.line] = 'all';
+    else if (state === 'children') for (const c of h.children) if (hasContent(c)) f[c.line] = 'all';
+    return f;
+  };
+  const order = ['folded', 'children', 'subtree'];
+  const before = hiddenLines(heads, folds);
+  let at = order.indexOf(stateOf(h, folds));
+  for (let i = 0; i < 3; i++) {
+    at = (at + 1) % 3;
+    const f = apply(order[at]);
+    // With no sub-heading that has content, "children" looks the same as the whole subtree.
+    const state = order[at] === 'children' && !h.children.some(hasContent) ? 'subtree' : order[at];
+    if (!sameSet(hiddenLines(heads, f), before)) return { folds: f, state };
+  }
+  return null;
+}
+
+/** Headings only (everything folded to the top level). The text before the first heading stays visible. */
+export const overview = (heads) => Object.fromEntries(heads.filter((h) => h.level === Math.min(...heads.map((x) => x.level)) && !h.parent && hasContent(h)).map((h) => [h.line, 'all']));
+
+/** Every heading shown, with its own text hidden. With `depth`, headings deeper than that are hidden too. */
+export function contents(heads, depth = Infinity) {
+  const f = {};
+  for (const h of heads) {
+    if (h.level > depth) continue;
+    if (h.level === depth) { if (hasContent(h)) f[h.line] = 'all'; } else if (h.bodyEnd > h.line + 1) f[h.line] = 'body';
+  }
+  return f;
+}
+
+/** Buffer-wide cycle: overview, then contents, then everything shown. */
+export function cycleGlobal(heads, folds) {
+  const key = (f) => JSON.stringify(Object.entries(f).sort((a, b) => a[0] - b[0]));
+  const here = key(folds);
+  if (here === key(overview(heads))) return { folds: contents(heads), state: 'contents' };
+  if (here === key(contents(heads))) return { folds: {}, state: 'show all' };
+  return { folds: overview(heads), state: 'overview' };
+}
+
+/** The folds a file asks for with #+STARTUP. Without one, everything is shown. */
+export function startupFolds(text, heads = analyze(text).heads) {
+  for (const m of text.matchAll(/^[ \t]*#\+STARTUP:[ \t]*(.*)$/gim)) {
+    for (const w of m[1].toLowerCase().split(/\s+/)) {
+      if (w === 'overview') return overview(heads);
+      if (w === 'content') return contents(heads);
+      if (w === 'showall' || w === 'showeverything') return {};
+      const n = /^show([2-5])levels$/.exec(w);
+      if (n) return contents(heads, Number(n[1]));
+    }
+  }
+  return {};
+}
+
+const count = (s) => (s.match(/\n/g) ?? []).length;
+
+/** Moves fold line numbers along with a text edit, dropping folds in removed lines. */
+export function remapFolds(folds, oldText, from, to, insert) {
+  const startLine = count(oldText.slice(0, from));
+  const removed = count(oldText.slice(from, to));
+  const added = count(insert);
+  const out = {};
+  for (const [k, how] of Object.entries(folds)) {
+    const line = Number(k);
+    if (line <= startLine) out[line] = how;
+    else if (line > startLine + removed) out[line + added - removed] = how;
+  }
+  return out;
+}
+
+/** Keeps only the folds that sit on a heading with something to hide. */
+export function validFolds(heads, folds) {
+  const by = new Map(heads.map((h) => [h.line, h]));
+  return Object.fromEntries(Object.entries(folds).filter(([k, how]) => {
+    const h = by.get(Number(k));
+    return h && (how === 'all' ? hasContent(h) : h.bodyEnd > h.line + 1);
+  }));
+}
+
+/** The smallest change that turns `a` into `b`, as one replacement of `a`. */
+export function diff(a, b) {
+  const max = Math.min(a.length, b.length);
+  let from = 0;
+  while (from < max && a[from] === b[from]) from++;
+  let tail = 0;
+  while (tail < max - from && a[a.length - 1 - tail] === b[b.length - 1 - tail]) tail++;
+  return { from, to: a.length - tail, insert: b.slice(from, b.length - tail) };
+}
+
+/** Opens every fold that hides the given line. */
+export function reveal(heads, folds, line) {
+  const f = { ...folds };
+  for (const h of heads) {
+    if (f[h.line] === 'all' && line > h.line && line < h.end) delete f[h.line];
+    else if (f[h.line] === 'body' && line > h.line && line < h.bodyEnd) delete f[h.line];
+  }
+  return f;
+}

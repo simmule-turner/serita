@@ -1,6 +1,6 @@
 // Offline cache. The version below must equal package.json's version (a test checks this),
 // so every release gets a new cache and replaces the old one.
-const VERSION = '0.1.4';
+const VERSION = '0.1.5';
 const CACHE = `serita-${VERSION}`;
 const FILES = [
   './',
@@ -23,7 +23,11 @@ const FILES = [
   'app/storage/webdav.js',
   'app/storage/xml.js',
   'app/ui/config.js',
+  'app/ui/dom.js',
   'app/ui/find.js',
+  'app/ui/keyrow.js',
+  'app/ui/keys.js',
+  'app/ui/outline-view.js',
   'app/ui/providers.js',
   'app/ui/recent.js',
   'app/ui/session.js',
@@ -31,7 +35,10 @@ const FILES = [
   'app/version.js',
   'core/bytes.js',
   'core/names.js',
+  'core/outline-edit.js',
+  'core/outline.js',
   'core/parse.js',
+  'core/projection.js',
   'core/settings-file.js',
 ];
 
