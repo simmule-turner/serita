@@ -4,7 +4,7 @@
 Serita is an Org-mode app for phones, tablets, Chromebooks and desktop browsers. It is MIT licensed and written from scratch.
 
 * Status
-Early foundations: the Org parser, the document model with undo, local file storage, and the app interface with its tests. There is no user interface yet.
+Early foundations: the Org parser, the document model with undo, local and GitHub file storage with conflict merging, and the app interface with its tests. There is no user interface yet.
 
 * Run the checks and tests
 Needs Node 22 or later and no packages.

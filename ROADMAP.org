@@ -3,7 +3,10 @@
 Planned work only. Phase order is in SPEC.md section 12.
 
 * Phase 1: Foundations (in progress)
-- GitHub and WebDAV providers with the three-way conflict prompt.
+- WebDAV provider, built beside the GitHub one.
+- Offline cache and queued saves for the GitHub and WebDAV providers, and the conflict prompt that uses the three-way merge.
+- GitHub: files over 1 MB, branch names containing a slash, and an empty repository (none are verified against the live service yet).
+- Merge for very large, very different files (it asks the user to pick a side today).
 - Changes made in another tab reaching ~watch~ (it covers the current tab today).
 - Folder access in the browser (needs a stored folder handle; native apps do it fully).
 - PWA shell and service worker; the first installable release.

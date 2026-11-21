@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.0.3
+Files in a GitHub repository can now be read, saved, listed and deleted, with one commit per save and your token kept out of the code. A save that would overwrite newer text on the server is caught and reported as a conflict, and a new three-way merge can combine changes made in different places while leaving true clashes for you to settle. This is the storage half of the sync you described; the offline cache and the prompt come next.
+
 * 0.0.2
 Files can now be saved in the app's own storage with a version on every save, so a stale save is caught instead of overwriting newer text. The browser side of the app interface routes names like ~github:home.org~ to the right place and says plainly when a provider is not set up or the browser lacks a feature, instead of pretending. This is the storage groundwork the first installable release builds on.
 

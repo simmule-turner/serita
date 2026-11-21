@@ -50,6 +50,15 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 ### `app/storage/kv-memory.js`, `app/storage/kv-idb.js`, `app/storage/local.js`
 - Written from: PROPOSAL-phase1.md and SPEC 4 and 13.1 (local app storage provider, versioned writes). The key-value contract (get, atomic update, keys) and the version-per-write scheme are the session's own design. `kv-idb.js` uses the standard browser IndexedDB interface as documented on the web platform; no code was copied from any library. Statement as above.
 
+### `app/storage/github.js`
+- Written from: GitHub's published REST documentation for repository contents (get, create or update, delete) and git trees, fetched 2026-11-21 from docs.github.com. Endpoint paths, headers, body fields, the 1 MB inline limit and the tree limits come from it. The documentation does not say which status a stale or missing sha produces, so the provider decides conflicts by re-reading the file; that rule is the session's own design. Statement as above.
+
+### `app/storage/conflict.js`
+- Written from: the general idea of a three-way line merge (changes in different places combine; the same place changed differently is a conflict). The matching step is a standard longest-common-subsequence table written from its textbook definition. No diff or merge library or tool source was read. Statement as above.
+
+### `test/fake-github.js`, `test/github.test.js`, `test/conflict.test.js`
+- Written from: the same GitHub documentation (the fake follows the documented fields) and the module descriptions above. Statement as above.
+
 ### `app/interface/browser.js`
 - Written from: PROPOSAL-phase1.md section 3 and SPEC 4 and 10 (browser implementation, capability reporting, no imitation of missing capabilities, native-only features reported unavailable). Browser feature names (clipboard, window.open, the file picker functions) are standard web platform interfaces. Statement as above.
 
