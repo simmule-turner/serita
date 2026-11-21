@@ -3,8 +3,9 @@
 Planned work only. Phase order is in SPEC.md section 12.
 
 * Phase 1: Foundations (in progress)
-- Local storage provider (browser), then the browser interface implementation.
 - GitHub and WebDAV providers with the three-way conflict prompt.
+- Changes made in another tab reaching ~watch~ (it covers the current tab today).
+- Folder access in the browser (needs a stored folder handle; native apps do it fully).
 - PWA shell and service worker; the first installable release.
 - Incremental reparse on edit (the document model reparses fully today).
 - Precache check once the service worker exists.

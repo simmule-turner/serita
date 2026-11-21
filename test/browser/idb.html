@@ -1,0 +1,38 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>IndexedDB smoke</title>
+<script type="module">
+import { openIdbKv } from '/app/storage/kv-idb.js';
+import { createLocalProvider } from '/app/storage/local.js';
+
+const out = [];
+const ok = (cond, msg) => out.push([!!cond, msg]);
+try {
+  const name = 'smoke-' + Date.now();
+  const p = createLocalProvider(await openIdbKv({ indexedDB, name }));
+
+  const a = await p.write('a.org', 'one');
+  ok(a.ok, 'create');
+  ok((await p.read('a.org')).text === 'one', 'read back');
+
+  const stale = await p.write('a.org', 'x', { baseVersion: 'not-it' });
+  ok(!stale.ok && stale.conflict.theirs === 'one', 'stale base version conflicts');
+
+  const base = (await p.read('a.org')).version;
+  const results = await Promise.all(Array.from({ length: 8 }, (_, i) => p.write('a.org', 'w' + i, { baseVersion: base })));
+  ok(results.filter((r) => r.ok).length === 1, 'exactly one of eight concurrent writes wins');
+
+  await p.write('b/1.org', '1'); await p.write('b/2.org', '2');
+  ok(JSON.stringify(await p.list('b/')) === '["b/1.org","b/2.org"]', 'list by prefix, sorted');
+
+  const again = createLocalProvider(await openIdbKv({ indexedDB, name }));
+  ok((await again.read('b/2.org'))?.text === '2', 'data persists across reopen');
+
+  await p.remove('b/1.org');
+  ok((await p.read('b/1.org')) === null, 'remove');
+  indexedDB.deleteDatabase(name);
+} catch (e) {
+  out.push([false, 'exception: ' + e]);
+}
+window.__result = out;
+</script>

@@ -47,6 +47,18 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 ### `app/interface/contract.js`, `app/interface/memory.js`
 - Written from: PROPOSAL-phase1.md section 3 and SPEC 10 (the app interface, capability reporting, no imitation of missing capabilities, versioned writes with a conflict result). Statement as above.
 
+### `app/storage/kv-memory.js`, `app/storage/kv-idb.js`, `app/storage/local.js`
+- Written from: PROPOSAL-phase1.md and SPEC 4 and 13.1 (local app storage provider, versioned writes). The key-value contract (get, atomic update, keys) and the version-per-write scheme are the session's own design. `kv-idb.js` uses the standard browser IndexedDB interface as documented on the web platform; no code was copied from any library. Statement as above.
+
+### `app/interface/browser.js`
+- Written from: PROPOSAL-phase1.md section 3 and SPEC 4 and 10 (browser implementation, capability reporting, no imitation of missing capabilities, native-only features reported unavailable). Browser feature names (clipboard, window.open, the file picker functions) are standard web platform interfaces. Statement as above.
+
+### `test/local.test.js`, `test/browser.contract.test.js`
+- Written from: the module descriptions above and the shared contract suite. Statement as above.
+
+### `test/browser/run.mjs`
+- Written from: SPEC 11 (browser smoke tests). A small static server and a Playwright launcher; Playwright is a development tool outside the project's dependencies. Statement as above.
+
 ### `test/contract.js`, `test/memory.contract.test.js`
 - Written from: the interface description in PROPOSAL-phase1.md section 3; the shared suite every implementation must pass (SPEC 12, phase 9 gate). Statement as above.
 
