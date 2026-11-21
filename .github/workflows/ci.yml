@@ -23,3 +23,4 @@ jobs:
         with: { node-version: 22 }
       - run: npm install -g playwright
       - run: PLAYWRIGHT="$(npm root -g)/playwright" CHROME="$(which google-chrome)" node test/browser/run.mjs
+      - run: PLAYWRIGHT="$(npm root -g)/playwright" CHROME="$(which google-chrome)" node test/browser/app.mjs

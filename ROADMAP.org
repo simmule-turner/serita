@@ -22,3 +22,7 @@ Planned work only. Phase order is in SPEC.md section 12.
 - What format Slides produces.
 - Contacts and calendar exchange details (SPEC.md 13.6).
 - Empty folders are not shown when browsing, because storage lists files only.
+- Floating buttons: a back arrow (navigation history) and the extras menu filled from the config's Menu list, once links and capture exist.
+- View menu with Outline, Text, Agenda and TODO list, and the Find buttons, once those views and the Emacs regexp matcher exist.
+- Keep open buffers across a reload (today the browser asks before you leave with unsaved text).
+- The second toolbar row (undo, redo, outline, wrap, font size, line), the key row for Text mode, and Regex and Replace in the Find prompt.

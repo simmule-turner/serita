@@ -65,6 +65,12 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 ### `core/settings-file.js`, `test/settings-file.test.js`
 - Written from: the author's decisions of 2026-11-21 (SPEC.md, "Settings export") and the Web Crypto API as documented (PBKDF2 key derivation, AES-GCM). The Org layout and the encrypted block are this project's own design. Statement as above.
 
+### `app/main.js`, `app/ui/session.js`, `app/ui/config.js`, `app/ui/providers.js`, `app/ui/find.js`, `sw.js`, `index.html`, `app.css`, `manifest.webmanifest`
+- Written from: the author's decisions and mockups of 2026-11-21 (SPEC.md, "Decided" tables), the author's screenshot of their own existing app for layout (shape of the screen only; no code), standard web platform documentation (service workers, Web App Manifest, IndexedDB, Web Crypto), and this project's own modules. The icons are generated plain images (a white letter on a green square). Statement as above.
+
+### `test/sw.test.js`, `test/config.test.js`, `test/find.test.js`, `test/session.test.js`, `test/browser/app.mjs`, `test/browser/harness.mjs`
+- Written from: the modules above and the author's decisions; expected values are hand-derived from those decisions, not from any other program. Statement as above.
+
 ### `app/storage/cached.js`
 - Written from: SPEC 13.1 (offline cache for the GitHub and WebDAV providers, one commit per save, a three-way prompt on conflict) and the session's own design: a cache record per file holding the last server copy, an unsent local edit with a version token, and a queued delete; a sync that returns conflicts with base, mine and theirs. Only a typed network error counts as offline. Statement as above.
 

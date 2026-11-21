@@ -3,8 +3,27 @@
 
 Serita is an Org-mode app for phones, tablets, Chromebooks and desktop browsers. It is MIT licensed and written from scratch.
 
-* Status
-Early foundations: the Org parser, the document model with undo, local, GitHub and WebDAV file storage with an offline cache and conflict merging, and the app interface with its tests. There is no user interface yet.
+* Use
+Open the app in a browser and install it from the browser's menu; it then starts offline.
+
+The toolbar has Files and Save at the left, Find in the middle, and View and Menu at the right. Each file is a tab; the × closes it. Saving is manual.
+
+** Files
+- New :: opens a ~*scratch*~ buffer.
+- Open :: picks a file from this device, GitHub or WebDAV, with its size.
+- Save :: writes the current tab to its file.
+- Save as :: writes it to another storage or name.
+- Save some buffers :: asks about each unsaved tab: Yes, No, Save all or Cancel.
+
+** Find
+Type to search. The match is highlighted; ▲ and ▼ go to the previous and next match, and the search wraps. A lowercase query ignores case; an uppercase letter makes it exact. Return keeps the cursor on the match, and × returns to where you started.
+
+** Settings
+Menu, then Settings, sets up GitHub (owner, repository, branch, token) and WebDAV (address, user, password). They are kept in this browser, on this device.
+
+Export writes an Org file of your settings. Give it a passphrase to encrypt the tokens and passwords; without one they are written in plain text, so keep the file private. Import reads such a file on another device and replaces its settings.
+
+If someone changes a file on the server before you save, you can merge the two copies, keep yours, or use theirs.
 
 * Run the checks and tests
 Needs Node 22 or later and no packages.

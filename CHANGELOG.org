@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.1.0
+The first version you can install and try. It opens, edits and saves plain text in tabs, from this device, GitHub or WebDAV, with a file browser that shows sizes, manual Save, Save as and Save some buffers, and a prompt when the server copy changed. Find searches as you type, and Settings sets up your storage and exports it to, or imports it from, an Org file with optional encryption. It starts offline after the first visit.
+
 * 0.0.7
 Settings can now be written to an Org file and read back on another device, so a second install starts configured the same way. Tokens and passwords go in too; with a passphrase they are encrypted, and without one the file says so and should be kept private. A wrong passphrase stops the import and changes nothing. The Settings panel buttons arrive with the app shell.
 
