@@ -32,6 +32,11 @@ ok((await sheet.textContent()).includes('notes.org'), 'Open lists the file with 
 await btn(/notes\.org/).click();
 ok((await page.locator('.tab').count()) === 2, 'Open switches to the already open file instead of opening it twice');
 
+await page.click('#btn-files');
+ok((await sheet.textContent()).includes('notes.org (Local)') && (await sheet.textContent()).includes('open'), 'the File sheet lists recent files with their storage and whether they are open');
+ok((await page.locator('.sheet .recent').count()) === 1, 'the recent list is its own scrolling area');
+await btn('Cancel').click();
+
 await page.click('#btn-find');
 await page.locator('#findbar input').fill('plant');
 ok(await page.evaluate(() => { const e = document.getElementById('editor'); return e.value.slice(e.selectionStart, e.selectionEnd) === 'plant'; }), 'Find selects the first match, ignoring case');

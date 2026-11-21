@@ -6,6 +6,7 @@ import { createSession } from './ui/session.js';
 import { createConfig } from './ui/config.js';
 import { createProviders } from './ui/providers.js';
 import { search } from './ui/find.js';
+import { createRecent } from './ui/recent.js';
 import { children, parentDir } from './storage/browse.js';
 import { parseName } from '../core/names.js';
 import { formatSize } from '../core/bytes.js';
@@ -15,7 +16,10 @@ const $ = (id) => document.getElementById(id);
 const kept = (kids) => kids.flat(Infinity).filter((x) => x !== null && x !== undefined && x !== false);
 
 /** Puts the given content in a panel, leaving out anything empty. */
-function put(sheet, ...kids) { sheet.replaceChildren(...kept(kids)); }
+function put(sheet, ...kids) {
+  sheet.replaceChildren(...kept(kids));
+  for (const b of sheet.querySelectorAll('button')) if (b.textContent === 'Cancel') b.classList.add('cancel');
+}
 
 function h(tag, props = {}, ...kids) {
   const el = document.createElement(tag);
@@ -32,6 +36,7 @@ const config = createConfig(localStorage);
 const { providers, rebuild } = await createProviders({ config, indexedDB, isOnline: () => navigator.onLine });
 const app = createBrowserInterface({ providers, env: window });
 const session = createSession({ app });
+const recent = createRecent(localStorage);
 
 const editor = $('editor');
 let shownId = null;
@@ -71,7 +76,7 @@ function choose(title, items, { cancel = true } = {}) {
   return panel((sheet, close) => {
     put(sheet, 
       title ? h('h2', {}, title) : null,
-      h('div', { class: 'list' }, items.map((it) => h('button', { class: 'item', onclick: () => close(it.value) },
+      h('div', { class: 'list' }, items.map((it) => h('button', { class: `item${it.dim ? ' dim' : ''}`, onclick: () => close(it.value) },
         h('span', {}, it.label), it.meta ? h('span', { class: 'meta' }, it.meta) : null))),
       cancel ? h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel')) : null,
     );
@@ -138,6 +143,7 @@ session.subscribe(render);
 async function handleSave(r, id) {
   if (r.status === 'saved') {
     const b = session.state().buffers.find((x) => x.id === id);
+    recent.add(b.name);
     message(navigator.onLine ? `Wrote ${b.name}` : `Wrote ${b.name} (offline; it will be sent when you are back online)`);
     return true;
   }
@@ -442,14 +448,50 @@ $('import-file').addEventListener('change', async (ev) => {
 
 // ---- Toolbar -------------------------------------------------------------------------------------------
 
+async function openNamed(name) {
+  try {
+    const r = await session.openFile(name);
+    if (r.ok) recent.add(name); else message(`${name} does not exist`, true);
+  } catch (e) { failure(e); }
+}
+
+const recentLabel = (name) => `${parseName(name).path} (${STORAGE_LABEL[parseName(name).provider]})`;
+
 async function filesMenu() {
-  const what = await choose(null, [
-    { label: 'New', value: 'new' }, { label: 'Open', value: 'open' }, { label: 'Save', value: 'save' },
-    { label: 'Save as', value: 'saveas' }, { label: 'Save some buffers', value: 'some' }]);
-  if (what === 'new') session.newScratch();
+  const what = await panel((sheet, close) => {
+    const row = (label, value, dim) => h('button', { class: `item${dim ? ' dim' : ''}`, onclick: () => close(value) }, h('span', {}, label));
+    const draw = () => {
+      const s = session.state();
+      const current = s.buffers.find((x) => x.id === s.current)?.name;
+      const open = new Set(s.buffers.map((x) => x.name));
+      const names = recent.list();
+      put(sheet, h('h2', {}, 'File'),
+        h('div', { class: 'list' }, row('New', 'new'), row('Open', 'open'), row('Save', 'save'), row('Save as', 'saveas'),
+          row('Save some buffers', 'some', session.unsavedIds().length === 0)),
+        names.length ? h('p', {}, 'Recently opened (long-press an entry to remove it from this list; the file is not deleted)') : null,
+        names.length ? h('div', { class: 'list recent' }, names.map((n) => {
+          let timer = null;
+          let held = false;
+          const stop = () => { clearTimeout(timer); timer = null; };
+          return h('button', {
+            class: `item${n === current ? ' current' : ''}`,
+            onpointerdown: () => { held = false; timer = setTimeout(() => { held = true; recent.remove(n); draw(); }, 600); },
+            onpointerup: stop, onpointerleave: stop, onpointercancel: stop,
+            oncontextmenu: (e) => e.preventDefault(),
+            onclick: () => { if (!held) close({ recent: n }); },
+          }, h('span', {}, recentLabel(n)), h('span', { class: 'meta' }, n === current ? 'current' : open.has(n) ? 'open' : ''));
+        })) : null,
+        h('div', { class: 'row' }, names.length ? h('button', { onclick: () => { recent.clear(); draw(); } }, 'Clear recents') : null,
+          h('button', { onclick: () => close(undefined) }, 'Cancel')));
+    };
+    draw();
+  });
+  if (what === undefined) return;
+  if (what.recent) await openNamed(what.recent);
+  else if (what === 'new') session.newScratch();
   else if (what === 'open') {
     const name = await browse({ mode: 'open' });
-    if (name) { try { const r = await session.openFile(name); if (!r.ok) message(`${name} does not exist`, true); } catch (e) { failure(e); } }
+    if (name) await openNamed(name);
   } else if (what === 'save') { if (shownId !== null) await saveBuffer(shownId); }
   else if (what === 'saveas') { if (shownId !== null) await saveAs(shownId); }
   else if (what === 'some') await saveSomeBuffers();

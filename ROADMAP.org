@@ -7,20 +7,20 @@ Planned work only. Phase order is in SPEC.md section 12.
 - WebDAV from a browser needs the server to allow cross-origin requests for its methods and headers; check this against your server. The native apps are not limited this way.
 - WebDAV listing sends one request per folder; a large tree will be slow.
 - The conflict prompt (keep mine, keep theirs, merge) that uses the cache's conflicts and the merge; needs a mockup first.
-- Retry of queued saves when the browser comes back online, and a pending-changes indicator.
 - Server errors (5xx) are reported today, not queued.
 - GitHub: files over 1 MB, branch names containing a slash, and an empty repository (none are verified against the live service yet).
 - Merge for very large, very different files (it asks the user to pick a side today).
 - Changes made in another tab reaching ~watch~ (it covers the current tab today).
 - Folder access in the browser (needs a stored folder handle; native apps do it fully).
-- PWA shell and service worker; the first installable release.
 - Incremental reparse on edit (the document model reparses fully today).
-- Precache check once the service worker exists.
+- A pending-changes indicator for saves waiting to be sent.
 
 * Decisions pending
 - Whether LaTeX export stays after HTML, Slides and ASCII.
 - What format Slides produces.
 - Contacts and calendar exchange details (SPEC.md 13.6).
+
+* Later: screen and views
 - Empty folders are not shown when browsing, because storage lists files only.
 - Floating buttons: a back arrow (navigation history) and the extras menu filled from the config's Menu list, once links and capture exist.
 - View menu with Outline, Text, Agenda and TODO list, and the Find buttons, once those views and the Emacs regexp matcher exist.

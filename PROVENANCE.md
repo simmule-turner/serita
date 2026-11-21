@@ -65,10 +65,10 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 ### `core/settings-file.js`, `test/settings-file.test.js`
 - Written from: the author's decisions of 2026-11-21 (SPEC.md, "Settings export") and the Web Crypto API as documented (PBKDF2 key derivation, AES-GCM). The Org layout and the encrypted block are this project's own design. Statement as above.
 
-### `app/main.js`, `app/ui/session.js`, `app/ui/config.js`, `app/ui/providers.js`, `app/ui/find.js`, `sw.js`, `index.html`, `app.css`, `manifest.webmanifest`
+### `app/main.js`, `app/ui/session.js`, `app/ui/config.js`, `app/ui/providers.js`, `app/ui/find.js`, `app/ui/recent.js`, `sw.js`, `index.html`, `app.css`, `manifest.webmanifest`
 - Written from: the author's decisions and mockups of 2026-11-21 (SPEC.md, "Decided" tables), the author's screenshot of their own existing app for layout (shape of the screen only; no code), standard web platform documentation (service workers, Web App Manifest, IndexedDB, Web Crypto), and this project's own modules. The icons are generated plain images (a white letter on a green square). Statement as above.
 
-### `test/sw.test.js`, `test/config.test.js`, `test/find.test.js`, `test/session.test.js`, `test/browser/app.mjs`, `test/browser/harness.mjs`
+### `test/sw.test.js`, `test/config.test.js`, `test/find.test.js`, `test/recent.test.js`, `test/session.test.js`, `test/browser/app.mjs`, `test/browser/harness.mjs`
 - Written from: the modules above and the author's decisions; expected values are hand-derived from those decisions, not from any other program. Statement as above.
 
 ### `app/storage/cached.js`

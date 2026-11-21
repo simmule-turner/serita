@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.1.1
+The screens now follow your own app: white rounded-rectangle buttons, flat tabs with a blue underline, and bottom sheets with a handle and ruled rows. The File sheet lists up to 20 recently opened or saved files, five visible at a time, with a mark for those already open; press and hold one to drop it from the list, or use Clear recents.
+
 * 0.1.0
 The first version you can install and try. It opens, edits and saves plain text in tabs, from this device, GitHub or WebDAV, with a file browser that shows sizes, manual Save, Save as and Save some buffers, and a prompt when the server copy changed. Find searches as you type, and Settings sets up your storage and exports it to, or imports it from, an Org file with optional encryption. It starts offline after the first visit.
 
