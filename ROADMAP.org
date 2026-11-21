@@ -21,3 +21,4 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Whether LaTeX export stays after HTML, Slides and ASCII.
 - What format Slides produces.
 - Contacts and calendar exchange details (SPEC.md 13.6).
+- Empty folders are not shown when browsing, because storage lists files only.

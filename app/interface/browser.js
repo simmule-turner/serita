@@ -38,6 +38,19 @@ export function createBrowserInterface({ providers, env = globalThis, now = () =
   const need = (cap) => { if (!available[cap]) throw new CapabilityUnavailable(cap, REASONS[cap]); };
   const cancelled = (e) => e?.name === 'AbortError';
 
+  async function entries(prefix = '') {
+    const providerOnly = prefix.endsWith(':') && PROVIDERS.includes(prefix.slice(0, -1));
+    const targets = prefix === ''
+      ? Object.keys(providers).map((p) => ({ p, rest: '' }))
+      : providerOnly ? [{ p: prefix.slice(0, -1), rest: '' }]
+        : [(({ provider: p, path }) => ({ p, rest: path }))(parseName(prefix))];
+    const out = [];
+    for (const { p, rest } of targets) {
+      for (const e of await provider(p).entries(rest)) out.push({ name: formatName(p, e.path), size: e.size });
+    }
+    return out.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+  }
+
   return {
     capabilities: () => Object.fromEntries(CAPABILITIES.map((c) =>
       [c, available[c] ? { available: true } : { available: false, reason: REASONS[c] ?? 'not available in this browser' }])),
@@ -50,15 +63,9 @@ export function createBrowserInterface({ providers, env = globalThis, now = () =
         if (r.ok) emit(full);
         return r;
       },
+      entries,
       async list(prefix = '') {
-        const providerOnly = prefix.endsWith(':') && PROVIDERS.includes(prefix.slice(0, -1));
-        const targets = prefix === ''
-          ? Object.keys(providers).map((p) => ({ p, rest: '' }))
-          : providerOnly ? [{ p: prefix.slice(0, -1), rest: '' }]
-            : [(({ provider: p, path }) => ({ p, rest: path }))(parseName(prefix))];
-        const out = [];
-        for (const { p, rest } of targets) for (const path of await provider(p).list(rest)) out.push(formatName(p, path));
-        return out.sort();
+        return (await entries(prefix)).map((e) => e.name);
       },
       async remove(name) {
         const { path, impl, full } = resolve(name);

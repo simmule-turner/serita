@@ -4,7 +4,7 @@
 // PROPFIND Depth 1 answers 207 with response/href/propstat/prop/resourcetype.
 // Options vary what the standard leaves open: href style, XML prefix style, ETag on PUT.
 
-export function createFakeWebdav({ prefix = '/dav/', hrefStyle = 'path', xmlStyle = 'prefixed', putEtag = true, getEtag = true } = {}) {
+export function createFakeWebdav({ prefix = '/dav/', hrefStyle = 'path', xmlStyle = 'prefixed', putEtag = true, getEtag = true, sizes = true } = {}) {
   const files = new Map(); // path -> { text, etag }
   const dirs = new Set(['']);
   const calls = [];
@@ -56,7 +56,8 @@ export function createFakeWebdav({ prefix = '/dav/', hrefStyle = 'path', xmlStyl
         const path = prefix + e.p.split('/').map(encodeURIComponent).join('/') + (e.dir && e.p ? '/' : '');
         return hrefStyle === 'uri' ? `${u.origin}${path}` : path;
       };
-      const rows = entries.map((e) => `<${P}response><${P}href>${href(e)}</${P}href><${P}propstat><${P}prop><${P}resourcetype>${e.dir ? `<${P}collection/>` : ''}</${P}resourcetype></${P}prop><${P}status>HTTP/1.1 200 OK</${P}status></${P}propstat></${P}response>`).join('');
+      const length = (e) => (e.dir || !sizes ? '' : `<${P}getcontentlength>${Buffer.byteLength(files.get(e.p).text)}</${P}getcontentlength>`);
+      const rows = entries.map((e) => `<${P}response><${P}href>${href(e)}</${P}href><${P}propstat><${P}prop><${P}resourcetype>${e.dir ? `<${P}collection/>` : ''}</${P}resourcetype>${length(e)}</${P}prop><${P}status>HTTP/1.1 200 OK</${P}status></${P}propstat></${P}response>`).join('');
       return res(207, { body: `<?xml version="1.0" encoding="utf-8"?><${P}multistatus${ns}>${rows}</${P}multistatus>` });
     }
     return res(405);

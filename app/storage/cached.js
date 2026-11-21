@@ -8,6 +8,7 @@
 // Only NetworkUnavailable means "offline". Any other error is real and is thrown, never queued.
 
 import { NetworkUnavailable } from '../interface/contract.js';
+import { byteLength } from '../../core/bytes.js';
 
 /**
  * @typedef {{ path: string, base: string | null, mine: string | null, theirs: string | null, theirsVersion: string | null }} SyncConflict
@@ -64,19 +65,28 @@ export function createCachedProvider({ remote, cache, isOnline = () => true }) {
       }
     },
 
-    async list(prefix = '') {
+    async entries(prefix = '') {
       const keys = (await cache.keys()).filter((k) => k.startsWith(prefix));
       const recs = new Map(await Promise.all(keys.map(async (k) => [k, await cache.get(k)])));
-      const queuedNew = keys.filter((k) => recs.get(k).base === null && recs.get(k).local !== undefined);
+      const sizeOf = (r) => { const t = r.local ?? r.base?.text; return typeof t === 'string' ? byteLength(t) : null; };
       const deleted = new Set(keys.filter((k) => recs.get(k).deleted));
-      let names;
+      let found;
       try {
-        names = await attempt(() => remote.list(prefix));
+        found = await attempt(() => remote.entries(prefix));
       } catch (e) {
         if (!(e instanceof NetworkUnavailable)) throw e;
-        names = keys;
+        found = keys.map((path) => ({ path, size: sizeOf(recs.get(path)) }));
       }
-      return [...new Set([...names, ...queuedNew])].filter((n) => !deleted.has(n)).sort();
+      const byPath = new Map(found.map((e) => [e.path, e]));
+      for (const [path, r] of recs) {
+        const queuedNew = r.base === null && r.local !== undefined;
+        if (queuedNew || (r.local !== undefined && byPath.has(path))) byPath.set(path, { path, size: sizeOf(r) });
+      }
+      return [...byPath.values()].filter((e) => !deleted.has(e.path)).sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+    },
+
+    async list(prefix = '') {
+      return (await provider.entries(prefix)).map((e) => e.path);
     },
 
     async remove(path) {

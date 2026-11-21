@@ -24,7 +24,7 @@ export function createFakeGithub({ staleStatus = 409, missingWithShaStatus = 404
     if (m[3] === 'git/trees') {
       return reply(200, {
         truncated,
-        tree: [...files].map(([path, f]) => ({ path, type: 'blob', sha: f.sha })).concat([{ path: 'some-dir', type: 'tree', sha: 'x' }]),
+        tree: [...files].map(([path, f]) => ({ path, type: 'blob', sha: f.sha, size: Buffer.byteLength(f.text) })).concat([{ path: 'some-dir', type: 'tree', sha: 'x' }]),
       });
     }
 

@@ -2,6 +2,7 @@
 
 import { CAPABILITIES, CapabilityUnavailable } from './contract.js';
 import { parseName, formatName, PROVIDERS } from '../../core/names.js';
+import { byteLength } from '../../core/bytes.js';
 
 /**
  * @param {{ now?: () => Date, timeZone?: string, available?: Partial<Record<string, boolean>> }} [opts]
@@ -42,11 +43,15 @@ export function createMemoryInterface(opts = {}) {
       emit(k);
       return { ok: true, version };
     },
-    async list(prefix = '') {
+    async entries(prefix = '') {
       need('storage');
       const providerOnly = prefix.endsWith(':') && PROVIDERS.includes(prefix.slice(0, -1));
       const p = prefix === '' || providerOnly ? prefix : key(prefix);
-      return [...files.keys()].filter((k) => k.startsWith(p)).sort();
+      return [...files].filter(([k]) => k.startsWith(p)).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+        .map(([name, f]) => ({ name, size: byteLength(f.text) }));
+    },
+    async list(prefix = '') {
+      return (await storage.entries(prefix)).map((e) => e.name);
     },
     async remove(name) {
       need('storage');

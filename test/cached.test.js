@@ -16,7 +16,7 @@ function setup() {
   const inner = createLocalProvider(createMemoryKv(), { newVersion: () => `r${++n}` });
   const state = { offline: false, calls: 0 };
   const guard = (f) => async (...a) => { state.calls++; if (state.offline) throw new NetworkUnavailable(); return f(...a); };
-  const remote = { read: guard(inner.read), write: guard(inner.write), list: guard(inner.list), remove: guard(inner.remove) };
+  const remote = { read: guard(inner.read), write: guard(inner.write), list: guard(inner.list), entries: guard(inner.entries), remove: guard(inner.remove) };
   const cache = createMemoryKv();
   const p = createCachedProvider({ remote, cache, isOnline: () => !state.offline || state.forceOnlineFlag });
   // a change made by someone else, straight on the server

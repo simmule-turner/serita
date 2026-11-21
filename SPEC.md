@@ -370,6 +370,9 @@ Every open item had an answer by 2026-11-21.
 | Phase 1 scope | As in PROPOSAL-phase1.md |
 | Export formats and order | HTML first, Slides (Beamer-like) second, ASCII third; iCalendar and vCard export plus import added (13.6) |
 | Markdown and OpenDocument export | Not in the plan (not in the guide) |
+| Tokens and passwords | Native apps: Keychain (iOS) and Keystore (Android). Browser: the browser's own storage on this device, stated plainly on the setup screen |
+| Saving | Manual Save; no autosave. The save button saves the current tab; the file menu has "Save some buffers" for the others |
+| File menu (folder button) | New (a new buffer named *scratch*), Open (an existing file from local storage, GitHub or WebDAV), Save (to the existing file), Save As (the current buffer to another storage and/or name), Save some buffers |
 
 Open: whether LaTeX export (a guide chapter) stays after the three; what format Slides produces; whether the guide's Introduction chapter is documentation only.
 

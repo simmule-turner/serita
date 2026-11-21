@@ -73,6 +73,16 @@ export function runContract(label, make) {
     assert.equal(await s.read('github:a.org'), null);
   });
 
+  test(`${label}: entries gives full names with sizes in bytes`, async () => {
+    const s = make().storage;
+    await s.write('local:a.org', 'héllo');
+    await s.write('github:b.org', '');
+    const e = await s.entries();
+    assert.deepEqual(e.map((x) => x.name), ['github:b.org', 'local:a.org']);
+    assert.deepEqual(e.map((x) => x.size), [0, 6]);
+    assert.deepEqual((await s.entries('local:')).map((x) => x.name), ['local:a.org']);
+  });
+
   test(`${label}: watch fires on change and stops after unsubscribe`, async () => {
     const s = make().storage;
     const seen = [];

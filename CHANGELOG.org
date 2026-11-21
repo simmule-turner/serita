@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.0.6
+File lists now carry each file's size, so Open can show how big a file is before you pick it. GitHub and the app's own storage always know the size; a WebDAV server that leaves it out shows a blank instead of a guess. Unsent edits and files created offline show their own size.
+
 * 0.0.5
 Files on a WebDAV server can now be read, saved, listed and deleted, so your own server works as well as GitHub. Saves are checked against the version you last saw and refused when the server copy has changed, and missing folders are created for you. Offline saving and conflict handling work the same way as for GitHub.
 

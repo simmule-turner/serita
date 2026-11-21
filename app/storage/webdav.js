@@ -30,7 +30,7 @@ const utf8ToBase64 = (s) => {
 };
 const ok2xx = (s) => s >= 200 && s < 300;
 
-const PROPFIND_BODY = '<?xml version="1.0" encoding="utf-8"?><propfind xmlns="DAV:"><prop><resourcetype/></prop></propfind>';
+const PROPFIND_BODY = '<?xml version="1.0" encoding="utf-8"?><propfind xmlns="DAV:"><prop><resourcetype/><getcontentlength/></prop></propfind>';
 
 /**
  * @param {{
@@ -101,12 +101,14 @@ export function createWebdavProvider({ baseUrl, getCredentials, fetch = (...a) =
       if (!pathname.startsWith(rootPath)) continue;
       const isCollection = childrenOf(r, DAV, 'propstat').some((ps) =>
         childrenOf(ps, DAV, 'prop').some((p) => childrenOf(p, DAV, 'resourcetype').some((t) => childrenOf(t, DAV, 'collection').length > 0)));
-      out.push({ path: pathname.slice(rootPath.length).replace(/\/$/, ''), isCollection });
+      const lengths = childrenOf(r, DAV, 'propstat').flatMap((ps) => childrenOf(ps, DAV, 'prop'))
+        .flatMap((p) => childrenOf(p, DAV, 'getcontentlength')).map((n) => n.text.trim()).filter((t) => /^\d+$/.test(t));
+      out.push({ path: pathname.slice(rootPath.length).replace(/\/$/, ''), isCollection, size: lengths.length ? Number(lengths[0]) : null });
     }
     return out;
   }
 
-  return {
+  const provider = {
     read: getFile,
 
     async write(path, text, { baseVersion } = {}) {
@@ -129,7 +131,7 @@ export function createWebdavProvider({ baseUrl, getCredentials, fetch = (...a) =
       throw await fail(res);
     },
 
-    async list(pathPrefix = '') {
+    async entries(pathPrefix = '') {
       const start = pathPrefix.includes('/') ? pathPrefix.slice(0, pathPrefix.lastIndexOf('/') + 1) : '';
       const files = [];
       const queue = [start];
@@ -140,10 +142,14 @@ export function createWebdavProvider({ baseUrl, getCredentials, fetch = (...a) =
         for (const e of entries) {
           if (e.path === dir.replace(/\/$/, '')) continue; // the collection itself
           if (e.isCollection) queue.push(`${e.path}/`);
-          else files.push(e.path);
+          else files.push({ path: e.path, size: e.size });
         }
       }
-      return files.filter((f) => f.startsWith(pathPrefix)).sort();
+      return files.filter((f) => f.path.startsWith(pathPrefix)).sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+    },
+
+    async list(pathPrefix = '') {
+      return (await provider.entries(pathPrefix)).map((e) => e.path);
     },
 
     async remove(path) {
@@ -152,4 +158,5 @@ export function createWebdavProvider({ baseUrl, getCredentials, fetch = (...a) =
       throw await fail(res);
     },
   };
+  return provider;
 }

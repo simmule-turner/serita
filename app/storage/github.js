@@ -83,7 +83,7 @@ export function createGithubProvider({
   const conflict = (cur) => ({ ok: false, conflict: { theirs: cur?.text ?? null, theirsVersion: cur?.version ?? null } });
   const repoExists = async () => (await call('GET', repoUrl)).status === 200;
 
-  return {
+  const provider = {
     read: getFile,
 
     async write(path, text, { baseVersion } = {}) {
@@ -103,11 +103,18 @@ export function createGithubProvider({
       throw fail(r);
     },
 
-    async list(pathPrefix = '') {
+    async entries(pathPrefix = '') {
       const r = await call('GET', `${repoUrl}/git/trees/${encodePath(branch)}?recursive=1`);
       if (r.status !== 200) throw fail(r);
       if (r.json.truncated) throw new GithubError(0, 'the repository is too large to list in one request');
-      return r.json.tree.filter((e) => e.type === 'blob' && e.path.startsWith(pathPrefix)).map((e) => e.path).sort();
+      return r.json.tree
+        .filter((e) => e.type === 'blob' && e.path.startsWith(pathPrefix))
+        .map((e) => ({ path: e.path, size: typeof e.size === 'number' ? e.size : null }))
+        .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+    },
+
+    async list(pathPrefix = '') {
+      return (await provider.entries(pathPrefix)).map((e) => e.path);
     },
 
     async remove(path) {
@@ -120,4 +127,5 @@ export function createGithubProvider({
       }
     },
   };
+  return provider;
 }
