@@ -1,0 +1,68 @@
+#+TITLE: Org Mode Compact Guide: node list (reference pin)
+#+DATE: 2026-11-21
+
+Retrieved 2026-11-21 from https://orgmode.org/guide/. The guide states no Org version, so the pin is this date plus the node titles below. Titles only; none of the guide's text is stored here. A later revision is adopted only by explicit decision.
+
+* Nodes
+1. Introduction
+2. Document Structure
+   - 2.1 Headlines
+   - 2.2 Visibility Cycling
+   - 2.3 Motion
+   - 2.4 Structure Editing
+   - 2.5 Sparse Trees
+   - 2.6 Plain Lists
+3. Tables
+4. Hyperlinks
+5. TODO Items
+   - 5.1 Basic TODO Functionality
+   - 5.2 Multi-state Workflow
+   - 5.3 Progress Logging
+   - 5.4 Priorities
+   - 5.5 Breaking Tasks Down into Subtasks
+   - 5.6 Checkboxes
+6. Tags
+7. Properties
+8. Dates and Times
+   - 8.1 Timestamps
+   - 8.2 Creating Timestamps
+   - 8.3 Deadlines and Scheduling
+   - 8.4 Clocking Work Time
+9. Capture, Refile, Archive
+   - 9.1 Capture
+   - 9.2 Refile and Copy
+   - 9.3 Archiving
+10. Agenda Views
+    - 10.1 Agenda Files
+    - 10.2 The Agenda Dispatcher
+    - 10.3 The Weekly/Daily Agenda
+    - 10.4 The Global TODO List
+    - 10.5 Matching Tags and Properties
+    - 10.6 Search View
+    - 10.7 Commands in the Agenda Buffer
+    - 10.8 Custom Agenda Views
+11. Markup for Rich Contents
+    - 11.1 Paragraphs
+    - 11.2 Emphasis and Monospace
+    - 11.3 Embedded LaTeX
+    - 11.4 Literal examples
+    - 11.5 Images
+    - 11.6 Creating Footnotes
+12. Exporting
+    - 12.1 The Export Dispatcher
+    - 12.2 Export Settings
+    - 12.3 Table of Contents
+    - 12.4 Include Files
+    - 12.5 Comment Lines
+    - 12.6 ASCII/UTF-8 Export
+    - 12.7 HTML Export
+    - 12.8 LaTeX Export
+    - 12.9 iCalendar Export
+13. Publishing
+14. Working with Source Code
+15. Miscellaneous
+
+* Differences from SPEC section 5 (for a decision)
+- The guide has an Introduction and a Publishing chapter. The spec's scope table has neither; section 14 of the spec puts Publishing out until after phase 10.
+- The guide's Exporting chapter names ASCII/UTF-8, HTML, LaTeX and iCalendar only. The spec also lists Markdown and OpenDocument. Under the spec's own rule (scope is the guide) these are extras.
+- The guide has no separate chapter for Babel languages beyond "Working with Source Code"; Lisp and JavaScript come from the spec, not the guide.

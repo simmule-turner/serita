@@ -1,0 +1,17 @@
+name: ci
+on: [push, pull_request]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - uses: actions/setup-node@v4
+        with: { node-version: 22 }
+      - run: npm run check
+      - run: npm test
+        env: { TZ: UTC }
+      - run: npm test
+        env: { TZ: America/New_York }
+      - run: npm test
+        env: { TZ: Pacific/Auckland }

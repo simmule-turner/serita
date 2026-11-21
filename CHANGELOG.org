@@ -1,0 +1,4 @@
+#+TITLE: Changelog
+
+* 0.0.1
+The repository starter: an Org parser that returns your text exactly as it was, a document model whose undo restores it exactly, the storage naming used by the init files (~github:home.org~), and the interface each platform will implement. It exists so the project can live on GitHub with its license, clean-room checks and test runs from the first commit.

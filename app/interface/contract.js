@@ -1,0 +1,49 @@
+// The app interface: the one contract the core and the UI use for everything that touches the world.
+// Each platform supplies an implementation. A capability the platform lacks is reported by
+// capabilities() and throws CapabilityUnavailable when called. Nothing imitates a missing capability.
+
+/**
+ * @typedef {{ available: boolean, reason?: string }} Capability
+ * @typedef {{ text: string, version: string }} ReadResult
+ * @typedef {{ ok: true, version: string }
+ *   | { ok: false, conflict: { theirs: string | null, theirsVersion: string | null } }} WriteResult
+ *
+ * @typedef {object} Storage
+ * @property {(name: string) => Promise<ReadResult | null>} read  null when the file does not exist
+ * @property {(name: string, text: string, opts?: { baseVersion?: string }) => Promise<WriteResult>} write
+ *   baseVersion is the version last read; omit it only when creating a new file
+ * @property {(prefix?: string) => Promise<string[]>} list  full names, sorted
+ * @property {(name: string) => Promise<void>} remove
+ * @property {(name: string, cb: (name: string) => void) => () => void} watch  returns unsubscribe
+ * @property {() => string[]} providers
+ *
+ * @typedef {object} AppInterface
+ * @property {() => Record<string, Capability>} capabilities
+ * @property {Storage} storage
+ * @property {{ now: () => Date, timeZone: () => string }} clock
+ * @property {{ schedule: (n: { id: string, at: Date, title: string, body?: string }) => Promise<void>,
+ *             cancel: (id: string) => Promise<void> }} notify
+ * @property {{ open: (url: string) => Promise<void> }} links
+ * @property {{ read: () => Promise<string>, write: (text: string) => Promise<void> }} clipboard
+ * @property {{ pickOpen: () => Promise<{ name: string, text: string } | null>,
+ *              pickSave: (suggestedName: string, text: string) => Promise<boolean>,
+ *              pickFolder: () => Promise<string | null> }} files
+ * @property {{ run: (req: { language: string, code: string, vars?: object,
+ *              limits?: { ms?: number } }) => Promise<{ value: unknown, output: string }> }} script
+ */
+
+/** The capability names every implementation reports. */
+export const CAPABILITIES = Object.freeze(['storage', 'clock', 'notify', 'links', 'clipboard', 'files', 'script']);
+
+export class CapabilityUnavailable extends Error {
+  /**
+   * @param {string} capability
+   * @param {string} [reason]
+   */
+  constructor(capability, reason = 'not available on this platform') {
+    super(`${capability}: ${reason}`);
+    this.name = 'CapabilityUnavailable';
+    this.code = 'unavailable';
+    this.capability = capability;
+  }
+}

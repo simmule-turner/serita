@@ -1,0 +1,12 @@
+# One case-insensitive substring per line. A source file containing any line fails the check.
+# Extend this list when a GPL-derived identifier or header is identified.
+GNU General Public License
+GNU Lesser General Public License
+GNU Affero General Public License
+GNU Free Documentation License
+SPDX-License-Identifier: GPL
+SPDX-License-Identifier: LGPL
+SPDX-License-Identifier: AGPL
+SPDX-License-Identifier: GFDL
+Free Software Foundation
+gnu.org/licenses

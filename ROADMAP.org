@@ -1,0 +1,15 @@
+#+TITLE: Roadmap
+
+Planned work only. Phase order is in SPEC.md section 12.
+
+* Phase 1: Foundations (in progress)
+- Local storage provider (browser), then the browser interface implementation.
+- GitHub and WebDAV providers with the three-way conflict prompt.
+- PWA shell and service worker; the first installable release.
+- Incremental reparse on edit (the document model reparses fully today).
+- Precache check once the service worker exists.
+
+* Decisions pending
+- Whether LaTeX export stays after HTML, Slides and ASCII.
+- What format Slides produces.
+- Contacts and calendar exchange details (SPEC.md 13.6).

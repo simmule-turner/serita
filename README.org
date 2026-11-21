@@ -1,0 +1,18 @@
+#+TITLE: Serita
+#+SUBTITLE: Reads and writes Org files
+
+Serita is an Org-mode app for phones, tablets, Chromebooks and desktop browsers. It is MIT licensed and written from scratch.
+
+* Status
+Early foundations: the Org parser, the document model with undo, storage names, and the app interface with its tests. There is no user interface yet.
+
+* Run the checks and tests
+Needs Node 22 or later and no packages.
+
+: npm run check
+: npm test
+
+~npm run check~ verifies licenses, the deny-list, the provenance log and commit sign-offs. ~npm test~ runs every test.
+
+* Contribute
+Read [[file:CONTRIBUTING.md][CONTRIBUTING.md]] first. This is a clean-room project, and every module needs an entry in [[file:PROVENANCE.md][PROVENANCE.md]].
