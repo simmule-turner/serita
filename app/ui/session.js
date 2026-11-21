@@ -128,6 +128,16 @@ export function createSession({ app }) {
       changed();
     },
 
+    /** Re-reads an open file whose copy in storage changed, unless the buffer has unsaved edits. */
+    async refresh(name) {
+      const b = buffers.find((x) => x.name === name);
+      if (!b || b.text !== b.saved) return;
+      const r = await app.storage.read(name);
+      if (!r) return;
+      replace(b.id, { text: r.text, saved: r.text, version: r.version });
+      changed();
+    },
+
     /** Three-way merge of a conflict: { clean, text } or the segments to choose from. */
     merge(conflict) { return merge3(conflict.base, conflict.mine, conflict.theirs ?? ''); },
     resolve,

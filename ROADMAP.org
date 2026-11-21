@@ -6,14 +6,13 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Try the GitHub and WebDAV providers against real servers; the tests use fakes built from the documentation.
 - WebDAV from a browser needs the server to allow cross-origin requests for its methods and headers; check this against your server. The native apps are not limited this way.
 - WebDAV listing sends one request per folder; a large tree will be slow.
-- The conflict prompt (keep mine, keep theirs, merge) that uses the cache's conflicts and the merge; needs a mockup first.
 - Server errors (5xx) are reported today, not queued.
 - GitHub: files over 1 MB, branch names containing a slash, and an empty repository (none are verified against the live service yet).
 - Merge for very large, very different files (it asks the user to pick a side today).
 - Changes made in another tab reaching ~watch~ (it covers the current tab today).
 - Folder access in the browser (needs a stored folder handle; native apps do it fully).
 - Incremental reparse on edit (the document model reparses fully today).
-- A pending-changes indicator for saves waiting to be sent.
+- Reopen the list of unsent clashes on demand; today it reappears at the next start or reconnect.
 
 * Decisions pending
 - Whether LaTeX export stays after HTML, Slides and ASCII.

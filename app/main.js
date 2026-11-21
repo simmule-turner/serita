@@ -116,7 +116,7 @@ function renderModeLine() {
   if (!b) { $('modeline').textContent = ''; return; }
   const { line, col } = cursorPosition();
   const where = b.name === null ? b.title : `${parseName(b.name).path} (${STORAGE_LABEL[parseName(b.name).provider]})`;
-  $('modeline').textContent = `${b.dirty ? '**' : '--'}  ${where}  ${scrollPosition()}  L${line} C${col}`;
+  $('modeline').textContent = `${b.dirty ? '**' : '--'}  ${where}  ${scrollPosition()}  L${line} C${col}${pendingCount > 0 ? `  ${pendingCount} to send` : ''}`;
 }
 
 function render() {
@@ -124,12 +124,10 @@ function render() {
   $('tabs').replaceChildren(...s.buffers.map((b) => h('span', { class: `tab${b.id === s.current ? ' current' : ''}` },
     h('button', { class: 'title', onclick: () => session.select(b.id), title: b.name ?? b.title }, b.title + (b.dirty ? ' *' : '')),
     h('button', { 'aria-label': `Close ${b.title}`, onclick: () => closeBuffer(b.id) }, '×'))));
-  if (s.current !== shownId) {
-    shownId = s.current;
-    const b = s.buffers.find((x) => x.id === s.current);
-    editor.disabled = !b;
-    editor.value = b?.text ?? '';
-  }
+  const shown = s.buffers.find((x) => x.id === s.current);
+  shownId = s.current;
+  editor.disabled = !shown;
+  if (editor.value !== (shown?.text ?? '')) editor.value = shown?.text ?? '';
   renderModeLine();
 }
 
@@ -144,6 +142,7 @@ async function handleSave(r, id) {
   if (r.status === 'saved') {
     const b = session.state().buffers.find((x) => x.id === id);
     recent.add(b.name);
+    updatePending().catch(failure);
     message(navigator.onLine ? `Wrote ${b.name}` : `Wrote ${b.name} (offline; it will be sent when you are back online)`);
     return true;
   }
@@ -191,32 +190,35 @@ async function saveSomeBuffers() {
 
 // ---- Conflict ------------------------------------------------------------------------------------
 
-async function conflict(c) {
-  const settleAndMaybeSave = async (text, save) => {
-    session.settle(c, text);
-    return save ? saveBuffer(c.id) : false;
-  };
-  const choice = await panel((sheet, close) => {
+/**
+ * Asks how to settle a clash between your copy and the server's.
+ * Returns 'mine', 'theirs', { merged: text }, or undefined to decide later.
+ * @param {{ name: string, theirsGone: boolean, mineGone: boolean, offline: boolean, merge: () => any }} o
+ */
+function askClash({ name, theirsGone, mineGone, offline, merge: mergeFn }) {
+  return panel((sheet, close) => {
     const first = () => {
-      put(sheet, 
-        h('h2', {}, `${c.name.replace(/^.*[/:]/, '')} changed on the server`),
-        h('p', {}, c.theirs === null ? 'The file was deleted on the server since you opened it.' : 'Someone saved a newer copy since you opened it.'),
+      put(sheet,
+        h('h2', {}, `${name.replace(/^.*[/:]/, '')} changed on the server`),
+        h('p', {}, theirsGone ? 'The file was deleted on the server since you opened it.'
+          : mineGone ? 'You deleted this file while offline, but it changed on the server.'
+            : offline ? 'Someone saved a newer copy while you were offline.' : 'Someone saved a newer copy since you opened it.'),
         h('div', { class: 'row' },
-          c.theirs === null ? null : h('button', { onclick: () => merge() }, 'Merge'),
-          h('button', { onclick: () => close('mine') }, 'Keep mine'),
-          c.theirs === null ? null : h('button', { onclick: () => close('theirs') }, 'Use theirs'),
+          theirsGone || mineGone ? null : h('button', { onclick: () => merge() }, 'Merge'),
+          mineGone ? null : h('button', { onclick: () => close('mine') }, 'Keep mine'),
+          theirsGone ? null : h('button', { onclick: () => close('theirs') }, 'Use theirs'),
           h('button', { onclick: () => close(undefined) }, 'Cancel')));
     };
     const merge = () => {
-      const m = session.merge(c);
+      const m = mergeFn();
       if (m.clean) { close({ merged: m.text }); return; }
       const picks = [];
-      const rows = m.segments.filter((s) => s.type === 'conflict').map((s, i) => {
+      const rows = m.segments.filter((x) => x.type === 'conflict').map((x, i) => {
         picks[i] = 'mine';
         const sel = h('select', { onchange: () => { picks[i] = sel.value; } },
           h('option', { value: 'mine' }, 'Keep mine'), h('option', { value: 'theirs' }, 'Use theirs'), h('option', { value: 'both' }, 'Keep both'));
-        return h('div', { class: 'list' }, h('label', {}, `Conflict ${i + 1}: mine`), h('pre', {}, s.mine.join('')),
-          h('label', {}, 'theirs'), h('pre', {}, s.theirs.join('')), sel);
+        return h('div', { class: 'list' }, h('label', {}, `Conflict ${i + 1}: mine`), h('pre', {}, x.mine.join('')),
+          h('label', {}, 'theirs'), h('pre', {}, x.theirs.join('')), sel);
       });
       put(sheet, h('h2', {}, 'Settle the clashes'), ...rows,
         h('div', { class: 'row' }, h('button', { onclick: () => first() }, 'Back'),
@@ -224,12 +226,59 @@ async function conflict(c) {
     };
     first();
   });
+}
+
+async function conflict(c) {
+  const choice = await askClash({ name: c.name, theirsGone: c.theirs === null, mineGone: false, offline: false, merge: () => session.merge(c) });
   if (choice === undefined) return false;
-  if (choice === 'mine') return settleAndMaybeSave(c.mine, true);
-  if (choice === 'theirs') { await settleAndMaybeSave(c.theirs, false); message('Loaded the server copy'); return false; }
-  await settleAndMaybeSave(choice.merged, false);
+  if (choice === 'mine') { session.settle(c, c.mine); return saveBuffer(c.id); }
+  if (choice === 'theirs') { session.settle(c, c.theirs); message('Loaded the server copy'); return false; }
+  session.settle(c, choice.merged);
   message('Merged. Save to send it.');
   return false;
+}
+
+// ---- Saves that were queued offline and clashed ---------------------------------------------------
+
+let pendingCount = 0;
+
+async function updatePending() {
+  let n = 0;
+  for (const p of ['github', 'webdav']) if (providers[p]) n += (await providers[p].pending()).length;
+  pendingCount = n;
+  renderModeLine();
+}
+
+async function settleQueued(p, clash) {
+  const name = `${p}:${clash.path}`;
+  const choice = await askClash({
+    name, theirsGone: clash.theirs === null, mineGone: clash.mine === null, offline: true,
+    merge: () => session.merge({ base: clash.base ?? '', mine: clash.mine, theirs: clash.theirs }),
+  });
+  if (choice === undefined) return false;
+  if (choice === 'theirs') await providers[p].discard(clash.path);
+  else {
+    const r = await providers[p].resolve(clash.path, choice === 'mine' ? clash.mine : choice.merged, clash.theirsVersion);
+    if (!r.ok) { message(`${name} changed on the server again; try once more`, true); return false; }
+  }
+  await session.refresh(name);
+  message(`Settled ${name}`);
+  return true;
+}
+
+async function clashList(found) {
+  let left = found;
+  while (left.length > 0) {
+    const pick = await panel((sheet, close) => {
+      put(sheet, h('h2', {}, 'Saves that could not be sent'),
+        h('p', {}, 'These files changed on the server while you were offline. Choose one to settle it.'),
+        h('div', { class: 'list' }, left.map((x) => h('button', { class: 'item', onclick: () => close(x) },
+          h('span', {}, recentLabel(`${x.p}:${x.clash.path}`)), h('span', { class: 'meta' }, x.clash.theirs === null ? 'deleted' : 'changed')))),
+        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Decide later')));
+    });
+    if (!pick) return;
+    if (await settleQueued(pick.p, pick.clash)) left = left.filter((x) => x !== pick);
+  }
 }
 
 // ---- File browser (Open and Save as) -------------------------------------------------------------
@@ -361,12 +410,12 @@ async function setup(p) {
       h('div', { class: 'row' },
         h('button', { class: 'danger', onclick: async () => {
           config.update({ settings: Object.fromEntries(def.fields.map(([k]) => [k, ''])), secrets: { [def.secret[0]]: '' } });
-          await rebuild(); message(`${def.title} removed`); close(true);
+          await rebuild(); await updatePending(); message(`${def.title} removed`); close(true);
         } }, 'Remove'),
         h('button', { onclick: () => close(undefined) }, 'Cancel'),
         h('button', { class: 'primary', onclick: async () => {
           config.update({ settings: Object.fromEntries(inputs.map(([k, i]) => [k, i.value.trim()])), secrets: secret.value ? { [def.secret[0]]: secret.value } : {} });
-          try { await rebuild(); message(config[`${p}Ready`]() ? `${def.title} set up` : `${def.title} needs every field before it can be used`); } catch (e) { failure(e); }
+          try { await rebuild(); await updatePending(); message(config[`${p}Ready`]() ? `${def.title} set up` : `${def.title} needs every field before it can be used`); } catch (e) { failure(e); }
           close(true);
         } }, 'Save')));
   });
@@ -442,6 +491,7 @@ $('import-file').addEventListener('change', async (ev) => {
     if (!result) return;
     config.replaceAll(result);
     await rebuild();
+    await updatePending();
     message(`Settings imported (${Object.keys(result.settings).length + Object.keys(result.secrets).length})`);
   } catch (e) { failure(e); }
 });
@@ -512,17 +562,19 @@ window.addEventListener('beforeunload', (e) => { if (session.unsavedIds().length
 
 async function sendQueued() {
   let sent = 0;
-  let clashes = 0;
+  const found = [];
   for (const p of ['github', 'webdav']) {
     if (!providers[p]) continue;
     try {
       const r = await providers[p].sync();
       sent += r.synced.length;
-      clashes += r.conflicts.length;
+      for (const clash of r.conflicts) found.push({ p, clash });
     } catch (e) { failure(e); return; }
   }
   if (sent) message(`Sent ${sent} saved ${sent === 1 ? 'file' : 'files'} to the server`);
-  if (clashes) message(`${clashes} ${clashes === 1 ? 'file' : 'files'} changed on the server and could not be sent`, true);
+  await updatePending();
+  if (found.length > 0) await clashList(found);
+  await updatePending();
 }
 window.addEventListener('online', sendQueued);
 if (navigator.onLine) sendQueued();
@@ -531,3 +583,4 @@ if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catc
 
 session.newScratch();
 message('Welcome to Serita');
+updatePending().catch(failure);

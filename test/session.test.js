@@ -105,3 +105,20 @@ test('unsavedIds lists dirty files and scratch buffers with text', async () => {
   assert.deepEqual(s.unsavedIds(), [a, t]);
   assert.ok(!s.unsavedIds().includes(e));
 });
+
+test('refresh takes a changed server copy into a clean buffer, and leaves unsaved edits alone', async () => {
+  const { app, s } = make();
+  await app.storage.write('local:a.org', 'one');
+  const { id } = await s.openFile('local:a.org');
+  const v = (await app.storage.read('local:a.org')).version;
+  await app.storage.write('local:a.org', 'two', { baseVersion: v });
+  await s.refresh('local:a.org');
+  assert.equal(s.state().buffers[0].text, 'two');
+  assert.equal(s.state().buffers[0].dirty, false);
+  s.setText(id, 'mine');
+  const v2 = (await app.storage.read('local:a.org')).version;
+  await app.storage.write('local:a.org', 'three', { baseVersion: v2 });
+  await s.refresh('local:a.org');
+  assert.equal(s.state().buffers[0].text, 'mine');
+  await s.refresh('local:nope.org');
+});

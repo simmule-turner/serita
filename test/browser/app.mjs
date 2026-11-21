@@ -79,6 +79,55 @@ await context.setOffline(true);
 await page.reload();
 await page.waitForSelector('.tab.current');
 ok(true, 'the app starts offline from the service worker cache');
+
+// Saves made offline that clash with a newer server copy (a fake WebDAV server answers for dav.test).
+const { createFakeWebdav } = await import('../fake-webdav.js');
+const dav = createFakeWebdav();
+const ctx2 = await browser.newContext();
+await ctx2.route('https://dav.test/**', async (route) => {
+  const req = route.request();
+  const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': '*', 'access-control-expose-headers': 'etag' };
+  if (req.method() === 'OPTIONS') { await route.fulfill({ status: 204, headers: cors }); return; }
+  const r = await dav.fetch(req.url(), { method: req.method(), headers: await req.allHeaders(), body: req.postData() ?? undefined });
+  const etag = r.headers.get('etag');
+  await route.fulfill({ status: r.status, headers: { ...cors, ...(etag ? { etag } : {}), 'content-type': 'application/xml' }, body: await r.text() });
+});
+const p2 = await ctx2.newPage();
+p2.on('pageerror', (e) => errors.push(e.message));
+await p2.goto(`${base}/`);
+await p2.waitForSelector('.tab.current');
+const sheet2 = p2.locator('.sheet');
+const b2 = (name) => sheet2.getByRole('button', { name, exact: true });
+await p2.click('#btn-menu'); await b2('Settings').click(); await sheet2.getByRole('button', { name: 'WebDAV' }).click();
+await sheet2.getByLabel('Server address').fill('https://dav.test/dav/');
+await sheet2.getByLabel('User name').fill('me');
+await sheet2.getByLabel('Password').fill('pw');
+await b2('Save').click();
+await b2('Close').click();
+await p2.fill('#editor', 'base\n');
+await p2.click('#btn-files'); await b2('Save as').click();
+await sheet2.getByRole('button', { name: /Storage/ }).click();
+await sheet2.getByRole('button', { name: /WebDAV/ }).click();
+await sheet2.getByLabel('File name').fill('q.org');
+await b2('Save').click();
+await p2.waitForFunction(() => document.getElementById('message').textContent.startsWith('Wrote webdav:q.org'));
+ok(dav.files.get('q.org')?.text === 'base\n', 'a save online reaches the WebDAV server');
+
+await ctx2.setOffline(true);
+await p2.fill('#editor', 'mine\n');
+await p2.click('#btn-save');
+await p2.waitForFunction(() => document.getElementById('message').textContent.includes('offline'));
+ok((await p2.locator('#modeline').textContent()).includes('1 to send'), 'the mode line says one save is waiting to be sent');
+dav.setRaw('q.org', 'theirs\n');
+await ctx2.setOffline(false);
+await sheet2.getByText('Saves that could not be sent').waitFor();
+ok((await sheet2.textContent()).includes('q.org (WebDAV)'), 'coming back online lists the clashing file');
+await sheet2.getByRole('button', { name: /q\.org/ }).click();
+await b2('Keep mine').click();
+await p2.waitForFunction(() => document.getElementById('message').textContent.startsWith('Settled'));
+ok(dav.files.get('q.org')?.text === 'mine\n', 'Keep mine sends the offline copy to the server');
+ok(!(await p2.locator('#modeline').textContent()).includes('to send'), 'the waiting marker goes away');
+
 ok(errors.length === 0, `no page errors${errors.length ? ': ' + errors.join('; ') : ''}`);
 await close();
 process.exit(failed ? 1 : 0);
