@@ -53,6 +53,12 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 ### `app/storage/github.js`
 - Written from: GitHub's published REST documentation for repository contents (get, create or update, delete) and git trees, fetched 2026-11-21 from docs.github.com. Endpoint paths, headers, body fields, the 1 MB inline limit and the tree limits come from it. The documentation does not say which status a stale or missing sha produces, so the provider decides conflicts by re-reading the file; that rule is the session's own design. Statement as above.
 
+### `app/storage/cached.js`
+- Written from: SPEC 13.1 (offline cache for the GitHub and WebDAV providers, one commit per save, a three-way prompt on conflict) and the session's own design: a cache record per file holding the last server copy, an unsent local edit with a version token, and a queued delete; a sync that returns conflicts with base, mine and theirs. Only a typed network error counts as offline. Statement as above.
+
+### `test/cached.test.js`
+- Written from: the description above. Statement as above.
+
 ### `app/storage/conflict.js`
 - Written from: the general idea of a three-way line merge (changes in different places combine; the same place changed differently is a conflict). The matching step is a standard longest-common-subsequence table written from its textbook definition. No diff or merge library or tool source was read. Statement as above.
 

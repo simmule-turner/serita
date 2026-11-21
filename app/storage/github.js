@@ -5,7 +5,7 @@
 // The API documentation does not say which status code a stale or missing sha produces, so any
 // 404, 409 or 422 on a write is settled by reading the file again and comparing versions.
 
-import { CapabilityUnavailable } from '../interface/contract.js';
+import { CapabilityUnavailable, NetworkUnavailable } from '../interface/contract.js';
 
 const API_VERSION = '2026-03-10';
 
@@ -52,16 +52,19 @@ export function createGithubProvider({
   async function call(method, url, body) {
     const token = await getToken();
     if (!token) throw new CapabilityUnavailable('storage', 'the github provider has no access token');
-    const res = await fetch(url, {
-      method,
-      headers: {
-        Accept: 'application/vnd.github+json',
-        Authorization: `Bearer ${token}`,
-        'X-GitHub-Api-Version': API_VERSION,
-        ...(body ? { 'Content-Type': 'application/json' } : {}),
-      },
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    let res;
+    try {
+      res = await fetch(url, {
+        method,
+        headers: {
+          Accept: 'application/vnd.github+json',
+          Authorization: `Bearer ${token}`,
+          'X-GitHub-Api-Version': API_VERSION,
+          ...(body ? { 'Content-Type': 'application/json' } : {}),
+        },
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    } catch (e) { throw new NetworkUnavailable(e); }
     let json = null;
     try { json = await res.json(); } catch { /* no body */ }
     return { status: res.status, json };

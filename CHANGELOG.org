@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.0.4
+Saves made while offline are now kept and sent when you are back online, so you can keep working on a train and nothing is lost. If someone changed the same file on the server in the meantime, you get both versions and the original to merge or choose from, and a delete you made offline is treated the same way. Files you have already opened stay readable offline.
+
 * 0.0.3
 Files in a GitHub repository can now be read, saved, listed and deleted, with one commit per save and your token kept out of the code. A save that would overwrite newer text on the server is caught and reported as a conflict, and a new three-way merge can combine changes made in different places while leaving true clashes for you to settle. This is the storage half of the sync you described; the offline cache and the prompt come next.
 

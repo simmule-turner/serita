@@ -4,7 +4,9 @@ Planned work only. Phase order is in SPEC.md section 12.
 
 * Phase 1: Foundations (in progress)
 - WebDAV provider, built beside the GitHub one.
-- Offline cache and queued saves for the GitHub and WebDAV providers, and the conflict prompt that uses the three-way merge.
+- The conflict prompt (keep mine, keep theirs, merge) that uses the cache's conflicts and the merge; needs a mockup first.
+- Retry of queued saves when the browser comes back online, and a pending-changes indicator.
+- Server errors (5xx) are reported today, not queued.
 - GitHub: files over 1 MB, branch names containing a slash, and an empty repository (none are verified against the live service yet).
 - Merge for very large, very different files (it asks the user to pick a side today).
 - Changes made in another tab reaching ~watch~ (it covers the current tab today).

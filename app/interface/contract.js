@@ -35,6 +35,17 @@
 /** The capability names every implementation reports. */
 export const CAPABILITIES = Object.freeze(['storage', 'clock', 'notify', 'links', 'clipboard', 'files', 'script']);
 
+/** A remote provider could not reach its server. Callers may queue work and retry later. */
+export class NetworkUnavailable extends Error {
+  /** @param {unknown} [cause] */
+  constructor(cause) {
+    super(`network unavailable${cause instanceof Error ? `: ${cause.message}` : ''}`);
+    this.name = 'NetworkUnavailable';
+    this.code = 'offline';
+    this.cause = cause;
+  }
+}
+
 export class CapabilityUnavailable extends Error {
   /**
    * @param {string} capability
