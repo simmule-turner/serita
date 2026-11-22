@@ -58,6 +58,7 @@ const fontChoice = () => setting('view.font') ?? 'monospace';
 const fontFamily = () => FONTS[fontChoice()] ?? `"${fontChoice().replace(/["\\]/g, '')}", monospace`;
 const paragraphSpacing = () => Math.min(32, Math.max(0, Number(setting('view.paragraphSpacing') ?? 10) || 0));
 const tagsColumn = () => { const n = Number(setting('org.tagsColumn')); return Number.isInteger(n) && setting('org.tagsColumn') !== undefined && setting('org.tagsColumn') !== '' ? n : DEFAULT_TAGS_COLUMN; };
+const keyLogOn = () => setting('view.keyLog') === 'true';
 const beepOn = () => setting('view.beep') !== 'false';
 const restoreOn = () => setting('session.restore') !== 'false';
 const lineNumbers = () => setting('view.lineNumbers') === 'true';
@@ -588,6 +589,7 @@ async function settings() {
           h('button', { class: 'item', onclick: () => close('tags-column') }, h('span', {}, 'Tag column'), h('span', { class: 'meta' }, `${tagsColumn()} ›`)),
           h('button', { class: 'item', onclick: () => close('restore') }, h('span', {}, 'Restore open files on start'), h('span', { class: 'meta' }, restoreOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('tools-text') }, h('span', {}, 'Tool row in the Text view'), h('span', { class: 'meta' }, toolRowOn('text') ? 'On ›' : 'Off ›')),
+          h('button', { class: 'item', onclick: () => close('keylog') }, h('span', {}, 'Key event log'), h('span', { class: 'meta' }, keyLogOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('beep') }, h('span', {}, 'Beep on errors'), h('span', { class: 'meta' }, beepOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('tools-outline') }, h('span', {}, 'Tool row in the Outline view'), h('span', { class: 'meta' }, toolRowOn('outline') ? 'On ›' : 'Off ›')),
           h('div', { class: 'item', style: 'display:flex;align-items:center;justify-content:space-between;padding:4px 0' }, h('span', {}, 'Settings file'),
@@ -606,6 +608,7 @@ async function settings() {
     else if (what === 'appearance') await appearance();
     else if (what === 'tags-column') await tagsColumnDialog();
     else if (what === 'beep') config.update({ settings: { 'view.beep': String(!beepOn()) } });
+    else if (what === 'keylog') { config.update({ settings: { 'view.keyLog': String(!keyLogOn()) } }); klog('log', 'on'); }
     else if (what === 'restore') config.update({ settings: { 'session.restore': String(!restoreOn()) } });
     else if (what === 'tools-text') config.update({ settings: { 'view.toolRowText': String(!toolRowOn('text')) } });
     else if (what === 'tools-outline') config.update({ settings: { 'view.toolRowOutline': String(!toolRowOn('outline')) } });
@@ -1269,6 +1272,7 @@ function page(dir) {
 
 function runChord(chord, event, fromRow) {
   const r = keymap.press(chord);
+  klog('chord', chord, r.kind, r.command ?? r.echo ?? '');
   if (r.kind === 'run') {
     event.preventDefault();
     message('');
@@ -1319,6 +1323,22 @@ editor.addEventListener('keydown', (e) => {
   // An on-screen keyboard sends its letters as Unidentified or Process key presses followed by typed text (the beforeinput handler below); the held keys wait for that text.
   if (fromRow && !MODIFIER_KEYS.includes(e.key) && !SOFT_KEYS.includes(e.key) && e.keyCode !== 229) keyRow.clear();
 });
+
+// A log of what the keyboard sends the editor, for finding out why a key does not do what it should (Settings, Key event log).
+const keylog = $('keylog');
+function klog(...parts) {
+  keylog.hidden = !keyLogOn();
+  if (!keyLogOn()) return;
+  keylog.textContent = [...(keylog.textContent ? keylog.textContent.split('\n') : []), parts.join(' ')].slice(-14).join('\n');
+}
+for (const type of ['keydown', 'keyup', 'beforeinput', 'input', 'compositionstart', 'compositionupdate', 'compositionend']) {
+  editor.addEventListener(type, (e) => {
+    const held = keyRow.sticky();
+    klog(type, e.key !== undefined ? `key=${e.key} code=${e.code} kc=${e.keyCode}` : '', e.inputType ? `type=${e.inputType}` : '', e.data !== undefined && e.data !== null ? `data=${JSON.stringify(e.data)}` : '',
+      e.isComposing ? 'composing' : '', e.cancelable === false ? 'uncancelable' : '', `mods=${[e.ctrlKey && 'C', e.altKey && 'A', e.metaKey && 'M', e.shiftKey && 'S'].filter(Boolean).join('')}`,
+      `row=${Object.entries(held).filter(([, v]) => v).map(([k]) => k).join(',')}`, `pending=${keymap.pending()}`);
+  }, true);
+}
 
 // An on-screen keyboard reports its letters as typed text, not as key presses. With Ctrl or Meta held on the key row, or after a prefix such as
 // C-c, such a letter is a key chord and not text to insert.

@@ -93,6 +93,12 @@ await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await soft('c
 await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await soft('t');
 ok((await text()) === '* TODO H\n', 'C-c C-t from typed letters changes the TODO state');
 
+// The key event log shows what the keyboard sends
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/Key event log/).click(); await btn('Close').click();
+await at('x\n', 1); await page.keyboard.press('Control+e');
+const logged = await page.locator('#keylog').textContent();
+ok(logged.includes('keydown') && logged.includes('chord C-e run end-of-line'), 'the key event log lists key events and the chord they became');
+
 // Menu: Commands
 await page.click('#btn-menu');
 const items = await sheet.locator('.item').allTextContents();

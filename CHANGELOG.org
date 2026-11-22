@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.4.4
+Settings has a Key event log: when on, the top of the screen lists what the keyboard sends the editor (key, code, typed text, composition, the keys held on the key row) and the chord Serita made of it, so a key that does nothing can be diagnosed from a screenshot. Verified: the log shows the chord for a pressed key.
+
 * 0.4.3
 Ctrl and Meta on the key row now work with an on-screen keyboard: the key row's held keys were being dropped when the keyboard announced a letter, so the letter was inserted instead of run. C-n, C-p, C-a, C-e, M-<, M->, C-s and C-c sequences now run from the key row. The Line button asks in the minibuffer in the Text view. Verified: the key-row cases reproduce the failure without the fix and pass with it.
 
