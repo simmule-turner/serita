@@ -1301,6 +1301,7 @@ function moveCursor(key, extend) {
 }
 
 const HEADING_ONLY = new Set(['S-<up>', 'S-<down>', 'S-<left>', 'S-<right>']);
+const SOFT_KEYS = ['Unidentified', 'Process'];
 const MODIFIER_KEYS = ['Control', 'Alt', 'Meta', 'Shift'];
 
 editor.addEventListener('keydown', (e) => {
@@ -1315,7 +1316,8 @@ editor.addEventListener('keydown', (e) => {
   if ((chord === 'C-c' || chord === 'C-x' || chord === 'C-v') && !held.ctrl && keymap.pending() === '') return; // a keyboard's own C-c, C-x and C-v stay copy, cut and paste; the prefixes come from the key row
   if (chord) runChord(chord, e, fromRow);
   else if (keymap.pending() && e.key.length === 1) runChord(e.key, e, false);
-  if (fromRow && !MODIFIER_KEYS.includes(e.key)) keyRow.clear();
+  // An on-screen keyboard sends its letters as Unidentified or Process key presses followed by typed text (the beforeinput handler below); the held keys wait for that text.
+  if (fromRow && !MODIFIER_KEYS.includes(e.key) && !SOFT_KEYS.includes(e.key) && e.keyCode !== 229) keyRow.clear();
 });
 
 // An on-screen keyboard reports its letters as typed text, not as key presses. With Ctrl or Meta held on the key row, or after a prefix such as

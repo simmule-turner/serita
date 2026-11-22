@@ -80,16 +80,17 @@ ok(await page.locator('#findbar .prompt').textContent() === 'I-search backward:'
 ok(await page.evaluate(() => { const e = document.getElementById('editor'); return e.selectionStart === 4; }), 'C-r finds the match before the cursor');
 await page.keyboard.press('Escape');
 
-// Letters from an on-screen keyboard arrive as typed text: with Ctrl held on the key row they are chords
+// Letters from an on-screen keyboard arrive as an Unidentified key press (code 229) and then typed text: with Ctrl held on the key row they are chords
+const soft = (c) => page.evaluate(() => document.getElementById('editor').dispatchEvent(new KeyboardEvent('keydown', { key: 'Unidentified', keyCode: 229, bubbles: true, cancelable: true }))).then(() => page.keyboard.insertText(c));
 await at('ab\ncd\n', 1);
-await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await page.keyboard.insertText('n');
+await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await soft('n');
 ok((await text()) === 'ab\ncd\n' && await page.evaluate(() => document.getElementById('editor').selectionStart === 3), 'Ctrl on the key row and a typed n is C-n');
-await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await page.keyboard.insertText('s');
+await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await soft('s');
 ok(await page.locator('#findbar .prompt').textContent() === 'I-search:', 'Ctrl and a typed s is C-s');
 await page.keyboard.press('Escape');
 await at('* H\n', 1);
-await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await page.keyboard.insertText('c');
-await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await page.keyboard.insertText('t');
+await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await soft('c');
+await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await soft('t');
 ok((await text()) === '* TODO H\n', 'C-c C-t from typed letters changes the TODO state');
 
 // Menu: Commands

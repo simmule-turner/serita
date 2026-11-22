@@ -41,8 +41,8 @@ ok((await value()) === 'one\ntwo\ntwo\nthree\n', 'Move line up swaps equal lines
 await tool('Lines and text').click(); await btn(/Delete line/).click();
 ok((await value()) === 'one\ntwo\nthree\n', 'Delete line removes the line');
 await tool('Lines and text').click(); await btn(/Go to line/).click();
-await sheet.getByLabel('Line number').fill('3');
-await btn('Go').click();
+await page.locator('#findbar input').fill('3'); // the Text view asks in the minibuffer
+await page.keyboard.press('Enter');
 ok((await page.evaluate(() => document.getElementById('editor').selectionStart)) === 8, 'Go to line puts the cursor at the start of line 3');
 
 await tool('Undo').click();

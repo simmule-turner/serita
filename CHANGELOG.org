@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.4.3
+Ctrl and Meta on the key row now work with an on-screen keyboard: the key row's held keys were being dropped when the keyboard announced a letter, so the letter was inserted instead of run. C-n, C-p, C-a, C-e, M-<, M->, C-s and C-c sequences now run from the key row. The Line button asks in the minibuffer in the Text view. Verified: the key-row cases reproduce the failure without the fix and pass with it.
+
 * 0.4.2
 C-s and C-r start a forward or backward search in the Text view, and press again inside the search for the next or previous match. Letters typed on an on-screen keyboard now count as key presses when Ctrl or Meta is held on the key row, or after a prefix such as C-c, so C-n, C-p, C-s and C-c C-t work from the key row instead of inserting the letter. Cancelling a search returns the cursor to where it began. Verified: the related browser checks pass.
 
