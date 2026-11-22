@@ -151,3 +151,26 @@ test('quick typing is one undo step, other edits are their own', () => {
   assert.equal(s.state().buffers[0].text, '');
   assert.equal(s.undo(a), null);
 });
+
+test('restore reopens files and scratch drafts, keeps unsaved edits and the current tab, and reports unreadable files', async () => {
+  const { app, s } = make();
+  await app.storage.write('local:a.org', '* One\nbody\n');
+  await app.storage.write('local:b.org', 'two');
+  const a = (await s.openFile('local:a.org')).id;
+  await s.openFile('local:b.org');
+  s.setText(a, '* One\nbody edited\n');
+  const scratch = s.newScratch();
+  s.setText(scratch, 'notes');
+  s.select(a);
+  const snap = JSON.parse(JSON.stringify(s.snapshot()));
+
+  const again = createSession({ app });
+  await app.storage.remove('local:b.org');
+  const r = await again.restore(snap);
+  assert.equal(r.opened, 2);
+  assert.deepEqual(r.skipped, ['local:b.org']);
+  const st = again.state();
+  assert.deepEqual(st.buffers.map((b) => b.text), ['* One\nbody edited\n', 'notes']);
+  assert.equal(st.buffers[0].dirty, true);
+  assert.equal(st.current, st.buffers[0].id);
+});

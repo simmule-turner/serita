@@ -175,3 +175,18 @@ test('a heading title is replaced without touching the stars, TODO word, priorit
 test('a new heading can be given its title', () => {
   assert.equal(insertHeadingAfter('* A\n', 0, 'New one').text, '* A\n* New one');
 });
+
+test('the tags column: negative ends the line there, positive starts the tags there, 0 is one space', () => {
+  const at = (title, column) => setTags(title, 0, ['work'], column).text.replace(/\n$/, '');
+  const short = '* Work item\n';
+  assert.equal(at(short, -60).length, 60);
+  assert.equal(at(short, -100).length, 100);
+  assert.equal(at(short, 40).indexOf(':work:'), 40);
+  assert.equal(at(short, 0), '* Work item :work:');
+  assert.equal(at(short, 10), '* Work item :work:');
+  const long = '* A rather long heading title here that goes on for quite a while\n';
+  assert.equal(at(long, -60), '* A rather long heading title here that goes on for quite a while :work:');
+  assert.equal(at(long, 40), '* A rather long heading title here that goes on for quite a while :work:');
+  assert.equal(setTags('* Work item :a:b:\n', 0, ['a', 'b'], -50).text.trimEnd().length, 50);
+  assert.equal(setTags(short, 0, ['work']).text.trimEnd().length, 77);
+});

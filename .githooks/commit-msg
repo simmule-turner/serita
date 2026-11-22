@@ -1,4 +1,12 @@
 #!/bin/sh
 # Adds the DCO sign-off to every commit message that lacks one, so no commit can miss it.
+name=$(git config user.name)
+email=$(git config user.email)
+if [ -z "$name" ] || [ -z "$email" ]; then
+  echo "Commit refused: git needs your name and email for the sign-off." >&2
+  echo "  git config --global user.name \"Your Name\"" >&2
+  echo "  git config --global user.email \"you@example.com\"" >&2
+  exit 1
+fi
 git interpret-trailers --if-exists doNothing --in-place \
-  --trailer "Signed-off-by: $(git config user.name) <$(git config user.email)>" "$1"
+  --trailer "Signed-off-by: $name <$email>" "$1"

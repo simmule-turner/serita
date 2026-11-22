@@ -106,29 +106,34 @@ export function cycleTodo(text, line) {
   return { text: join(lines), line, remap: same, state: next };
 }
 
-const TAGS_COLUMN = 77;
+export const DEFAULT_TAGS_COLUMN = -77;
 const oneLine = (s) => s.replace(/\s*[\r\n]+\s*/g, ' ').trim();
 
-/** A headline's text with its tags aligned so the line ends at column 77, as Emacs does by default. */
-function withTags(base, tags) {
+/**
+ * A headline's text with its tags aligned to `column`: a negative number is the column the line ends at, a positive one the column
+ * the tags start at, and 0 puts them one space after the title. There is always at least one space.
+ */
+function withTags(base, tags, column) {
   const tagText = tags.length ? `:${tags.join(':')}:` : '';
-  return tagText === '' ? base : base + ' '.repeat(Math.max(1, TAGS_COLUMN - base.length - tagText.length)) + tagText;
+  if (tagText === '') return base;
+  const pad = column < 0 ? -column - base.length - tagText.length : column > 0 ? column - base.length : 1;
+  return base + ' '.repeat(Math.max(1, pad)) + tagText;
 }
 
 /** Sets the heading's tags. */
-export function setTags(text, line, tags) {
+export function setTags(text, line, tags, column = DEFAULT_TAGS_COLUMN) {
   headOf(text, line);
   const lines = splitLines(text);
-  lines[line] = { ...lines[line], text: withTags(lines[line].text.replace(new RegExp(TAGS.source, 'u'), ''), tags) };
+  lines[line] = { ...lines[line], text: withTags(lines[line].text.replace(new RegExp(TAGS.source, 'u'), ''), tags, column) };
   return { text: join(lines), line, remap: same };
 }
 
 /** Replaces a heading's title; the stars, TODO word, priority and tags stay. */
-export function setTitle(text, line, title) {
+export function setTitle(text, line, title, column = DEFAULT_TAGS_COLUMN) {
   const { h } = headOf(text, line);
   const lines = splitLines(text);
   const base = `${'*'.repeat(h.level)} ${h.todo ? `${h.todo} ` : ''}${h.priority ? `[#${h.priority}] ` : ''}${h.comment ? 'COMMENT ' : ''}${oneLine(title)}`;
-  lines[line] = { ...lines[line], text: withTags(base, h.tags) };
+  lines[line] = { ...lines[line], text: withTags(base, h.tags, column) };
   return { text: join(lines), line, remap: same };
 }
 

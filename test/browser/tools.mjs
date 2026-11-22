@@ -23,9 +23,9 @@ await page.evaluate(() => document.activeElement.blur());
 await tool('Larger text').click(); await tool('Smaller text').click(); await tool('Line numbers').click(); await tool('Line numbers').click();
 ok((await page.evaluate(() => document.activeElement.id)) !== 'editor', 'pressing tool buttons does not focus the text, so the keyboard stays down');
 await tool('Larger text').click();
-ok((await page.evaluate(() => getComputedStyle(document.getElementById('editor')).fontSize)) === '16px', 'Larger text makes the text 16px');
+ok((await page.evaluate(() => getComputedStyle(document.getElementById('editor')).fontSize)) === '19px', 'Larger text makes the text 19px');
 await tool('Smaller text').click(); await tool('Smaller text').click();
-ok((await page.evaluate(() => getComputedStyle(document.getElementById('editor')).fontSize)) === '14px', 'Smaller text makes it 14px');
+ok((await page.evaluate(() => getComputedStyle(document.getElementById('editor')).fontSize)) === '17px', 'Smaller text makes it 17px');
 
 await tool('Line numbers').click();
 ok((await page.locator('.hl-line').evaluateAll((els) => els.map((e) => e.dataset.n))).join() === '1,2,3,4', 'Line numbers shows a number for every line');
@@ -57,7 +57,26 @@ const fixed = await page.evaluate(() => {
 });
 ok(fixed.y === 0 && fixed.over <= 0 && fixed.top === 0, 'the page itself never scrolls, so the bars stay put');
 
+// A menu over an open keyboard: focus stays in the text, and Cancel stays on screen when the space is short
+await page.evaluate(() => document.getElementById('editor').focus());
+await page.setViewportSize({ width: 390, height: 360 });
+await tool('Lines and text').click();
+const cancel = await btn('Cancel').boundingBox();
+ok(cancel !== null && cancel.y + cancel.height <= 360, 'Cancel stays on screen in a short window');
+ok((await page.evaluate(() => document.activeElement.id)) === 'editor', 'opening the menu leaves the focus in the text');
+await btn('Cancel').click();
+ok((await page.evaluate(() => document.activeElement.id)) === 'editor', 'closing it leaves the focus in the text');
+await page.setViewportSize({ width: 390, height: 800 });
+
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/Tool row in the Text view/).click(); await btn('Close').click();
+ok(await page.locator('#tools').isHidden(), 'the Text view tool row can be hidden');
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/Tool row in the Text view/).click(); await btn('Close').click();
+ok(await page.locator('#tools').isVisible(), 'and shown again');
+
 await page.click('#btn-view'); await btn('Outline').click();
+ok(await page.locator('#tools').isHidden(), 'the Outline view has no tool row until it is turned on');
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/Tool row in the Outline view/).click(); await btn('Close').click();
+ok(!(await page.locator('#tools').textContent()).includes('null'), 'no stray text in the Outline row');
 ok((await page.locator('#tools button').count()) === 4, 'the Outline view keeps Undo, Redo and the two size buttons');
 
 ok(errors.length === 0, `no page errors${errors.length ? ': ' + errors.join('; ') : ''}`);

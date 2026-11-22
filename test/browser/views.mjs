@@ -71,7 +71,7 @@ ok((await page.locator('#keyrow button').allTextContents()).join(',') === 'Meta,
 await page.evaluate(() => document.getElementById('editor').blur());
 await caretAt('* DONE A');
 await page.locator('#keyrow button', { hasText: 'Tab' }).click();
-ok(await page.evaluate(() => document.activeElement !== document.getElementById('editor')), 'pressing a key-row button does not bring up the keyboard');
+ok(await page.evaluate(() => document.getElementById('editor').inputMode === 'none'), 'pressing a key-row button does not bring up the keyboard (the text keeps focus with the keyboard disallowed)');
 const afterTab = await msg();
 ok(['FOLDED', 'CHILDREN', 'SUBTREE'].includes(afterTab) || afterTab === 'Not at a heading', `Tab on the key row runs the command (${afterTab})`);
 
@@ -124,6 +124,18 @@ const moved = await page.locator('#keyrow').boundingBox();
 ok(Math.abs(moved.x - box.x) > 30 && moved.y < box.y - 40, 'the floating panel can be dragged');
 await page.locator('#keyrow button', { hasText: 'Dock' }).click();
 ok((await page.locator('#keyrow.float').count()) === 0, 'Dock puts the row back above the mode line');
+
+// The keyboard button and the arrows: focus stays in the text, and only the keyboard button raises the keyboard
+const mode = () => page.evaluate(() => document.getElementById('editor').inputMode);
+const focused = () => page.evaluate(() => document.activeElement.id);
+ok((await mode()) === 'none', 'with the key row shown, tapping the text does not raise the keyboard');
+await page.evaluate(() => document.activeElement.blur());
+await page.locator('#keyrow button[aria-label="Left"]').click();
+ok((await focused()) === 'editor' && (await mode()) === 'none', 'an arrow on the key row focuses the text without allowing the keyboard');
+await page.locator('#keyrow .kbd').click();
+ok((await focused()) === 'editor' && (await mode()) === 'text', 'the keyboard button allows the keyboard and keeps the focus in the text');
+await page.locator('#keyrow .kbd').click();
+ok((await focused()) === 'editor' && (await mode()) === 'none', 'pressed again, it stops the keyboard and the focus stays, so the arrows still work');
 
 // Hide leading stars
 await page.click('#btn-menu'); await btn('Settings').click(); await btn(/Hide leading stars/).click(); await btn('Close').click();

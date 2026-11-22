@@ -34,5 +34,12 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Emacs is not installed in the build workspace, so the new tests are written by hand from the guide; run them against Emacs 29.3 batch before relying on details such as tag alignment, show2levels and the text shown by the children state.
 - The heading title popup's three buttons, which insert at the cursor: footnote (A with a superscript 1), timer (stopwatch), and timestamp (calendar: C-c ., C-c !, C-u C-c ., S-up and S-down change it). They arrive with their features: timestamps and timers in the dates phase, footnotes in the markup phase.
 
+* Later: Appearance
+- Customize Light and Dark colors.
+- Size and spacing controls for tables, once tables exist.
+- Floating back arrow and an extras menu.
+- Command palette so every command is always reachable.
+
 * Later: Emacs parity to revisit
 - After a search is accepted, which folds stay closed (Emacs keeps some closed, depending on the matches made while typing; ours opens the folds around the match).
+- A command palette (M-x style) so every command is reachable even when its button or row is hidden.

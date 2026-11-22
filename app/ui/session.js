@@ -107,6 +107,44 @@ export function createSession({ app }) {
 
     select(id) { find(id); current = id; changed(); },
 
+    /** What to keep across a reload: the buffers in order, the current one, and the text of buffers that are scratch or unsaved. */
+    snapshot() {
+      const at = buffers.findIndex((b) => b.id === current);
+      return {
+        current: at < 0 ? 0 : at,
+        buffers: buffers.map((b) => ({
+          name: b.name, title: b.name === null ? b.title : undefined, folds: b.folds,
+          ...(b.name === null || b.text !== b.saved ? { draft: b.text } : {}),
+        })),
+      };
+    },
+
+    /**
+     * Opens the buffers of a snapshot. A file that cannot be read is skipped and named in `skipped`; a draft is the buffer's text,
+     * with the file as it is now as the last saved copy.
+     * @returns {Promise<{ opened: number, skipped: string[] }>}
+     */
+    async restore(snap) {
+      const skipped = [];
+      const ids = [];
+      for (const e of snap.buffers) {
+        const id = nextId++;
+        if (e.name === null) {
+          buffers = [...buffers, { id, name: null, title: e.title ?? scratchTitle(id), text: e.draft ?? '', saved: '', version: null, folds: validFolds(analyze(e.draft ?? '').foldables, e.folds ?? {}), undo: [], redo: [], group: false, at: 0 }];
+          ids.push(id);
+          continue;
+        }
+        const r = await app.storage.read(e.name).catch(() => null);
+        if (!r) { skipped.push(e.name); continue; }
+        const text = e.draft ?? r.text;
+        buffers = [...buffers, { id, name: e.name, text, saved: r.text, version: r.version, folds: validFolds(analyze(text).foldables, e.folds ?? startupFolds(r.text)), undo: [], redo: [], group: false, at: 0 }];
+        ids.push(id);
+      }
+      current = ids[Math.min(snap.current, ids.length - 1)] ?? null;
+      changed();
+      return { opened: ids.length, skipped };
+    },
+
     /** Typing: quick changes join one undo step. */
     setText(id, text) { const b = find(id); replace(id, record(b, retext(b, text), true)); changed(); },
 

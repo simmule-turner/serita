@@ -119,3 +119,6 @@ A separate repository holds questions (case files written by us) and results rec
 
 ### `tools/install-hooks.mjs`, `.githooks/commit-msg`
 - Written from: the git documentation (core.hooksPath, interpret-trailers). The hook signs off each commit, so the DCO check cannot fail for a missing line. Statement as above.
+
+### `test/browser/appearance.mjs`
+- Written from: the author's mockup and decisions (Appearance screen, heading swipe, restore of open files). Statement as above.

@@ -13,7 +13,7 @@ import { formatSize } from '../core/bytes.js';
 import { VERSION } from './version.js';
 import { h, kept } from './ui/dom.js';
 import { analyze, cycle, cycleGlobal, diff, ellipsisLines, hiddenLines, reveal } from '../core/outline.js';
-import { changeLevel, cycleTodo, indentItem, insertHeadingAfter, insertHeadingHere, moveItem, moveSubtree, setTags, setTitle, toggleCheckbox } from '../core/outline-edit.js';
+import { DEFAULT_TAGS_COLUMN, changeLevel, cycleTodo, indentItem, insertHeadingAfter, insertHeadingHere, moveItem, moveSubtree, setTags, setTitle, toggleCheckbox } from '../core/outline-edit.js';
 import { duplicateLine, indentLine, killLine, killWholeLine, lineInfo, lineStart, moveLine } from '../core/lines.js';
 import { createKillRing } from '../core/killring.js';
 import { lineAt, project, toFull, toShown, touchedFold } from '../core/projection.js';
@@ -47,9 +47,18 @@ const viewMode = () => (setting('view.mode') === 'outline' ? 'outline' : 'text')
 const emacsKeys = () => setting('view.emacsKeys') === 'true';
 const hideStars = () => setting('view.hideStars') === 'true';
 const setView = (mode) => config.update({ settings: { 'view.mode': mode } });
+const toolRowOn = (mode) => (mode === 'text' ? setting('view.toolRowText') !== 'false' : setting('view.toolRowOutline') === 'true');
+const THEMES = ['system', 'light', 'dark'];
+const theme = () => (THEMES.includes(setting('view.theme')) ? setting('view.theme') : 'system');
+const FONTS = { monospace: 'ui-monospace, Menlo, Consolas, monospace', 'sans-serif': 'system-ui, sans-serif', serif: 'ui-serif, Georgia, serif', system: 'system-ui, sans-serif' };
+const fontChoice = () => setting('view.font') ?? 'monospace';
+const fontFamily = () => FONTS[fontChoice()] ?? `"${fontChoice().replace(/["\\]/g, '')}", monospace`;
+const paragraphSpacing = () => Math.min(32, Math.max(0, Number(setting('view.paragraphSpacing') ?? 10) || 0));
+const tagsColumn = () => { const n = Number(setting('org.tagsColumn')); return Number.isInteger(n) && setting('org.tagsColumn') !== undefined && setting('org.tagsColumn') !== '' ? n : DEFAULT_TAGS_COLUMN; };
+const restoreOn = () => setting('session.restore') !== 'false';
 const lineNumbers = () => setting('view.lineNumbers') === 'true';
 const wrapOn = () => setting('view.wrap') !== 'false';
-const TEXT_SIZES = { min: 10, max: 28, normal: 15 };
+const TEXT_SIZES = { min: 12, max: 32, normal: 18 };
 const fontSize = () => Math.min(TEXT_SIZES.max, Math.max(TEXT_SIZES.min, Number(setting('view.fontSize')) || TEXT_SIZES.normal));
 
 function message(text, isError = false) {
@@ -76,6 +85,10 @@ function panel(build) {
       resolve(value);
     }
     scrim.addEventListener('click', () => close(undefined));
+    // Pressing a button in a panel leaves focus where it was, so an open keyboard and the cursor stay as they are.
+    const keepFocus = (e) => { if (e.target.closest('button')) e.preventDefault(); };
+    sheet.addEventListener('pointerdown', keepFocus);
+    sheet.addEventListener('mousedown', keepFocus);
     document.addEventListener('keydown', onKey, true);
     $('layer').append(scrim, sheet);
     build(sheet, close);
@@ -147,12 +160,17 @@ function render() {
     ? { start: toFull(cur.proj, editor.selectionStart), end: toFull(cur.proj, editor.selectionEnd) } : null;
   shownId = s.current;
   document.documentElement.style.setProperty('--fs', `${fontSize()}px`);
+  document.documentElement.style.setProperty('--ff', fontFamily());
+  document.documentElement.style.setProperty('--ps', `${paragraphSpacing()}px`);
+  document.documentElement.dataset.theme = theme() === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme();
   $('main').classList.toggle('nums', lineNumbers());
   $('main').classList.toggle('nowrap', !wrapOn());
   editor.wrap = wrapOn() ? 'soft' : 'off';
   editor.hidden = mode !== 'text';
   $('outline').hidden = mode !== 'outline';
   $('keyrow').hidden = !(mode === 'text' && emacsKeys() && shown);
+  // With the key row shown, tapping the text does not raise the on-screen keyboard; the keyboard button does.
+  editor.inputMode = $('keyrow').hidden || softKeyboard ? 'text' : 'none';
   editor.disabled = !shown;
   if (shown) {
     const a = analyze(shown.text);
@@ -192,6 +210,7 @@ editor.addEventListener('input', () => {
 editor.addEventListener('click', () => { lastCycle = null; });
 editor.addEventListener('scroll', () => { $('hl').scrollTop = editor.scrollTop; $('hl').scrollLeft = editor.scrollLeft; });
 window.addEventListener('resize', () => paintOverlay());
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => render());
 
 // The layer behind the text: line numbers and the search match. It lays out its lines exactly as the editor does.
 let hit = null;
@@ -537,6 +556,11 @@ async function settings() {
           h('button', { class: 'item', onclick: () => close('webdav') }, h('span', {}, 'WebDAV'), h('span', { class: 'meta' }, `${summary('webdav')} ›`)),
           h('button', { class: 'item', onclick: () => close('emacs') }, h('span', {}, 'Emacs keys'), h('span', { class: 'meta' }, emacsKeys() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('stars') }, h('span', {}, 'Hide leading stars'), h('span', { class: 'meta' }, hideStars() ? 'On ›' : 'Off ›')),
+          h('button', { class: 'item', onclick: () => close('appearance') }, h('span', {}, 'Appearance'), h('span', { class: 'meta' }, `${theme()[0].toUpperCase()}${theme().slice(1)}, ${fontSize()}px ›`)),
+          h('button', { class: 'item', onclick: () => close('tags-column') }, h('span', {}, 'Tag column'), h('span', { class: 'meta' }, `${tagsColumn()} ›`)),
+          h('button', { class: 'item', onclick: () => close('restore') }, h('span', {}, 'Restore open files on start'), h('span', { class: 'meta' }, restoreOn() ? 'On ›' : 'Off ›')),
+          h('button', { class: 'item', onclick: () => close('tools-text') }, h('span', {}, 'Tool row in the Text view'), h('span', { class: 'meta' }, toolRowOn('text') ? 'On ›' : 'Off ›')),
+          h('button', { class: 'item', onclick: () => close('tools-outline') }, h('span', {}, 'Tool row in the Outline view'), h('span', { class: 'meta' }, toolRowOn('outline') ? 'On ›' : 'Off ›')),
           h('div', { class: 'item', style: 'display:flex;align-items:center;justify-content:space-between;padding:4px 0' }, h('span', {}, 'Settings file'),
             h('span', { class: 'row' }, h('button', { onclick: () => close('export') }, 'Export'), h('button', { onclick: () => close('import') }, 'Import')))),
         h('div', { class: 'list' },
@@ -550,10 +574,69 @@ async function settings() {
     if (what === 'github' || what === 'webdav') await setup(what);
     else if (what === 'emacs') config.update({ settings: { 'view.emacsKeys': String(!emacsKeys()) } });
     else if (what === 'stars') config.update({ settings: { 'view.hideStars': String(!hideStars()) } });
+    else if (what === 'appearance') await appearance();
+    else if (what === 'tags-column') await tagsColumnDialog();
+    else if (what === 'restore') config.update({ settings: { 'session.restore': String(!restoreOn()) } });
+    else if (what === 'tools-text') config.update({ settings: { 'view.toolRowText': String(!toolRowOn('text')) } });
+    else if (what === 'tools-outline') config.update({ settings: { 'view.toolRowOutline': String(!toolRowOn('outline')) } });
     else if (what === 'export') { await exportDialog(); return; }
     else { $('import-file').click(); return; }
   }
 }
+
+async function tagsColumnDialog() {
+  const value = await panel((sheet, close) => {
+    const input = h('input', { value: String(tagsColumn()), inputmode: 'numeric', autocomplete: 'off', 'aria-label': 'Tag column' });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); close(input.value); } });
+    put(sheet, h('h2', {}, 'Tag column'),
+      h('p', {}, `A negative number is the column where the heading and its tags end; a positive one is the column where the tags start; 0 puts them one space after the title. The default is ${DEFAULT_TAGS_COLUMN}.`),
+      input,
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Set')));
+    input.focus();
+  });
+  if (value === undefined) return;
+  if (!/^-?\d+$/.test(value.trim())) { message('Enter a whole number', true); return; }
+  config.update({ settings: { 'org.tagsColumn': String(Number(value)) } });
+}
+
+/** The Appearance screen: theme, font, text size and paragraph spacing. Each change shows at once. */
+async function appearance() {
+  const FONT_NAMES = [['monospace', 'Monospace'], ['sans-serif', 'Sans-serif'], ['serif', 'Serif'], ['system', 'System']];
+  for (;;) {
+    const what = await panel((sheet, close) => {
+      const choice = (label, on, value) => h('button', { class: `opt${on ? ' on' : ''}`, 'aria-pressed': String(on), onclick: () => close(value) }, label);
+      const step = (label, value, down, up) => h('div', { class: 'stepper' },
+        h('button', { 'aria-label': `${label} smaller`, onclick: () => close(down) }, '−'), h('span', {}, value), h('button', { 'aria-label': `${label} larger`, onclick: () => close(up) }, '+'));
+      const custom = !FONT_NAMES.some(([k]) => k === fontChoice());
+      put(sheet, h('h2', {}, 'Appearance'),
+        h('div', { class: 'card' }, h('div', { class: 'cap' }, 'Theme'),
+          h('div', { class: 'seg' }, ...THEMES.map((t) => choice(t[0].toUpperCase() + t.slice(1), theme() === t, `theme:${t}`)))),
+        h('div', { class: 'card' }, h('div', { class: 'cap' }, 'Font'),
+          h('div', { class: 'seg two' }, ...FONT_NAMES.map(([k, n]) => choice(n, fontChoice() === k, `font:${k}`)), choice(custom ? fontChoice() : 'Other…', custom, 'font-other')),
+          h('p', {}, 'With a font that is not monospace, columns such as the tag column do not line up on screen.')),
+        h('div', { class: 'card' }, h('div', { class: 'cap' }, 'Font size'), step('Font size', `${fontSize()}px`, 'size:-1', 'size:1'), h('p', {}, '12 to 32. The A− and A+ buttons change the same size.')),
+        h('div', { class: 'card' }, h('div', { class: 'cap' }, 'Paragraph spacing'), step('Paragraph spacing', `${paragraphSpacing()}px`, 'space:-1', 'space:1'), h('p', {}, 'The gap between paragraphs in the Outline view, 0 to 32.')),
+        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
+    });
+    if (what === undefined) return;
+    const [kind, arg] = what.split(':');
+    if (kind === 'theme') config.update({ settings: { 'view.theme': arg } });
+    else if (kind === 'font') config.update({ settings: { 'view.font': arg } });
+    else if (kind === 'size') setTextSize(Number(arg));
+    else if (kind === 'space') config.update({ settings: { 'view.paragraphSpacing': String(Math.min(32, Math.max(0, paragraphSpacing() + Number(arg)))) } });
+    else if (what === 'font-other') {
+      const name = await panel((sheet, close) => {
+        const input = h('input', { value: custom0(), autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Font name' });
+        input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); close(input.value); } });
+        put(sheet, h('h2', {}, 'Font name'), h('p', {}, 'The name of a font installed on this device, for example Cascadia Code.'), input,
+          h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Use')));
+        input.focus();
+      });
+      if (name !== undefined && name.trim() !== '') config.update({ settings: { 'view.font': name.trim() } });
+    }
+  }
+}
+const custom0 = () => (['monospace', 'sans-serif', 'serif', 'system'].includes(fontChoice()) ? '' : fontChoice());
 
 async function exportDialog() {
   const pass = await panel((sheet, close) => {
@@ -852,8 +935,8 @@ function renderTools(mode) {
     onpointerdown: keep, onmousedown: keep,
   }, label);
   const text = mode === 'text';
-  $('tools').hidden = currentBuffer() === undefined;
-  $('tools').replaceChildren(
+  $('tools').hidden = currentBuffer() === undefined || !toolRowOn(mode);
+  $('tools').replaceChildren(...kept([
     tool('↶', 'Undo', () => COMMANDS.undo()),
     tool('↷', 'Redo', () => COMMANDS.redo()),
     text ? tool('#', 'Line numbers', () => config.update({ settings: { 'view.lineNumbers': String(!lineNumbers()) } }), lineNumbers()) : null,
@@ -861,7 +944,7 @@ function renderTools(mode) {
     tool('A−', 'Smaller text', () => setTextSize(-1)),
     tool('A+', 'Larger text', () => setTextSize(1)),
     text ? tool('Line', 'Lines and text', linesMenu) : null,
-  );
+  ]));
 }
 
 /** A popup with a text field for a heading's title. Resolves with the text, or undefined when cancelled. */
@@ -887,7 +970,7 @@ async function setTagsDialog(line) {
   if (value === undefined) return;
   const tags = value.split(':').map((s) => s.trim()).filter(Boolean);
   if (tags.some((t) => !/^[\p{L}\p{N}_@#%]+$/u.test(t))) { message('Tags can have letters, digits and _ @ # %', true); return; }
-  runEdit((t) => setTags(t, line, tags));
+  runEdit((t) => setTags(t, line, tags, tagsColumn()));
 }
 
 async function headingActions(line) {
@@ -917,12 +1000,25 @@ async function headingActions(line) {
   else if (what === 'tags') await setTagsDialog(line);
   else if (what === 'edit') {
     const title = await askTitle('Edit heading title', hd.title);
-    if (title !== undefined) runEdit((t) => setTitle(t, line, title));
+    if (title !== undefined) runEdit((t) => setTitle(t, line, title, tagsColumn()));
   } else if (what === 'insert') {
     const title = await askTitle('New heading', '');
     if (title !== undefined) runEdit((t) => insertHeadingAfter(t, line, title));
   }
 }
+
+// Swiping a heading from right to left cycles it, like TAB.
+let swipe = null;
+$('outline').addEventListener('pointerdown', (e) => {
+  const row = e.target.closest('.ol-head');
+  swipe = row ? { line: Number(row.dataset.line), x: e.clientX, y: e.clientY } : null;
+});
+$('outline').addEventListener('pointerup', (e) => {
+  const s = swipe;
+  swipe = null;
+  if (s && e.clientX - s.x < -60 && Math.abs(e.clientY - s.y) < 40) cycleHeading(s.line);
+});
+$('outline').addEventListener('pointercancel', () => { swipe = null; });
 
 const outlineOn = {
   cycle: cycleHeading,
@@ -979,11 +1075,21 @@ editor.addEventListener('keydown', (e) => {
   if (fromRow && !MODIFIER_KEYS.includes(e.key)) keyRow.clear();
 });
 
+// Whether the on-screen keyboard is wanted while the key row is shown. The editor keeps focus either way.
+let softKeyboard = false;
+const focusEditor = () => { if (document.activeElement !== editor) editor.focus({ preventScroll: true }); };
+
 const keyRow = createKeyRow({
   root: $('keyrow'),
   store: localStorage,
-  toggleKeyboard: () => { if (document.activeElement === editor) editor.blur(); else editor.focus(); },
+  toggleKeyboard() {
+    softKeyboard = !softKeyboard;
+    editor.inputMode = softKeyboard ? 'text' : 'none';
+    if (softKeyboard && document.activeElement === editor) editor.blur();
+    focusEditor();
+  },
   press(key, mods) {
+    focusEditor();
     const plainArrow = key.startsWith('Arrow') && !mods.ctrl && !mods.meta;
     if (plainArrow) { moveCursor(key, mods.shift); return; }
     const chord = chordOf({ key, ...mods });
@@ -1041,6 +1147,29 @@ if ('serviceWorker' in navigator) {
   }).catch(failure);
 }
 
-session.newScratch();
-message('Welcome to Serita');
+// Reopen what was open before the reload, then keep a copy of the open buffers as they change.
+const SESSION_KEY = 'serita.session';
+let restoring = true;
+function saveSession() {
+  if (restoring) return;
+  try {
+    if (restoreOn() && session.state().buffers.length > 0) localStorage.setItem(SESSION_KEY, JSON.stringify(session.snapshot()));
+    else localStorage.removeItem(SESSION_KEY);
+  } catch (e) { failure(e); }
+}
+let saveTimer = null;
+session.subscribe(() => { clearTimeout(saveTimer); saveTimer = setTimeout(saveSession, 400); });
+config.onChange(() => { clearTimeout(saveTimer); saveTimer = setTimeout(saveSession, 0); });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveSession(); });
+
+async function startSession() {
+  let saved = null;
+  try { saved = restoreOn() ? JSON.parse(localStorage.getItem(SESSION_KEY) ?? 'null') : null; } catch (e) { failure(e); }
+  const r = saved ? await session.restore(saved) : { opened: 0, skipped: [] };
+  if (r.opened === 0) session.newScratch();
+  restoring = false;
+  saveSession();
+  message(r.skipped.length ? `Could not reopen ${r.skipped.join(', ')}` : r.opened > 0 ? 'Reopened your files' : 'Welcome to Serita', r.skipped.length > 0);
+}
+await startSession();
 updatePending().catch(failure);

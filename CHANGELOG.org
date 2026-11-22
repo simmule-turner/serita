@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.2.0
+Serita reopens your files, tabs, folds and view where you left them, with unsaved edits and scratch text kept as drafts. Appearance in Settings sets Light, Dark or System, the font (monospace by default, like Emacs), the text size (12 to 32, default 18) and the paragraph spacing in the Outline view. The tag column is a setting (-77 by default, as in Emacs). Swiping a heading right to left works like TAB. Buttons are smaller, each view can show or hide its tool row, and commits now refuse to run when git has no name or email.
+
 * 0.1.9
 The on-screen keyboard no longer appears on its own: the tool row buttons, Select all, Go to line and accepting a search leave it as it was. Only tapping the text or the keyboard button raises it.
 

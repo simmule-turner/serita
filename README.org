@@ -44,7 +44,19 @@ Above the mode line, a row of keys stands in for a keyboard: Meta, Ctrl and Shif
 Settings, Hide leading stars, shows only the last star of each heading.
 
 ** Tool row
-Under the tabs, one row of buttons: undo, redo, line numbers, wrap, smaller text, larger text, and Line. In the Outline view the row keeps undo, redo and the two size buttons. Line opens Lines and text: go to a line, select all, copy all, duplicate, delete (to the kill ring), move, indent and outdent the line. Typing within a second is one undo step; each structure edit is its own.
+Under the tabs, one row of buttons: undo, redo, line numbers, wrap, smaller text, larger text, and Line. Settings turns the row on or off for each view. In the Outline view the row keeps undo, redo and the two size buttons. Line opens Lines and text: go to a line, select all, copy all, duplicate, delete (to the kill ring), move, indent and outdent the line. Typing within a second is one undo step; each structure edit is its own.
+
+** Appearance
+Menu, Settings, Appearance: Theme (System, Light or Dark), Font (monospace by default, or another, or a font name from your device), Font size (12 to 32; A− and A+ change the same size) and Paragraph spacing (0 to 32 px, Outline view). Menus and buttons keep a fixed size.
+
+** Tag column
+Menu, Settings, Tag column. A negative number ends the heading line at that column (-77 by default); a positive number starts the tags there; 0 puts them one space after the title.
+
+** Restore
+Open files, the current tab, folds, the view and unsaved edits come back when you reopen Serita. Settings, Restore open files on start turns it off.
+
+** Swipe
+Swipe a heading in the Outline view from right to left to fold or unfold it, like TAB.
 
 ** Find
 Type to search. The match is highlighted; ▲ and ▼ go to the previous and next match, and the search wraps. A lowercase query ignores case; an uppercase letter makes it exact. Return keeps the cursor on the match, and × returns to where you started.

@@ -58,3 +58,18 @@ test('dco-check skips commits listed in .dco-exempt and fails on others', () => 
   writeFileSync(join(dir, '.dco-exempt'), `# old\n${sha.slice(0, 12)}\n`);
   assert.equal(check().status, 0);
 });
+
+test('the commit-msg hook refuses a commit when the git name or email is unset', async () => {
+  const { mkdtempSync, writeFileSync } = await import('node:fs');
+  const { spawnSync } = await import('node:child_process');
+  const { tmpdir } = await import('node:os');
+  const { join, resolve } = await import('node:path');
+  const dir = mkdtempSync(join(tmpdir(), 'hook-'));
+  const msg = join(dir, 'MSG');
+  writeFileSync(msg, 'x\n');
+  const hook = resolve('.githooks/commit-msg');
+  const env = { ...process.env, HOME: dir, GIT_CONFIG_GLOBAL: '/dev/null', GIT_CONFIG_SYSTEM: '/dev/null' };
+  const r = spawnSync('sh', [hook, msg], { cwd: dir, env, encoding: 'utf8' });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /user\.name/);
+});
