@@ -47,6 +47,13 @@ ok((await value()) === 'one\ntwo\ntwo\nthree\n', 'Undo brings back the deleted l
 await tool('Redo').click();
 ok((await value()) === 'one\ntwo\nthree\n', 'Redo deletes it again');
 
+const fixed = await page.evaluate(() => {
+  window.scrollTo(0, 500);
+  const d = document.scrollingElement;
+  return { y: window.scrollY, over: d.scrollHeight - d.clientHeight, top: document.getElementById('toolbar').getBoundingClientRect().top };
+});
+ok(fixed.y === 0 && fixed.over <= 0 && fixed.top === 0, 'the page itself never scrolls, so the bars stay put');
+
 await page.click('#btn-view'); await btn('Outline').click();
 ok((await page.locator('#tools button').count()) === 4, 'the Outline view keeps Undo, Redo and the two size buttons');
 
