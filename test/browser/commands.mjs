@@ -111,6 +111,15 @@ await page.keyboard.press('Control+s'); await page.keyboard.type('needle');
 ok(await visible(), 'a search scrolls to the match');
 await page.keyboard.press('Escape');
 
+// The key row's arrows are next-line, previous-line, forward-char and backward-char
+await at('long line here\nab\nlong line here\n', 1);
+await page.evaluate(() => document.getElementById('editor').setSelectionRange(8, 8));
+const rowKey = (n) => page.locator('#keyrow button', { hasText: n }).click();
+const where = () => page.evaluate(() => { const e = document.getElementById('editor'); const b = e.value.slice(0, e.selectionStart).split('\n'); return `${b.length}:${b.at(-1).length}`; });
+await rowKey('↓'); ok((await where()) === '2:2', 'the down arrow stops at the end of a short line');
+await rowKey('↓'); ok((await where()) === '3:8', 'and keeps the goal column, as C-n does');
+await rowKey('→'); await rowKey('←'); ok((await where()) === '3:8', 'the right and left arrows move one character');
+
 // Menu: Commands
 await page.click('#btn-menu');
 const items = await sheet.locator('.item').allTextContents();

@@ -1381,7 +1381,14 @@ const keyRow = createKeyRow({
   press(key, mods) {
     focusEditor();
     const plainArrow = key.startsWith('Arrow') && !mods.ctrl && !mods.meta;
-    if (plainArrow) { moveCursor(key, mods.shift); return; }
+    if (plainArrow && !mods.shift) {
+      const command = { ArrowUp: 'previous-line', ArrowDown: 'next-line', ArrowLeft: 'backward-char', ArrowRight: 'forward-char' }[key];
+      if (!VERTICAL.has(command)) goal = null;
+      COMMANDS[command]();
+      if ($('message').classList.contains('error')) beep();
+      return;
+    }
+    if (plainArrow) { moveCursor(key, true); return; }
     const chord = chordOf({ key, ...mods });
     if (chord) runChord(chord, { preventDefault() {} }, true);
   },

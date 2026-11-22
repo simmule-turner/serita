@@ -31,6 +31,7 @@ Settings, Emacs keys, turns on these keys in the Text view:
 - M-left, M-right :: promote or demote the heading; on a list item, change its indentation and leave its sub-items; with Shift, the whole subtree or the sub-items too.
 - C-RET :: inserts a heading after the current subtree, from the heading or anywhere in its body.
 - C-n, C-p :: move down or up one screen line, keeping the column; C-f, C-b move a character; C-a, C-e go to the start or end of the line; M-f, M-b move a word; M-<, M-> go to the start or end of the text; C-v, M-v move a screen down or up. On plain text M-right moves a word.
+- The text scrolls to keep the cursor in view after any movement or search, and puts the cursor in the middle of the screen when it was off screen.
 - C-g :: quits a pending key or command. Errors and quits give a short beep (Settings, Beep on errors).
 - C-s, C-r :: search forward or backward; again inside the search, the next or previous match. C-g or the cancel button returns to where you started.
 - C-c C-t :: changes the TODO state, from the heading or anywhere in its body. S-right and S-left go to the next or previous state; the parent's ~[2/4]~ count follows.
@@ -46,7 +47,7 @@ Settings, Emacs keys, turns on these keys in the Text view:
 
 To type C-c or C-x, use Ctrl on the key row and then the letter; a keyboard's own C-c and C-x still copy and cut.
 
-Above the mode line, a row of keys stands in for a keyboard: Meta, Ctrl and Shift apply to the next key; Tab and the arrows follow. The keyboard button shows or hides the on-screen keyboard. Float turns the row into a panel you can drag; Dock puts it back. Pressing a key never opens the keyboard.
+Above the mode line, a row of keys stands in for a keyboard: Meta, Ctrl and Shift apply to the next key, and a letter typed on the on-screen keyboard after Ctrl or Meta is the key chord, for example Ctrl then n is C-n. Tab and the arrows follow; the arrows move as C-p, C-n, C-b and C-f do, and with Shift they extend the selection. The keyboard button shows or hides the on-screen keyboard. Float turns the row into a panel you can drag; Dock puts it back. Pressing a key never opens the keyboard.
 
 Settings, Key event log, lists at the top of the screen what the keyboard sends and which key chord Serita made of it; it helps when a key does not do what it should.
 
