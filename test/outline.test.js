@@ -190,3 +190,15 @@ test('the tags column: negative ends the line there, positive starts the tags th
   assert.equal(setTags('* Work item :a:b:\n', 0, ['a', 'b'], -50).text.trimEnd().length, 50);
   assert.equal(setTags(short, 0, ['work']).text.trimEnd().length, 77);
 });
+
+// Emacs 30.1 results for M-left and M-right on list items and headings (cases ml-*, mr-*, smr-*).
+test('Emacs M-left and M-right on list items', () => {
+  const L = '- one\n- two\n  continued\n  - nested\n- three\n';
+  assert.equal(indentItem(L, 3, -1, false).text, '- one\n- two\n  continued\n- nested\n- three\n');
+  assert.equal(indentItem(L, 1, 1, false).text, '- one\n  - two\n    continued\n  - nested\n- three\n');
+  assert.equal(indentItem(L, 1, 1, true).text, '- one\n  - two\n    continued\n    - nested\n- three\n');
+  assert.throws(() => indentItem(L, 0, 1, false), /Cannot indent/);
+  assert.throws(() => indentItem(L, 3, 1, false), /Cannot indent/);
+  assert.throws(() => indentItem(L, 0, -1, false), /Cannot outdent/);
+  assert.throws(() => changeLevel('* A\n** B\n', 0, -1, false), /Cannot promote/);
+});

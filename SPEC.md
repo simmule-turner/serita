@@ -97,7 +97,7 @@ The scope is the guide's chapters. Each row is a work package: implement every c
 | TODO items | Keywords, sequences, states, logging, priorities, subtasks, checkboxes | none |
 | Tags | Inheritance, groups, fast selection, searching | none |
 | Properties | Drawers, special properties, column view, property search | none |
-| Dates and times | Timestamps, ranges, repeaters, deadlines, scheduling, clocking, effort | native: reminders. Built: C-c C-s, C-c C-d, C-c ., C-c !, S-up and S-down on a timestamp, repeaters on DONE (planning line only). Date prompt reads ISO, +n[dwmy], today, tomorrow, yesterday and a time; Emacs reads more |
+| Dates and times | Timestamps, ranges, repeaters, deadlines, scheduling, clocking, effort | native: reminders. Built: C-c C-s, C-c C-d, C-c ., C-c !, S-up and S-down on a timestamp, repeaters on DONE (planning line only). Date prompt reads ISO, month names, +n[dwmy], today, tomorrow, yesterday and a time (14:30, 2pm, a range 10:00-11:30); Emacs reads more. Agenda: View, Agenda; Day, Week and Month; TODO list, tags and search views; layout and ordering recorded from Emacs, time grid not built |
 | Capture, refile, archive | Templates and their escapes, refile targets, archive locations | none |
 | Agenda views | Files, dispatcher, daily and weekly agenda, global TODO list, tag and property match, text search, custom views, commands, marks and bulk actions, filters | native: reminders |
 | Markup | Emphasis, paragraphs, tables, lists, blocks, footnotes, entities, LaTeX fragments | none |

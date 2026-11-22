@@ -263,7 +263,7 @@ export function indentItem(text, line, delta, withChildren) {
     to = it.parent.indent;
   }
   const d = to - it.indent;
-  for (let n = it.line; n < (withChildren ? it.end : it.line + 1); n++) {
+  for (let n = it.line; n < (withChildren ? it.end : it.bodyEnd); n++) {
     const t = lines[n].text;
     if (t.trim() === '') continue;
     lines[n] = { ...lines[n], text: d > 0 ? ' '.repeat(d) + t : t.slice(Math.min(-d, indentOf(t))) };

@@ -40,7 +40,8 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Date prompt forms beyond ISO, +n d/w/m/y, today, tomorrow and yesterday (Emacs also reads weekday names, month names and more); a calendar popup.
 - S-left and S-right on a timestamp, minute rounding, and S-up on a repeater (written from the manual, not yet compared with Emacs).
 - Repeating tasks with a repeater on a plain timestamp in the body, and the log drawer setting.
-- Agenda, clocking and effort.
+- Clocking and effort (C-c C-x e); the Emacs cases for S-left, S-right, minute rounding and S-up on a repeater failed to run in batch Emacs, so compare them in an interactive Emacs.
+- Agenda: the time grid, the fortnight and year spans in the screen, agenda files other than the open ones, filters and marks, a short #+CATEGORY (the padding of a category under 12 characters is a guess), the order of items of equal priority beyond what was recorded, and entries with a time of day on overdue tasks.
 
 * Later: Appearance
 - Customize Light and Dark colors.
@@ -50,6 +51,5 @@ Planned work only. Phase order is in SPEC.md section 12.
 
 * Later: Emacs parity to revisit
 - Check against interactive Emacs, since batch Emacs has no window: C-n and C-p by screen line on wrapped lines, C-v and M-v by screen, and C-p on the first line away from column 0.
-- M-left on plain text (moves a word back in Emacs; not yet checked).
 - After a search is accepted, which folds stay closed (Emacs keeps some closed, depending on the matches made while typing; ours opens the folds around the match).
 - A command palette (M-x style) so every command is reachable even when its button or row is hidden.

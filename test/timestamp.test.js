@@ -67,3 +67,13 @@ test('typed dates: ISO, relative and with a time', () => {
 test('a heading with nothing that repeats is left alone', () => {
   assert.equal(completeRepeat({ text: '* TODO A\nSCHEDULED: <2026-11-30 Mon>\n', line: 0, from: 'TODO', to: 'DONE', reopen: 'TODO', now }), null);
 });
+
+test('Emacs typed date forms: month names, am/pm and a time range', () => {
+  const f = (s) => { const d = parseDate(s, today); return formatStamp(d.date, { time: d.time, until: d.until }); };
+  assert.equal(f('dec 3 2026'), '<2026-12-03 Thu>');
+  assert.equal(f('3 dec 2026'), '<2026-12-03 Thu>');
+  assert.equal(f('2026-12-03 2pm'), '<2026-12-03 Thu 14:00>');
+  assert.equal(f('2026-12-03 9:05pm'), '<2026-12-03 Thu 21:05>');
+  assert.equal(f('2026-12-03 10:00-11:30'), '<2026-12-03 Thu 10:00-11:30>');
+  assert.equal(f('2026-12-1'), '<2026-12-01 Tue>');
+});

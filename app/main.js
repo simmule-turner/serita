@@ -16,6 +16,7 @@ import { analyze, cycle, cycleGlobal, diff, ellipsisLines, hiddenLines, reveal }
 import { backwardChar, backwardWord, forwardChar, forwardWord, lineEnd as endOfLine, lineStart as startOfLine, moveVertical } from '../core/motion.js';
 import { DEFAULT_TAGS_COLUMN, changeLevel, cycleTodo, indentItem, insertHeadingAfter, insertHeadingHere, moveItem, moveSubtree, setPriority, setTags, setTitle, stepPriority, toggleCheckbox } from '../core/outline-edit.js';
 import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../core/properties.js';
+import { agenda, searchView, tagsView, todoList } from '../core/agenda.js';
 import { startReplace } from '../core/replace.js';
 import { sparseTree } from '../core/sparse.js';
 import { completeRepeat, formatStamp, insertStamp, parseDate, setPlanning, shiftStamp, stampAt } from '../core/timestamp.js';
@@ -878,8 +879,9 @@ $('btn-files').addEventListener('click', filesMenu);
 $('btn-save').addEventListener('click', () => { if (shownId !== null) saveBuffer(shownId); });
 $('btn-find').addEventListener('click', () => startFind());
 $('btn-view').addEventListener('click', async () => {
-  const what = await choose(null, ['outline', 'text'].map((v) => ({ label: v === 'outline' ? 'Outline' : 'Text', meta: viewMode() === v ? 'current' : null, value: v })));
-  if (what) setView(what);
+  const what = await choose(null, [...['outline', 'text'].map((v) => ({ label: v === 'outline' ? 'Outline' : 'Text', meta: viewMode() === v ? 'current' : null, value: v })), { label: 'Agenda', value: 'agenda' }]);
+  if (what === 'agenda') await agendaScreen();
+  else if (what) setView(what);
 });
 $('btn-menu').addEventListener('click', async () => {
   const what = await choose(null, [
@@ -890,6 +892,82 @@ $('btn-menu').addEventListener('click', async () => {
   else if (what === 'commands') await commandPalette();
   else if (what === 'settings') await settings();
 });
+
+// ---- The agenda ---------------------------------------------------------------------------------
+
+const agendaState = { kind: 'agenda', span: 'week', anchor: null, match: '', words: '', keyword: null };
+const mondayOf = (d) => new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * 86400000);
+const categoryOf = (b) => (b.name ?? b.title ?? 'buffer').replace(/^.*\//, '').replace(/\.[^.]*$/, '');
+const SPANS = [['day', 'Day'], ['week', 'Week'], ['month', 'Month']];
+
+/** Moves the agenda's start by one span, forward or back. */
+function agendaMove(dir) {
+  const a = agendaState.anchor;
+  agendaState.anchor = agendaState.span === 'day' ? new Date(a.getTime() + dir * 86400000)
+    : agendaState.span === 'month' ? new Date(Date.UTC(a.getUTCFullYear(), a.getUTCMonth() + dir, 1)) : new Date(a.getTime() + dir * 7 * 86400000);
+}
+
+/** Opens the agenda at a view; the tags and search views ask first. */
+async function openAgenda(kind) {
+  if (kind === 'tags' || kind === 'search') {
+    const text = await askText({ prompt: kind === 'tags' ? 'Match:' : 'Search words:', title: kind === 'tags' ? 'Show headings by tag' : 'Search headings', help: kind === 'tags' ? 'Tags such as work+urgent or work|home, then / and TODO keywords.' : 'Words that must all appear in a heading and its text.', ok: 'Show' });
+    if (text === undefined || text === '') return;
+    if (kind === 'tags') agendaState.match = text; else agendaState.words = text;
+  }
+  agendaState.kind = kind;
+  agendaState.keyword = null;
+  await agendaScreen();
+}
+
+/** The agenda over the open files: a full screen of rows for the dates, the TODO list, tags or a search. Tapping a row goes to that heading. */
+async function agendaScreen() {
+  agendaState.anchor ??= todayDate();
+  for (;;) {
+    const files = session.state().buffers.map((b) => ({ id: b.id, category: categoryOf(b), text: b.text }));
+    const st = agendaState;
+    let view;
+    try {
+      view = st.kind === 'todo' ? todoList(files, { keyword: st.keyword }) : st.kind === 'tags' ? tagsView(files, { match: st.match }) : st.kind === 'search' ? searchView(files, { words: st.words })
+        : agenda(files, { start: st.span === 'week' ? mondayOf(st.anchor) : st.anchor, span: st.span, today: todayDate() });
+    } catch (e) { failure(e); st.kind = 'agenda'; return; }
+    const act = await panel((sheet, close) => {
+      sheet.classList.add('full', 'agenda');
+      const row = (e) => h('button', { class: 'arow', onclick: () => close({ jump: e }) },
+        h('span', { class: `alabel${e.late > 0 && e.kind !== 'stamp' ? ' late' : ''}` }, [e.clock, e.label].filter(Boolean).join(' ') || e.category),
+        h('span', { class: 'atitle' }, [e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ')),
+        e.tags.length ? h('span', { class: 'atags' }, `:${e.tags.join(':')}:`) : null);
+      const body = st.kind === 'agenda'
+        ? view.days.flatMap((d) => [h('div', { class: `aday${d.today ? ' today' : ''}` }, d.head), ...d.entries.map(row)])
+        : view.entries.length ? view.entries.map(row) : [h('p', { class: 'aempty' }, 'No entries')];
+      const nav = st.kind === 'agenda' ? [h('button', { 'aria-label': 'Earlier', onclick: () => close({ move: -1 }) }, '‹'), h('button', { 'aria-label': 'Later', onclick: () => close({ move: 1 }) }, '›')] : [];
+      put(sheet,
+        h('div', { class: 'abar' }, nav[0] ?? null, h('div', { class: 'atitlebar' }, view.title.replace(/:$/, '')), nav[1] ?? null),
+        h('div', { class: 'abody' }, ...body),
+        h('div', { class: 'abar' },
+          ...(st.kind === 'agenda' ? SPANS.map(([v, l]) => h('button', { class: st.span === v ? 'primary' : '', onclick: () => close({ span: v }) }, l)) : []),
+          h('button', { onclick: () => close({ views: true }) }, 'Views'),
+          h('button', { onclick: () => close(undefined) }, 'Close')));
+    });
+    if (!act) return;
+    if (act.move) agendaMove(act.move);
+    else if (act.span) { st.span = act.span; if (act.span === 'week') st.anchor = mondayOf(st.anchor); }
+    else if (act.views) {
+      const v = await choose('Views', [{ label: 'Agenda', value: 'agenda' }, { label: 'TODO list', value: 'todo' }, { label: 'Tags', value: 'tags' }, { label: 'Search', value: 'search' }]);
+      if (v === 'tags' || v === 'search') {
+        const text = await askText({ prompt: v === 'tags' ? 'Match:' : 'Search words:', title: v === 'tags' ? 'Show headings by tag' : 'Search headings', help: v === 'tags' ? 'Tags such as work+urgent or work|home, then / and TODO keywords.' : 'Words that must all appear in a heading and its text.', ok: 'Show' });
+        if (text === undefined || text === '') continue;
+        if (v === 'tags') st.match = text; else st.words = text;
+      }
+      if (v) { st.kind = v; st.keyword = null; }
+    } else if (act.jump) {
+      const e = act.jump;
+      session.select(files[e.file].id);
+      setView('text');
+      placeCursor(e.line);
+      return;
+    }
+  }
+}
 
 // ---- Structure commands, the Outline view's taps, and the Emacs keys ------------------------------------
 
@@ -1001,7 +1079,7 @@ async function askStamp(label, active = true) {
   const base = todayDate();
   const typed = await askText({ prompt: `${label} Date+time [${dayOf(base)}]:`, title: label, help: 'A date such as 2026-12-01, +3d, -1w, tomorrow, optionally with a time such as 14:30.', ok: 'Set' });
   if (typed === undefined) return null;
-  try { const d = parseDate(typed, base); return formatStamp(d.date, { time: d.time, active }); } catch (e) { failure(e); return null; }
+  try { const d = parseDate(typed, base); return formatStamp(d.date, { time: d.time, until: d.until, active }); } catch (e) { failure(e); return null; }
 }
 
 /** S-up and S-down: on a timestamp they change the part under the cursor; elsewhere they are the priority keys. */
@@ -1096,6 +1174,10 @@ const COMMANDS = {
   'query-replace': () => queryReplace(false),
   'query-replace-regexp': () => queryReplace(true),
   'execute-command': () => commandPalette(),
+  agenda: () => openAgenda('agenda'),
+  'agenda-todo': () => openAgenda('todo'),
+  'agenda-tags': () => openAgenda('tags'),
+  'agenda-search': () => openAgenda('search'),
   'sparse-tree-regexp': () => sparse('regexp'),
   'sparse-tree-match': () => sparse('match'),
   'sparse-tree-todo': () => sparse('todo'),
@@ -1356,7 +1438,7 @@ const outlineOn = {
 const PALETTE = [
   ['cycle', 'org-cycle', 'Fold or unfold'], ['cycle-global', 'org-shifttab', 'Fold or unfold everything', true],
   ['todo', 'org-todo', 'Change TODO state'], ['todo-next', 'org-shiftright', 'Next TODO state'], ['todo-previous', 'org-shiftleft', 'Previous TODO state'],
-  ['schedule', 'org-schedule', 'Schedule'], ['deadline', 'org-deadline', 'Set deadline'], ['timestamp', 'org-timestamp', 'Insert timestamp'], ['timestamp-inactive', 'org-timestamp-inactive', 'Insert inactive timestamp'], ['priority', 'org-priority', 'Set priority'], ['priority-up', 'org-priority-up', 'Raise priority'], ['priority-down', 'org-priority-down', 'Lower priority'],
+  ['agenda', 'org-agenda-list', 'Agenda', true], ['agenda-todo', 'org-todo-list', 'TODO list', true], ['agenda-tags', 'org-tags-view', 'Agenda by tags', true], ['agenda-search', 'org-search-view', 'Agenda search', true], ['schedule', 'org-schedule', 'Schedule'], ['deadline', 'org-deadline', 'Set deadline'], ['timestamp', 'org-timestamp', 'Insert timestamp'], ['timestamp-inactive', 'org-timestamp-inactive', 'Insert inactive timestamp'], ['priority', 'org-priority', 'Set priority'], ['priority-up', 'org-priority-up', 'Raise priority'], ['priority-down', 'org-priority-down', 'Lower priority'],
   ['set-tags', 'org-set-tags-command', 'Set tags'], ['set-property', 'org-set-property', 'Set property'], ['delete-property', 'org-delete-property', 'Delete property'],
   ['promote', 'org-metaleft', 'Promote'], ['demote', 'org-metaright', 'Demote'], ['promote-subtree', 'org-shiftmetaleft', 'Promote subtree'], ['demote-subtree', 'org-shiftmetaright', 'Demote subtree'],
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],

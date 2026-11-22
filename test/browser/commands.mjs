@@ -181,6 +181,16 @@ await page.keyboard.type('work'); await page.keyboard.press('Enter');
 const byTag = await page.evaluate(() => document.getElementById('editor').value);
 ok(byTag.includes('** B') && !byTag.includes('note') && !byTag.includes('body'), 'headings that carry the tag, or inherit it, show; their text does not');
 
+// The agenda (View, Agenda): a week with a scheduled entry; tapping the row goes to the heading
+await at('* TODO Pay rent :home:\nSCHEDULED: <2999-01-01 Mon>\n* Other\n', 1);
+await page.click('#btn-view'); await btn('Agenda').click();
+ok(await page.locator('.sheet.agenda .abar button', { hasText: 'Week' }).count() === 1, 'the agenda has Day, Week and Month');
+await page.locator('.sheet.agenda .abar button', { hasText: 'Views' }).click();
+await btn('TODO list').click();
+ok((await page.locator('.sheet.agenda .atitlebar').textContent()).startsWith('Global list of TODO items'), 'Views, TODO list opens the TODO list');
+await page.locator('.sheet.agenda .arow', { hasText: 'Pay rent' }).click();
+ok(await page.locator('.sheet.agenda').count() === 0 && (await sel()).startsWith('0-'), 'tapping a row closes the agenda and goes to the heading');
+
 // Regexp search (C-M-s, M-r)
 await at('Meeting foo2 notes foo9\n', 1);
 await page.keyboard.press('Alt+Control+s');

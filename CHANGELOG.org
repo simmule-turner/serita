@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.7.0
+The agenda: View, then Agenda (or C-c a a) shows the open files by Day, Week or Month with ‹ and › to move, and Views switches to the TODO list (C-c a t), a tags view (C-c a m) or a search (C-c a s); tapping a row goes to its heading. Scheduled and deadline entries, repeats, overdue tasks, and deadline warnings follow Emacs. The date prompt now also reads month names (dec 3, 3 dec 2026), am and pm, and a time range (10:00-11:30). Verified: replayed 15 Emacs 30.1 agenda and 6 typed-date results.
+
 * 0.6.0
 Dates: C-c C-s schedules and C-c C-d sets a deadline (typed as 2026-12-01, +3d, tomorrow, with an optional time), C-c . and C-c ! insert an active or inactive timestamp, and S-up and S-down on a timestamp change the year, month, day, hour or minute under the cursor (on the closing bracket they make it inactive or active). Finishing a repeating task (+1w, ++1w, .+1w) moves its date on, reopens it, and records :LAST_REPEAT: and a State line. Verified: replayed Emacs 30.1 results for 21 date cases.
 

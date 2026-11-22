@@ -6,6 +6,7 @@ import { splitLines } from './parse.js';
 import { setProperty } from './properties.js';
 import { analyze } from './outline.js';
 
+const MONTH_NAMES = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const two = (n) => String(n).padStart(2, '0');
 const STAMP = /([<[])(\d{4})-(\d\d)-(\d\d)(?: ([^\s\d>\]+.-][^\s>\]]*))?(?: (\d{1,2}):(\d\d))?((?: (?:\+\+|\.\+|\+)\d+[hdwmy])*)([>\]])/g;
@@ -15,9 +16,9 @@ const utc = (y, m, d, h = 0, mi = 0) => new Date(Date.UTC(y, m - 1, d, h, mi));
 const parts = (d) => ({ y: d.getUTCFullYear(), m: d.getUTCMonth() + 1, d: d.getUTCDate(), h: d.getUTCHours(), mi: d.getUTCMinutes() });
 
 /** The text of a timestamp for a date, with an optional time and repeater. */
-export function formatStamp(date, { time = false, repeater = '', active = true } = {}) {
+export function formatStamp(date, { time = false, until = null, repeater = '', active = true } = {}) {
   const p = parts(date);
-  return `${active ? '<' : '['}${p.y}-${two(p.m)}-${two(p.d)} ${DAYS[date.getUTCDay()]}${time ? ` ${two(p.h)}:${two(p.mi)}` : ''}${repeater}${active ? '>' : ']'}`;
+  return `${active ? '<' : '['}${p.y}-${two(p.m)}-${two(p.d)} ${DAYS[date.getUTCDay()]}${time ? ` ${two(p.h)}:${two(p.mi)}${until ? `-${until}` : ''}` : ''}${repeater}${active ? '>' : ']'}`;
 }
 
 /** The timestamp on the line that the offset is in or at the end of: { start, end, ... } with the parsed parts, or null. */
@@ -67,23 +68,30 @@ export function shiftStamp(text, offset, dir) {
  * @returns {{ date: Date, time: boolean }}
  */
 export function parseDate(input, base) {
-  let rest = input.trim();
+  let rest = input.trim().toLowerCase();
   let time = null;
-  const t = /(?:^|\s)(\d{1,2}):(\d\d)$/.exec(rest);
-  if (t) { time = [+t[1], +t[2]]; rest = rest.slice(0, t.index).trim(); }
+  let until = null;
+  // 14:30, 2pm, 9:05pm, and a range 10:00-11:30
+  const hm = (h, m, ap) => [ap ? (+h % 12) + (ap === 'pm' ? 12 : 0) : +h, +(m ?? 0)];
+  let t = /(?:^|\s)(\d{1,2}):(\d\d)(am|pm)?-(\d{1,2}):(\d\d)(am|pm)?$/.exec(rest);
+  if (t) { time = hm(t[1], t[2], t[3]); until = `${two(hm(t[4], t[5], t[6])[0])}:${two(+t[5])}`; rest = rest.slice(0, t.index).trim(); }
+  else if ((t = /(?:^|\s)(\d{1,2})(?::(\d\d))?(am|pm)$/.exec(rest)) || (t = /(?:^|\s)(\d{1,2}):(\d\d)()$/.exec(rest))) { time = hm(t[1], t[2], t[3] || undefined); rest = rest.slice(0, t.index).trim(); }
   const b = parts(base);
   let date = utc(b.y, b.m, b.d);
+  const month = (w) => MONTH_NAMES.findIndex((x) => w.length >= 3 && x.startsWith(w)) + 1;
   let m;
   if (rest === '' || rest === '.' || rest === 'today') { /* the default */ }
   else if (rest === 'tomorrow') date = utc(b.y, b.m, b.d + 1);
   else if (rest === 'yesterday') date = utc(b.y, b.m, b.d - 1);
   else if ((m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(rest))) date = utc(+m[1], +m[2], +m[3]);
+  else if ((m = /^([a-z]{3,})\s+(\d{1,2})(?:\s+(\d{4}))?$/.exec(rest)) && month(m[1])) date = utc(m[3] ? +m[3] : b.y, month(m[1]), +m[2]);
+  else if ((m = /^(\d{1,2})\s+([a-z]{3,})(?:\s+(\d{4}))?$/.exec(rest)) && month(m[2])) date = utc(m[3] ? +m[3] : b.y, month(m[2]), +m[1]);
   else if ((m = /^([-+])(\d+)([dwmy])$/.exec(rest))) {
     const n = (m[1] === '-' ? -1 : 1) * +m[2];
     date = m[3] === 'd' ? utc(b.y, b.m, b.d + n) : m[3] === 'w' ? utc(b.y, b.m, b.d + 7 * n) : m[3] === 'm' ? utc(b.y, b.m + n, b.d) : utc(b.y + n, b.m, b.d);
   } else throw new Error(`Not a date: ${input}`);
   if (time) date = utc(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate(), time[0], time[1]);
-  return { date, time: time !== null };
+  return { date, time: time !== null, until };
 }
 
 const PLAN_ORDER = ['CLOSED', 'DEADLINE', 'SCHEDULED'];

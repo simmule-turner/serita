@@ -88,6 +88,9 @@ C-c / r shows the lines that match a regexp and the headings above them; C-c / t
 ** Dates
 C-c C-s schedules the heading and C-c C-d sets its deadline; C-c . inserts a timestamp and C-c ! an inactive one. The prompt takes a date (~2026-12-01~, ~+3d~, ~-1w~, ~tomorrow~) with an optional time (~14:30~); empty means today. S-up and S-down on a timestamp change the part under the cursor: year, month, day (or weekday), hour, minute; on the closing bracket they switch between active and inactive. Marking a task with a repeater (~+1w~, ~++1w~, ~.+1w~) DONE moves its date to the next one and keeps it open.
 
+** Agenda
+View, then Agenda, lists what is scheduled, due or dated in the open files, by Day, Week or Month; ‹ and › move through time and a tap on a row goes to that heading. Overdue tasks show again on today ("Sched. 3x:" is three days late), deadlines show "In 3 d." as they near, and repeating tasks appear on each of their dates. Views switches to the TODO list, a tags view (a match such as ~work+urgent~) or a search for words. In the Text view C-c a a opens the agenda, C-c a t the TODO list, C-c a m tags and C-c a s a search.
+
 ** Settings
 Menu, then Settings, sets up GitHub (owner, repository, branch, token) and WebDAV (address, user, password). They are kept in this browser, on this device.
 
