@@ -19,6 +19,9 @@ ok((await page.locator('#tools button').count()) === 7, 'the row has seven butto
 await page.fill('#editor', 'one\ntwo\nthree\n');
 await page.evaluate(() => { const e = document.getElementById('editor'); e.setSelectionRange(5, 5); });
 
+await page.evaluate(() => document.activeElement.blur());
+await tool('Larger text').click(); await tool('Smaller text').click(); await tool('Line numbers').click(); await tool('Line numbers').click();
+ok((await page.evaluate(() => document.activeElement.id)) !== 'editor', 'pressing tool buttons does not focus the text, so the keyboard stays down');
 await tool('Larger text').click();
 ok((await page.evaluate(() => getComputedStyle(document.getElementById('editor')).fontSize)) === '16px', 'Larger text makes the text 16px');
 await tool('Smaller text').click(); await tool('Smaller text').click();

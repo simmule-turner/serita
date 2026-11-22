@@ -478,7 +478,7 @@ function startFind() {
   const selEnd = () => toFull(cur.proj, editor.selectionEnd);
   input.addEventListener('input', () => go(false, selStart()));
   input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); end(false); editor.focus(); }
+    if (e.key === 'Enter') { e.preventDefault(); end(false); }
     else if (e.key === 'Escape') { e.stopPropagation(); end(true); }
   });
   $('findbar').replaceChildren(
@@ -747,7 +747,7 @@ const COMMANDS = {
   'insert-heading-here': () => { const r = runEdit((t) => insertHeadingHere(t, cursorOffset())); if (r) placeOffset(r.pos); },
   'undo': () => stepHistory('undo'),
   'redo': () => stepHistory('redo'),
-  'select-all': () => { editor.focus(); editor.setSelectionRange(0, editor.value.length); renderModeLine(); },
+  'select-all': () => { editor.setSelectionRange(0, editor.value.length); renderModeLine(); },
   'goto-line': () => gotoLine(),
   'kill-line': () => killWith(killLine, { append: wasKill }),
   'kill-whole-line': () => killWith(killWholeLine, {}),
@@ -809,7 +809,6 @@ async function gotoLine() {
   const opened = reveal(cur.a.foldables, b.folds, line - 1);
   if (JSON.stringify(opened) !== JSON.stringify(b.folds)) session.setFolds(b.id, opened);
   placeOffset(lineStart(b.text, line));
-  editor.focus();
 }
 
 async function linesMenu() {
@@ -846,8 +845,11 @@ function setTextSize(delta) {
 }
 
 function renderTools(mode) {
+  // Like the key row, these never take focus, so pressing one neither raises nor lowers the on-screen keyboard.
+  const keep = (e) => e.preventDefault();
   const tool = (label, title, onclick, on = null) => h('button', {
     'aria-label': title, title, class: `tool${on ? ' on' : ''}`, ...(on === null ? {} : { 'aria-pressed': String(on) }), onclick,
+    onpointerdown: keep, onmousedown: keep,
   }, label);
   const text = mode === 'text';
   $('tools').hidden = currentBuffer() === undefined;

@@ -17,5 +17,6 @@ const bad = out.split('\x01').map((s) => s.trim()).filter(Boolean).filter((entry
   return !/^Signed-off-by: .+ <.+>$/m.test(body);
 }).map((entry) => entry.split('\x00')[0]).filter((sha) => !exempt.some((x) => sha.startsWith(x))).map((sha) => sha.slice(0, 12));
 
-if (bad.length) { console.error('dco-check failed, no sign-off on: ' + bad.join(', ')); process.exit(1); }
+if (bad.length) { console.error('dco-check failed, no sign-off on: ' + bad.join(', '));
+  console.error('Fix: node tools/install-hooks.mjs, then git rebase --signoff <first bad commit>~1, then git push --force-with-lease'); process.exit(1); }
 console.log('dco-check ok');

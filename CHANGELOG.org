@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.1.9
+The on-screen keyboard no longer appears on its own: the tool row buttons, Select all, Go to line and accepting a search leave it as it was. Only tapping the text or the keyboard button raises it.
+
 * 0.1.8
 The top bar, tabs, tool row and Emacs key row now stay on screen when the on-screen keyboard opens or the text scrolls. The page fits the space above the keyboard instead of scrolling behind it.
 
