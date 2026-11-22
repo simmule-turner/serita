@@ -31,7 +31,7 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Emacs keys beyond the heading and movement commands: editing keys, the minibuffer, M-x, universal argument, and TAB and the M-arrows on plain text lines and tables, and god-mode for the C-c prefix.
 - How Emacs counts a heading's checkbox cookie (this build counts the checkboxes of its top-level items).
 - Sparse trees (the Emacs results are known; they need the fold model to reveal single lines).
-- Unverified against Emacs: S-TAB's show-all state for drawers, C-c , SPC, C-p on the first line at a column, M-left on plain text, the exact minibuffer prompt wording for priority and property.
+- Unresolved in Emacs batch results: TAB on an open drawer line (the first TAB changes nothing, the second folds it), and C-c , SPC, which fails in batch; compare in an interactive Emacs.
 - Search: Emacs regexp syntax, Replace, and C-s with the context of the view.
 - What Emacs does with the folds a search opened when the search is accepted (this build leaves them open and closes them on cancel).
 - Emacs is not installed in the build workspace, so the new tests are written by hand from the guide; run them against Emacs 29.3 batch before relying on details such as tag alignment, show2levels and the text shown by the children state.

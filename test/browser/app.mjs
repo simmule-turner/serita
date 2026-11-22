@@ -37,6 +37,7 @@ ok((await sheet.textContent()).includes('notes.org (App storage)') && (await she
 ok((await page.locator('.sheet .recent').count()) === 1, 'the recent list is its own scrolling area');
 await btn('Cancel').click();
 
+await page.evaluate(() => document.getElementById('editor').setSelectionRange(0, 0));
 await page.click('#btn-find');
 await page.locator('#findbar input').fill('plant');
 ok(await page.evaluate(() => { const e = document.getElementById('editor'); return e.value.slice(e.selectionStart, e.selectionEnd) === 'plant'; }), 'Find selects the first match, ignoring case');
@@ -44,6 +45,7 @@ ok((await page.locator('#hl mark').textContent()) === 'plant', 'the current matc
 await page.getByLabel('Next match').click();
 ok(await page.evaluate(() => { const e = document.getElementById('editor'); return e.value.slice(e.selectionStart, e.selectionEnd) === 'Plant'; }), 'the down button goes to the next match');
 await page.getByLabel('Next match').click();
+await page.getByLabel('Next match').click(); // the first one fails, as in Emacs
 ok((await page.locator('#findbar .prompt').textContent()) === 'Wrapped I-search:', 'the search wraps and says so in its prompt');
 await page.getByLabel('Cancel search').click();
 ok(await page.locator('#findbar').isHidden(), 'the x button closes the search');

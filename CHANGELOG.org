@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.4.7
+Search now follows Emacs: past the last match it fails first and a further C-s wraps, changing direction keeps the current match, and C-s on an empty field recalls the last search. Prompts and echo messages use Emacs's words (Priority A-C, SPC to remove:, Foo value:, Priority of current item set to B, TODO state changed to TODO), and M-left on plain text moves a word back. Verified: replayed Emacs 30.1 results for search, prompts, movement and priorities.
+
 * 0.4.6
 The key row's arrows now move as C-p, C-n, C-b and C-f do: by screen line on wrapped text, keeping the column, and with the beep at the ends; with Shift they still extend the selection. The README and SPEC now describe the search keys, key row, scrolling and key event log. Verified: the key row's arrows match the C-n goal-column behavior.
 

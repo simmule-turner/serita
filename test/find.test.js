@@ -10,17 +10,19 @@ test('lowercase queries ignore case; an uppercase letter makes it exact', () => 
   assert.deepEqual(search('a Plant', 'Plant', { from: 0 }), { start: 2, end: 7, wrapped: false });
 });
 
-test('forward starts at from, wraps once, and reports it', () => {
+test('forward starts at from; past the last match it fails, and wraps when asked', () => {
   const t = 'ab ab ab';
   assert.deepEqual(search(t, 'ab', { from: 1 }), { start: 3, end: 5, wrapped: false });
-  assert.deepEqual(search(t, 'ab', { from: 7 }), { start: 0, end: 2, wrapped: true });
+  assert.equal(search(t, 'ab', { from: 7 }), null);
+  assert.deepEqual(search(t, 'ab', { from: 7, wrap: true }), { start: 0, end: 2, wrapped: true });
 });
 
-test('backward finds the last match ending at or before from, and wraps', () => {
+test('backward finds the last match ending at or before from', () => {
   const t = 'ab ab ab';
   assert.deepEqual(search(t, 'ab', { from: 8, backward: true }), { start: 6, end: 8, wrapped: false });
   assert.deepEqual(search(t, 'ab', { from: 5, backward: true }), { start: 3, end: 5, wrapped: false });
-  assert.deepEqual(search(t, 'ab', { from: 1, backward: true }), { start: 6, end: 8, wrapped: true });
+  assert.equal(search(t, 'ab', { from: 1, backward: true }), null);
+  assert.deepEqual(search(t, 'ab', { from: 1, backward: true, wrap: true }), { start: 6, end: 8, wrapped: true });
 });
 
 test('no match at all, and an empty query, give null', () => {

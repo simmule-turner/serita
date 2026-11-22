@@ -35,7 +35,7 @@ ok(await page.evaluate(() => document.getElementById('editor').selectionEnd === 
 
 // Priority prompt (pri-set, pri-clear)
 await at('* TODO A\n', 1); await ctrl('c'); await page.keyboard.press(',');
-ok(await page.locator('#findbar .prompt').textContent() === 'Priority A-C, or SPC to remove:', 'C-c , opens the priority prompt in the minibuffer');
+ok(await page.locator('#findbar .prompt').textContent() === 'Priority A-C, SPC to remove:', 'C-c , opens the priority prompt in the minibuffer');
 await page.keyboard.type('B'); await page.keyboard.press('Enter');
 ok((await text()) === '* TODO [#B] A\n', 'the prompt sets [#B]');
 await ctrl('c'); await page.keyboard.press(','); await page.keyboard.type(' '); await page.keyboard.press('Enter');
@@ -119,6 +119,39 @@ const where = () => page.evaluate(() => { const e = document.getElementById('edi
 await rowKey('↓'); ok((await where()) === '2:2', 'the down arrow stops at the end of a short line');
 await rowKey('↓'); ok((await where()) === '3:8', 'and keeps the goal column, as C-n does');
 await rowKey('→'); await rowKey('←'); ok((await where()) === '3:8', 'the right and left arrows move one character');
+
+// Emacs results (v0.1.5): search fails before it wraps, direction changes keep the match, an empty C-s recalls
+const sel = () => page.evaluate(() => { const e = document.getElementById('editor'); return `${e.selectionStart}-${e.selectionEnd}`; });
+const prompt = () => page.locator('#findbar .prompt').textContent();
+await at('one two one two one\nthree\n', 1);
+await page.evaluate(() => document.getElementById('editor').setSelectionRange(16, 16));
+await page.keyboard.press('Control+s'); await page.keyboard.type('one');
+await page.keyboard.press('Control+s');
+ok((await prompt()) === 'Failing I-search:', 'C-s past the last match fails first');
+await page.keyboard.press('Control+s');
+ok((await prompt()) === 'Wrapped I-search:' && (await sel()) === '0-3', 'a further C-s wraps to the first match');
+await page.keyboard.press('Escape');
+await page.evaluate(() => document.getElementById('editor').setSelectionRange(12, 12));
+await page.keyboard.press('Control+r'); await page.keyboard.type('one'); await page.keyboard.press('Control+s'); await page.keyboard.press('Enter');
+ok((await sel()) === '8-11', 'C-r then C-s keeps the current match');
+await page.evaluate(() => document.getElementById('editor').setSelectionRange(0, 0));
+await page.keyboard.press('Control+s'); await page.keyboard.type('two'); await page.keyboard.press('Enter');
+await page.keyboard.press('Control+s'); await page.keyboard.press('Control+s'); await page.keyboard.press('Enter');
+ok((await sel()) === '12-15', 'C-s with an empty field recalls the last search and finds the next match');
+await at('foo bar baz\n', 1);
+await page.evaluate(() => document.getElementById('editor').setSelectionRange(8, 8));
+await page.keyboard.press('Alt+ArrowLeft');
+ok((await where()) === '1:4', 'M-left on plain text moves a word back');
+await at('* TODO A\n', 1); await page.keyboard.press('Shift+ArrowUp');
+ok((await page.locator('#message').textContent()) === 'Priority of current item set to B', 'S-up says what the priority is now');
+await at('* A\n', 1); await ctrl('c'); await ctrl('t');
+ok((await page.locator('#message').textContent()) === 'TODO state changed to TODO', 'C-c C-t says the new state');
+await at('* TODO H\n', 1); await ctrl('c'); await page.keyboard.press(',');
+ok((await prompt()) === 'Priority A-C, SPC to remove:', 'the priority prompt is the one Emacs shows');
+await page.keyboard.press('Escape');
+await at('* H\n', 1); await ctrl('c'); await ctrl('x'); await page.keyboard.press('p'); await page.keyboard.type('Foo'); await page.keyboard.press('Enter');
+ok((await prompt()) === 'Foo value:', 'the value prompt names the property');
+await page.keyboard.press('Escape');
 
 // Menu: Commands
 await page.click('#btn-menu');

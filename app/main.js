@@ -471,6 +471,7 @@ function browse({ mode, suggested = '', current = null }) {
 // ---- Find ------------------------------------------------------------------------------------------
 
 let finding = null;
+let lastSearch = '';
 const mini = createMinibuffer({ root: $('findbar'), list: $('completions'), bell: () => beep(), restoreFocus: () => { if (viewMode() === 'text') editor.focus({ preventScroll: true }); } });
 
 function startFind(backward = false) {
@@ -493,11 +494,18 @@ function startFind(backward = false) {
     paintOverlay();
     renderModeLine();
   };
-  const go = (backward, from) => {
+  // As in Emacs, a search that runs out of matches fails first; asking again in the same direction goes on from the other end.
+  let failing = false;
+  let current = null; // the match shown now; typing goes on from it
+  const origin = toFull(cur.proj, editor.selectionStart);
+  const go = (backward, from, wrap = false) => {
     const q = input().value;
     if (q === '') { mb.setPrompt(name()); return; }
-    const m = search(currentBuffer().text, q, { from, backward });
-    if (!m) { mb.setPrompt(`Failing ${name()}`, true); beep(); return; }
+    const m = search(currentBuffer().text, q, { from, backward, wrap });
+    if (!m) { failing = true; mb.setPrompt(`Failing ${name()}`, true); beep(); return; }
+    failing = false;
+    current = m;
+    lastSearch = q;
     mb.setPrompt(m.wrapped ? `Wrapped ${name()}` : name());
     show(m);
   };
@@ -516,11 +524,18 @@ function startFind(backward = false) {
   const selStart = () => toFull(cur.proj, editor.selectionStart);
   const selEnd = () => toFull(cur.proj, editor.selectionEnd);
   // C-s, C-r and the buttons go to the next or previous match; the prompt names the direction last used.
-  const step = (back) => { dir = back; mb.setPrompt(name()); go(back, back ? selStart() : selEnd()); };
+  const step = (back) => {
+    if (input().value === '' && lastSearch !== '') { input().value = lastSearch; dir = back; mb.setPrompt(name()); go(back, back ? selStart() : selEnd()); return; }
+    const turned = back !== dir;
+    dir = back;
+    mb.setPrompt(name());
+    if (failing && !turned) { go(back, back ? selStart() : selEnd(), true); return; }
+    go(back, turned ? (back ? selEnd() : selStart()) : (back ? selStart() : selEnd()));
+  };
   mb = mini.open({
     prompt: name(),
     label: 'Search',
-    onInput: () => go(dir, dir ? selEnd() : selStart()),
+    onInput: () => go(dir, dir ? (current ? current.start + input().value.length : origin) : (current ? current.start : origin)),
     onKey(e) {
       if (e.key === 'Enter') { e.preventDefault(); end(false); return true; }
       if (e.key === 'Escape' || (e.ctrlKey && e.key === 'g')) { e.preventDefault(); e.stopPropagation(); end(true); return true; }
@@ -860,6 +875,19 @@ function onEnclosingHeading(fn) {
   if (!r) return;
   if (onHead) placeCursor(r.line);
   else placeOffset(p + currentBuffer().text.length - before);
+  return r;
+}
+
+/** Says what the priority of the heading at `line` is now, as Emacs does. */
+function sayPriority(line) {
+  const p = analyze(currentBuffer().text).heads.find((x) => x.line === line)?.priority;
+  message(p ? `Priority of current item set to ${p}` : 'Priority removed');
+}
+
+/** Changes the TODO state of the enclosing heading and says the new state. */
+function todoStep(dir) {
+  const r = onEnclosingHeading((t, l) => cycleTodo(t, l, dir, tagsColumn()));
+  if (r?.state) message(`TODO state changed to ${r.state}`);
 }
 
 /** Calls `fn(line)` with the line of the enclosing heading. */
@@ -892,7 +920,8 @@ const COMMANDS = {
   },
   'move-up': () => editHere((t, l) => moveSubtree(t, l, -1), (t, l) => moveItem(t, l, -1)),
   'move-down': () => editHere((t, l) => moveSubtree(t, l, 1), (t, l) => moveItem(t, l, 1)),
-  'promote': () => editHere((t, l) => changeLevel(t, l, -1, false), (t, l) => indentItem(t, l, -1, false)),
+  // On plain text Emacs's M-left moves a word back.
+  'promote': () => (kindAtCursor().kind === null ? COMMANDS['backward-word']() : editHere((t, l) => changeLevel(t, l, -1, false), (t, l) => indentItem(t, l, -1, false))),
   // On plain text Emacs's M-right moves a word forward.
   'demote': () => (kindAtCursor().kind === null ? COMMANDS['forward-word']() : editHere((t, l) => changeLevel(t, l, 1, false), (t, l) => indentItem(t, l, 1, false))),
   'promote-subtree': () => editHere((t, l) => changeLevel(t, l, -1, true), (t, l) => indentItem(t, l, -1, true)),
@@ -906,11 +935,11 @@ const COMMANDS = {
     const r = runEdit((t) => insertHeadingAfter(t, head.line));
     if (r) placeCursor(r.line, true);
   },
-  'todo': () => onEnclosingHeading((t, l) => cycleTodo(t, l, 1, tagsColumn())),
-  'todo-next': () => onEnclosingHeading((t, l) => cycleTodo(t, l, 1, tagsColumn())),
-  'todo-previous': () => onEnclosingHeading((t, l) => cycleTodo(t, l, -1, tagsColumn())),
-  'priority-up': () => onEnclosingHeading((t, l) => stepPriority(t, l, -1, tagsColumn())),
-  'priority-down': () => onEnclosingHeading((t, l) => stepPriority(t, l, 1, tagsColumn())),
+  'todo': () => todoStep(1),
+  'todo-next': () => todoStep(1),
+  'todo-previous': () => todoStep(-1),
+  'priority-up': () => { const r = onEnclosingHeading((t, l) => stepPriority(t, l, -1, tagsColumn())); if (r) sayPriority(r.line); },
+  'priority-down': () => { const r = onEnclosingHeading((t, l) => stepPriority(t, l, 1, tagsColumn())); if (r) sayPriority(r.line); },
   'priority': () => withHeading(priorityDialog),
   'set-property': () => withHeading(setPropertyDialog),
   'delete-property': () => withHeading(deletePropertyDialog),
@@ -1074,12 +1103,12 @@ async function setTagsDialog(line) {
 async function priorityDialog(line) {
   const hd = cur.a.heads.find((x) => x.line === line);
   const value = viewMode() === 'text'
-    ? await mini.ask({ prompt: 'Priority A-C, or SPC to remove:', value: '' })
+    ? await mini.ask({ prompt: 'Priority A-C, SPC to remove:', value: '' })
     : await choose('Priority', [...['A', 'B', 'C'].map((p) => ({ label: p, meta: hd.priority === p ? 'current' : null, value: p })), { label: 'None', value: '' }]);
   if (value === undefined) return;
   const p = value.trim().toUpperCase();
   if (p !== '' && !/^[A-C]$/.test(p)) { message('Priority must be A, B or C', true); beep(); return; }
-  runEdit((t) => setPriority(t, line, p === '' ? null : p, tagsColumn()));
+  if (runEdit((t) => setPriority(t, line, p === '' ? null : p, tagsColumn()))) sayPriority(line);
 }
 
 /** The commands or names that contain every word typed, anywhere. */
@@ -1094,7 +1123,7 @@ async function setPropertyDialog(line) {
     complete: (t) => names.filter((n) => matchWords(t, n)).map((n) => ({ label: n, value: n })) });
   if (name === undefined) return;
   const old = propertiesOf(currentBuffer().text, line).find(([n]) => n === name)?.[1] ?? '';
-  const value = await askText({ prompt: 'Value:', title: name, value: old, ok: 'Set' });
+  const value = await askText({ prompt: `${name} value:`, title: name, value: old, ok: 'Set' });
   if (value === undefined) return;
   const r = runEdit((t) => setProperty(t, line, name, value));
   if (r?.drawer != null) { const b = currentBuffer(); session.setFolds(b.id, { ...b.folds, [r.drawer]: 'all' }); }
