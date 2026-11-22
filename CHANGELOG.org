@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.7.5
+Clocking works as in Emacs: C-c C-x C-i starts a clock in a :LOGBOOK: drawer, C-c C-x C-o stops it and records the time, C-c C-x C-q cancels it. C-c C-x e sets an effort. The agenda reads your agenda files, kept as ~org-agenda-files~ the way init.el sets it; C-c [ and C-c ] edit the list, and Settings shows it. Open starts in the folder you last used, the agenda has a Today button and the . key, and View lists Agenda, Outline, Text. Verified: replayed Emacs 30.1 results for clocking, effort, repeaters and timestamp keys.
+
 * 0.7.4
 A Back button, at the bottom left of the text, returns to where you came from (a tab, an agenda row, Go to line, a search, M-< and M->); hold it to see where it goes. The agenda has bolder arrows and moves with a swipe or f and b. Finishing a repeating task now also moves a plain repeating timestamp in the body, and S-left and S-right on a timestamp move the day, all as Emacs does; the stamps use your local time. WebDAV lists one folder at a time and no longer reuses an old copy of a file. Verified: replayed 25 Emacs 30.1 results for repeaters and timestamp keys.
 

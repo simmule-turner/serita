@@ -145,6 +145,21 @@ await sheet3.getByRole('button', { name: /Device files/ }).click();
 await sheet3.getByText('cannot open and save files on the device').waitFor();
 ok(true, 'Device files says plainly when the browser has no file picker');
 
+// Open starts in the folder of the last file saved or opened, not at the root of App storage
+const p4 = await (await browser.newContext()).newPage();
+p4.on('pageerror', (e) => errors.push(e.message));
+await p4.goto(`${base}/`);
+await p4.waitForSelector('.tab.current');
+const sheet4 = p4.locator('.sheet');
+await p4.fill('#editor', 'x\n');
+await p4.click('#btn-files'); await sheet4.getByRole('button', { name: 'Save as', exact: true }).click();
+await sheet4.getByLabel('File name').fill('work/plan.org');
+await sheet4.getByRole('button', { name: 'Save', exact: true }).click();
+await p4.waitForFunction(() => document.getElementById('message').textContent.startsWith('Wrote'));
+await p4.click('#btn-files'); await sheet4.getByRole('button', { name: 'New', exact: true }).click();
+await p4.click('#btn-files'); await sheet4.getByRole('button', { name: 'Open', exact: true }).click();
+ok((await sheet4.locator('.path').textContent()) === 'local:work/', 'Open starts in the folder of the last saved file');
+
 ok(errors.length === 0, `no page errors${errors.length ? ': ' + errors.join('; ') : ''}`);
 await close();
 process.exit(failed ? 1 : 0);

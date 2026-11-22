@@ -123,5 +123,25 @@
   "view": "search",
   "arg": "rent",
   "text": "Search words: rent\nPress \u2018[\u2019, \u2018]\u2019 to add/sub word, \u2018{\u2019, \u2018}\u2019 to add/sub regexp, \u2018C-u r\u2019 for a fresh search\n  oracleXXXXXX:TODO [#A] Pay rent                                        :home:\n"
+ },
+ {
+  "id": "fr-agenda-default",
+  "input": "* TODO Notes\n  SCHEDULED: <2026-11-29 Sun +1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 16:47]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 16:47]\n",
+  "view": "agenda",
+  "start": "2026-11-22",
+  "span": "day",
+  "warn": 14,
+  "text": "Day-agenda (W47):\nSunday     22 November 2026\n",
+  "today": "2026-11-22"
+ },
+ {
+  "id": "fr-agenda-next-week",
+  "input": "* TODO Notes\n  SCHEDULED: <2026-11-29 Sun +1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 16:47]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 16:47]\n",
+  "view": "agenda",
+  "start": "2026-11-29",
+  "span": "day",
+  "warn": 14,
+  "text": "Day-agenda (W48):\nSunday     29 November 2026\n  oracleXXXXXX:Scheduled:  TODO Notes\n",
+  "today": "2026-11-22"
  }
 ]

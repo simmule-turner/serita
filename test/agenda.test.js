@@ -10,7 +10,7 @@ const date = (s) => { const [y, m, d] = s.split('-').map(Number); return new Dat
 for (const c of cases) {
   test(`Emacs agenda ${c.id}`, () => {
     const files = [{ category: 'oracleXXXXXX', text: c.input }];
-    const r = c.view === 'agenda' ? agenda(files, { start: date(c.start), span: c.span, today: date('2026-11-30'), warn: c.warn })
+    const r = c.view === 'agenda' ? agenda(files, { start: date(c.start), span: c.span, today: date(c.today ?? '2026-11-30'), warn: c.warn })
       : c.view === 'todo' ? todoList(files, { keyword: c.arg }) : c.view === 'search' ? searchView(files, { words: c.arg })
         : tagsView(files, { match: c.arg, todoOnly: c.view === 'tagstodo' });
     assert.equal(r.text, c.text);

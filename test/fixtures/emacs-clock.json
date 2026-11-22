@@ -1,0 +1,162 @@
+[
+ {
+  "id": "ck-in-out",
+  "input": "* TODO A\n",
+  "line": 1,
+  "keys": "C-c C-x C-i C-c C-x C-o",
+  "eval": null,
+  "text": "* TODO A\n:LOGBOOK:\nCLOCK: [2026-11-22 Sun 17:13]--[2026-11-22 Sun 17:13] =>  0:00\n:END:\n",
+  "error": false,
+  "messages": [
+   "Clock starts at [2026-11-22 Sun 17:13] - showing entire task time.",
+   "Clock stopped at [2026-11-22 Sun 17:13] after 0:00"
+  ]
+ },
+ {
+  "id": "ck-in-twice-two-headings",
+  "input": "* TODO A\n* TODO B\n",
+  "line": 1,
+  "keys": "C-c C-x C-i C-n C-c C-x C-i",
+  "eval": null,
+  "text": "* TODO A\n:LOGBOOK:\nCLOCK: [2026-11-22 Sun 17:13]\n:END:\n* TODO B\n",
+  "error": false,
+  "messages": [
+   "Clock starts at [2026-11-22 Sun 17:13] - showing entire task time.",
+   "Clock continues in \"A\""
+  ]
+ },
+ {
+  "id": "ck-in",
+  "input": "* TODO A\n",
+  "line": 1,
+  "keys": "C-c C-x C-i",
+  "eval": null,
+  "text": "* TODO A\n:LOGBOOK:\nCLOCK: [2026-11-22 Sun 17:13]\n:END:\n",
+  "error": false,
+  "messages": [
+   "Clock starts at [2026-11-22 Sun 17:13] - showing entire task time."
+  ]
+ },
+ {
+  "id": "ck-out-none",
+  "input": "* TODO A\n",
+  "line": 1,
+  "keys": "C-c C-x C-o",
+  "eval": null,
+  "text": "* TODO A\n",
+  "error": "user-error",
+  "messages": []
+ },
+ {
+  "id": "ck-cancel",
+  "input": "* TODO A\n",
+  "line": 1,
+  "keys": "C-c C-x C-i C-c C-x C-q",
+  "eval": null,
+  "text": "* TODO A\n",
+  "error": false,
+  "messages": [
+   "Clock starts at [2026-11-22 Sun 17:19] - showing entire task time.",
+   "Clock canceled"
+  ]
+ },
+ {
+  "id": "ck-in-body",
+  "input": "* TODO A\nbody\n",
+  "line": 2,
+  "keys": "C-c C-x C-i",
+  "eval": null,
+  "text": "* TODO A\n:LOGBOOK:\nCLOCK: [2026-11-22 Sun 17:19]\n:END:\nbody\n",
+  "error": false,
+  "messages": [
+   "Clock starts at [2026-11-22 Sun 17:19] - showing entire task time."
+  ]
+ },
+ {
+  "id": "ck-in-logbook",
+  "input": "* TODO A\n:LOGBOOK:\nCLOCK: [2026-11-01 Sun 09:00]--[2026-11-01 Sun 10:30] =>  1:30\n:END:\n",
+  "line": 1,
+  "keys": "C-c C-x C-i",
+  "eval": null,
+  "text": "* TODO A\n:LOGBOOK:\nCLOCK: [2026-11-22 Sun 17:19]\nCLOCK: [2026-11-01 Sun 09:00]--[2026-11-01 Sun 10:30] =>  1:30\n:END:\n",
+  "error": false,
+  "messages": [
+   "Clock starts at [2026-11-22 Sun 17:19] - showing entire task time."
+  ]
+ },
+ {
+  "id": "ck-in-no-todo",
+  "input": "* A\n",
+  "line": 1,
+  "keys": "C-c C-x C-i",
+  "eval": null,
+  "text": "* A\n:LOGBOOK:\nCLOCK: [2026-11-22 Sun 17:19]\n:END:\n",
+  "error": false,
+  "messages": [
+   "Clock starts at [2026-11-22 Sun 17:19] - showing entire task time."
+  ]
+ },
+ {
+  "id": "ck-in-plan-props",
+  "input": "* TODO A\nSCHEDULED: <2026-11-30 Mon>\n:PROPERTIES:\n:ID: x\n:END:\n",
+  "line": 1,
+  "keys": "C-c C-x C-i",
+  "eval": null,
+  "text": "* TODO A\nSCHEDULED: <2026-11-30 Mon>\n:PROPERTIES:\n:ID: x\n:END:\n:LOGBOOK:\nCLOCK: [2026-11-22 Sun 17:19]\n:END:\n",
+  "error": false,
+  "messages": [
+   "Clock starts at [2026-11-22 Sun 17:19] - showing entire task time."
+  ]
+ },
+ {
+  "id": "ck-in-plan",
+  "input": "* TODO A\nSCHEDULED: <2026-11-30 Mon>\n",
+  "line": 1,
+  "keys": "C-c C-x C-i",
+  "eval": null,
+  "text": "* TODO A\nSCHEDULED: <2026-11-30 Mon>\n:LOGBOOK:\nCLOCK: [2026-11-22 Sun 17:19]\n:END:\n",
+  "error": false,
+  "messages": [
+   "Clock starts at [2026-11-22 Sun 17:19] - showing entire task time."
+  ]
+ },
+ {
+  "id": "ck-in-props",
+  "input": "* TODO A\n:PROPERTIES:\n:ID: x\n:END:\n",
+  "line": 1,
+  "keys": "C-c C-x C-i",
+  "eval": null,
+  "text": "* TODO A\n:PROPERTIES:\n:ID: x\n:END:\n:LOGBOOK:\nCLOCK: [2026-11-22 Sun 17:19]\n:END:\n",
+  "error": false,
+  "messages": [
+   "Clock starts at [2026-11-22 Sun 17:19] - showing entire task time."
+  ]
+ },
+ {
+  "id": "ck-out-twice",
+  "input": "* TODO A\n",
+  "line": 1,
+  "keys": "C-c C-x C-i C-c C-x C-o C-c C-x C-o",
+  "eval": null,
+  "text": "* TODO A\n:LOGBOOK:\nCLOCK: [2026-11-22 Sun 17:19]--[2026-11-22 Sun 17:19] =>  0:00\n:END:\n",
+  "error": "user-error",
+  "messages": [
+   "Clock starts at [2026-11-22 Sun 17:19] - showing entire task time.",
+   "Clock stopped at [2026-11-22 Sun 17:19] after 0:00"
+  ]
+ },
+ {
+  "id": "ck-switch",
+  "input": "* TODO A\n* TODO B\n",
+  "line": 1,
+  "keys": "C-c C-x C-i",
+  "eval": "(progn (goto-char (point-min)) (org-clock-in) (org-next-visible-heading 1))",
+  "text": "* TODO A\n:LOGBOOK:\nCLOCK: [2026-11-22 Sun 17:19]--[2026-11-22 Sun 17:19] =>  0:00\n:END:\n* TODO B\n:LOGBOOK:\nCLOCK: [2026-11-22 Sun 17:19]\n:END:\n",
+  "error": false,
+  "messages": [
+   "Clock starts at [2026-11-22 Sun 17:19] - showing entire task time.",
+   "Clock stopped at [2026-11-22 Sun 17:19] after 0:00",
+   "Clock starts at [2026-11-22 Sun 17:19] - showing entire task time."
+  ]
+ }
+]

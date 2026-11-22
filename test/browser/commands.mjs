@@ -214,8 +214,46 @@ ok((await sel()) === '4-4' && await page.locator('#back').isHidden(), 'tapping B
 await page.keyboard.press('Alt+>');
 await ctrl('x'); await page.keyboard.press('Control+ ');
 ok((await sel()) === '4-4', 'C-x C-SPC goes back too');
+// Effort: C-c C-x e asks and sets the Effort property (Emacs: ef-* cases)
+await at('* A\n', 1);
+await page.keyboard.press('Alt+x'); await page.keyboard.type('org-set-effort'); await page.keyboard.press('Enter');
+await page.keyboard.type('2:00'); await page.keyboard.press('Enter');
+ok((await text()) === '* A\n:PROPERTIES:\n:Effort:   2:00\n:END:\n' && (await page.locator('#message').textContent()) === 'Effort is now 2:00', 'Set effort writes :Effort: and says so');
+await at('* A\n', 1);
+await page.keyboard.press('Alt+x'); await page.keyboard.type('org-set-effort'); await page.keyboard.press('Enter');
+await page.keyboard.type('abc'); await page.keyboard.press('Enter');
+ok((await text()) === '* A\n' && (await page.locator('#message').textContent()).startsWith('Invalid duration format'), 'an effort that is not a duration is refused');
+
+// Clocking: in writes the CLOCK entry, out closes it, cancel removes it (Emacs: ck-* cases)
+await at('* A\n', 1);
+const run = async (cmd) => { await page.keyboard.press('Alt+x'); await page.keyboard.type(cmd); await page.keyboard.press('Enter'); };
+await run('org-clock-in');
+ok(/^\* A\n:LOGBOOK:\nCLOCK: \[\d{4}-\d\d-\d\d \w+ \d\d:\d\d\]\n:END:\n$/.test(await text()) && (await page.locator('#message').textContent()).startsWith('Clock starts at ['), 'Clock in writes a CLOCK entry');
+await run('org-clock-out');
+ok(/--\[[^\]]+\] =>  0:0[01]\n/.test(await text()) && (await page.locator('#message').textContent()).startsWith('Clock stopped at ['), 'Clock out records the time spent');
+await at('* A\n', 1);
+await run('org-clock-in'); await run('org-clock-cancel');
+ok((await text()) === '* A\n' && (await page.locator('#message').textContent()) === 'Clock canceled', 'Cancel removes the clock and its drawer');
+
 // The agenda (View, Agenda): a week with a scheduled entry; tapping the row goes to the heading
 await at('* TODO Pay rent :home:\nSCHEDULED: <2999-01-01 Mon>\n* Other\n', 1);
+// The agenda reads the agenda files: with none listed it is empty; the file is listed with C-c [ (org-agenda-file-to-front)
+await page.click('#btn-files'); await btn('Save as').click(); await sheet.getByLabel('File name').fill('agenda-test.org'); await btn('Save').click();
+await page.waitForFunction(() => document.getElementById('message').textContent.startsWith('Wrote'));
+await page.click('#btn-view'); await btn('Agenda').click();
+ok(await page.locator('.sheet.agenda .arow').count() === 0, 'the agenda is empty while no agenda files are listed');
+await page.locator('.sheet.agenda .abar button', { hasText: 'Close' }).click();
+await page.evaluate(() => document.getElementById('editor').focus());
+await page.keyboard.press('Alt+x'); await page.keyboard.type('org-agenda-file-to-front'); await page.keyboard.press('Enter');
+ok((await page.locator('#message').textContent()).includes('File added to front of agenda file list'), 'C-c [ lists the current file');
+await page.click('#btn-menu'); await btn('Settings').click();
+ok((await btn(/Agenda files/).textContent()).includes('1 file'), 'Settings shows how many agenda files there are');
+await btn(/Agenda files/).click();
+ok((await sheet.textContent()).includes('agenda-test.org (App storage)'), 'the Agenda files screen lists the file with its storage');
+await btn('Remove').click();
+ok((await sheet.textContent()).includes('The agenda is empty until you add one'), 'Remove takes the file off the list');
+await btn('Add current file').click();
+await btn('Close').click(); await btn('Close').click();
 await page.click('#btn-view'); await btn('Agenda').click();
 ok(await page.locator('.sheet.agenda .abar button', { hasText: 'Week' }).count() === 1, 'the agenda has Day, Week and Month');
 {
@@ -234,6 +272,12 @@ ok(await page.locator('.sheet.agenda .abar button', { hasText: 'Week' }).count()
   await swipe(-30);
   ok((await head()) === first, 'a short swipe does nothing');
   ok(await page.locator('.sheet.agenda .abar button .chev').count() === 2, 'the arrows are drawn chevrons');
+  await page.keyboard.press('f'); await page.keyboard.press('f');
+  ok((await head()) !== first, 'two steps later leave this week');
+  await page.locator('.sheet.agenda .abar button', { hasText: 'Today' }).click();
+  ok((await head()) === first, 'Today returns to the span that holds today');
+  await page.keyboard.press('b'); await page.keyboard.press('.');
+  ok((await head()) === first, '. goes to today as well');
 }
 await page.locator('.sheet.agenda .abar button', { hasText: 'Views' }).click();
 await btn('TODO list').click();

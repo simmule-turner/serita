@@ -15,6 +15,9 @@ import { h, kept } from './ui/dom.js';
 import { analyze, cycle, cycleGlobal, diff, ellipsisLines, hiddenLines, reveal } from '../core/outline.js';
 import { backwardChar, backwardWord, forwardChar, forwardWord, lineEnd as endOfLine, lineStart as startOfLine, moveVertical } from '../core/motion.js';
 import { DEFAULT_TAGS_COLUMN, changeLevel, cycleTodo, indentItem, insertHeadingAfter, insertHeadingHere, moveItem, moveSubtree, setPriority, setTags, setTitle, stepPriority, toggleCheckbox } from '../core/outline-edit.js';
+import { parseStringList, formatStringList } from '../core/lisp-list.js';
+import { clockIn, clockOut, cancelClock, openClock, inClockedEntry } from '../core/clock.js';
+import { isEffort } from '../core/effort.js';
 import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../core/properties.js';
 import { agenda, searchView, tagsView, todoList } from '../core/agenda.js';
 import { startReplace } from '../core/replace.js';
@@ -428,9 +431,10 @@ function providerLabel(p) { return { local: 'App storage', device: 'Device files
 
 /** @returns {Promise<string|undefined>} the chosen storage name */
 function browse({ mode, suggested = '', current = null }) {
-  let provider = current ? parseName(current).provider : 'local';
-  if (!(provider in providers) || (mode === 'open' && provider === 'device')) provider = 'local';
-  let dir = current ? parseName(current).path.replace(/[^/]*$/, '') : '';
+  const wanted = current ? parseName(current).provider : 'local';
+  const usable = wanted in providers && !(mode === 'open' && wanted === 'device');
+  let provider = usable ? wanted : 'local';
+  let dir = current && usable ? parseName(current).path.replace(/[^/]*$/, '') : '';
   return panel((sheet, close) => {
     let listing = { folders: [], files: [] };
     let loadError = null;
@@ -707,6 +711,7 @@ async function settings() {
           h('button', { class: 'item', onclick: () => close('stars') }, h('span', {}, 'Hide leading stars'), h('span', { class: 'meta' }, hideStars() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('appearance') }, h('span', {}, 'Appearance'), h('span', { class: 'meta' }, `${theme()[0].toUpperCase()}${theme().slice(1)}, ${fontSize()}px ›`)),
           h('button', { class: 'item', onclick: () => close('tags-column') }, h('span', {}, 'Tag column'), h('span', { class: 'meta' }, `${tagsColumn()} ›`)),
+          h('button', { class: 'item', onclick: () => close('agenda-files') }, h('span', {}, 'Agenda files'), h('span', { class: 'meta' }, `${agendaFileNames().length} ${agendaFileNames().length === 1 ? 'file' : 'files'} ›`)),
           h('button', { class: 'item', onclick: () => close('restore') }, h('span', {}, 'Restore open files on start'), h('span', { class: 'meta' }, restoreOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('tools-text') }, h('span', {}, 'Tool row in the Text view'), h('span', { class: 'meta' }, toolRowOn('text') ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('keylog') }, h('span', {}, 'Key event log'), h('span', { class: 'meta' }, keyLogOn() ? 'On ›' : 'Off ›')),
@@ -727,6 +732,7 @@ async function settings() {
     else if (what === 'stars') config.update({ settings: { 'view.hideStars': String(!hideStars()) } });
     else if (what === 'appearance') await appearance();
     else if (what === 'tags-column') await tagsColumnDialog();
+    else if (what === 'agenda-files') await agendaFilesDialog();
     else if (what === 'beep') config.update({ settings: { 'view.beep': String(!beepOn()) } });
     else if (what === 'keylog') await keyLogScreen();
     else if (what === 'restore') config.update({ settings: { 'session.restore': String(!restoreOn()) } });
@@ -885,7 +891,8 @@ async function filesMenu() {
   if (what.recent) await openNamed(what.recent);
   else if (what === 'new') session.newScratch();
   else if (what === 'open') {
-    const name = await browse({ mode: 'open' });
+    // Opens where the current file is, or where the last opened or saved file was.
+    const name = await browse({ mode: 'open', current: currentBuffer()?.name ?? recent.list()[0] ?? null });
     if (name) await openNamed(name);
   } else if (what === 'save') { if (shownId !== null) await saveBuffer(shownId); }
   else if (what === 'saveas') { if (shownId !== null) await saveAs(shownId); }
@@ -896,7 +903,7 @@ $('btn-files').addEventListener('click', filesMenu);
 $('btn-save').addEventListener('click', () => { if (shownId !== null) saveBuffer(shownId); });
 $('btn-find').addEventListener('click', () => startFind());
 $('btn-view').addEventListener('click', async () => {
-  const what = await choose(null, [...['outline', 'text'].map((v) => ({ label: v === 'outline' ? 'Outline' : 'Text', meta: viewMode() === v ? 'current' : null, value: v })), { label: 'Agenda', value: 'agenda' }]);
+  const what = await choose(null, [{ label: 'Agenda', value: 'agenda' }, ...['outline', 'text'].map((v) => ({ label: v === 'outline' ? 'Outline' : 'Text', meta: viewMode() === v ? 'current' : null, value: v }))]);
   if (what === 'agenda') await agendaScreen();
   else if (what) setView(what);
 });
@@ -914,10 +921,43 @@ $('btn-menu').addEventListener('click', async () => {
 
 const agendaState = { kind: 'agenda', span: 'week', anchor: null, match: '', words: '', keyword: null };
 const mondayOf = (d) => new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * 86400000);
-const categoryOf = (b) => (b.name ?? b.title ?? 'buffer').replace(/^.*\//, '').replace(/\.[^.]*$/, '');
+/** The category Org gives a file: its name without the folder and the extension. */
+const categoryOfName = (name) => parseName(name).path.replace(/^.*\//, '').replace(/\.[^.]*$/, '');
+
+/** org-agenda-files: storage names, kept as the Lisp list that init.el would set. */
+const agendaFileNames = () => parseStringList(config.settings()['org-agenda-files'] ?? '()');
+const setAgendaFileNames = (names) => config.update({ settings: { 'org-agenda-files': formatStringList(names) } });
+
+/** Puts a file first on the list (Emacs: org-agenda-file-to-front). */
+function addAgendaFile(name) {
+  setAgendaFileNames([name, ...agendaFileNames().filter((n) => n !== name)]);
+}
+
+/** The files the agenda covers: those on the list, taking the text of an open one from its tab. */
+async function agendaSources() {
+  const files = [];
+  const unread = [];
+  for (const name of agendaFileNames()) {
+    const open = session.state().buffers.find((b) => b.name === name);
+    if (open) { files.push({ id: open.id, name, category: categoryOfName(name), text: open.text }); continue; }
+    try {
+      const r = await app.storage.read(name);
+      if (r) files.push({ id: null, name, category: categoryOfName(name), text: r.text });
+      else unread.push(`${name} (not found)`);
+    } catch (e) { unread.push(`${name} (${e.message})`); }
+  }
+  if (unread.length) message(`Cannot read ${unread.join(', ')}`, true);
+  return files;
+}
 const SPANS = [['day', 'Day'], ['week', 'Week'], ['month', 'Month']];
 
 /** Moves the agenda's start by one span, forward or back. */
+/** The agenda goes to the span that holds today (Emacs: .). */
+function agendaToday() {
+  const t = todayDate();
+  agendaState.anchor = agendaState.span === 'month' ? new Date(Date.UTC(t.getUTCFullYear(), t.getUTCMonth(), 1)) : t;
+}
+
 function agendaMove(dir) {
   const a = agendaState.anchor;
   agendaState.anchor = agendaState.span === 'day' ? new Date(a.getTime() + dir * 86400000)
@@ -952,11 +992,12 @@ function sidewaysSwipe(onSwipe) {
   };
 }
 
-/** The agenda over the open files: a full screen of rows for the dates, the TODO list, tags or a search. Tapping a row goes to that heading. */
+/** The agenda over the agenda files: a full screen of rows for the dates, the TODO list, tags or a search. Tapping a row goes to that heading. */
 async function agendaScreen() {
   agendaState.anchor ??= todayDate();
+  let files;
+  try { files = await agendaSources(); } catch (e) { failure(e); return; }
   for (;;) {
-    const files = session.state().buffers.map((b) => ({ id: b.id, category: categoryOf(b), text: b.text }));
     const st = agendaState;
     let view;
     try {
@@ -967,8 +1008,12 @@ async function agendaScreen() {
     const act = await panel((sheet, close) => {
       sheet.classList.add('full', 'agenda');
       if (st.kind === 'agenda') {
-        // f and b move later and earlier, as in the Emacs agenda; a sideways swipe on the rows does the same.
-        onMoveKey = (e) => { if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'f' || e.key === 'b')) { e.preventDefault(); e.stopPropagation(); close({ move: e.key === 'f' ? 1 : -1 }); } };
+        // f and b move later and earlier and . goes to today, as in the Emacs agenda; a sideways swipe on the rows does the same.
+        onMoveKey = (e) => {
+          if (e.ctrlKey || e.metaKey || e.altKey || !['f', 'b', '.'].includes(e.key)) return;
+          e.preventDefault(); e.stopPropagation();
+          close(e.key === '.' ? { today: true } : { move: e.key === 'f' ? 1 : -1 });
+        };
         document.addEventListener('keydown', onMoveKey, true);
       }
       const row = (e) => h('button', { class: 'arow', onclick: () => close({ jump: e }) },
@@ -980,7 +1025,7 @@ async function agendaScreen() {
         : view.entries.length ? view.entries.map(row) : [h('p', { class: 'aempty' }, 'No entries')];
       const nav = st.kind === 'agenda' ? [h('button', { 'aria-label': 'Earlier', onclick: () => close({ move: -1 }) }, h('span', { class: 'chev left' })), h('button', { 'aria-label': 'Later', onclick: () => close({ move: 1 }) }, h('span', { class: 'chev right' }))] : [];
       put(sheet,
-        h('div', { class: 'abar' }, nav[0] ?? null, h('div', { class: 'atitlebar' }, view.title.replace(/:$/, '')), nav[1] ?? null),
+        h('div', { class: 'abar' }, nav[0] ?? null, st.kind === 'agenda' ? h('button', { onclick: () => close({ today: true }) }, 'Today') : null, h('div', { class: 'atitlebar' }, view.title.replace(/:$/, '')), nav[1] ?? null),
         Object.assign(h('div', { class: 'abody' }, ...body), st.kind === 'agenda' ? sidewaysSwipe((dir) => close({ move: dir })) : {}),
         h('div', { class: 'abar' },
           ...(st.kind === 'agenda' ? SPANS.map(([v, l]) => h('button', { class: st.span === v ? 'primary' : '', onclick: () => close({ span: v }) }, l)) : []),
@@ -989,7 +1034,8 @@ async function agendaScreen() {
     });
     if (onMoveKey) document.removeEventListener('keydown', onMoveKey, true);
     if (!act) return;
-    if (act.move) agendaMove(act.move);
+    if (act.today) agendaToday();
+    else if (act.move) agendaMove(act.move);
     else if (act.span) { st.span = act.span; if (act.span === 'week') st.anchor = mondayOf(st.anchor); }
     else if (act.views) {
       const v = await choose('Views', [{ label: 'Agenda', value: 'agenda' }, { label: 'TODO list', value: 'todo' }, { label: 'Tags', value: 'tags' }, { label: 'Search', value: 'search' }]);
@@ -1004,7 +1050,14 @@ async function agendaScreen() {
       leaveHere();
       places.push({ kind: 'agenda' });
       showBack();
-      session.select(files[e.file].id);
+      const f = files[e.file];
+      let id = f.id;
+      if (id === null) {
+        const opened = await session.openFile(f.name);
+        if (!opened.ok) { failure(new Error(`${f.name} does not exist`)); return; }
+        id = opened.id;
+      }
+      session.select(id);
       setView('text');
       placeCursor(e.line);
       return;
@@ -1146,6 +1199,101 @@ function shiftDayOrTodo(dir) {
   todoStep(dir);
 }
 
+/** C-c C-x e: sets the Effort property of the heading. An empty answer leaves the property empty, as Emacs does. */
+async function setEffort() {
+  const hd = enclosingHead();
+  if (!hd) { message('Not at a heading'); return; }
+  const typed = await askText({ prompt: 'Effort:', title: 'Set effort', help: 'A duration such as 2:00, 2h, 30min or 1d 3h.', ok: 'Set' });
+  if (typed === undefined) return;
+  const value = typed.trim();
+  if (value !== '' && !isEffort(value)) { message(`Invalid duration format: "${value}"`, true); return; }
+  runEdit((t) => setProperty(t, hd.line, 'Effort', value));
+  message(`Effort is now ${value}`);
+}
+
+/** The running clock, looked for in every open buffer: { buffer, clockLine, headLine, title, start } or null. */
+function runningClock() {
+  for (const b of session.state().buffers) {
+    const o = openClock(b.text);
+    if (o) return { buffer: b, ...o };
+  }
+  return null;
+}
+
+/** Stops the running clock and says so; returns the message text. */
+function stopClock(c, now) {
+  const r = clockOut(c.buffer.text, c.clockLine, c.start, now);
+  session.apply(c.buffer.id, { text: r.text });
+  return `Clock stopped at ${r.stopped} after ${r.duration}`;
+}
+
+/** C-c C-x C-i: clocks in on the heading at the cursor, stopping any clock running elsewhere first. */
+function clockInHere() {
+  const hd = enclosingHead();
+  if (!hd) { message('Not at a heading'); return; }
+  const b = currentBuffer();
+  const now = localNow();
+  const c = runningClock();
+  if (c && c.buffer.id === b.id && inClockedEntry(b.text, c.headLine, hd.line)) { message(`Clock continues in "${c.title}"`); return; }
+  let said = '';
+  if (c) said = stopClock(c, now);
+  const r = runEdit((t) => clockIn(t, hd.line, now));
+  if (r) message(`${said ? said + '. ' : ''}Clock starts at ${r.started} - showing entire task time.`);
+}
+
+/** C-c C-x C-o: stops the running clock. */
+function clockOutNow() {
+  const c = runningClock();
+  if (!c) { message('No active clock', true); return; }
+  message(stopClock(c, localNow()));
+}
+
+/** C-c C-x C-q: drops the running clock without recording it. */
+function clockCancel() {
+  const c = runningClock();
+  if (!c) { message('No active clock', true); return; }
+  session.apply(c.buffer.id, { text: cancelClock(c.buffer.text, c.clockLine).text });
+  message('Clock canceled');
+}
+
+/** C-c [ puts the current file on the agenda files; C-c ] takes it off. */
+function agendaFileAdd() {
+  const name = currentBuffer()?.name;
+  if (!name) { message('This buffer is not visiting a file', true); return; }
+  const listed = agendaFileNames().includes(name);
+  addAgendaFile(name);
+  message(listed ? 'File moved to front of agenda file list' : 'File added to front of agenda file list');
+}
+function agendaFileRemove() {
+  const name = currentBuffer()?.name;
+  if (!name) { message('This buffer is not visiting a file', true); return; }
+  const names = agendaFileNames();
+  if (!names.includes(name)) { message(`File was not in list: ${name} (not removed)`); return; }
+  setAgendaFileNames(names.filter((n) => n !== name));
+  message(`Removed from Org Agenda list: ${name}`);
+}
+
+/** Settings, Agenda files: the list, with Remove for each file and ways to add one. */
+async function agendaFilesDialog() {
+  for (;;) {
+    const names = agendaFileNames();
+    const act = await panel((sheet, close) => {
+      put(sheet, h('h2', {}, 'Agenda files'),
+        names.length ? h('div', { class: 'list' }, names.map((n) => h('div', { class: 'item' },
+          h('span', {}, `${parseName(n).path} (${STORAGE_LABEL[parseName(n).provider]})`),
+          h('button', { onclick: () => close({ remove: n }) }, 'Remove')))) : h('p', {}, 'No files. The agenda is empty until you add one.'),
+        h('div', { class: 'row' },
+          h('button', { onclick: () => close({ addCurrent: true }) }, 'Add current file'),
+          h('button', { onclick: () => close({ addFile: true }) }, 'Add file…'),
+          h('button', { onclick: () => close(undefined) }, 'Close')));
+    });
+    if (act === undefined) return;
+    if (act.remove) setAgendaFileNames(names.filter((n) => n !== act.remove));
+    else if (act.addCurrent) agendaFileAdd();
+    else if (act.addFile) { const picked = await browse({ mode: 'open', current: currentBuffer()?.name ?? recent.list()[0] ?? null }); if (picked) addAgendaFile(picked); }
+  }
+}
+
 async function planHere(keyword, label, said) {
   const hd = enclosingHead();
   if (!hd) { message('Not at a heading'); return; }
@@ -1184,6 +1332,12 @@ const COMMANDS = {
   'beginning-of-buffer': () => { leaveHere(); goTo(0); },
   'end-of-buffer': () => { leaveHere(); goTo(editor.value.length); },
   'back': () => goBack(),
+  'effort': () => setEffort(),
+  'clock-in': () => clockInHere(),
+  'clock-out': () => clockOutNow(),
+  'clock-cancel': () => clockCancel(),
+  'agenda-file-add': () => agendaFileAdd(),
+  'agenda-file-remove': () => agendaFileRemove(),
   'quit': () => message('Quit', true),
   'cycle': () => { const { line, kind } = kindAtCursor(); if (kind === null) message('Not at a heading or list item'); else cycleHeading(line); },
   'cycle-global': () => {
@@ -1552,7 +1706,7 @@ const PALETTE = [
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
   ['insert-heading', 'org-insert-heading-respect-content', 'Insert heading after subtree'], ['insert-heading-here', 'org-meta-return', 'Insert heading here'],
   ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],
-  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true],
+  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true], ['effort', 'org-set-effort', 'Set effort'], ['clock-in', 'org-clock-in', 'Clock in'], ['clock-out', 'org-clock-out', 'Clock out'], ['clock-cancel', 'org-clock-cancel', 'Cancel clock'], ['agenda-file-add', 'org-agenda-file-to-front', 'Add file to agenda files', true], ['agenda-file-remove', 'org-remove-file', 'Remove file from agenda files', true],
   ['undo', 'undo', 'Undo', true], ['redo', 'undo-redo', 'Redo', true],
   ['select-all', 'mark-whole-buffer', 'Select all'], ['kill-line', 'kill-line', 'Cut to end of line'], ['kill-whole-line', 'kill-whole-line', 'Cut whole line'], ['yank', 'yank', 'Paste'],
   ['next-line', 'next-line', 'Next line'], ['previous-line', 'previous-line', 'Previous line'], ['forward-char', 'forward-char', 'Forward character'], ['backward-char', 'backward-char', 'Backward character'],

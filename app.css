@@ -118,7 +118,7 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 .chev { display: inline-block; width: 10px; height: 10px; border: solid currentColor; border-width: 0 3px 3px 0; border-radius: 1px; }
 .chev.left { transform: rotate(135deg); margin-left: 4px; }
 .chev.right { transform: rotate(-45deg); margin-right: 4px; }
-.atitlebar { flex: 1; text-align: center; font-weight: 500; }
+.atitlebar { flex: 1; min-width: 0; text-align: center; font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .abody { overflow-y: auto; flex: 1; touch-action: pan-y; }
 .aday { padding: 6px 12px; background: var(--bg-neutral); font-weight: 500; font-size: 13px; }
 .aday.today { color: var(--text-accent); }

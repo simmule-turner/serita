@@ -100,3 +100,13 @@ for (const c of rep.filter((x) => /^ts-(rep|sleft|sright|min|hour|open|inactive)
     if (c.messages.length) assert.equal(r.said, c.messages[0]);
   });
 }
+
+const stampKeys = JSON.parse(readFileSync(new URL('./fixtures/emacs-stamp-keys.json', import.meta.url), 'utf8'));
+for (const c of stampKeys) {
+  test(`Emacs S-arrow on a timestamp part: ${c.id}`, () => {
+    const lines = c.input.split('\n');
+    const offset = lines.slice(0, c.line - 1).reduce((n, l) => n + l.length + 1, 0) + c.col;
+    const r = shiftStamp(c.input, offset, /up|right/.test(c.keys) ? 1 : -1, { sideways: /left|right/.test(c.keys) });
+    assert.equal(r.text, c.text);
+  });
+}

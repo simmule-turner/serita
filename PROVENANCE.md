@@ -77,6 +77,12 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 ### `app/ui/history.js`, `test/history.test.js`
 - Written from: the author's request (a floating back button that returns to where the user came from, with a long press that says where) and the author's design. No other program or source was consulted. Statement as above.
 
+### `core/lisp-list.js`, `core/effort.js`, `test/lisp-list.test.js`, `test/fixtures/emacs-effort.json`
+- Written from: the author's request (agenda files kept as the list `init.el` would set) and the SPEC's storage names; the effort forms and the property text are the Emacs 30.1 conformance results for the ef-* cases, read as behavior only. Statement as above.
+
+### `core/clock.js`, `test/clock.test.js`, `test/fixtures/emacs-clock.json`
+- Written from: the author's request (clocking as Emacs does it) and the Emacs 30.1 conformance results for the ck-* cases (the text each key sequence leaves and the messages), read as behavior only. Statement as above.
+
 ### `app/ui/update.js`, `app/version.js`, `test/update.test.js`, `test/browser/update.mjs`
 - Written from: the author's request (see an update, choose when to restart) and the service worker API as documented (waiting worker, updatefound, message ports, skipWaiting). Statement as above.
 

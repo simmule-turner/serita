@@ -1,0 +1,130 @@
+[
+ {
+  "id": "ts-close-left",
+  "input": "* A\n<2026-11-30 Mon>\n",
+  "line": 2,
+  "col": 15,
+  "keys": "S-<left>",
+  "text": "* A\n<2026-11-29 Sun>\n"
+ },
+ {
+  "id": "ts-close-r-left",
+  "input": "* A\n<2026-11-30 Mon +1w>\n",
+  "line": 2,
+  "col": 19,
+  "keys": "S-<left>",
+  "text": "* A\n<2026-11-29 Sun +1w>\n"
+ },
+ {
+  "id": "ts-close-r-right",
+  "input": "* A\n<2026-11-30 Mon +1w>\n",
+  "line": 2,
+  "col": 19,
+  "keys": "S-<right>",
+  "text": "* A\n<2026-12-01 Tue +1w>\n"
+ },
+ {
+  "id": "ts-close-right",
+  "input": "* A\n<2026-11-30 Mon>\n",
+  "line": 2,
+  "col": 15,
+  "keys": "S-<right>",
+  "text": "* A\n<2026-12-01 Tue>\n"
+ },
+ {
+  "id": "ts-min0-up",
+  "input": "* A\n<2026-11-30 Mon 09:00>\n",
+  "line": 2,
+  "col": 19,
+  "keys": "S-<up>",
+  "text": "* A\n<2026-11-30 Mon 09:05>\n"
+ },
+ {
+  "id": "ts-min5-down",
+  "input": "* A\n<2026-11-30 Mon 09:35>\n",
+  "line": 2,
+  "col": 19,
+  "keys": "S-<down>",
+  "text": "* A\n<2026-11-30 Mon 09:30>\n"
+ },
+ {
+  "id": "ts-min5-up",
+  "input": "* A\n<2026-11-30 Mon 09:35>\n",
+  "line": 2,
+  "col": 19,
+  "keys": "S-<up>",
+  "text": "* A\n<2026-11-30 Mon 09:40>\n"
+ },
+ {
+  "id": "ts-ru-d-down",
+  "input": "* A\n<2026-11-30 Mon +1d>\n",
+  "line": 2,
+  "col": 18,
+  "keys": "S-<down>",
+  "text": "* A\n<2026-11-30 Mon +1d>\n"
+ },
+ {
+  "id": "ts-ru-d-up",
+  "input": "* A\n<2026-11-30 Mon +1d>\n",
+  "line": 2,
+  "col": 18,
+  "keys": "S-<up>",
+  "text": "* A\n<2026-11-30 Mon +1w>\n"
+ },
+ {
+  "id": "ts-ru-h-down",
+  "input": "* A\n<2026-11-30 Mon +1h>\n",
+  "line": 2,
+  "col": 18,
+  "keys": "S-<down>",
+  "text": "* A\n<2026-11-30 Mon +1h>\n"
+ },
+ {
+  "id": "ts-ru-h-up",
+  "input": "* A\n<2026-11-30 Mon +1h>\n",
+  "line": 2,
+  "col": 18,
+  "keys": "S-<up>",
+  "text": "* A\n<2026-11-30 Mon +1h>\n"
+ },
+ {
+  "id": "ts-ru-m-down",
+  "input": "* A\n<2026-11-30 Mon +1m>\n",
+  "line": 2,
+  "col": 18,
+  "keys": "S-<down>",
+  "text": "* A\n<2026-11-30 Mon +1w>\n"
+ },
+ {
+  "id": "ts-ru-m-up",
+  "input": "* A\n<2026-11-30 Mon +1m>\n",
+  "line": 2,
+  "col": 18,
+  "keys": "S-<up>",
+  "text": "* A\n<2026-11-30 Mon +1y>\n"
+ },
+ {
+  "id": "ts-ru-w-down",
+  "input": "* A\n<2026-11-30 Mon +1w>\n",
+  "line": 2,
+  "col": 18,
+  "keys": "S-<down>",
+  "text": "* A\n<2026-11-30 Mon +1d>\n"
+ },
+ {
+  "id": "ts-ru-y-down",
+  "input": "* A\n<2026-11-30 Mon +1y>\n",
+  "line": 2,
+  "col": 18,
+  "keys": "S-<down>",
+  "text": "* A\n<2026-11-30 Mon +1m>\n"
+ },
+ {
+  "id": "ts-ru-y-up",
+  "input": "* A\n<2026-11-30 Mon +1y>\n",
+  "line": 2,
+  "col": 18,
+  "keys": "S-<up>",
+  "text": "* A\n<2026-11-30 Mon +1y>\n"
+ }
+]

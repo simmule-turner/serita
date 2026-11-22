@@ -1,0 +1,99 @@
+[
+ {
+  "id": "ef-1d",
+  "input": "* A\n",
+  "line": 1,
+  "keys": "C-c C-x e 1 d RET",
+  "text": "* A\n:PROPERTIES:\n:Effort:   1d\n:END:\n",
+  "error": false,
+  "messages": [
+   "Effort is now 1d"
+  ]
+ },
+ {
+  "id": "ef-2h",
+  "input": "* A\n",
+  "line": 1,
+  "keys": "C-c C-x e 2 h RET",
+  "text": "* A\n:PROPERTIES:\n:Effort:   2h\n:END:\n",
+  "error": false,
+  "messages": [
+   "Effort is now 2h"
+  ]
+ },
+ {
+  "id": "ef-30min",
+  "input": "* A\n",
+  "line": 1,
+  "keys": "C-c C-x e 3 0 m i n RET",
+  "text": "* A\n:PROPERTIES:\n:Effort:   30min\n:END:\n",
+  "error": false,
+  "messages": [
+   "Effort is now 30min"
+  ]
+ },
+ {
+  "id": "ef-65",
+  "input": "* A\n",
+  "line": 1,
+  "keys": "C-c C-x e 1 : 6 5 RET",
+  "text": "* A\n:PROPERTIES:\n:Effort:   1:65\n:END:\n",
+  "error": false,
+  "messages": [
+   "Effort is now 1:65"
+  ]
+ },
+ {
+  "id": "ef-bad",
+  "input": "* A\n",
+  "line": 1,
+  "keys": "C-c C-x e a b c RET",
+  "text": "* A\n",
+  "error": "error",
+  "messages": []
+ },
+ {
+  "id": "ef-body",
+  "input": "* A\nbody text\n",
+  "line": 2,
+  "keys": "C-c C-x e 2 : 0 0 RET",
+  "text": "* A\n:PROPERTIES:\n:Effort:   2:00\n:END:\nbody text\n",
+  "error": false,
+  "messages": [
+   "Effort is now 2:00"
+  ]
+ },
+ {
+  "id": "ef-colon30",
+  "input": "* A\n",
+  "line": 1,
+  "keys": "C-c C-x e 0 : 3 0 RET",
+  "text": "* A\n:PROPERTIES:\n:Effort:   0:30\n:END:\n",
+  "error": false,
+  "messages": [
+   "Effort is now 0:30"
+  ]
+ },
+ {
+  "id": "ef-empty",
+  "input": "* A\n",
+  "line": 1,
+  "keys": "C-c C-x e RET",
+  "text": "* A\n:PROPERTIES:\n:Effort:\n:END:\n",
+  "error": false,
+  "messages": [
+   "Effort is now "
+  ]
+ },
+ {
+  "id": "ef-replace",
+  "input": "* A\n:PROPERTIES:\n:Effort: 1:00\n:END:\n",
+  "line": 1,
+  "keys": "C-c C-x e 2 : 0 0 RET",
+  "text": "* A\n:PROPERTIES:\n:Effort:   2:00\n:END:\n",
+  "error": false,
+  "messages": [
+   "Effort is now 2:00"
+  ]
+ }
+]

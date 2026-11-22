@@ -9,7 +9,7 @@ const join = (lines) => lines.map((l) => l.text + l.eol).join('');
 const PLANNING = /^[ \t]*(?:SCHEDULED|DEADLINE|CLOSED):/;
 const PROPERTY = /^[ \t]*:([^\s:]+):(?:[ \t]+(.*?))?[ \t]*$/;
 
-const headOf = (text, line) => {
+export const headOf = (text, line) => {
   const a = analyze(text);
   const h = a.heads.find((x) => x.line === line);
   if (!h) throw new Error('Not at a heading');
@@ -17,7 +17,7 @@ const headOf = (text, line) => {
 };
 
 /** The lines of the heading's own drawer: where :PROPERTIES: and :END: are (null without a drawer), and where one would go. */
-function drawerOf(lines, h) {
+export function drawerOf(lines, h) {
   let at = h.line + 1;
   while (at < h.end && PLANNING.test(lines[at].text)) at++;
   if (at < h.end && /^[ \t]*:PROPERTIES:[ \t]*$/i.test(lines[at].text)) {
@@ -67,8 +67,9 @@ export function setProperty(text, line, name, value) {
     return { text: join(lines), line, remap: (n) => (n >= d.end ? n + 1 : n), drawer: null };
   }
   const last = d.at - 1;
-  if (lines[last].eol === '') lines[last] = { ...lines[last], eol: '\n' };
-  const tail = d.at < lines.length ? '\n' : '';
+  const endEol = lines[last].eol;
+  if (endEol === '') lines[last] = { ...lines[last], eol: '\n' };
+  const tail = d.at < lines.length ? '\n' : endEol;
   lines.splice(d.at, 0, { text: ':PROPERTIES:', eol: '\n' }, { text: format(name, value), eol: '\n' }, { text: ':END:', eol: tail });
   return { text: join(lines), line, remap: (n) => (n >= d.at ? n + 3 : n), drawer: d.at };
 }

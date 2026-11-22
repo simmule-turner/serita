@@ -8,7 +8,7 @@ import { analyze } from './outline.js';
 
 const MONTH_NAMES = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-const REPEAT_UNITS = ['h', 'd', 'w', 'm', 'y'];
+const REPEAT_UNITS = ['d', 'w', 'm', 'y'];
 const two = (n) => String(n).padStart(2, '0');
 const STAMP = /([<[])(\d{4})-(\d\d)-(\d\d)(?: ([^\s\d>\]+.-][^\s>\]]*))?(?: (\d{1,2}):(\d\d))?((?: (?:\+\+|\.\+|\+)\d+[hdwmy])*)([>\]])/g;
 
@@ -52,7 +52,7 @@ export function shiftStamp(text, offset, dir, { sideways = false } = {}) {
   let said = null;
   if (sideways) date = utc(s.y, s.m, s.d + dir, s.h, s.mi);
   else if (r === s.closeAt || r === 0) { active = !active; said = `Timestamp is now ${active ? 'active' : 'inactive'}`; }
-  else if (s.repeaterAt >= 0 && r === s.closeAt - 1) repeater = repeater.replace(/[hdwmy]$/, (u) => REPEAT_UNITS[Math.min(REPEAT_UNITS.length - 1, Math.max(0, REPEAT_UNITS.indexOf(u) + dir))]);
+  else if (s.repeaterAt >= 0 && r === s.closeAt - 1) repeater = repeater.replace(/[hdwmy]$/, (u) => (REPEAT_UNITS.includes(u) ? REPEAT_UNITS[Math.min(REPEAT_UNITS.length - 1, Math.max(0, REPEAT_UNITS.indexOf(u) + dir))] : u));
   else if (s.repeaterAt >= 0 && r >= s.repeaterAt) repeater = repeater.replace(/(\d+)(?=[hdwmy]$)/, (n) => String(Math.max(1, +n + dir)));
   else if (s.hasTime && r >= s.timeAt + 3) { const m = s.mi; date = utc(s.y, s.m, s.d, s.h, (dir > 0 ? Math.floor(m / 5) * 5 + 5 : Math.ceil(m / 5) * 5 - 5)); }
   else if (s.hasTime && r >= s.timeAt) date = utc(s.y, s.m, s.d, s.h + dir, s.mi);
