@@ -49,7 +49,7 @@ To type C-c or C-x, use Ctrl on the key row and then the letter; a keyboard's ow
 
 Above the mode line, a row of keys stands in for a keyboard: Meta, Ctrl and Shift apply to the next key, and a letter typed on the on-screen keyboard after Ctrl or Meta is the key chord, for example Ctrl then n is C-n. Tab and the arrows follow; the arrows move as C-p, C-n, C-b and C-f do, and with Shift they extend the selection. The keyboard button shows or hides the on-screen keyboard. Float turns the row into a panel you can drag; Dock puts it back. Pressing a key never opens the keyboard.
 
-Settings, Key event log, lists at the top of the screen what the keyboard sends and which key chord Serita made of it; it helps when a key does not do what it should.
+Settings, Key event log, records what the keyboard sends and which key chord Serita made of it. Turn it on, press the keys in the editor, then open it again to read the log, Copy it or Clear it; it helps when a key does not do what it should.
 
 Settings, Hide leading stars, shows only the last star of each heading.
 

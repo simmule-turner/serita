@@ -18,7 +18,7 @@ export function createMinibuffer({ root, list, bell, restoreFocus = () => {} }) 
    * `complete(text)` gives [{ label, value, hint? }]; the list follows the text.
    * @returns {{ input: HTMLInputElement, setPrompt: (text: string, failing?: boolean) => void, close: () => void, setValue: (v: string) => void }}
    */
-  function open({ prompt, value = '', buttons = [], onInput = () => {}, onKey = () => false, complete = null, onPick = null, inputMode = 'text', historyKey = null, label: name = prompt.replace(/:\s*$/, '') }) {
+  function open({ prompt, stack = false, value = '', buttons = [], onInput = () => {}, onKey = () => false, complete = null, onPick = null, inputMode = 'text', historyKey = null, label: name = prompt.replace(/:\s*$/, '') }) {
     active?.close();
     const label = h('span', { class: 'prompt' }, prompt);
     const input = h('input', { autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', inputmode: inputMode, 'aria-label': name });
@@ -46,6 +46,7 @@ export function createMinibuffer({ root, list, bell, restoreFocus = () => {} }) 
         if (active !== self) return;
         active = null;
         root.hidden = true;
+        root.classList.remove('stack');
         root.replaceChildren();
         list.hidden = true;
         list.replaceChildren();
@@ -68,6 +69,7 @@ export function createMinibuffer({ root, list, bell, restoreFocus = () => {} }) 
         showList();
       }
     });
+    root.classList.toggle('stack', stack);
     root.replaceChildren(field, ...buttons.map((b) => h('button', { 'aria-label': b.aria, onclick: b.onclick }, b.label)));
     root.hidden = false;
     active = self;

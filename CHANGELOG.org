@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.7.1
+Query replace's answer buttons now sit on a row below the prompt, so the prompt is no longer hidden behind them. A sparse tree keeps the cursor on its text (or on the heading above it when its line folds away), so TAB acts on the heading you expect. The key event log is now a screen of its own, opened from Settings, that records key events and lets you Copy or Clear them, instead of covering the top of the editor. Verified: browser checks for each.
+
 * 0.7.0
 The agenda: View, then Agenda (or C-c a a) shows the open files by Day, Week or Month with ‹ and › to move, and Views switches to the TODO list (C-c a t), a tags view (C-c a m) or a search (C-c a s); tapping a row goes to its heading. Scheduled and deadline entries, repeats, overdue tasks, and deadline warnings follow Emacs. The date prompt now also reads month names (dec 3, 3 dec 2026), am and pm, and a time range (10:00-11:30). Verified: replayed 15 Emacs 30.1 agenda and 6 typed-date results.
 

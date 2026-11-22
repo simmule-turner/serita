@@ -515,6 +515,7 @@ async function queryReplace(regexp = false) {
   const press = (key) => { s.answer(key); sync(); };
   const keys = [['y', 'y'], ['n', 'n'], ['!', '!'], ['.', '.'], ['^', '^'], ['q', 'q']];
   const mb = mini.open({
+    stack: true,
     prompt: `Query replacing ${from} with ${to}: (? for help)`,
     buttons: keys.map(([label, key]) => ({ label, aria: `Answer ${label}`, onclick: () => press(key) })),
     onKey(e) {
@@ -546,8 +547,10 @@ async function sparse(kind) {
   const b = currentBuffer();
   let r;
   try { r = sparseTree(b.text, cur.a, { kind, arg }); } catch (e) { failure(e); return; }
+  const at = cursorOffset();
   session.setFolds(b.id, r.folds);
   marks = kind === 'regexp' ? r.lines : [];
+  if (viewMode() === 'text') placeOffset(at); // the cursor stays on its text; if that is folded away it lands on the heading above
   paintOverlay();
   if (kind === 'match') return;
   message(kind === 'regexp' ? (r.lines.length ? `${r.lines.length} match${r.lines.length === 1 ? '' : 'es'}` : `No matches for ${arg}`) : `${r.lines.length} TODO ${r.lines.length === 1 ? 'entry' : 'entries'} found`);
@@ -711,7 +714,7 @@ async function settings() {
     else if (what === 'appearance') await appearance();
     else if (what === 'tags-column') await tagsColumnDialog();
     else if (what === 'beep') config.update({ settings: { 'view.beep': String(!beepOn()) } });
-    else if (what === 'keylog') { config.update({ settings: { 'view.keyLog': String(!keyLogOn()) } }); klog('log', 'on'); }
+    else if (what === 'keylog') await keyLogScreen();
     else if (what === 'restore') config.update({ settings: { 'session.restore': String(!restoreOn()) } });
     else if (what === 'tools-text') config.update({ settings: { 'view.toolRowText': String(!toolRowOn('text')) } });
     else if (what === 'tools-outline') config.update({ settings: { 'view.toolRowOutline': String(!toolRowOn('outline')) } });
@@ -1605,11 +1608,31 @@ editor.addEventListener('keydown', (e) => {
 });
 
 // A log of what the keyboard sends the editor, for finding out why a key does not do what it should (Settings, Key event log).
-const keylog = $('keylog');
+const keyLines = [];
 function klog(...parts) {
-  keylog.hidden = !keyLogOn();
   if (!keyLogOn()) return;
-  keylog.textContent = [...(keylog.textContent ? keylog.textContent.split('\n') : []), parts.join(' ')].slice(-14).join('\n');
+  keyLines.push(`${new Date().toISOString().slice(11, 23)} ${parts.join(' ')}`);
+  if (keyLines.length > 400) keyLines.shift();
+}
+
+/** The key event log as a screen of its own: what was recorded, with Copy, Clear and On or Off. */
+async function keyLogScreen() {
+  for (;;) {
+    const act = await panel((sheet, close) => {
+      put(sheet, h('h2', {}, 'Key event log'),
+        h('p', {}, keyLogOn() ? 'Recording. Press keys in the editor, then come back here to copy the log.' : 'Off. Turn it on, press keys in the editor, then come back here.'),
+        h('pre', { class: 'keylogtext', 'aria-label': 'Recorded key events' }, keyLines.length ? keyLines.join('\n') : '(nothing recorded yet)'),
+        h('div', { class: 'row' },
+          h('button', { onclick: () => close('toggle') }, keyLogOn() ? 'Turn off' : 'Turn on'),
+          h('button', { onclick: () => close('clear') }, 'Clear'),
+          h('button', { class: 'primary', onclick: () => close('copy') }, 'Copy'),
+          h('button', { onclick: () => close(undefined) }, 'Close')));
+    });
+    if (act === 'toggle') config.update({ settings: { 'view.keyLog': String(!keyLogOn()) } });
+    else if (act === 'clear') keyLines.length = 0;
+    else if (act === 'copy') { try { await navigator.clipboard.writeText(keyLines.join('\n')); message('Copied the key event log'); } catch { message('Could not copy to the clipboard', true); } }
+    else return;
+  }
 }
 for (const type of ['keydown', 'keyup', 'beforeinput', 'input', 'compositionstart', 'compositionupdate', 'compositionend']) {
   editor.addEventListener(type, (e) => {

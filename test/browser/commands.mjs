@@ -96,10 +96,13 @@ await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await soft('t
 ok((await text()) === '* TODO H\n', 'C-c C-t from typed letters changes the TODO state');
 
 // The key event log shows what the keyboard sends
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/Key event log/).click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/Key event log/).click(); await btn('Turn on').click(); await btn('Close').click(); await btn('Close').click();
 await at('x\n', 1); await page.keyboard.press('Control+e');
-const logged = await page.locator('#keylog').textContent();
-ok(logged.includes('keydown') && logged.includes('chord C-e run end-of-line'), 'the key event log lists key events and the chord they became');
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/Key event log/).click();
+const logged = await page.locator('.keylogtext').textContent();
+ok(logged.includes('keydown') && logged.includes('chord C-e run end-of-line'), 'the key event log screen lists key events and the chord they became');
+ok(await btn('Copy').count() === 1 && await btn('Clear').count() === 1, 'the log can be copied and cleared');
+await btn('Close').click(); await btn('Close').click();
 
 // Movement and search scroll the text to the cursor
 const long = Array.from({ length: 200 }, (_, i) => `line ${i + 1}`).join('\n') + '\nneedle\n';
@@ -138,6 +141,7 @@ await page.keyboard.type('a'); await page.keyboard.press('Enter');
 ok((await prompt()) === 'Query replace a with:', 'then for the replacement');
 await page.keyboard.type('b'); await page.keyboard.press('Enter');
 ok((await prompt()) === 'Query replacing a with b: (? for help)', 'the per-match prompt is Emacs\'s');
+ok(await page.evaluate(() => { const f = document.querySelector('#findbar .field').getBoundingClientRect(); const b = document.querySelector('#findbar button').getBoundingClientRect(); return b.top >= f.bottom - 1; }), 'the answer buttons sit on a row below the prompt');
 await page.keyboard.press('y'); await page.keyboard.press('n'); await page.keyboard.press('y');
 ok((await text()) === 'b a b a\n', 'y replaces, n skips');
 await page.keyboard.press('q');
@@ -172,6 +176,11 @@ await ctrl('c'); await ctrl('c');
 ok(await page.locator('#hl mark').count() === 0, 'C-c C-c removes the highlights');
 await page.keyboard.press('Tab');
 ok(!(await page.evaluate(() => document.getElementById('editor').value)).includes('match here'), 'the first TAB folds the heading');
+
+// A sparse tree keeps the cursor on its text
+await at('* A\nbody\n* B\nneedle here\n', 4);
+await ctrl('c'); await page.keyboard.press('/'); await page.keyboard.press('r'); await page.keyboard.type('needle'); await page.keyboard.press('Enter');
+ok(await page.evaluate(() => { const e = document.getElementById('editor'); return e.value.slice(0, e.selectionStart).split('\n').pop() === '' && e.value.split('\n')[e.value.slice(0, e.selectionStart).split('\n').length - 1].startsWith('needle'); }), 'after a sparse tree the cursor is still on the matching line');
 
 // Sparse tree by tag (C-c / m): tags are inherited, so work shows Sub two but not the body lines
 await at('* A :work:\nbody\n** B\nnote\n* C\nother\n', 1);
