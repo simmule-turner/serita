@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.1.7
+A tool row sits under the tabs: undo and redo, line numbers, wrap, text size, and a Lines and text menu (go to line, select all, copy all, duplicate, delete into a kill ring, move, indent). M-RET starts a heading at the cursor, and pressing TAB again continues the heading's cycle where the last press left it, as Emacs does, so a heading whose children have no text now takes three presses. Sign-off on every commit is added automatically.
+
 * 0.1.6
 Editing a heading's title and inserting a heading now use a small popup, so the Outline view no longer switches to the Text view. Checkboxes toggle in both views (tap, or C-c C-c), and the parent checkbox and the [2/4] and [50%] counts follow. List items fold, move and change indentation with TAB and the M-arrows. C-c is typed with Ctrl on the key row, so a keyboard's own C-c still copies. Find opens the folds that hide a match and closes them again if you cancel.
 

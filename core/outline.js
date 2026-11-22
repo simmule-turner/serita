@@ -122,7 +122,6 @@ export function ellipsisLines(heads, folds) {
   return out;
 }
 
-const sameSet = (a, b) => a.size === b.size && [...a].every((x) => b.has(x));
 const hasContent = (h) => h.end > h.line + 1;
 const descendants = (h) => { const out = []; const go = (x) => { for (const c of x.children) { out.push(c); go(c); } }; go(h); return out; };
 
@@ -134,11 +133,12 @@ export function stateOf(h, folds) {
 }
 
 /**
- * Cycles one heading: folded, then children, then the whole subtree, then folded again.
- * A state that would look the same as the one before is skipped.
+ * Cycles one heading: folded, then children, then the whole subtree, then folded again, as Emacs does.
+ * `last` is the state the previous press of TAB on this heading left it in; without it the state is read from the folds.
+ * With no sub-headings there is no children state.
  * @returns {{ folds: object, state: 'folded'|'children'|'subtree' } | null} null when nothing is under the heading
  */
-export function cycle(heads, folds, line) {
+export function cycle(heads, folds, line, last = null) {
   const h = heads.find((x) => x.line === line);
   if (!h || !hasContent(h)) return null;
   const apply = (state) => {
@@ -150,16 +150,10 @@ export function cycle(heads, folds, line) {
     return f;
   };
   const order = ['folded', 'children', 'subtree'];
-  const before = hiddenLines(heads, folds);
-  let at = order.indexOf(stateOf(h, folds));
-  for (let i = 0; i < 3; i++) {
-    at = (at + 1) % 3;
-    const f = apply(order[at]);
-    // With no sub-heading that has content, "children" looks the same as the whole subtree.
-    const state = order[at] === 'children' && !h.children.some(hasContent) ? 'subtree' : order[at];
-    if (!sameSet(hiddenLines(heads, f), before)) return { folds: f, state };
-  }
-  return null;
+  let at = order.indexOf(last ?? stateOf(h, folds));
+  at = (at + 1) % 3;
+  if (order[at] === 'children' && h.children.length === 0) at = (at + 1) % 3;
+  return { folds: apply(order[at]), state: order[at] };
 }
 
 /** Headings only (everything folded to the top level). The text before the first heading stays visible. */

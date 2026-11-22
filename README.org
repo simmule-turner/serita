@@ -32,12 +32,19 @@ Settings, Emacs keys, turns on these keys in the Text view:
 - C-RET :: inserts a heading after the current subtree.
 - C-c C-t :: changes the TODO state.
 - C-c C-c :: toggles the checkbox on the line.
+- M-RET :: starts a heading at the cursor: above a heading when the cursor is at its start, below it at its end, and in other text the line breaks there and the rest becomes the heading.
+- C-/, C-_, C-x u :: undo; C-? redoes.
+- C-k :: kills to the end of the line, then the line break; consecutive kills join. C-S-DEL kills the whole line, and C-y yanks the latest kill.
+- M-g g :: goes to a line. C-x h selects everything.
 
-To type C-c, use Ctrl on the key row and then c; a keyboard's own C-c still copies.
+To type C-c or C-x, use Ctrl on the key row and then the letter; a keyboard's own C-c and C-x still copy and cut.
 
 Above the mode line, a row of keys stands in for a keyboard: Meta, Ctrl and Shift apply to the next key; Tab and the arrows follow. The keyboard button shows or hides the on-screen keyboard. Float turns the row into a panel you can drag; Dock puts it back. Pressing a key never opens the keyboard.
 
 Settings, Hide leading stars, shows only the last star of each heading.
+
+** Tool row
+Under the tabs, one row of buttons: undo, redo, line numbers, wrap, smaller text, larger text, and Line. In the Outline view the row keeps undo, redo and the two size buttons. Line opens Lines and text: go to a line, select all, copy all, duplicate, delete (to the kill ring), move, indent and outdent the line. Typing within a second is one undo step; each structure edit is its own.
 
 ** Find
 Type to search. The match is highlighted; ▲ and ▼ go to the previous and next match, and the search wraps. A lowercase query ignores case; an uppercase letter makes it exact. Return keeps the cursor on the match, and × returns to where you started.

@@ -122,3 +122,32 @@ test('refresh takes a changed server copy into a clean buffer, and leaves unsave
   assert.equal(s.state().buffers[0].text, 'mine');
   await s.refresh('local:nope.org');
 });
+
+test('undo and redo walk the text back and forth; a new edit drops redo', () => {
+  const { s } = make();
+  const a = s.newScratch();
+  const text = () => s.state().buffers[0].text;
+  s.apply(a, { text: 'one' });
+  s.apply(a, { text: 'one two' });
+  assert.equal(s.undo(a), 3);
+  assert.equal(text(), 'one');
+  assert.equal(s.redo(a), 7);
+  assert.equal(text(), 'one two');
+  s.undo(a);
+  s.apply(a, { text: 'other' });
+  assert.equal(s.redo(a), null);
+  assert.equal(s.undo(a), 3);
+  assert.equal(text(), 'one');
+});
+
+test('quick typing is one undo step, other edits are their own', () => {
+  const { s } = make();
+  const a = s.newScratch();
+  for (const t of ['a', 'ab', 'abc']) s.setText(a, t);
+  s.apply(a, { text: 'abcd' });
+  s.undo(a);
+  assert.equal(s.state().buffers[0].text, 'abc');
+  s.undo(a);
+  assert.equal(s.state().buffers[0].text, '');
+  assert.equal(s.undo(a), null);
+});

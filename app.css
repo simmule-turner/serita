@@ -18,7 +18,7 @@ input, select { min-height: 44px; padding: 0 12px; border: 1px solid var(--line)
 .tab button { border: 0; border-radius: 0; background: transparent; min-height: 48px; padding: 0 12px; color: inherit; }
 .tab .title { max-width: 14em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0; }
 main { flex: 1; min-height: 0; display: flex; position: relative; background: var(--bg); }
-#editor { flex: 1; width: 100%; resize: none; border: 0; outline: 0; padding: 10px 12px; font: 15px/1.5 ui-monospace, Menlo, Consolas, monospace; background: transparent; color: var(--fg); position: relative; z-index: 1; }
+#editor { flex: 1; width: 100%; resize: none; border: 0; outline: 0; padding: 10px 12px; font: var(--fs, 15px)/1.5 ui-monospace, Menlo, Consolas, monospace; background: transparent; color: var(--fg); position: relative; z-index: 1; }
 #editor:disabled { color: var(--muted); }
 #modeline { padding: 4px 10px; background: #5f6368; color: #ffffff; border-top: 1px solid var(--line); font: 13px ui-monospace, Menlo, Consolas, monospace; white-space: pre; overflow: hidden; }
 #message { padding: 4px 10px; min-height: 28px; font-size: 14px; border-top: 1px solid var(--line); color: var(--muted); }
@@ -46,8 +46,8 @@ main { flex: 1; min-height: 0; display: flex; position: relative; background: va
 #findbar button { width: 52px; min-height: 52px; padding: 0; border-radius: 8px; }
 #findbar input { min-height: 52px; }
 #findbar input:focus { outline: 2px solid var(--fg); outline-offset: 0; }
-#mirror { position: absolute; left: -9999px; top: 0; visibility: hidden; white-space: pre-wrap; overflow-wrap: break-word; font: 15px/1.5 ui-monospace, Menlo, Consolas, monospace; padding: 10px 12px; }
-#hl { position: absolute; top: 0; left: 0; bottom: 0; overflow: hidden; pointer-events: none; white-space: pre-wrap; overflow-wrap: break-word; color: transparent; padding: 10px 12px; font: 15px/1.5 ui-monospace, Menlo, Consolas, monospace; }
+#mirror { position: absolute; left: -9999px; top: 0; visibility: hidden; white-space: pre-wrap; overflow-wrap: break-word; font: var(--fs, 15px)/1.5 ui-monospace, Menlo, Consolas, monospace; padding: 10px 12px; }
+#hl { position: absolute; top: 0; left: 0; bottom: 0; overflow: hidden; pointer-events: none; white-space: pre-wrap; overflow-wrap: break-word; color: transparent; padding: 10px 12px; font: var(--fs, 15px)/1.5 ui-monospace, Menlo, Consolas, monospace; }
 #hl mark { background: var(--hit); color: transparent; }
 .sheet .recent { max-height: 310px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; }
 .sheet .recent .item.current { background: var(--bar); }
@@ -62,7 +62,7 @@ main { flex: 1; min-height: 0; display: flex; position: relative; background: va
 .ol-head .st.todo { color: var(--danger); }
 .ol-head .st.done { color: #3b6d11; }
 .ol-head .tags, .ol-head .dots { color: var(--muted); font-size: 13px; }
-.ol-line { padding: 6px 12px 6px 52px; white-space: pre-wrap; overflow-wrap: anywhere; font: 14px/1.5 ui-monospace, Menlo, Consolas, monospace; border-bottom: 1px solid var(--bar); }
+.ol-line { padding: 6px 12px 6px 52px; white-space: pre-wrap; overflow-wrap: anywhere; font: calc(var(--fs, 15px) - 1px)/1.5 ui-monospace, Menlo, Consolas, monospace; border-bottom: 1px solid var(--bar); }
 .ol-line .box { display: inline; min-height: 0; padding: 0 2px; border: 0; background: transparent; font: inherit; color: var(--accent); }
 #keyrow { display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: var(--bar); border-top: 1px solid var(--line); }
 #keyrow .grip { display: none; }
@@ -76,8 +76,17 @@ main { flex: 1; min-height: 0; display: flex; position: relative; background: va
 #keyrow.float { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 #keyrow.float .grip { grid-column: 1 / -1; }
 #keyrow.float button { min-width: 0; }
-.sheet textarea { width: 100%; min-height: 140px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: 15px/1.5 ui-monospace, Menlo, Consolas, monospace; resize: vertical; }
+.sheet textarea { width: 100%; min-height: 140px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: var(--fs, 15px)/1.5 ui-monospace, Menlo, Consolas, monospace; resize: vertical; }
 .sheet textarea:focus { outline: 2px solid var(--fg); outline-offset: 0; }
 .ol-line { position: relative; }
 .ol-line .ichev { position: absolute; left: 12px; top: 0; min-height: 32px; width: 32px; padding: 0; border: 0; background: transparent; color: var(--muted); }
 .ol-line .dots { color: var(--muted); }
+
+#tools { display: flex; gap: 8px; padding: 6px 10px; background: var(--bar); border-bottom: 1px solid var(--line); }
+#tools button.tool { min-height: 44px; min-width: 44px; padding: 0 10px; border-radius: 8px; font-size: 18px; }
+#tools button[aria-label="Lines and text"] { flex: 1; font-size: 16px; }
+#tools button.on { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+main.nums #editor, main.nums #hl, main.nums #mirror { padding-left: 4em; }
+main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; }
+.hl-line { position: relative; min-height: 1.5em; }
+.hl-line::before { content: attr(data-n); position: absolute; left: -3.4em; width: 2.8em; text-align: right; color: var(--muted); }

@@ -5,6 +5,7 @@
 //   saved    the text last known to be in storage (the base of a three-way merge)
 //   version  the version token of that text, or null while the file has not been saved yet
 //   folds    what is folded (see core/outline.js); every view reads it, none keeps its own
+//   undo, redo  earlier and later texts; typing within a second joins one step, other edits are steps of their own
 
 import { merge3, resolve } from '../storage/conflict.js';
 import { analyze, diff, remapFolds, startupFolds, validFolds } from '../../core/outline.js';
@@ -48,6 +49,25 @@ export function createSession({ app }) {
     return { text, folds: validFolds(analyze(text).foldables, folds) };
   };
 
+  const HISTORY = 200;
+  /** The patch with the undo history updated: the text before the edit is kept, and redo is dropped. `group` joins quick typing into one step. */
+  const record = (b, patch, group) => {
+    if (patch.text === b.text) return patch;
+    const now = Date.now();
+    const join = group && b.group && now - b.at < 1000 && b.undo.length > 0;
+    return { ...patch, undo: join ? b.undo : [...b.undo, b.text].slice(-HISTORY), redo: [], group, at: now };
+  };
+  /** Moves one step along `from` (undo or redo); the other list gets the text we leave. Returns where the cursor goes, or null when there is no step. */
+  const step = (id, from, to) => {
+    const b = find(id);
+    if (b[from].length === 0) return null;
+    const text = b[from][b[from].length - 1];
+    const d = diff(b.text, text);
+    replace(id, { ...retext(b, text), [from]: b[from].slice(0, -1), [to]: [...b[to], b.text], group: false });
+    changed();
+    return d.from + d.insert.length;
+  };
+
   const session = {
     subscribe(cb) { listeners.add(cb); return () => listeners.delete(cb); },
 
@@ -66,7 +86,7 @@ export function createSession({ app }) {
     newScratch() {
       const id = nextId++;
       const title = scratchTitle(id);
-      buffers = [...buffers, { id, name: null, title, text: '', saved: '', version: null, folds: {} }];
+      buffers = [...buffers, { id, name: null, title, text: '', saved: '', version: null, folds: {}, undo: [], redo: [], group: false, at: 0 }];
       current = id;
       changed();
       return id;
@@ -79,7 +99,7 @@ export function createSession({ app }) {
       const r = await app.storage.read(name);
       if (!r) return { ok: false, reason: 'missing' };
       const id = nextId++;
-      buffers = [...buffers, { id, name, text: r.text, saved: r.text, version: r.version, folds: startupFolds(r.text) }];
+      buffers = [...buffers, { id, name, text: r.text, saved: r.text, version: r.version, folds: startupFolds(r.text), undo: [], redo: [], group: false, at: 0 }];
       current = id;
       changed();
       return { ok: true, id };
@@ -87,10 +107,15 @@ export function createSession({ app }) {
 
     select(id) { find(id); current = id; changed(); },
 
-    setText(id, text) { replace(id, retext(find(id), text)); changed(); },
+    /** Typing: quick changes join one undo step. */
+    setText(id, text) { const b = find(id); replace(id, record(b, retext(b, text), true)); changed(); },
+
+    /** @returns {number|null} where the cursor goes (an offset in the text), or null when there is nothing to undo */
+    undo(id) { return step(id, 'undo', 'redo'); },
+    redo(id) { return step(id, 'redo', 'undo'); },
 
     /** Takes the result of a structure edit (core/outline-edit.js); folds move with the lines. */
-    apply(id, result) { replace(id, retext(find(id), result.text, result.remap)); changed(); },
+    apply(id, result) { const b = find(id); replace(id, record(b, retext(b, result.text, result.remap), false)); changed(); },
 
     setFolds(id, folds) { find(id); replace(id, { folds }); changed(); },
 

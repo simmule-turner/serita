@@ -13,7 +13,9 @@ import { formatSize } from '../core/bytes.js';
 import { VERSION } from './version.js';
 import { h, kept } from './ui/dom.js';
 import { analyze, cycle, cycleGlobal, diff, ellipsisLines, hiddenLines, reveal } from '../core/outline.js';
-import { changeLevel, cycleTodo, indentItem, insertHeadingAfter, moveItem, moveSubtree, setTags, setTitle, toggleCheckbox } from '../core/outline-edit.js';
+import { changeLevel, cycleTodo, indentItem, insertHeadingAfter, insertHeadingHere, moveItem, moveSubtree, setTags, setTitle, toggleCheckbox } from '../core/outline-edit.js';
+import { duplicateLine, indentLine, killLine, killWholeLine, lineInfo, lineStart, moveLine } from '../core/lines.js';
+import { createKillRing } from '../core/killring.js';
 import { lineAt, project, toFull, toShown, touchedFold } from '../core/projection.js';
 import { renderOutline } from './ui/outline-view.js';
 import { TEXT_KEYS, chordOf, createKeymap } from './ui/keys.js';
@@ -45,6 +47,10 @@ const viewMode = () => (setting('view.mode') === 'outline' ? 'outline' : 'text')
 const emacsKeys = () => setting('view.emacsKeys') === 'true';
 const hideStars = () => setting('view.hideStars') === 'true';
 const setView = (mode) => config.update({ settings: { 'view.mode': mode } });
+const lineNumbers = () => setting('view.lineNumbers') === 'true';
+const wrapOn = () => setting('view.wrap') !== 'false';
+const TEXT_SIZES = { min: 10, max: 28, normal: 15 };
+const fontSize = () => Math.min(TEXT_SIZES.max, Math.max(TEXT_SIZES.min, Number(setting('view.fontSize')) || TEXT_SIZES.normal));
 
 function message(text, isError = false) {
   const el = $('message');
@@ -77,10 +83,11 @@ function panel(build) {
 }
 
 /** A list of choices. Items are { label, value, meta? }. */
-function choose(title, items, { cancel = true } = {}) {
+function choose(title, items, { cancel = true, subtitle = null } = {}) {
   return panel((sheet, close) => {
     put(sheet, 
       title ? h('h2', {}, title) : null,
+      subtitle ? h('p', {}, subtitle) : null,
       h('div', { class: 'list' }, items.map((it) => h('button', { class: `item${it.dim ? ' dim' : ''}`, onclick: () => close(it.value) },
         h('span', {}, it.label), it.meta ? h('span', { class: 'meta' }, it.meta) : null))),
       cancel ? h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel')) : null,
@@ -139,6 +146,10 @@ function render() {
   const before = cur && cur.id === s.current && editor.value === cur.proj.value
     ? { start: toFull(cur.proj, editor.selectionStart), end: toFull(cur.proj, editor.selectionEnd) } : null;
   shownId = s.current;
+  document.documentElement.style.setProperty('--fs', `${fontSize()}px`);
+  $('main').classList.toggle('nums', lineNumbers());
+  $('main').classList.toggle('nowrap', !wrapOn());
+  editor.wrap = wrapOn() ? 'soft' : 'off';
   editor.hidden = mode !== 'text';
   $('outline').hidden = mode !== 'outline';
   $('keyrow').hidden = !(mode === 'text' && emacsKeys() && shown);
@@ -160,12 +171,15 @@ function render() {
     editor.value = '';
     $('outline').replaceChildren();
   }
+  renderTools(mode);
+  paintOverlay();
   renderModeLine();
 }
 
 // An edit of the shown text becomes an edit of the real text; a change touching a "..." opens that fold first.
 editor.addEventListener('input', () => {
-  $('hl').replaceChildren();
+  hit = null;
+  lastCycle = null;
   const b = currentBuffer();
   if (!b || !cur) return;
   const d = diff(cur.proj.value, editor.value);
@@ -175,7 +189,33 @@ editor.addEventListener('input', () => {
   session.setText(b.id, b.text.slice(0, from) + d.insert + b.text.slice(toFull(cur.proj, d.to)));
   if (open !== null) { const folds = { ...currentBuffer().folds }; delete folds[open]; session.setFolds(b.id, folds); }
 });
-editor.addEventListener('scroll', () => { $('hl').scrollTop = editor.scrollTop; });
+editor.addEventListener('click', () => { lastCycle = null; });
+editor.addEventListener('scroll', () => { $('hl').scrollTop = editor.scrollTop; $('hl').scrollLeft = editor.scrollLeft; });
+window.addEventListener('resize', () => paintOverlay());
+
+// The layer behind the text: line numbers and the search match. It lays out its lines exactly as the editor does.
+let hit = null;
+function paintOverlay() {
+  const hl = $('hl');
+  if (!cur || editor.hidden || (!hit && !lineNumbers())) { hl.replaceChildren(); return; }
+  hl.style.width = `${editor.clientWidth}px`;
+  let at = 0;
+  let number = 0;
+  hl.replaceChildren(...editor.value.split('\n').map((text) => {
+    const start = at;
+    at += text.length + 1;
+    number = start === editor.value.length && number > 0 ? number + 1 : lineAt(cur.proj, start) + 1;
+    const kids = [text];
+    if (hit && hit.start < at && hit.end > start) {
+      const a = Math.max(hit.start, start) - start;
+      const z = Math.min(hit.end, at - 1) - start;
+      kids.splice(0, 1, text.slice(0, a), h('mark', {}, text.slice(a, z)), text.slice(z));
+    }
+    return h('div', { class: 'hl-line', ...(lineNumbers() ? { 'data-n': String(number) } : {}) }, ...kids);
+  }));
+  hl.scrollTop = editor.scrollTop;
+  hl.scrollLeft = editor.scrollLeft;
+}
 for (const ev of ['keyup', 'click', 'select', 'scroll']) editor.addEventListener(ev, renderModeLine);
 session.subscribe(render);
 config.onChange(() => render());
@@ -409,10 +449,8 @@ function startFind() {
     mirror.style.width = `${editor.clientWidth}px`;
     mirror.textContent = `${editor.value.slice(0, m.start)}.`;
     editor.scrollTop = Math.max(0, mirror.scrollHeight - editor.clientHeight / 2);
-    const hl = $('hl');
-    hl.style.width = `${editor.clientWidth}px`;
-    hl.replaceChildren(editor.value.slice(0, m.start), h('mark', {}, editor.value.slice(m.start, m.end)), editor.value.slice(m.end));
-    hl.scrollTop = editor.scrollTop;
+    hit = m;
+    paintOverlay();
     renderModeLine();
   };
   const go = (backward, from) => {
@@ -429,7 +467,8 @@ function startFind() {
       editor.setSelectionRange(toShown(cur.proj, finding.start), toShown(cur.proj, finding.end));
     }
     finding = null;
-    $('hl').replaceChildren();
+    hit = null;
+    paintOverlay();
     $('findbar').hidden = true;
     $('findbar').replaceChildren();
     message('');
@@ -656,6 +695,7 @@ function placeCursor(line, atEnd = false) {
 /** Runs an edit on the current buffer; its folds move with the lines. */
 function runEdit(fn) {
   const b = currentBuffer();
+  lastCycle = null;
   try {
     const r = fn(b.text);
     if (r) session.apply(b.id, r);
@@ -678,10 +718,13 @@ function editHere(onHeading, onItem, atEnd = false) {
   if (r) placeCursor(r.line, atEnd);
 }
 
+// What the last TAB left a heading in: pressing TAB again on it goes on from there, as in Emacs. Anything else forgets it.
+let lastCycle = null;
 function cycleHeading(line) {
   const b = currentBuffer();
-  const r = cycle(cur.a.foldables, b.folds, line);
-  if (r) { session.setFolds(b.id, r.folds); message(r.state.toUpperCase()); }
+  const again = lastCycle && lastCycle.id === b.id && lastCycle.line === line ? lastCycle.state : null;
+  const r = cycle(cur.a.foldables, b.folds, line, again);
+  if (r) { session.setFolds(b.id, r.folds); message(r.state.toUpperCase()); lastCycle = { id: b.id, line, state: r.state }; }
 }
 
 const COMMANDS = {
@@ -701,7 +744,123 @@ const COMMANDS = {
   'insert-heading': () => editHere(insertHeadingAfter, null, true),
   'todo': () => editHere(cycleTodo, null),
   'toggle-checkbox': () => { if (!runEdit((t) => toggleCheckbox(t, kindAtCursor().line))) message('Nothing to do here'); },
+  'insert-heading-here': () => { const r = runEdit((t) => insertHeadingHere(t, cursorOffset())); if (r) placeOffset(r.pos); },
+  'undo': () => stepHistory('undo'),
+  'redo': () => stepHistory('redo'),
+  'select-all': () => { editor.focus(); editor.setSelectionRange(0, editor.value.length); renderModeLine(); },
+  'goto-line': () => gotoLine(),
+  'kill-line': () => killWith(killLine, { append: wasKill }),
+  'kill-whole-line': () => killWith(killWholeLine, {}),
+  'yank': () => {
+    const text = killRing.get();
+    if (text === undefined) { message('Kill ring is empty'); return; }
+    const p = cursorOffset();
+    const r = runEdit((t) => ({ text: t.slice(0, p) + text + t.slice(p) }));
+    if (r) placeOffset(p + text.length);
+  },
 };
+
+// ---- Lines and text ---------------------------------------------------------------------------
+
+const killRing = createKillRing();
+let lastKill = false;
+let wasKill = false;
+
+/** Where the cursor is in the real text. */
+const cursorOffset = () => toFull(cur.proj, editor.selectionStart);
+
+function placeOffset(p) {
+  const s = toShown(cur.proj, p);
+  editor.setSelectionRange(s, s);
+  renderModeLine();
+}
+
+function stepHistory(which) {
+  const p = session[which](currentBuffer().id);
+  lastCycle = null;
+  if (p === null) message(which === 'undo' ? 'Nothing to undo' : 'Nothing to redo');
+  else if (viewMode() === 'text') placeOffset(p);
+}
+
+/** Removes text with `fn(text, cursor)` and puts what it removed on the kill ring (and the clipboard). */
+function killWith(fn, { append = false }) {
+  let killed = null;
+  const r = runEdit((t) => { const k = fn(t, cursorOffset()); if (k) killed = k.killed; return k; });
+  if (!r) { if (killed === null) message('End of buffer'); return; }
+  killRing.kill(killed, { append });
+  lastKill = true;
+  navigator.clipboard.writeText(killRing.get()).catch(() => message('Could not copy to the clipboard', true));
+  placeOffset(r.pos);
+}
+
+async function gotoLine() {
+  const b = currentBuffer();
+  const n = lineInfo(b.text, b.text.length).count;
+  const value = await panel((sheet, close) => {
+    const input = h('input', { inputmode: 'numeric', autocomplete: 'off', 'aria-label': 'Line number' });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); close(input.value); } });
+    put(sheet, h('h2', {}, 'Go to line'), h('p', {}, `Enter a number from 1 to ${n}.`), input,
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Go')));
+    input.focus();
+  });
+  if (value === undefined) return;
+  const line = Number(value);
+  if (!Number.isInteger(line) || line < 1 || line > n) { message(`Line ${value} is not between 1 and ${n}`, true); return; }
+  const opened = reveal(cur.a.foldables, b.folds, line - 1);
+  if (JSON.stringify(opened) !== JSON.stringify(b.folds)) session.setFolds(b.id, opened);
+  placeOffset(lineStart(b.text, line));
+  editor.focus();
+}
+
+async function linesMenu() {
+  const b = currentBuffer();
+  const { line, count } = lineInfo(b.text, cursorOffset());
+  const what = await choose('Lines and text', [
+    { label: 'Go to line…', meta: 'M-g g', value: 'goto-line' },
+    { label: 'Select all', meta: 'C-x h', value: 'select-all' },
+    { label: 'Copy all', value: 'copy-all' },
+    { label: 'Duplicate line', value: 'duplicate' },
+    { label: 'Delete line', meta: 'C-S-DEL', value: 'kill-whole-line' },
+    { label: 'Move line up', value: 'up' },
+    { label: 'Move line down', value: 'down' },
+    { label: 'Indent', value: 'indent' },
+    { label: 'Outdent', value: 'outdent' },
+  ], { subtitle: `Line ${line} of ${count}` });
+  if (!what) return;
+  const edit = (fn) => { const r = runEdit((t) => fn(t, cursorOffset())); if (r) placeOffset(r.pos); else message('Nothing to do here'); };
+  if (COMMANDS[what]) COMMANDS[what]();
+  else if (what === 'copy-all') navigator.clipboard.writeText(b.text).then(() => message('Copied the whole text')).catch(() => message('Could not copy to the clipboard', true));
+  else if (what === 'duplicate') edit(duplicateLine);
+  else if (what === 'up') edit((t, p) => moveLine(t, p, -1));
+  else if (what === 'down') edit((t, p) => moveLine(t, p, 1));
+  else if (what === 'indent') edit((t, p) => indentLine(t, p, 2));
+  else if (what === 'outdent') edit((t, p) => indentLine(t, p, -2));
+}
+
+// ---- The tool row under the tabs ----------------------------------------------------------------
+
+function setTextSize(delta) {
+  const next = Math.min(TEXT_SIZES.max, Math.max(TEXT_SIZES.min, fontSize() + delta));
+  config.update({ settings: { 'view.fontSize': String(next) } });
+  message(`Text size ${next}`);
+}
+
+function renderTools(mode) {
+  const tool = (label, title, onclick, on = null) => h('button', {
+    'aria-label': title, title, class: `tool${on ? ' on' : ''}`, ...(on === null ? {} : { 'aria-pressed': String(on) }), onclick,
+  }, label);
+  const text = mode === 'text';
+  $('tools').hidden = currentBuffer() === undefined;
+  $('tools').replaceChildren(
+    tool('↶', 'Undo', () => COMMANDS.undo()),
+    tool('↷', 'Redo', () => COMMANDS.redo()),
+    text ? tool('#', 'Line numbers', () => config.update({ settings: { 'view.lineNumbers': String(!lineNumbers()) } }), lineNumbers()) : null,
+    text ? tool('⏎', 'Wrap lines', () => config.update({ settings: { 'view.wrap': String(!wrapOn()) } }), wrapOn()) : null,
+    tool('A−', 'Smaller text', () => setTextSize(-1)),
+    tool('A+', 'Larger text', () => setTextSize(1)),
+    text ? tool('Line', 'Lines and text', linesMenu) : null,
+  );
+}
 
 /** A popup with a text field for a heading's title. Resolves with the text, or undefined when cancelled. */
 function askTitle(title, initial) {
@@ -805,11 +964,14 @@ function moveCursor(key, extend) {
 const MODIFIER_KEYS = ['Control', 'Alt', 'Meta', 'Shift'];
 
 editor.addEventListener('keydown', (e) => {
+  wasKill = lastKill;
+  lastKill = false;
+  if (e.key !== 'Tab') lastCycle = null;
   if (!emacsKeys() || viewMode() !== 'text') return;
   const held = keyRow.sticky();
   const fromRow = held.ctrl || held.meta || held.shift;
   const chord = chordOf({ key: e.key, ctrl: e.ctrlKey || held.ctrl, meta: e.altKey || e.metaKey || held.meta, shift: e.shiftKey || held.shift });
-  if (chord === 'C-c' && !held.ctrl && keymap.pending() === '') return; // a keyboard's own C-c stays copy; the prefix comes from the key row
+  if ((chord === 'C-c' || chord === 'C-x') && !held.ctrl && keymap.pending() === '') return; // a keyboard's own C-c and C-x stay copy and cut; the prefixes come from the key row
   if (chord) runChord(chord, e, fromRow);
   else if (keymap.pending() && e.key.length === 1) runChord(e.key, e, false);
   if (fromRow && !MODIFIER_KEYS.includes(e.key)) keyRow.clear();

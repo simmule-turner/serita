@@ -109,3 +109,13 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 
 ### `test/tools.test.js`
 - Purpose: tests for the four checks above, written from their stated behavior.
+
+## Conformance corpus
+
+A separate repository holds questions (case files written by us) and results recorded by running GNU Emacs 30.1 on the maintainer's machine in batch mode through documented interfaces. No Emacs or Org source was read, and none is stored. The corpus is not imported by this repository and is not consulted while writing a module; mismatches found by the comparer are fixed from the Compact Guide and SPEC.
+
+### `core/lines.js`, `core/killring.js`, `test/lines.test.js`, `test/browser/tools.mjs`
+- Written from: the author's mockup and decisions (whole-line edits, a kill ring whose consecutive kills join), and observed results from the conformance corpus for M-RET and the TAB cycle, read as behavior only. Statement as above.
+
+### `tools/install-hooks.mjs`, `.githooks/commit-msg`
+- Written from: the git documentation (core.hooksPath, interpret-trailers). The hook signs off each commit, so the DCO check cannot fail for a missing line. Statement as above.

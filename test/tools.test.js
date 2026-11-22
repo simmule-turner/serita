@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtempSync, writeFileSync, mkdirSync, cpSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { spawnSync } from 'node:child_process';
+import { execFileSync, spawnSync } from 'node:child_process';
 
 const root = process.cwd();
 
@@ -45,4 +45,16 @@ test('dco-check skips outside a git repository', () => {
   const r = run('dco-check.mjs', project({}));
   assert.equal(r.status, 0);
   assert.match(r.stdout, /skipped/);
+});
+
+test('dco-check skips commits listed in .dco-exempt and fails on others', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'dco-'));
+  const git = (...a) => execFileSync('git', ['-C', dir, '-c', 'user.name=T', '-c', 'user.email=t@example.com', ...a], { encoding: 'utf8' });
+  git('init', '-q');
+  git('commit', '-q', '--allow-empty', '-m', 'unsigned');
+  const sha = git('rev-parse', 'HEAD').trim();
+  const check = () => spawnSync('node', [join(root, 'tools/dco-check.mjs')], { cwd: dir, encoding: 'utf8' });
+  assert.equal(check().status, 1);
+  writeFileSync(join(dir, '.dco-exempt'), `# old\n${sha.slice(0, 12)}\n`);
+  assert.equal(check().status, 0);
 });

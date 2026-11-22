@@ -27,10 +27,12 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Floating buttons: a back arrow (navigation history) and the extras menu filled from the config's Menu list, once links and capture exist.
 - Agenda and TODO list in the View menu, and the Find types of the guide, once those views and the Emacs regexp matcher exist.
 - Keep open buffers across a reload (today the browser asks before you leave with unsaved text).
-- The second toolbar row under the tabs: undo, redo, show or hide line numbers, wrap or unwrap, A-, A+ and Line. Its Lines and text menu: Go to line, Select all, Copy all, Duplicate line, Kill line (into the kill ring), Move line up and down, Indent, Outdent.
 - Regex and Replace in the Find prompt.
 - Emacs keys beyond the heading commands: movement and editing keys, the minibuffer, M-x, universal argument, and TAB and the M-arrows on plain text lines and tables, and god-mode for the C-c prefix.
 - Statistics cookies on a heading that count TODO sub-headings, and how Emacs counts a heading's checkbox cookie (this build counts the checkboxes of its top-level items).
 - What Emacs does with the folds a search opened when the search is accepted (this build leaves them open and closes them on cancel).
 - Emacs is not installed in the build workspace, so the new tests are written by hand from the guide; run them against Emacs 29.3 batch before relying on details such as tag alignment, show2levels and the text shown by the children state.
 - The heading title popup's three buttons, which insert at the cursor: footnote (A with a superscript 1), timer (stopwatch), and timestamp (calendar: C-c ., C-c !, C-u C-c ., S-up and S-down change it). They arrive with their features: timestamps and timers in the dates phase, footnotes in the markup phase.
+
+* Later: Emacs parity to revisit
+- After a search is accepted, which folds stay closed (Emacs keeps some closed, depending on the matches made while typing; ours opens the folds around the match).

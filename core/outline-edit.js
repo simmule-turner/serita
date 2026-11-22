@@ -70,6 +70,28 @@ export function insertHeadingAfter(text, line, title = '') {
   return { text: join(lines), line: h.end, remap: (n) => (n >= h.end ? n + 1 : n) };
 }
 
+/**
+ * Starts a heading at `pos`, at the level of the heading it is in or under (level 1 before the first heading).
+ * At the start of a heading line the new heading goes above it; at the start of any other line that line becomes a heading;
+ * anywhere else the line breaks at `pos` and the rest of it becomes the new heading's text.
+ * @returns {{ text: string, pos: number, remap: (n: number) => number }}
+ */
+export function insertHeadingHere(text, pos) {
+  const lines = splitLines(text);
+  let at = 0;
+  let line = 0;
+  while (line + 1 < lines.length && at + lines[line].text.length + lines[line].eol.length <= pos) { at += lines[line].text.length + lines[line].eol.length; line++; }
+  const heads = analyze(text).heads;
+  const here = heads.find((x) => x.line === line);
+  const above = [...heads].reverse().find((x) => x.line <= line);
+  const stars = '*'.repeat((here ?? above)?.level ?? 1);
+  const col = pos - at;
+  const mark = `${stars} `;
+  if (col === 0 && here) return { text: text.slice(0, pos) + mark + '\n' + text.slice(pos), pos: pos + mark.length, remap: (n) => (n >= line ? n + 1 : n) };
+  if (col === 0) return { text: text.slice(0, pos) + mark + text.slice(pos), pos: pos + mark.length, remap: (n) => n };
+  return { text: `${text.slice(0, pos)}\n${mark}${text.slice(pos)}`, pos: pos + 1 + mark.length, remap: (n) => (n > line ? n + 1 : n) };
+}
+
 /** Changes the TODO state in the sequence the heading is in: none, the first word, ..., the last, none. */
 export function cycleTodo(text, line) {
   const { h, todo } = headOf(text, line);
