@@ -12,7 +12,7 @@ await page.goto(`${base}/`);
 await page.waitForSelector('.tab.current');
 const sheet = page.locator('.sheet');
 const btn = (n) => sheet.getByRole('button', { name: n, exact: true });
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/Emacs keys/).click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/5 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
 const at = async (text, line) => {
   await page.fill('#editor', text);
   await page.evaluate((l) => { const e = document.getElementById('editor'); const o = e.value.split('\n').slice(0, l - 1).reduce((n, s) => n + s.length + 1, 0); e.focus(); e.setSelectionRange(o, o); }, line);
@@ -236,7 +236,8 @@ await run('org-clock-in'); await run('org-clock-cancel');
 ok((await text()) === '* A\n' && (await page.locator('#message').textContent()) === 'Clock canceled', 'Cancel removes the clock and its drawer');
 
 // The agenda (View, Agenda): a week with a scheduled entry; tapping the row goes to the heading
-await at('* TODO Pay rent :home:\nSCHEDULED: <2999-01-01 Mon>\n* Other\n', 1);
+const nowDate = new Date(); const todayStamp = `${nowDate.getFullYear()}-${String(nowDate.getMonth() + 1).padStart(2, '0')}-${String(nowDate.getDate()).padStart(2, '0')} ${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][nowDate.getDay()]} 10:00`;
+await at(`* TODO Pay rent :home:\nSCHEDULED: <2999-01-01 Mon>\n* Other\n* Timed\n<${todayStamp}>\n`, 1);
 // The agenda reads the agenda files: with none listed it is empty; the file is listed with C-c [ (org-agenda-file-to-front)
 await page.click('#btn-files'); await btn('Save as').click(); await sheet.getByLabel('File name').fill('agenda-test.org'); await btn('Save').click();
 await page.waitForFunction(() => document.getElementById('message').textContent.startsWith('Wrote'));
@@ -246,14 +247,14 @@ await page.locator('.sheet.agenda .abar button', { hasText: 'Close' }).click();
 await page.evaluate(() => document.getElementById('editor').focus());
 await page.keyboard.press('Alt+x'); await page.keyboard.type('org-agenda-file-to-front'); await page.keyboard.press('Enter');
 ok((await page.locator('#message').textContent()).includes('File added to front of agenda file list'), 'C-c [ lists the current file');
-await page.click('#btn-menu'); await btn('Settings').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/5 settings/).click();
 ok((await btn(/Agenda files/).textContent()).includes('1 file'), 'Settings shows how many agenda files there are');
 await btn(/Agenda files/).click();
 ok((await sheet.textContent()).includes('agenda-test.org (App storage)'), 'the Agenda files screen lists the file with its storage');
 await btn('Remove').click();
 ok((await sheet.textContent()).includes('The agenda is empty until you add one'), 'Remove takes the file off the list');
 await btn('Add current file').click();
-await btn('Close').click(); await btn('Close').click();
+await btn('Close').click(); await btn('‹ Settings').click(); await btn('Close').click();
 await page.click('#btn-view'); await btn('Agenda').click();
 ok(await page.locator('.sheet.agenda .abar button', { hasText: 'Week' }).count() === 1, 'the agenda has Day, Week and Month');
 {
@@ -278,6 +279,7 @@ ok(await page.locator('.sheet.agenda .abar button', { hasText: 'Week' }).count()
   ok((await head()) === first, 'Today returns to the span that holds today');
   await page.keyboard.press('b'); await page.keyboard.press('.');
   ok((await head()) === first, '. goes to today as well');
+  ok((await page.locator('.sheet.agenda .agrid').count()) >= 7 && (await page.locator('.sheet.agenda .agrid.now').count()) === 1, 'today with a timed entry shows the time grid and the now line');
 }
 await page.locator('.sheet.agenda .abar button', { hasText: 'Views' }).click();
 await btn('TODO list').click();

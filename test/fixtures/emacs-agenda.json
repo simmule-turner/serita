@@ -143,5 +143,45 @@
   "warn": 14,
   "text": "Day-agenda (W48):\nSunday     29 November 2026\n  oracleXXXXXX:Scheduled:  TODO Notes\n",
   "today": "2026-11-22"
+ },
+ {
+  "id": "ag-cat-short",
+  "input": "#+CATEGORY: ab\n* TODO Short\nSCHEDULED: <2026-11-30 Mon>\n",
+  "view": "agenda",
+  "span": 1,
+  "start": "2026-11-30",
+  "today": "2026-11-30",
+  "warn": 14,
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n  ab:         Scheduled:  TODO Short\n"
+ },
+ {
+  "id": "ag-cat-long",
+  "input": "#+CATEGORY: abcdefghijklmnopqrst\n* TODO Long\nSCHEDULED: <2026-11-30 Mon>\n",
+  "view": "agenda",
+  "span": 1,
+  "start": "2026-11-30",
+  "today": "2026-11-30",
+  "warn": 14,
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n  abcdefghijklmnopqrst:Scheduled:  TODO Long\n"
+ },
+ {
+  "id": "ag-cat-prop",
+  "input": "#+CATEGORY: file\n* TODO Own\nSCHEDULED: <2026-11-30 Mon>\n:PROPERTIES:\n:CATEGORY: mine\n:END:\n* TODO Inherits\nSCHEDULED: <2026-11-30 Mon>\n",
+  "view": "agenda",
+  "span": 1,
+  "start": "2026-11-30",
+  "today": "2026-11-30",
+  "warn": 14,
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n  mine:       Scheduled:  TODO Own\n  file:       Scheduled:  TODO Inherits\n"
+ },
+ {
+  "id": "ag-cat-exact12",
+  "input": "#+CATEGORY: abcdefghijkl\n* TODO Twelve\nSCHEDULED: <2026-11-30 Mon>\n",
+  "view": "agenda",
+  "span": 1,
+  "start": "2026-11-30",
+  "today": "2026-11-30",
+  "warn": 14,
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n  abcdefghijkl:Scheduled:  TODO Twelve\n"
  }
 ]

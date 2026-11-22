@@ -83,6 +83,9 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 ### `core/clock.js`, `test/clock.test.js`, `test/fixtures/emacs-clock.json`
 - Written from: the author's request (clocking as Emacs does it) and the Emacs 30.1 conformance results for the ck-* cases (the text each key sequence leaves and the messages), read as behavior only. Statement as above.
 
+### `core/body.js`, `test/body.test.js`
+- Written from: the author's request (edit the text under a heading in the Outline view) and the author's design. No other program or source was consulted. Statement as above.
+
 ### `app/ui/update.js`, `app/version.js`, `test/update.test.js`, `test/browser/update.mjs`
 - Written from: the author's request (see an update, choose when to restart) and the service worker API as documented (waiting worker, updatefound, message ports, skipWaiting). Statement as above.
 

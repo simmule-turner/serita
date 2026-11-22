@@ -7,6 +7,7 @@ import { setProperty } from './properties.js';
 import { analyze } from './outline.js';
 
 const MONTH_NAMES = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const REPEAT_UNITS = ['d', 'w', 'm', 'y'];
 const two = (n) => String(n).padStart(2, '0');
@@ -64,8 +65,9 @@ export function shiftStamp(text, offset, dir, { sideways = false } = {}) {
 }
 
 /**
- * Turns what was typed at a Date prompt into a date. Accepts 2026-12-01, with a time (2026-12-01 14:30) or without; a time alone;
- * +3d, -1w, +2m, +1y from the default; and today, tomorrow, yesterday. Empty keeps the default.
+ * Turns what was typed at a Date prompt into a date, as Org reads it (Emacs 30.1 results): 2026-12-01, 27-1-3, 12-5, 12/5, 3.1.2027, dec 5,
+ * 5 dec, dec, a day number, a weekday (the next one), +3d, -1w, +2m, +1y, +fri, -fri, and a time (14:30, 2pm, 10:00-11:30). A date that has gone
+ * by this year means next year; words Org does not know are skipped. Empty keeps the default.
  * @param {string} input
  * @param {Date} base the default date (a UTC date)
  * @returns {{ date: Date, time: boolean }}
@@ -80,19 +82,53 @@ export function parseDate(input, base) {
   if (t) { time = hm(t[1], t[2], t[3]); until = `${two(hm(t[4], t[5], t[6])[0])}:${two(+t[5])}`; rest = rest.slice(0, t.index).trim(); }
   else if ((t = /(?:^|\s)(\d{1,2})(?::(\d\d))?(am|pm)$/.exec(rest)) || (t = /(?:^|\s)(\d{1,2}):(\d\d)()$/.exec(rest))) { time = hm(t[1], t[2], t[3] || undefined); rest = rest.slice(0, t.index).trim(); }
   const b = parts(base);
-  let date = utc(b.y, b.m, b.d);
-  const month = (w) => MONTH_NAMES.findIndex((x) => w.length >= 3 && x.startsWith(w)) + 1;
+  const month = (w) => (w.length >= 3 ? MONTH_NAMES.findIndex((x) => x.startsWith(w)) + 1 : 0);
+  const weekday = (w) => (w.length >= 3 ? WEEKDAYS.findIndex((x) => x.startsWith(w)) : -1);
+  const year2 = (y) => (y.length <= 2 ? 2000 + +y : +y);
+  let date = null;
+  let y = null;
+  let mo = null;
+  let d = null;
+  let wd = -1;
   let m;
-  if (rest === '' || rest === '.' || rest === 'today') { /* the default */ }
-  else if (rest === 'tomorrow') date = utc(b.y, b.m, b.d + 1);
-  else if (rest === 'yesterday') date = utc(b.y, b.m, b.d - 1);
-  else if ((m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(rest))) date = utc(+m[1], +m[2], +m[3]);
-  else if ((m = /^([a-z]{3,})\s+(\d{1,2})(?:\s+(\d{4}))?$/.exec(rest)) && month(m[1])) date = utc(m[3] ? +m[3] : b.y, month(m[1]), +m[2]);
-  else if ((m = /^(\d{1,2})\s+([a-z]{3,})(?:\s+(\d{4}))?$/.exec(rest)) && month(m[2])) date = utc(m[3] ? +m[3] : b.y, month(m[2]), +m[1]);
-  else if ((m = /^([-+])(\d+)([dwmy])$/.exec(rest))) {
-    const n = (m[1] === '-' ? -1 : 1) * +m[2];
-    date = m[3] === 'd' ? utc(b.y, b.m, b.d + n) : m[3] === 'w' ? utc(b.y, b.m, b.d + 7 * n) : m[3] === 'm' ? utc(b.y, b.m + n, b.d) : utc(b.y + n, b.m, b.d);
-  } else throw new Error(`Not a date: ${input}`);
+  // Words Org does not know (tomorrow, next, now) are skipped, so a prompt with only those keeps the default date.
+  for (const w of rest.split(/\s+/).filter(Boolean)) {
+    if (w === '.' || w === 'today') continue;
+    if ((m = /^\+{1,2}(\d*)([dwmy]|[a-z]{3,})?$/.exec(w)) || (m = /^(-)(\d*)([dwmy]|[a-z]{3,})?$/.exec(w))) {
+      const minus = w[0] === '-';
+      const [num, unit] = m.length === 3 ? [m[1], m[2]] : [m[2], m[3]];
+      const n = (num === '' ? 1 : +num) * (minus ? -1 : 1);
+      const u = unit && unit.length === 1 ? unit : unit ? null : 'd';
+      if (u === 'd') date = utc(b.y, b.m, b.d + n);
+      else if (u === 'w') date = utc(b.y, b.m, b.d + 7 * n);
+      else if (u === 'm') date = utc(b.y, b.m + n, b.d);
+      else if (u === 'y') date = utc(b.y + n, b.m, b.d);
+      else if (weekday(unit) >= 0) {
+        // +fri is the next Friday after the default date, -fri the last one before it; a number counts them.
+        const step = minus ? -1 : 1;
+        let left = Math.abs(n);
+        date = utc(b.y, b.m, b.d);
+        while (left > 0) { date = utc(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate() + step); if (date.getUTCDay() === weekday(unit)) left--; }
+      }
+    } else if ((m = /^(\d{2,4})-(\d{1,2})-(\d{1,2})$/.exec(w))) { y = year2(m[1]); mo = +m[2]; d = +m[3]; }
+    else if ((m = /^(\d{1,2})[-/](\d{1,2})$/.exec(w))) { mo = +m[1]; d = +m[2]; }
+    else if ((m = /^(\d{1,2})\.(\d{1,2})\.(\d{2,4})$/.exec(w))) { d = +m[1]; mo = +m[2]; y = year2(m[3]); }
+    else if ((m = /^(\d{1,2})\.(\d{1,2})$/.exec(w))) { d = +m[1]; mo = +m[2]; }
+    else if (/^\d{4}$/.test(w)) y = +w;
+    else if (/^\d{1,2}$/.test(w)) d = +w;
+    else if (month(w)) mo = month(w);
+    else if (weekday(w) >= 0) wd = weekday(w);
+  }
+  if (date === null) {
+    const today = utc(b.y, b.m, b.d);
+    if (wd >= 0) { const ahead = ((wd - today.getUTCDay() + 6) % 7) + 1; date = utc(b.y, b.m, b.d + ahead); }
+    else if (y === null && mo === null && d !== null) date = utc(b.y, b.m + (d < b.d ? 1 : 0), d);
+    else if (y !== null || mo !== null || d !== null) {
+      // Without a year, a date that has gone by this year means the next one.
+      date = utc(y ?? b.y, mo ?? b.m, d ?? b.d);
+      if (y === null && date < today) date = utc(b.y + 1, mo ?? b.m, d ?? b.d);
+    } else date = today;
+  }
   if (time) date = utc(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate(), time[0], time[1]);
   return { date, time: time !== null, until };
 }

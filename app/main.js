@@ -17,6 +17,7 @@ import { backwardChar, backwardWord, forwardChar, forwardWord, lineEnd as endOfL
 import { DEFAULT_TAGS_COLUMN, changeLevel, cycleTodo, indentItem, insertHeadingAfter, insertHeadingHere, moveItem, moveSubtree, setPriority, setTags, setTitle, stepPriority, toggleCheckbox } from '../core/outline-edit.js';
 import { parseStringList, formatStringList } from '../core/lisp-list.js';
 import { clockIn, clockOut, cancelClock, openClock, inClockedEntry } from '../core/clock.js';
+import { bodyOf, setBody } from '../core/body.js';
 import { isEffort } from '../core/effort.js';
 import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../core/properties.js';
 import { agenda, searchView, tagsView, todoList } from '../core/agenda.js';
@@ -130,8 +131,8 @@ function choose(title, items, { cancel = true, subtitle = null } = {}) {
     put(sheet, 
       title ? h('h2', {}, title) : null,
       subtitle ? h('p', {}, subtitle) : null,
-      h('div', { class: 'list' }, items.map((it) => h('button', { class: `item${it.dim ? ' dim' : ''}`, onclick: () => close(it.value) },
-        h('span', {}, it.label), it.meta ? h('span', { class: 'meta' }, it.meta) : null))),
+      h('div', { class: 'list' }, items.map((it) => (it.group ? h('div', { class: 'group' }, it.group) : h('button', { class: `item${it.dim ? ' dim' : ''}`, onclick: () => close(it.value) },
+        h('span', {}, it.label), it.meta ? h('span', { class: 'meta' }, it.meta) : null)))),
       cancel ? h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel')) : null,
     );
   });
@@ -707,15 +708,11 @@ async function settings() {
         h('div', { class: 'list' },
           h('button', { class: 'item', onclick: () => close('github') }, h('span', {}, 'GitHub'), h('span', { class: 'meta' }, `${summary('github')} ›`)),
           h('button', { class: 'item', onclick: () => close('webdav') }, h('span', {}, 'WebDAV'), h('span', { class: 'meta' }, `${summary('webdav')} ›`)),
-          h('button', { class: 'item', onclick: () => close('emacs') }, h('span', {}, 'Emacs keys'), h('span', { class: 'meta' }, emacsKeys() ? 'On ›' : 'Off ›')),
-          h('button', { class: 'item', onclick: () => close('stars') }, h('span', {}, 'Hide leading stars'), h('span', { class: 'meta' }, hideStars() ? 'On ›' : 'Off ›')),
+          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '5 settings ›')),
           h('button', { class: 'item', onclick: () => close('appearance') }, h('span', {}, 'Appearance'), h('span', { class: 'meta' }, `${theme()[0].toUpperCase()}${theme().slice(1)}, ${fontSize()}px ›`)),
-          h('button', { class: 'item', onclick: () => close('tags-column') }, h('span', {}, 'Tag column'), h('span', { class: 'meta' }, `${tagsColumn()} ›`)),
-          h('button', { class: 'item', onclick: () => close('agenda-files') }, h('span', {}, 'Agenda files'), h('span', { class: 'meta' }, `${agendaFileNames().length} ${agendaFileNames().length === 1 ? 'file' : 'files'} ›`)),
           h('button', { class: 'item', onclick: () => close('restore') }, h('span', {}, 'Restore open files on start'), h('span', { class: 'meta' }, restoreOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('tools-text') }, h('span', {}, 'Tool row in the Text view'), h('span', { class: 'meta' }, toolRowOn('text') ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('keylog') }, h('span', {}, 'Key event log'), h('span', { class: 'meta' }, keyLogOn() ? 'On ›' : 'Off ›')),
-          h('button', { class: 'item', onclick: () => close('beep') }, h('span', {}, 'Beep on errors'), h('span', { class: 'meta' }, beepOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('tools-outline') }, h('span', {}, 'Tool row in the Outline view'), h('span', { class: 'meta' }, toolRowOn('outline') ? 'On ›' : 'Off ›')),
           h('div', { class: 'item', style: 'display:flex;align-items:center;justify-content:space-between;padding:4px 0' }, h('span', {}, 'Settings file'),
             h('span', { class: 'row' }, h('button', { onclick: () => close('export') }, 'Export'), h('button', { onclick: () => close('import') }, 'Import')))),
@@ -728,18 +725,38 @@ async function settings() {
     });
     if (what === undefined) return;
     if (what === 'github' || what === 'webdav') await setup(what);
-    else if (what === 'emacs') config.update({ settings: { 'view.emacsKeys': String(!emacsKeys()) } });
-    else if (what === 'stars') config.update({ settings: { 'view.hideStars': String(!hideStars()) } });
+    else if (what === 'emacs-settings') await emacsSettings();
     else if (what === 'appearance') await appearance();
-    else if (what === 'tags-column') await tagsColumnDialog();
-    else if (what === 'agenda-files') await agendaFilesDialog();
-    else if (what === 'beep') config.update({ settings: { 'view.beep': String(!beepOn()) } });
     else if (what === 'keylog') await keyLogScreen();
     else if (what === 'restore') config.update({ settings: { 'session.restore': String(!restoreOn()) } });
     else if (what === 'tools-text') config.update({ settings: { 'view.toolRowText': String(!toolRowOn('text')) } });
     else if (what === 'tools-outline') config.update({ settings: { 'view.toolRowOutline': String(!toolRowOn('outline')) } });
     else if (what === 'export') { await exportDialog(); return; }
     else { $('import-file').click(); return; }
+  }
+}
+
+/** Settings, Emacs: the settings that are Emacs's own, in alphabetical order. */
+async function emacsSettings() {
+  for (;;) {
+    const what = await panel((sheet, close) => {
+      const files = agendaFileNames().length;
+      const item = (key, label, meta) => h('button', { class: 'item', onclick: () => close(key) }, h('span', {}, label), h('span', { class: 'meta' }, `${meta} ›`));
+      put(sheet, h('h2', {}, 'Emacs'),
+        h('div', { class: 'list' },
+          item('agenda-files', 'Agenda files', `${files} ${files === 1 ? 'file' : 'files'}`),
+          item('beep', 'Beep on errors', beepOn() ? 'On' : 'Off'),
+          item('emacs', 'Emacs keys', emacsKeys() ? 'On' : 'Off'),
+          item('stars', 'Hide leading stars', hideStars() ? 'On' : 'Off'),
+          item('tags-column', 'Tag column', String(tagsColumn()))),
+        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
+    });
+    if (what === undefined) return;
+    if (what === 'agenda-files') await agendaFilesDialog();
+    else if (what === 'beep') config.update({ settings: { 'view.beep': String(!beepOn()) } });
+    else if (what === 'emacs') config.update({ settings: { 'view.emacsKeys': String(!emacsKeys()) } });
+    else if (what === 'stars') config.update({ settings: { 'view.hideStars': String(!hideStars()) } });
+    else await tagsColumnDialog();
   }
 }
 
@@ -1002,7 +1019,7 @@ async function agendaScreen() {
     let view;
     try {
       view = st.kind === 'todo' ? todoList(files, { keyword: st.keyword }) : st.kind === 'tags' ? tagsView(files, { match: st.match }) : st.kind === 'search' ? searchView(files, { words: st.words })
-        : agenda(files, { start: st.span === 'week' ? mondayOf(st.anchor) : st.anchor, span: st.span, today: todayDate() });
+        : agenda(files, { start: st.span === 'week' ? mondayOf(st.anchor) : st.anchor, span: st.span, today: todayDate(), now: localClock() });
     } catch (e) { failure(e); st.kind = 'agenda'; return; }
     let onMoveKey = null;
     const act = await panel((sheet, close) => {
@@ -1021,7 +1038,7 @@ async function agendaScreen() {
         h('span', { class: 'atitle' }, [e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ')),
         e.tags.length ? h('span', { class: 'atags' }, `:${e.tags.join(':')}:`) : null);
       const body = st.kind === 'agenda'
-        ? view.days.flatMap((d) => [h('div', { class: `aday${d.today ? ' today' : ''}` }, d.head), ...d.entries.map(row)])
+        ? view.days.flatMap((d) => [h('div', { class: `aday${d.today ? ' today' : ''}` }, d.head), ...d.rows.map((r) => (r.entry ? row(r.entry) : h('div', { class: `agrid${r.text.includes(' now') ? ' now' : ''}` }, h('span', { class: 'agtime' }, r.text.trim().replace(/\.{6}.*$/, '') + (r.text.includes(' now') ? ' now' : '')), h('span', { class: 'agline' }))))])
         : view.entries.length ? view.entries.map(row) : [h('p', { class: 'aempty' }, 'No entries')];
       const nav = st.kind === 'agenda' ? [h('button', { 'aria-label': 'Earlier', onclick: () => close({ move: -1 }) }, h('span', { class: 'chev left' })), h('button', { 'aria-label': 'Later', onclick: () => close({ move: 1 }) }, h('span', { class: 'chev right' }))] : [];
       put(sheet,
@@ -1169,6 +1186,7 @@ function todoStep(dir) {
 /** Today as the date the prompts offer: the calendar date here, kept as a UTC date. */
 /** The wall-clock time now, as the UTC fields the timestamp code reads. */
 const localNow = () => { const n = new Date(); return new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate(), n.getHours(), n.getMinutes(), n.getSeconds())); };
+const localClock = () => { const n = new Date(); return `${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`; };
 const todayDate = () => { const n = new Date(); return new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate())); };
 const dayOf = (d) => d.toISOString().slice(0, 10);
 
@@ -1200,8 +1218,7 @@ function shiftDayOrTodo(dir) {
 }
 
 /** C-c C-x e: sets the Effort property of the heading. An empty answer leaves the property empty, as Emacs does. */
-async function setEffort() {
-  const hd = enclosingHead();
+async function setEffort(hd = enclosingHead()) {
   if (!hd) { message('Not at a heading'); return; }
   const typed = await askText({ prompt: 'Effort:', title: 'Set effort', help: 'A duration such as 2:00, 2h, 30min or 1d 3h.', ok: 'Set' });
   if (typed === undefined) return;
@@ -1228,8 +1245,7 @@ function stopClock(c, now) {
 }
 
 /** C-c C-x C-i: clocks in on the heading at the cursor, stopping any clock running elsewhere first. */
-function clockInHere() {
-  const hd = enclosingHead();
+function clockInHere(hd = enclosingHead()) {
   if (!hd) { message('Not at a heading'); return; }
   const b = currentBuffer();
   const now = localNow();
@@ -1294,8 +1310,7 @@ async function agendaFilesDialog() {
   }
 }
 
-async function planHere(keyword, label, said) {
-  const hd = enclosingHead();
+async function planHere(keyword, label, said, hd = enclosingHead()) {
   if (!hd) { message('Not at a heading'); return; }
   const stamp = await askStamp(label);
   if (stamp === null) return;
@@ -1566,6 +1581,17 @@ function askTitle(title, initial) {
   });
 }
 
+/** The text under a heading in a multi-line field; Enter starts a new line. */
+function askBody(title, initial) {
+  return panel((sheet, close) => {
+    const input = h('textarea', { rows: '10', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Body' });
+    input.value = initial;
+    put(sheet, h('h2', {}, `Edit body: ${title}`), input,
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
+    input.focus();
+  });
+}
+
 async function setTagsDialog(line) {
   const hd = cur.a.heads.find((x) => x.line === line);
   const value = await askText({ prompt: 'Tags:', title: 'Tags', help: 'Separate tags with a colon, for example work:home.', value: hd.tags.join(':'), ok: 'Set' });
@@ -1617,7 +1643,10 @@ async function headingActions(line) {
   let next = null;
   try { next = cycleTodo(b.text, line).state; } catch { /* the heading is gone */ }
   const what = await choose(hd.title || '(empty heading)', [
-    { label: 'Change TODO state', meta: `${hd.todo ?? 'none'} to ${next ?? 'none'}`, value: 'todo' },
+    { group: 'Text' },
+    { label: 'Edit title', value: 'edit' },
+    { label: 'Edit body', value: 'body' },
+    { group: 'Structure' },
     { label: 'Promote', meta: hd.level > 1 ? `to level ${hd.level - 1}` : null, value: 'promote' },
     { label: 'Demote', meta: `to level ${hd.level + 1}`, value: 'demote' },
     { label: 'Promote subtree', value: 'promote-subtree' },
@@ -1625,10 +1654,16 @@ async function headingActions(line) {
     { label: 'Move up', value: 'move-up' },
     { label: 'Move down', value: 'move-down' },
     { label: 'Insert heading below', value: 'insert' },
+    { group: 'Dates and clock' },
+    { label: 'Schedule', value: 'schedule' },
+    { label: 'Deadline', value: 'deadline' },
+    { label: 'Clock in', value: 'clock-in' },
+    { group: 'State' },
+    { label: 'Change TODO state', meta: `${hd.todo ?? 'none'} to ${next ?? 'none'}`, value: 'todo' },
     { label: 'Change priority', meta: hd.priority ? `[#${hd.priority}]` : null, value: 'priority' },
     { label: 'Set tags', meta: hd.tags.length ? `:${hd.tags.join(':')}:` : null, value: 'tags' },
     { label: 'Set property', value: 'property' },
-    { label: 'Edit title', value: 'edit' },
+    { label: 'Set effort', value: 'effort' },
   ]);
   const run = {
     todo: () => (t, l) => cycleTodo(t, l, 1, tagsColumn()), promote: () => (t, l) => changeLevel(t, l, -1, false), demote: () => (t, l) => changeLevel(t, l, 1, false),
@@ -1640,7 +1675,14 @@ async function headingActions(line) {
   else if (what === 'tags') await setTagsDialog(line);
   else if (what === 'priority') await priorityDialog(line);
   else if (what === 'property') await setPropertyDialog(line);
-  else if (what === 'edit') {
+  else if (what === 'effort') await setEffort(hd);
+  else if (what === 'schedule') await planHere('SCHEDULED', 'SCHEDULED', 'Scheduled to', hd);
+  else if (what === 'deadline') await planHere('DEADLINE', 'DEADLINE', 'Deadline on', hd);
+  else if (what === 'clock-in') clockInHere(hd);
+  else if (what === 'body') {
+    const body = await askBody(hd.title || '(empty heading)', bodyOf(b.text, line));
+    if (body !== undefined) runEdit((t) => setBody(t, line, body));
+  } else if (what === 'edit') {
     const title = await askTitle('Edit heading title', hd.title);
     if (title !== undefined) runEdit((t) => setTitle(t, line, title, tagsColumn()));
   } else if (what === 'insert') {

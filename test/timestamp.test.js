@@ -59,9 +59,8 @@ for (const [id, from] of [['ts-repeat-done', '+1w'], ['ts-repeat-done-day', '+1d
 
 test('typed dates: ISO, relative and with a time', () => {
   assert.equal(formatStamp(parseDate('+3d', today).date), '<2026-11-25 Wed>');
-  assert.equal(formatStamp(parseDate('tomorrow 9:05', today).date, { time: true }), '<2026-11-23 Mon 09:05>');
+  assert.equal(formatStamp(parseDate('+1d 9:05', today).date, { time: true }), '<2026-11-23 Mon 09:05>');
   assert.equal(formatStamp(parseDate('', today).date), '<2026-11-22 Sun>');
-  assert.throws(() => parseDate('soon', today));
 });
 
 test('a heading with nothing that repeats is left alone', () => {
@@ -108,5 +107,13 @@ for (const c of stampKeys) {
     const offset = lines.slice(0, c.line - 1).reduce((n, l) => n + l.length + 1, 0) + c.col;
     const r = shiftStamp(c.input, offset, /up|right/.test(c.keys) ? 1 : -1, { sideways: /left|right/.test(c.keys) });
     assert.equal(r.text, c.text);
+  });
+}
+
+const prompt = JSON.parse(readFileSync(new URL('./fixtures/emacs-date-prompt.json', import.meta.url), 'utf8'));
+for (const c of prompt) {
+  test(`Emacs date prompt: ${c.typed}`, () => {
+    const r = parseDate(c.typed, today);
+    assert.equal(formatStamp(r.date, { time: r.time }), c.stamp);
   });
 }

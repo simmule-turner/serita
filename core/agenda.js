@@ -5,6 +5,7 @@
 
 import { analyze } from './outline.js';
 import { splitLines } from './parse.js';
+import { propertiesOf } from './properties.js';
 import { matcher } from './sparse.js';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -56,10 +57,13 @@ function headings(files) {
   files.forEach((f, fi) => {
     const a = analyze(f.text);
     const lines = splitLines(f.text);
+    // A :CATEGORY: property on the heading or an ancestor wins over the file's #+CATEGORY: line, which wins over its name.
+    const fileCategory = /^#\+CATEGORY:[ \t]*(\S.*?)[ \t]*$/im.exec(f.text)?.[1] ?? f.category;
+    const categoryOf = (h) => { for (let x = h; x; x = x.parent) { const p = propertiesOf(f.text, x.line).find(([n]) => n.toUpperCase() === 'CATEGORY'); if (p) return p[1]; } return fileCategory; };
     for (const h of a.heads) {
       const own = [];
       for (let i = h.line + 1; i < h.bodyEnd; i++) own.push(lines[i].text);
-      out.push({ file: fi, category: f.category, line: h.line, h, a, own, order: out.length });
+      out.push({ file: fi, category: categoryOf(h), line: h.line, h, a, own, order: out.length });
     }
   });
   return out;
@@ -68,12 +72,23 @@ function headings(files) {
 const done = (hd) => hd.h.todo && hd.a.todo.done.includes(hd.h.todo);
 
 const label = (s) => s.padEnd(12);
-const timeLabel = (st) => (st.until ? `${st.time}-${st.until}` : `${st.time}......`);
+const clockText = (t) => t.replace(/^0/, ' ');
+const timeLabel = (st) => (st.until ? `${clockText(st.time)}-${st.until}` : `${clockText(st.time)}......`);
+const GRID = ['08:00', '10:00', '12:00', '14:00', '16:00', '18:00', '20:00'];
+/** The lines of a day: its timed entries with the time grid among them, then the untimed ones. */
+const gridLines = (entries, now) => {
+  const timed = entries.filter((e) => e.time);
+  const marks = [...GRID.map((time) => ({ grid: true, time, text: `${' '.repeat(14)}${clockText(time).padStart(5)}...... ${'-'.repeat(16)}` })),
+    ...(now ? [{ grid: true, time: now, text: `${' '.repeat(14)}${clockText(now).padStart(5)}...... now${' -'.repeat(25)}` }] : [])];
+  const rows = [...timed.map((e) => ({ entry: e, time: e.time, rank: 0 })), ...marks.map((m) => ({ ...m, rank: 1 }))]
+    .sort((a, b) => (a.time < b.time ? -1 : a.time > b.time ? 1 : a.rank - b.rank));
+  return [...rows, ...entries.filter((e) => !e.time).map((e) => ({ entry: e }))];
+};
 
-/** One line of an agenda buffer: two spaces, the category and a colon padded to 13, the label (agenda only) padded to 12, the headline, the tags at the right. */
+/** One line of an agenda buffer: two spaces, the category and a colon padded to 12 (a longer category is not cut), the label (agenda only) padded to 12, the headline, the tags at the right. */
 export function entryText(e, withLabel) {
   const head = [e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ');
-  const left = `  ${`${e.category.slice(0, 12)}:`.padEnd(13)}${withLabel ? `${e.clock ? label(e.clock) : ''}${e.label ? label(e.label) : ''}` : ''}${head}`;
+  const left = `  ${`${e.category}:`.padEnd(12)}${withLabel ? `${e.clock ? label(e.clock) : ''}${e.label ? label(e.label) : ''}` : ''}${head}`;
   if (!e.tags.length) return left;
   const tags = `:${e.tags.join(':')}:`;
   return left.length + tags.length + 1 > 79 ? `${left} ${tags}` : `${left}${' '.repeat(79 - left.length - tags.length)}${tags}`;
@@ -84,9 +99,9 @@ const base = (hd) => ({ file: hd.file, line: hd.line, category: hd.category, tod
 /**
  * The agenda for a span of days.
  * @param {{ category: string, text: string }[]} files
- * @param {{ start: Date, span: 'day'|'week'|'fortnight'|'month'|'year'|number, today: Date, warn?: number }} o dates are UTC dates
+ * @param {{ start: Date, span: 'day'|'week'|'fortnight'|'month'|'year'|number, today: Date, warn?: number, now?: string }} o dates are UTC dates
  */
-export function agenda(files, { start, span, today, warn = 14 }) {
+export function agenda(files, { start, span, today, warn = 14, now = null }) {
   let from = start;
   let days = typeof span === 'number' ? span : { day: 1, week: 7, fortnight: 14 }[span];
   if (span === 'month') { from = utc(start.getUTCFullYear(), start.getUTCMonth() + 1, 1); days = Math.round((utc(start.getUTCFullYear(), start.getUTCMonth() + 2, 1) - from) / DAY); }
@@ -111,11 +126,11 @@ export function agenda(files, { start, span, today, warn = 14 }) {
           put(d, { ...base(hd), kind: 'scheduled', label: 'Scheduled:', clock: own && st.time ? timeLabel(st) : '', late: Math.max(0, diffDays(today, d)), time: own ? st.time : null });
         }
       } else if (m[1] === 'DEADLINE') {
-        for (const d of occurrences({ ...st, repeat: null }, from, to)) put(d, { ...base(hd), kind: 'deadline', label: 'Deadline:', late: diffDays(today, d), time: st.time });
+        for (const d of occurrences({ ...st, repeat: null }, from, to)) put(d, { ...base(hd), kind: 'deadline', label: 'Deadline:', clock: st.time ? timeLabel({ ...st, until: null }) : '', late: diffDays(today, d), time: st.time });
         if (todayIn && !done(hd)) {
           const ahead = diffDays(st.date, today);
           if (ahead > 0 && ahead <= warn) put(today, { ...base(hd), kind: 'deadline', label: `In ${String(ahead).padStart(3)} d.:`, late: -ahead });
-          else if (ahead < 0) put(today, { ...base(hd), kind: 'deadline', label: `${-ahead} d. ago:`, late: -ahead });
+          else if (ahead < 0) put(today, { ...base(hd), kind: 'deadline', label: `${String(-ahead).padStart(2)} d. ago:`, late: -ahead, sortLate: -0.5 });
         }
       }
     }
@@ -138,10 +153,13 @@ export function agenda(files, { start, span, today, warn = 14 }) {
     const d = addDays(from, i);
     const entries = byDay.get(key(d)).map((e, i2) => ({ ...e, order: i2 })).sort((a, b) =>
       (a.time && !b.time ? -1 : !a.time && b.time ? 1 : a.time && b.time && a.time !== b.time ? (a.time < b.time ? -1 : 1) : 0)
-      || prioOf(b) - prioOf(a) || b.late - a.late || a.order - b.order);
+      || prioOf(b) - prioOf(a) || (b.sortLate ?? b.late) - (a.sortLate ?? a.late) || a.order - b.order);
     const head = `${DAYS[d.getUTCDay()].padEnd(10)} ${String(d.getUTCDate()).padStart(2)} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}${d.getUTCDay() === 1 ? ` W${two(weekOf(d))}` : ''}`;
-    lines.push(head, ...entries.map((e) => entryText(e, true)));
-    outDays.push({ date: d, head, today: key(d) === key(today), entries });
+    // The time grid shows on every day of a day agenda, and on today only in longer ones, and only for a day that has an entry with a time.
+    const isToday = key(d) === key(today);
+    const rows = (days === 1 || isToday) && entries.some((e) => e.time) ? gridLines(entries, isToday ? now : null) : entries.map((entry) => ({ entry }));
+    lines.push(head, ...rows.map((r) => (r.entry ? entryText(r.entry, true) : r.text)));
+    outDays.push({ date: d, head, today: isToday, entries, rows });
   }
   return { title: lines[0], days: outDays, text: `${lines.join('\n')}\n` };
 }

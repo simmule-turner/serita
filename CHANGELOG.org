@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.7.6
+Settings gathers the Emacs ones (agenda files, beep, Emacs keys, hide leading stars, tag column) under one Emacs entry. In the Outline view a heading's actions are grouped as Text, Structure, Dates and clock, and State, and Edit body changes the text under it. Date prompts read what Emacs reads: weekdays, month names, 12/5, 3.1.2027, +fri and a bare day number. The agenda draws Emacs's time grid with a now line, and categories follow #+CATEGORY and :CATEGORY:. Repeater units cycle d, w, m, y; effort accepts a bare number. Verified: replayed Emacs 30.1 results for date prompts, the time grid, categories, clocking and effort.
+
 * 0.7.5
 Clocking works as in Emacs: C-c C-x C-i starts a clock in a :LOGBOOK: drawer, C-c C-x C-o stops it and records the time, C-c C-x C-q cancels it. C-c C-x e sets an effort. The agenda reads your agenda files, kept as ~org-agenda-files~ the way init.el sets it; C-c [ and C-c ] edit the list, and Settings shows it. Open starts in the folder you last used, the agenda has a Today button and the . key, and View lists Agenda, Outline, Text. Verified: replayed Emacs 30.1 results for clocking, effort, repeaters and timestamp keys.
 

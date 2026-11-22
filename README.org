@@ -18,21 +18,21 @@ The toolbar has Files and Save at the left, Find in the middle, and View and Men
 ** Views
 View switches between Outline and Text; both show the same document and the same folding.
 
-The Outline view lists headings as a tree. The arrow at the left of a heading cycles its visibility, like TAB in Emacs: folded, children, whole subtree. Tap a TODO word to change its state, a checkbox to toggle it, and a heading's title for its actions: change TODO state, promote, demote, promote or demote the subtree, move up, move down, insert a heading below, change priority, set tags, set a property, and edit the title. Edit title and Insert heading below open a popup with a text field; Enter accepts it.
+The Outline view lists headings as a tree. The arrow at the left of a heading cycles its visibility, like TAB in Emacs: folded, children, whole subtree. Tap a TODO word to change its state, a checkbox to toggle it, and a heading's title for its actions, in groups: Text (edit the title or the body), Structure (promote, demote, the subtree, move, insert a heading below), Dates and clock (schedule, deadline, clock in) and State (TODO state, priority, tags, property, effort). Edit title and Insert heading below open a popup with a text field, where Enter accepts it; Edit body opens a larger field for the text under the heading.
 
 A checkbox toggles when you tap it. The checkbox of the item above it, and the ~[2/4]~ or ~[50%]~ counts of that item and of the heading, follow. A list item folds with its arrow, like a heading.
 
 The Text view shows the raw Org text, with ~...~ after a folded heading. A file's ~#+STARTUP:~ line sets what is folded when it opens; without one, everything is shown.
 
 ** Emacs keys
-Settings, Emacs keys, turns on these keys in the Text view:
+Settings, Emacs, Emacs keys, turns on these keys in the Text view:
 - TAB :: cycles the heading or list item at the cursor; S-TAB cycles the whole buffer: overview, contents, show all.
 - M-up, M-down :: move the subtree, or the list item with its sub-items, up or down.
 - M-left, M-right :: promote or demote the heading; on a list item, change its indentation and leave its sub-items; with Shift, the whole subtree or the sub-items too.
 - C-RET :: inserts a heading after the current subtree, from the heading or anywhere in its body.
 - C-n, C-p :: move down or up one screen line, keeping the column; C-f, C-b move a character; C-a, C-e go to the start or end of the line; M-f, M-b move a word; M-<, M-> go to the start or end of the text; C-v, M-v move a screen down or up. On plain text M-right moves a word.
 - The text scrolls to keep the cursor in view after any movement or search, and puts the cursor in the middle of the screen when it was off screen.
-- C-g :: quits a pending key or command. Errors and quits give a short beep (Settings, Beep on errors).
+- C-g :: quits a pending key or command. Errors and quits give a short beep (Settings, Emacs, Beep on errors).
 - C-s, C-r :: search forward or backward; again inside the search, the next or previous match; on an empty field, the last search. C-g or the cancel button returns to where you started.
 - C-c C-t :: changes the TODO state, from the heading or anywhere in its body. S-right and S-left go to the next or previous state; the parent's ~[2/4]~ count follows.
 - S-up, S-down :: raise or lower the priority of the heading. C-c , asks for it: A, B, C, or SPC to remove.
@@ -51,7 +51,7 @@ Above the mode line, a row of keys stands in for a keyboard: Meta, Ctrl and Shif
 
 Settings, Key event log, records what the keyboard sends and which key chord Serita made of it. Turn it on, press the keys in the editor, then open it again to read the log, Copy it or Clear it; it helps when a key does not do what it should.
 
-Settings, Hide leading stars, shows only the last star of each heading.
+Settings, Emacs, Hide leading stars, shows only the last star of each heading.
 
 ** Tool row
 Under the tabs, one row of buttons: undo, redo, line numbers, wrap, smaller text, larger text, and Line. Settings turns the row on or off for each view. In the Outline view the row keeps undo, redo and the two size buttons. Line opens Lines and text: go to a line, select all, copy all, duplicate, delete (to the kill ring), move, indent and outdent the line. Typing within a second is one undo step; each structure edit is its own.
@@ -60,7 +60,7 @@ Under the tabs, one row of buttons: undo, redo, line numbers, wrap, smaller text
 Menu, Settings, Appearance: Theme (System, Light or Dark), Font (monospace by default, or another, or a font name from your device), Font size (12 to 32; A− and A+ change the same size) and Paragraph spacing (0 to 32 px, Outline view). Menus and buttons keep a fixed size.
 
 ** Tag column
-Menu, Settings, Tag column. A negative number ends the heading line at that column (-77 by default); a positive number starts the tags there; 0 puts them one space after the title.
+Menu, Settings, Emacs, Tag column. A negative number ends the heading line at that column (-77 by default); a positive number starts the tags there; 0 puts them one space after the title.
 
 ** Restore
 Open files, the current tab, folds, the view and unsaved edits come back when you reopen Serita. Settings, Restore open files on start turns it off.
@@ -89,7 +89,7 @@ M-% replaces text; C-M-% replaces a regexp (\& is the match, \1 a group, \# the 
 C-c / r shows the lines that match a regexp and the headings above them; C-c / t shows unfinished TODO entries; C-c / T asks for a keyword; C-c / m asks for a match such as ~work+urgent~, ~work/TODO~, ~LEVEL=2~ or ~Effort="5h"~ (tags are inherited). C-c C-c removes the highlights; TAB folds the heading. In the Outline view, Menu, then Commands has the same entries.
 
 ** Dates
-C-c C-s schedules the heading and C-c C-d sets its deadline; C-c . inserts a timestamp and C-c ! an inactive one. The prompt takes a date (~2026-12-01~, ~+3d~, ~-1w~, ~tomorrow~) with an optional time (~14:30~); empty means today. S-up and S-down on a timestamp change the part under the cursor: year, month, day (or weekday), hour, minute, or a repeater's number or unit; on either bracket they switch between active and inactive. S-left and S-right move the date a day. Marking a task with a repeater (~+1w~, ~++1w~, ~.+1w~) DONE moves its date to the next one, on a SCHEDULED or DEADLINE line or on any active timestamp in the entry, and keeps it open.
+C-c C-s schedules the heading and C-c C-d sets its deadline; C-c . inserts a timestamp and C-c ! an inactive one. The prompt takes a date (~2026-12-01~, ~dec 5~, ~12/5~, ~fri~, ~+3d~, ~-1w~, ~+2fri~; a date that has gone by means next year) with an optional time (~14:30~); empty means today. S-up and S-down on a timestamp change the part under the cursor: year, month, day (or weekday), hour, minute, or a repeater's number or unit; on either bracket they switch between active and inactive. S-left and S-right move the date a day. Marking a task with a repeater (~+1w~, ~++1w~, ~.+1w~) DONE moves its date to the next one, on a SCHEDULED or DEADLINE line or on any active timestamp in the entry, and keeps it open.
 
 ** Clocking
 C-c C-x C-i starts a clock on the heading: a ~CLOCK:~ line in its ~:LOGBOOK:~ drawer. C-c C-x C-o stops it and records the time spent; C-c C-x C-q cancels it. Clocking in on another heading stops the running clock first.
@@ -98,7 +98,7 @@ C-c C-x C-i starts a clock on the heading: a ~CLOCK:~ line in its ~:LOGBOOK:~ dr
 C-c C-x e asks for the effort of the heading and sets its ~Effort~ property: ~2:00~, ~2h~, ~30min~ or ~1d~. An empty answer leaves the property empty.
 
 ** Agenda files
-The agenda covers the files on the agenda files list, not the tabs that happen to be open; a file that is open shows its current text. C-c [ puts the current file on the list and C-c ] takes it off; Settings, Agenda files shows the list and adds files from any storage. The list is saved as ~org-agenda-files~, the way an ~init.el~ would set it.
+The agenda covers the files on the agenda files list, not the tabs that happen to be open; a file that is open shows its current text. C-c [ puts the current file on the list and C-c ] takes it off; Settings, Emacs, Agenda files shows the list and adds files from any storage. The list is saved as ~org-agenda-files~, the way an ~init.el~ would set it.
 
 ** Agenda
 View, then Agenda, lists what is scheduled, due or dated in the open files, by Day, Week or Month; the arrows, a swipe left or right, or f and b move through time, and a tap on a row goes to that heading. Overdue tasks show again on today ("Sched. 3x:" is three days late), deadlines show "In 3 d." as they near, and repeating tasks appear on each of their dates. Views switches to the TODO list, a tags view (a match such as ~work+urgent~) or a search for words. In the Text view C-c a a opens the agenda, C-c a t the TODO list, C-c a m tags and C-c a s a search.
