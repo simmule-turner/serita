@@ -18,6 +18,7 @@ import { DEFAULT_TAGS_COLUMN, changeLevel, cycleTodo, indentItem, insertHeadingA
 import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../core/properties.js';
 import { startReplace } from '../core/replace.js';
 import { sparseTree } from '../core/sparse.js';
+import { completeRepeat, formatStamp, insertStamp, parseDate, setPlanning, shiftStamp, stampAt } from '../core/timestamp.js';
 import { createMinibuffer } from './ui/minibuffer.js';
 import { duplicateLine, indentLine, killLine, killWholeLine, lineInfo, lineStart, moveLine } from '../core/lines.js';
 import { createKillRing } from '../core/killring.js';
@@ -975,8 +976,59 @@ function sayPriority(line) {
 
 /** Changes the TODO state of the enclosing heading and says the new state. */
 function todoStep(dir) {
-  const r = onEnclosingHeading((t, l) => cycleTodo(t, l, dir, tagsColumn()));
-  if (r?.state) message(`TODO state changed to ${r.state}`);
+  const said = [];
+  const r = onEnclosingHeading((t, l) => {
+    const before = analyze(t);
+    const from = before.heads.find((x) => x.line === l)?.todo ?? null;
+    const c = cycleTodo(t, l, dir, tagsColumn());
+    if (!c.state || !before.todo.done.includes(c.state)) return c;
+    // Finishing a repeating task: the date moves on and the task is open again
+    const rep = completeRepeat({ text: c.text, line: l, from: from ?? '', to: c.state, reopen: before.todo.open[0], now: new Date() });
+    if (!rep) return c;
+    said.push(`TODO state changed to ${c.state}`, `TODO state changed to ${before.todo.open[0]}`);
+    return { ...c, text: rep.text, state: null };
+  });
+  if (said.length) message(said.at(-1));
+  else if (r?.state) message(`TODO state changed to ${r.state}`);
+}
+
+/** Today as the date the prompts offer: the calendar date here, kept as a UTC date. */
+const todayDate = () => { const n = new Date(); return new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate())); };
+const dayOf = (d) => d.toISOString().slice(0, 10);
+
+/** Asks for a date ("2026-12-01", "+3d", "tomorrow 14:30") and returns the stamp text, or null when cancelled. */
+async function askStamp(label, active = true) {
+  const base = todayDate();
+  const typed = await askText({ prompt: `${label} Date+time [${dayOf(base)}]:`, title: label, help: 'A date such as 2026-12-01, +3d, -1w, tomorrow, optionally with a time such as 14:30.', ok: 'Set' });
+  if (typed === undefined) return null;
+  try { const d = parseDate(typed, base); return formatStamp(d.date, { time: d.time, active }); } catch (e) { failure(e); return null; }
+}
+
+/** S-up and S-down: on a timestamp they change the part under the cursor; elsewhere they are the priority keys. */
+function shiftOrPriority(dir) {
+  if (viewMode() === 'text') {
+    const r = shiftStamp(currentBuffer().text, cursorOffset(), -dir);
+    if (r) { const b = currentBuffer(); session.apply(b.id, { text: r.text }); placeOffset(r.pos); if (r.said) message(r.said); return; }
+  }
+  const r = onEnclosingHeading((t, l) => stepPriority(t, l, dir, tagsColumn()));
+  if (r) sayPriority(r.line);
+}
+
+async function planHere(keyword, label, said) {
+  const hd = enclosingHead();
+  if (!hd) { message('Not at a heading'); return; }
+  const stamp = await askStamp(label);
+  if (stamp === null) return;
+  runEdit((t) => setPlanning(t, hd.line, keyword, stamp));
+  message(`${said} ${stamp}`);
+}
+
+async function insertTimestamp(active) {
+  const stamp = await askStamp('', active);
+  if (stamp === null) return;
+  const at = cursorOffset();
+  const r = runEdit((t) => insertStamp(t, at, stamp));
+  if (r) placeOffset(r.pos);
 }
 
 /** Calls `fn(line)` with the line of the enclosing heading. */
@@ -1027,8 +1079,12 @@ const COMMANDS = {
   'todo': () => todoStep(1),
   'todo-next': () => todoStep(1),
   'todo-previous': () => todoStep(-1),
-  'priority-up': () => { const r = onEnclosingHeading((t, l) => stepPriority(t, l, -1, tagsColumn())); if (r) sayPriority(r.line); },
-  'priority-down': () => { const r = onEnclosingHeading((t, l) => stepPriority(t, l, 1, tagsColumn())); if (r) sayPriority(r.line); },
+  'priority-up': () => shiftOrPriority(-1),
+  'priority-down': () => shiftOrPriority(1),
+  schedule: () => planHere('SCHEDULED', 'SCHEDULED', 'Scheduled to'),
+  deadline: () => planHere('DEADLINE', 'DEADLINE', 'Deadline on'),
+  'timestamp': () => insertTimestamp(true),
+  'timestamp-inactive': () => insertTimestamp(false),
   'priority': () => withHeading(priorityDialog),
   'set-property': () => withHeading(setPropertyDialog),
   'delete-property': () => withHeading(deletePropertyDialog),
@@ -1300,7 +1356,7 @@ const outlineOn = {
 const PALETTE = [
   ['cycle', 'org-cycle', 'Fold or unfold'], ['cycle-global', 'org-shifttab', 'Fold or unfold everything', true],
   ['todo', 'org-todo', 'Change TODO state'], ['todo-next', 'org-shiftright', 'Next TODO state'], ['todo-previous', 'org-shiftleft', 'Previous TODO state'],
-  ['priority', 'org-priority', 'Set priority'], ['priority-up', 'org-priority-up', 'Raise priority'], ['priority-down', 'org-priority-down', 'Lower priority'],
+  ['schedule', 'org-schedule', 'Schedule'], ['deadline', 'org-deadline', 'Set deadline'], ['timestamp', 'org-timestamp', 'Insert timestamp'], ['timestamp-inactive', 'org-timestamp-inactive', 'Insert inactive timestamp'], ['priority', 'org-priority', 'Set priority'], ['priority-up', 'org-priority-up', 'Raise priority'], ['priority-down', 'org-priority-down', 'Lower priority'],
   ['set-tags', 'org-set-tags-command', 'Set tags'], ['set-property', 'org-set-property', 'Set property'], ['delete-property', 'org-delete-property', 'Delete property'],
   ['promote', 'org-metaleft', 'Promote'], ['demote', 'org-metaright', 'Demote'], ['promote-subtree', 'org-shiftmetaleft', 'Promote subtree'], ['demote-subtree', 'org-shiftmetaright', 'Demote subtree'],
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
@@ -1458,7 +1514,7 @@ editor.addEventListener('keydown', (e) => {
   const held = keyRow.sticky();
   const fromRow = held.ctrl || held.meta || held.shift;
   const chord = chordOf({ key: e.key, ctrl: e.ctrlKey || held.ctrl, meta: e.altKey || e.metaKey || held.meta, shift: e.shiftKey || held.shift });
-  if (HEADING_ONLY.has(chord) && kindAtCursor().kind !== 'heading') return; // elsewhere the arrows select, as usual
+  if (HEADING_ONLY.has(chord) && kindAtCursor().kind !== 'heading' && !((chord === 'S-<up>' || chord === 'S-<down>') && stampAt(currentBuffer().text, cursorOffset()))) return; // elsewhere the arrows select, as usual
   if ((chord === 'C-c' || chord === 'C-x' || chord === 'C-v') && !held.ctrl && keymap.pending() === '') return; // a keyboard's own C-c, C-x and C-v stay copy, cut and paste; the prefixes come from the key row
   if (chord) runChord(chord, e, fromRow);
   else if (keymap.pending() && e.key.length === 1) runChord(e.key, e, false);

@@ -1,0 +1,206 @@
+[
+ {
+  "id": "ts-active-inactive",
+  "input": "* A\n[2026-11-30 Mon]\n",
+  "offset": 9,
+  "keys": "C-c C-c",
+  "text": "* A\n[2026-11-30 Mon]\n",
+  "messages": []
+ },
+ {
+  "id": "ts-deadline-both",
+  "input": "* TODO Pay rent\nSCHEDULED: <2026-11-30 Mon>\n",
+  "offset": 0,
+  "keys": "C-c C-d 2 0 2 6 - 1 2 - 2 5 RET",
+  "text": "* TODO Pay rent\nDEADLINE: <2026-12-25 Fri> SCHEDULED: <2026-11-30 Mon>\n",
+  "messages": [
+   "Deadline on <2026-12-25 Fri>"
+  ]
+ },
+ {
+  "id": "ts-deadline",
+  "input": "* TODO Report\n",
+  "offset": 0,
+  "keys": "C-c C-d 2 0 2 6 - 1 2 - 0 1 RET",
+  "text": "* TODO Report\nDEADLINE: <2026-12-01 Tue>\n",
+  "messages": [
+   "Deadline on <2026-12-01 Tue>"
+  ]
+ },
+ {
+  "id": "ts-down-day",
+  "input": "* TODO Pay rent\nSCHEDULED: <2026-11-30 Mon>\n",
+  "offset": 36,
+  "keys": "S-<down>",
+  "text": "* TODO Pay rent\nSCHEDULED: <2026-11-29 Sun>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-insert-inactive",
+  "input": "* A\n",
+  "offset": 4,
+  "keys": "C-c ! 2 0 2 6 - 1 2 - 0 1 RET",
+  "text": "* A\n[2026-12-01 Tue]",
+  "messages": []
+ },
+ {
+  "id": "ts-insert",
+  "input": "* A\n",
+  "offset": 4,
+  "keys": "C-c . 2 0 2 6 - 1 2 - 0 1 RET",
+  "text": "* A\n<2026-12-01 Tue>",
+  "messages": []
+ },
+ {
+  "id": "ts-month-end",
+  "input": "* TODO Pay rent\nSCHEDULED: <2026-11-30 Mon>\n",
+  "offset": 36,
+  "keys": "S-<up> S-<up>",
+  "text": "* TODO Pay rent\nSCHEDULED: <2026-12-02 Wed>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-range",
+  "input": "* A\n<2026-11-30 Mon>--<2026-12-02 Wed>\n",
+  "offset": 30,
+  "keys": "S-<up>",
+  "text": "* A\n<2026-11-30 Mon>--<2027-01-02 Sat>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-repeat-done-day",
+  "input": "* TODO Daily\nSCHEDULED: <2026-11-30 Mon +1d>\n",
+  "offset": 0,
+  "keys": "C-c C-t d",
+  "text": "d* TODO Daily\nSCHEDULED: <2026-12-01 Tue +1d>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 12:21]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 12:21]",
+  "messages": [
+   "TODO state changed to DONE",
+   "TODO state changed to TODO",
+   "Entry repeats: SCHEDULED: <2026-12-01 Tue +1d> ",
+   "Note stored",
+   "Entry repeats: SCHEDULED: <2026-12-01 Tue +1d> "
+  ]
+ },
+ {
+  "id": "ts-repeat-done",
+  "input": "* TODO Water plants\nSCHEDULED: <2026-11-30 Mon +1w>\n",
+  "offset": 0,
+  "keys": "C-c C-t d",
+  "text": "d* TODO Water plants\nSCHEDULED: <2026-12-07 Mon +1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 12:21]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 12:21]",
+  "messages": [
+   "TODO state changed to DONE",
+   "TODO state changed to TODO",
+   "Entry repeats: SCHEDULED: <2026-12-07 Mon +1w> ",
+   "Note stored",
+   "Entry repeats: SCHEDULED: <2026-12-07 Mon +1w> "
+  ]
+ },
+ {
+  "id": "ts-repeat-dot",
+  "input": "* TODO Wk\nSCHEDULED: <2026-11-02 Mon .+1w>\n",
+  "offset": 0,
+  "keys": "C-c C-t d",
+  "text": "d* TODO Wk\nSCHEDULED: <2026-11-29 Sun .+1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 12:21]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 12:21]",
+  "messages": [
+   "TODO state changed to DONE",
+   "TODO state changed to TODO",
+   "Entry repeats: SCHEDULED: <2026-11-29 Sun .+1w> ",
+   "Note stored",
+   "Entry repeats: SCHEDULED: <2026-11-29 Sun .+1w> "
+  ]
+ },
+ {
+  "id": "ts-repeat-plus-plus",
+  "input": "* TODO Weekly\nSCHEDULED: <2026-11-02 Mon ++1w>\n",
+  "offset": 0,
+  "keys": "C-c C-t d",
+  "text": "d* TODO Weekly\nSCHEDULED: <2026-11-23 Mon ++1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 12:21]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 12:21]",
+  "messages": [
+   "TODO state changed to DONE",
+   "TODO state changed to TODO",
+   "Entry repeats: SCHEDULED: <2026-11-23 Mon ++1w> ",
+   "Note stored",
+   "Entry repeats: SCHEDULED: <2026-11-23 Mon ++1w> "
+  ]
+ },
+ {
+  "id": "ts-schedule-replace",
+  "input": "* TODO Pay rent\nSCHEDULED: <2026-11-30 Mon>\n",
+  "offset": 0,
+  "keys": "C-c C-s 2 0 2 6 - 1 2 - 0 1 RET",
+  "text": "* TODO Pay rent\nSCHEDULED: <2026-12-01 Tue>\n",
+  "messages": [
+   "Scheduled to <2026-12-01 Tue>"
+  ]
+ },
+ {
+  "id": "ts-schedule-time",
+  "input": "* TODO Report\n",
+  "offset": 0,
+  "keys": "C-c C-s 2 0 2 6 - 1 2 - 0 1 SPC 1 4 : 3 0 RET",
+  "text": "* TODO Report\nSCHEDULED: <2026-12-01 Tue 14:30>\n",
+  "messages": [
+   "Scheduled to <2026-12-01 Tue 14:30>"
+  ]
+ },
+ {
+  "id": "ts-schedule",
+  "input": "* TODO Report\n",
+  "offset": 0,
+  "keys": "C-c C-s 2 0 2 6 - 1 2 - 0 1 RET",
+  "text": "* TODO Report\nSCHEDULED: <2026-12-01 Tue>\n",
+  "messages": [
+   "Scheduled to <2026-12-01 Tue>"
+  ]
+ },
+ {
+  "id": "ts-up-day",
+  "input": "* TODO Pay rent\nSCHEDULED: <2026-11-30 Mon>\n",
+  "offset": 36,
+  "keys": "S-<up>",
+  "text": "* TODO Pay rent\nSCHEDULED: <2026-12-01 Tue>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-up-minute",
+  "input": "* A\n<2026-11-30 Mon 09:32>\n",
+  "offset": 25,
+  "keys": "S-<up>",
+  "text": "* A\n[2026-11-30 Mon 09:32]\n",
+  "messages": [
+   "Timestamp is now inactive"
+  ]
+ },
+ {
+  "id": "ts-up-month",
+  "input": "* TODO Pay rent\nSCHEDULED: <2026-11-30 Mon>\n",
+  "offset": 33,
+  "keys": "S-<up>",
+  "text": "* TODO Pay rent\nSCHEDULED: <2026-12-30 Wed>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-up-time",
+  "input": "* A\n<2026-11-30 Mon 09:30>\n",
+  "offset": 22,
+  "keys": "S-<up>",
+  "text": "* A\n<2026-11-30 Mon 10:30>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-up-weekday",
+  "input": "* TODO Pay rent\nSCHEDULED: <2026-11-30 Mon>\n",
+  "offset": 40,
+  "keys": "S-<up>",
+  "text": "* TODO Pay rent\nSCHEDULED: <2026-12-01 Tue>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-up-year",
+  "input": "* TODO Pay rent\nSCHEDULED: <2026-11-30 Mon>\n",
+  "offset": 29,
+  "keys": "S-<up>",
+  "text": "* TODO Pay rent\nSCHEDULED: <2027-11-30 Tue>\n",
+  "messages": []
+ }
+]

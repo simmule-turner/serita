@@ -36,6 +36,12 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Emacs is not installed in the build workspace, so the new tests are written by hand from the guide; run them against Emacs 29.3 batch before relying on details such as tag alignment, show2levels and the text shown by the children state.
 - The heading title popup's three buttons, which insert at the cursor: footnote (A with a superscript 1), timer (stopwatch), and timestamp (calendar: C-c ., C-c !, C-u C-c ., S-up and S-down change it). They arrive with their features: timestamps and timers in the dates phase, footnotes in the markup phase.
 
+* Later: dates
+- Date prompt forms beyond ISO, +n d/w/m/y, today, tomorrow and yesterday (Emacs also reads weekday names, month names and more); a calendar popup.
+- S-left and S-right on a timestamp, minute rounding, and S-up on a repeater (written from the manual, not yet compared with Emacs).
+- Repeating tasks with a repeater on a plain timestamp in the body, and the log drawer setting.
+- Agenda, clocking and effort.
+
 * Later: Appearance
 - Customize Light and Dark colors.
 - Size and spacing controls for tables, once tables exist.

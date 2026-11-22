@@ -147,6 +147,19 @@ await page.keyboard.press('Alt+%'); await page.keyboard.type('a'); await page.ke
 await page.locator('#findbar button[aria-label="Answer !"]').click();
 ok((await text()) === 'b b b\n', 'the ! button replaces the rest');
 
+// Timestamps: S-up on a stamp, C-c C-s, C-c C-d, C-c . (Emacs: ts-* cases)
+await at('* TODO Pay rent\nSCHEDULED: <2026-11-30 Mon>\n', 2);
+await page.evaluate(() => { const e = document.getElementById('editor'); const o = e.value.indexOf('30'); e.focus(); e.setSelectionRange(o, o); });
+await page.keyboard.press('Shift+ArrowUp');
+ok((await text()) === '* TODO Pay rent\nSCHEDULED: <2026-12-01 Tue>\n', 'S-up on the day of a stamp makes it the next day');
+await at('* TODO Report\n', 1); await ctrl('c'); await ctrl('s');
+ok((await prompt()).startsWith('SCHEDULED Date+time ['), 'C-c C-s asks for a date');
+await page.keyboard.type('2026-12-01'); await page.keyboard.press('Enter');
+ok((await text()) === '* TODO Report\nSCHEDULED: <2026-12-01 Tue>\n', 'the date lands on a planning line');
+await at('* TODO Report\n', 1); await ctrl('c'); await ctrl('d');
+await page.keyboard.type('2026-12-25'); await page.keyboard.press('Enter');
+ok((await text()) === '* TODO Report\nDEADLINE: <2026-12-25 Fri>\n', 'C-c C-d sets a deadline');
+
 // Sparse tree (C-c / r) and C-c C-c to clear its highlights
 const sparseText = '* Alpha\nbody a\n** Sub\nmatch here\n* Beta\nbody b\n';
 await at(sparseText, 1);

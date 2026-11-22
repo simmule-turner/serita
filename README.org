@@ -85,6 +85,9 @@ M-% replaces text; C-M-% replaces a regexp (\& is the match, \1 a group, \# the 
 ** Sparse trees
 C-c / r shows the lines that match a regexp and the headings above them; C-c / t shows unfinished TODO entries; C-c / T asks for a keyword; C-c / m asks for a match such as ~work+urgent~, ~work/TODO~, ~LEVEL=2~ or ~Effort="5h"~ (tags are inherited). C-c C-c removes the highlights; TAB folds the heading. In the Outline view, Menu, then Commands has the same entries.
 
+** Dates
+C-c C-s schedules the heading and C-c C-d sets its deadline; C-c . inserts a timestamp and C-c ! an inactive one. The prompt takes a date (~2026-12-01~, ~+3d~, ~-1w~, ~tomorrow~) with an optional time (~14:30~); empty means today. S-up and S-down on a timestamp change the part under the cursor: year, month, day (or weekday), hour, minute; on the closing bracket they switch between active and inactive. Marking a task with a repeater (~+1w~, ~++1w~, ~.+1w~) DONE moves its date to the next one and keeps it open.
+
 ** Settings
 Menu, then Settings, sets up GitHub (owner, repository, branch, token) and WebDAV (address, user, password). They are kept in this browser, on this device.
 

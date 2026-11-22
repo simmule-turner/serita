@@ -1,6 +1,6 @@
 // Offline cache. The version below must equal package.json's version (a test checks this),
 // so every release gets a new cache and replaces the old one.
-const VERSION = '0.5.1';
+const VERSION = '0.6.0';
 const CACHE = `serita-${VERSION}`;
 const FILES = [
   './',
@@ -44,6 +44,7 @@ const FILES = [
   'core/regexp.js',
   'core/replace.js',
   'core/sparse.js',
+  'core/timestamp.js',
   'core/outline.js',
   'core/parse.js',
   'core/projection.js',
