@@ -120,5 +120,11 @@ A separate repository holds questions (case files written by us) and results rec
 ### `tools/install-hooks.mjs`, `.githooks/commit-msg`
 - Written from: the git documentation (core.hooksPath, interpret-trailers). The hook signs off each commit, so the DCO check cannot fail for a missing line. Statement as above.
 
+### `core/motion.js`, `test/motion.test.js`, `test/browser/motion.mjs`
+- Written from: the author's decisions and observed results from the conformance corpus for the movement keys, read as behavior only. Statement as above.
+
+### `core/properties.js`, `test/properties.test.js`, `app/ui/minibuffer.js`, `test/browser/commands.mjs`
+- Written from: the author's mockups and decisions (the minibuffer row, Find with ▲ ▼ ✕, the command palette), and observed results from the conformance corpus for priorities, TODO states and property drawers, read as behavior only. Statement as above.
+
 ### `test/browser/appearance.mjs`
 - Written from: the author's mockup and decisions (Appearance screen, heading swipe, restore of open files). Statement as above.

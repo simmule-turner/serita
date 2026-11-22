@@ -39,30 +39,39 @@ main { flex: 1; min-height: 0; display: flex; position: relative; background: va
 .sheet pre { margin: 0; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; white-space: pre-wrap; font: 13px ui-monospace, Menlo, Consolas, monospace; max-height: 8em; overflow: auto; }
 .sheet .path { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 14px; overflow-wrap: anywhere; }
 .sheet .tag { color: var(--danger); font-size: 13px; }
-#findbar { display: flex; gap: 6px; align-items: center; padding: 6px; border-top: 1px solid var(--line); background: var(--panel); }
-#findbar[hidden] { display: none; }
-#findbar .label { color: var(--muted); font-size: 14px; }
-#findbar input { flex: 1; min-width: 0; }
-#findbar button { width: 52px; min-height: 52px; padding: 0; border-radius: 8px; }
-#findbar input { min-height: 52px; }
-#findbar input:focus { outline: 2px solid var(--fg); outline-offset: 0; }
+#findbar { display: flex; gap: 8px; align-items: center; padding: 6px 9px; border-top: 1px solid var(--line); background: var(--panel); }
+#findbar[hidden], #completions[hidden] { display: none; }
+#findbar:not([hidden]) + #message { display: none; }
+#findbar .field { flex: 1; min-width: 0; display: flex; align-items: center; gap: 6px; height: 36px; margin: 0; padding: 0 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+#findbar .field.failing { border-color: var(--danger); }
+#findbar .prompt { flex: none; color: var(--muted); font-size: 14px; white-space: nowrap; }
+#findbar .field.failing .prompt { color: var(--danger); }
+#findbar input { flex: 1; min-width: 0; height: 100%; padding: 0; border: 0; background: transparent; outline: none; font-size: 16px; }
+#findbar button { width: 36px; height: 36px; min-height: 0; padding: 0; border-radius: 8px; flex: none; }
+#completions { display: flex; flex-direction: column; border-top: 1px solid var(--line); background: var(--panel); }
+#completions .choice { display: flex; justify-content: space-between; gap: 12px; min-height: 36px; padding: 0 14px; border: 0; border-radius: 0; background: transparent; text-align: left; font-size: 15px; }
+#completions .choice.on { background: var(--accent); color: var(--accent-fg); }
+#completions .hint { color: var(--muted); font-size: 13px; }
+#completions .choice.on .hint { color: inherit; }
+.sheet.full { top: 0; max-height: none; border-radius: 0; max-width: none; }
+#findbar .field:focus-within { outline: 2px solid var(--fg); outline-offset: 0; }
 #mirror { position: absolute; left: -9999px; top: 0; visibility: hidden; white-space: pre-wrap; overflow-wrap: break-word; font: var(--fs, 18px)/1.5 var(--ff, ui-monospace, Menlo, Consolas, monospace); padding: 10px 12px; }
 #hl { position: absolute; top: 0; left: 0; bottom: 0; overflow: hidden; pointer-events: none; white-space: pre-wrap; overflow-wrap: break-word; color: transparent; padding: 10px 12px; font: var(--fs, 18px)/1.5 var(--ff, ui-monospace, Menlo, Consolas, monospace); }
 #hl mark { background: var(--hit); color: transparent; }
 .sheet .recent { max-height: 310px; overflow-y: auto; border: 1px solid var(--line); border-radius: 8px; }
 .sheet .recent .item.current { background: var(--bar); }
-#outline { flex: 1; min-width: 0; overflow-y: auto; padding: 6px 4px 20px; }
+#outline { flex: 1; min-width: 0; overflow-y: auto; padding: 6px 0 20px; }
 #outline[hidden], #editor[hidden], #keyrow[hidden], #tools[hidden] { display: none; }
-.ol-head { display: flex; align-items: center; gap: 6px; min-height: 48px; padding: 0 6px; border-bottom: 1px solid var(--line); }
+.ol-head { display: flex; align-items: center; gap: 0; min-height: 48px; padding: 0; border-bottom: 1px solid var(--line); }
 .ol-head button { min-height: 44px; border: 0; background: transparent; padding: 0 6px; }
-.ol-head .chev { width: 40px; padding: 0; color: var(--muted); }
+.ol-head .chev { width: 32px; padding: 0; color: var(--muted); }
 .ol-head .stars { color: var(--muted); font-family: ui-monospace, Menlo, Consolas, monospace; white-space: pre; }
 .ol-head .title { flex: 1; justify-content: flex-start; text-align: left; font-weight: 600; color: var(--accent); min-width: 0; overflow-wrap: anywhere; }
 .ol-head .st { min-height: 28px; padding: 0 8px; border: 1px solid; border-radius: 8px; font-size: 13px; }
 .ol-head .st.todo { color: var(--danger); }
 .ol-head .st.done { color: #3b6d11; }
 .ol-head .tags, .ol-head .dots { color: var(--muted); font-size: 13px; }
-.ol-line { padding: 6px 12px 6px 52px; white-space: pre-wrap; overflow-wrap: anywhere; font: calc(var(--fs, 18px) - 1px)/1.5 var(--ff, ui-monospace, Menlo, Consolas, monospace); border-bottom: 1px solid var(--bar); }
+.ol-line { padding: 6px 12px 6px 32px; white-space: pre-wrap; overflow-wrap: anywhere; font: calc(var(--fs, 18px) - 1px)/1.5 var(--ff, ui-monospace, Menlo, Consolas, monospace); border-bottom: 1px solid var(--bar); }
 .ol-line .box { display: inline; min-height: 0; padding: 0 2px; border: 0; background: transparent; font: inherit; color: var(--accent); }
 #keyrow { display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: var(--bar); border-top: 1px solid var(--line); }
 #keyrow .grip { display: none; }
@@ -79,7 +88,7 @@ main { flex: 1; min-height: 0; display: flex; position: relative; background: va
 .sheet textarea { width: 100%; min-height: 140px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: var(--fs, 18px)/1.5 var(--ff, ui-monospace, Menlo, Consolas, monospace); resize: vertical; }
 .sheet textarea:focus { outline: 2px solid var(--fg); outline-offset: 0; }
 .ol-line { position: relative; }
-.ol-line .ichev { position: absolute; left: 12px; top: 0; min-height: 32px; width: 32px; padding: 0; border: 0; background: transparent; color: var(--muted); }
+.ol-line .ichev { position: absolute; left: 0; top: 0; min-height: 32px; width: 32px; padding: 0; border: 0; background: transparent; color: var(--muted); }
 .ol-line .dots { color: var(--muted); }
 
 #tools { display: flex; gap: 8px; padding: 6px 10px; background: var(--bar); border-bottom: 1px solid var(--line); }

@@ -55,7 +55,23 @@ export function analyze(text) {
   };
   walk(root.children, null);
   const items = listItems(nodes);
-  return { heads, items, foldables: [...heads, ...items].sort((a, b) => a.line - b.line), nodes, total: nodes.length, todo };
+  const drawers = drawersOf(nodes);
+  return { heads, items, drawers, foldables: [...heads, ...items, ...drawers].sort((a, b) => a.line - b.line), nodes, total: nodes.length, todo };
+}
+
+/** Drawers (:PROPERTIES: and the like) that have an :END: before the next heading. They fold like headings do. */
+function drawersOf(nodes) {
+  const out = [];
+  for (let i = 0; i < nodes.length; i++) {
+    if (nodes[i].type !== 'drawer-begin') continue;
+    let end = i + 1;
+    while (end < nodes.length && nodes[end].type !== 'drawer-end' && nodes[end].type !== 'headline') end++;
+    if (end < nodes.length && nodes[end].type === 'drawer-end') {
+      out.push({ line: i, level: 0, parent: null, children: [], end: end + 1, bodyEnd: end + 1, isDrawer: true });
+      i = end;
+    }
+  }
+  return out;
 }
 
 const indentOf = (s) => s.match(/^[ \t]*/)[0].length;
@@ -144,6 +160,7 @@ export function cycle(heads, folds, line, last = null) {
   const apply = (state) => {
     const f = { ...folds };
     for (const d of descendants(h)) delete f[d.line];
+    for (const d of heads) if (d.isDrawer && d.line > h.line && d.line < h.end) delete f[d.line];
     delete f[h.line];
     if (state === 'folded') f[h.line] = 'all';
     else if (state === 'children') for (const c of h.children) if (hasContent(c)) f[c.line] = 'all';
@@ -171,7 +188,8 @@ export function contents(heads, depth = Infinity) {
 
 /** Buffer-wide cycle: overview, then contents, then everything shown. */
 export function cycleGlobal(heads, folds) {
-  const key = (f) => JSON.stringify(Object.entries(f).sort((a, b) => a[0] - b[0]));
+  const own = new Set(heads.map((h) => h.line));
+  const key = (f) => JSON.stringify(Object.entries(f).filter(([k]) => own.has(Number(k))).sort((a, b) => a[0] - b[0]));
   const here = key(folds);
   if (here === key(overview(heads))) return { folds: contents(heads), state: 'contents' };
   if (here === key(contents(heads))) return { folds: {}, state: 'show all' };
@@ -179,17 +197,19 @@ export function cycleGlobal(heads, folds) {
 }
 
 /** The folds a file asks for with #+STARTUP. Without one, everything is shown. */
-export function startupFolds(text, heads = analyze(text).heads) {
+export function startupFolds(text) {
+  const { heads, drawers } = analyze(text);
+  const closed = Object.fromEntries(drawers.map((d) => [d.line, 'all']));
   for (const m of text.matchAll(/^[ \t]*#\+STARTUP:[ \t]*(.*)$/gim)) {
     for (const w of m[1].toLowerCase().split(/\s+/)) {
-      if (w === 'overview') return overview(heads);
-      if (w === 'content') return contents(heads);
-      if (w === 'showall' || w === 'showeverything') return {};
+      if (w === 'overview') return { ...closed, ...overview(heads) };
+      if (w === 'content') return { ...closed, ...contents(heads) };
+      if (w === 'showall' || w === 'showeverything') return closed;
       const n = /^show([2-5])levels$/.exec(w);
-      if (n) return contents(heads, Number(n[1]));
+      if (n) return { ...closed, ...contents(heads, Number(n[1])) };
     }
   }
-  return {};
+  return closed;
 }
 
 const count = (s) => (s.match(/\n/g) ?? []).length;

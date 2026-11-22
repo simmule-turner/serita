@@ -60,7 +60,7 @@ test('#+STARTUP picks the folds; without it everything is shown', () => {
   assert.deepEqual(startupFolds(`#+STARTUP: overview\n${DOC}`), overview(analyze(`#+STARTUP: overview\n${DOC}`).heads));
   const t = '#+STARTUP: show2levels\n* A\ntext\n** B\nb\n*** C\nc\n';
   const hs = analyze(t).heads;
-  assert.deepEqual(hiddenLines(hs, startupFolds(t, hs)), new Set([2, 4, 5, 6]));
+  assert.deepEqual(hiddenLines(hs, startupFolds(t)), new Set([2, 4, 5, 6]));
 });
 
 test('TODO sequences come from #+TODO lines, with fast keys dropped', () => {

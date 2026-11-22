@@ -12,10 +12,10 @@ const CHECKBOX = /^([ \t]*(?:[-+*]|\d+[.)])[ \t]+(?:\[@\d+\][ \t]+)?)\[([ X-])\]
  *   on: { cycle(line: number): void, todo(line: number): void, actions(line: number): void, checkbox(line: number): void } }} o
  */
 export function renderOutline(root, { text, folds, hideStars, on }) {
-  const { heads, items, foldables, nodes, todo } = analyze(text);
+  const { heads, items, drawers, foldables, nodes, todo } = analyze(text);
   const hidden = hiddenLines(foldables, folds);
   const dots = ellipsisLines(foldables, folds);
-  const itemAt = new Map(items.map((x) => [x.line, x]));
+  const itemAt = new Map([...items, ...drawers].map((x) => [x.line, x]));
   const headAt = new Map(heads.map((x) => [x.line, x]));
   const rows = [];
   nodes.forEach((node, line) => {

@@ -44,7 +44,7 @@ ok((await page.locator('#hl mark').textContent()) === 'plant', 'the current matc
 await page.getByLabel('Next match').click();
 ok(await page.evaluate(() => { const e = document.getElementById('editor'); return e.value.slice(e.selectionStart, e.selectionEnd) === 'Plant'; }), 'the down button goes to the next match');
 await page.getByLabel('Next match').click();
-ok((await page.locator('#message').textContent()) === 'Wrapped', 'the search wraps and says so');
+ok((await page.locator('#findbar .prompt').textContent()) === 'Wrapped I-search:', 'the search wraps and says so in its prompt');
 await page.getByLabel('Cancel search').click();
 ok(await page.locator('#findbar').isHidden(), 'the x button closes the search');
 

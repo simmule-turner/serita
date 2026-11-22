@@ -28,8 +28,11 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Agenda and TODO list in the View menu, and the Find types of the guide, once those views and the Emacs regexp matcher exist.
 - Keep open buffers across a reload (today the browser asks before you leave with unsaved text).
 - Regex and Replace in the Find prompt.
-- Emacs keys beyond the heading commands: movement and editing keys, the minibuffer, M-x, universal argument, and TAB and the M-arrows on plain text lines and tables, and god-mode for the C-c prefix.
-- Statistics cookies on a heading that count TODO sub-headings, and how Emacs counts a heading's checkbox cookie (this build counts the checkboxes of its top-level items).
+- Emacs keys beyond the heading and movement commands: editing keys, the minibuffer, M-x, universal argument, and TAB and the M-arrows on plain text lines and tables, and god-mode for the C-c prefix.
+- How Emacs counts a heading's checkbox cookie (this build counts the checkboxes of its top-level items).
+- Sparse trees (the Emacs results are known; they need the fold model to reveal single lines).
+- Unverified against Emacs: S-TAB's show-all state for drawers, C-c , SPC, C-p on the first line at a column, M-left on plain text, the exact minibuffer prompt wording for priority and property.
+- Search: Emacs regexp syntax, Replace, and C-s with the context of the view.
 - What Emacs does with the folds a search opened when the search is accepted (this build leaves them open and closes them on cancel).
 - Emacs is not installed in the build workspace, so the new tests are written by hand from the guide; run them against Emacs 29.3 batch before relying on details such as tag alignment, show2levels and the text shown by the children state.
 - The heading title popup's three buttons, which insert at the cursor: footnote (A with a superscript 1), timer (stopwatch), and timestamp (calendar: C-c ., C-c !, C-u C-c ., S-up and S-down change it). They arrive with their features: timestamps and timers in the dates phase, footnotes in the markup phase.
@@ -41,5 +44,7 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Command palette so every command is always reachable.
 
 * Later: Emacs parity to revisit
+- Check against interactive Emacs, since batch Emacs has no window: C-n and C-p by screen line on wrapped lines, C-v and M-v by screen, and C-p on the first line away from column 0.
+- M-left on plain text (moves a word back in Emacs; not yet checked).
 - After a search is accepted, which folds stay closed (Emacs keeps some closed, depending on the matches made while typing; ours opens the folds around the match).
 - A command palette (M-x style) so every command is reachable even when its button or row is hidden.

@@ -18,7 +18,7 @@ The toolbar has Files and Save at the left, Find in the middle, and View and Men
 ** Views
 View switches between Outline and Text; both show the same document and the same folding.
 
-The Outline view lists headings as a tree. The arrow at the left of a heading cycles its visibility, like TAB in Emacs: folded, children, whole subtree. Tap a TODO word to change its state, a checkbox to toggle it, and a heading's title for its actions: change TODO state, promote, demote, promote or demote the subtree, move up, move down, insert a heading below, set tags, and edit the title. Edit title and Insert heading below open a popup with a text field; Enter accepts it.
+The Outline view lists headings as a tree. The arrow at the left of a heading cycles its visibility, like TAB in Emacs: folded, children, whole subtree. Tap a TODO word to change its state, a checkbox to toggle it, and a heading's title for its actions: change TODO state, promote, demote, promote or demote the subtree, move up, move down, insert a heading below, change priority, set tags, set a property, and edit the title. Edit title and Insert heading below open a popup with a text field; Enter accepts it.
 
 A checkbox toggles when you tap it. The checkbox of the item above it, and the ~[2/4]~ or ~[50%]~ counts of that item and of the heading, follow. A list item folds with its arrow, like a heading.
 
@@ -29,8 +29,14 @@ Settings, Emacs keys, turns on these keys in the Text view:
 - TAB :: cycles the heading or list item at the cursor; S-TAB cycles the whole buffer: overview, contents, show all.
 - M-up, M-down :: move the subtree, or the list item with its sub-items, up or down.
 - M-left, M-right :: promote or demote the heading; on a list item, change its indentation and leave its sub-items; with Shift, the whole subtree or the sub-items too.
-- C-RET :: inserts a heading after the current subtree.
-- C-c C-t :: changes the TODO state.
+- C-RET :: inserts a heading after the current subtree, from the heading or anywhere in its body.
+- C-n, C-p :: move down or up one screen line, keeping the column; C-f, C-b move a character; C-a, C-e go to the start or end of the line; M-f, M-b move a word; M-<, M-> go to the start or end of the text; C-v, M-v move a screen down or up. On plain text M-right moves a word.
+- C-g :: quits a pending key or command. Errors and quits give a short beep (Settings, Beep on errors).
+- C-c C-t :: changes the TODO state, from the heading or anywhere in its body. S-right and S-left go to the next or previous state; the parent's ~[2/4]~ count follows.
+- S-up, S-down :: raise or lower the priority of the heading. C-c , asks for it: A, B, C, or SPC to remove.
+- C-c C-x p :: sets a property: asks for the name, then the value. The drawer is created when needed and starts folded. M-x org-delete-property removes one.
+- C-c C-q :: sets the tags.
+- M-x :: runs a command by name. Type any words of the label or name; TAB completes, RET runs.
 - C-c C-c :: toggles the checkbox on the line.
 - M-RET :: starts a heading at the cursor: above a heading when the cursor is at its start, below it at its end, and in other text the line breaks there and the rest becomes the heading.
 - C-/, C-_, C-x u :: undo; C-? redoes.
@@ -58,8 +64,13 @@ Open files, the current tab, folds, the view and unsaved edits come back when yo
 ** Swipe
 Swipe a heading in the Outline view from right to left to fold or unfold it, like TAB.
 
+** Minibuffer
+In the Text view, questions are asked on the line at the bottom, as in Emacs: the prompt sits in the field, RET accepts and C-g or Esc cancels. The buttons ✓ and ✕ do the same by touch. Completions appear above the key row.
+
+In the Outline view, the same questions are touch dialogs. Menu, then Commands, lists every command with its Emacs name and key; type to narrow the list.
+
 ** Find
-Type to search. The match is highlighted; ▲ and ▼ go to the previous and next match, and the search wraps. A lowercase query ignores case; an uppercase letter makes it exact. Return keeps the cursor on the match, and × returns to where you started.
+Type to search. The prompt shows ~I-search:~, ~Wrapped I-search:~ or ~Failing I-search:~. The match is highlighted; ▲ and ▼ go to the previous and next match, and the search wraps. A lowercase query ignores case; an uppercase letter makes it exact. Return keeps the cursor on the match, and × returns to where you started.
 
 ** Settings
 Menu, then Settings, sets up GitHub (owner, repository, branch, token) and WebDAV (address, user, password). They are kept in this browser, on this device.

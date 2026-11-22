@@ -13,7 +13,10 @@ import { formatSize } from '../core/bytes.js';
 import { VERSION } from './version.js';
 import { h, kept } from './ui/dom.js';
 import { analyze, cycle, cycleGlobal, diff, ellipsisLines, hiddenLines, reveal } from '../core/outline.js';
-import { DEFAULT_TAGS_COLUMN, changeLevel, cycleTodo, indentItem, insertHeadingAfter, insertHeadingHere, moveItem, moveSubtree, setTags, setTitle, toggleCheckbox } from '../core/outline-edit.js';
+import { backwardChar, backwardWord, forwardChar, forwardWord, lineEnd as endOfLine, lineStart as startOfLine, moveVertical } from '../core/motion.js';
+import { DEFAULT_TAGS_COLUMN, changeLevel, cycleTodo, indentItem, insertHeadingAfter, insertHeadingHere, moveItem, moveSubtree, setPriority, setTags, setTitle, stepPriority, toggleCheckbox } from '../core/outline-edit.js';
+import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../core/properties.js';
+import { createMinibuffer } from './ui/minibuffer.js';
 import { duplicateLine, indentLine, killLine, killWholeLine, lineInfo, lineStart, moveLine } from '../core/lines.js';
 import { createKillRing } from '../core/killring.js';
 import { lineAt, project, toFull, toShown, touchedFold } from '../core/projection.js';
@@ -55,6 +58,7 @@ const fontChoice = () => setting('view.font') ?? 'monospace';
 const fontFamily = () => FONTS[fontChoice()] ?? `"${fontChoice().replace(/["\\]/g, '')}", monospace`;
 const paragraphSpacing = () => Math.min(32, Math.max(0, Number(setting('view.paragraphSpacing') ?? 10) || 0));
 const tagsColumn = () => { const n = Number(setting('org.tagsColumn')); return Number.isInteger(n) && setting('org.tagsColumn') !== undefined && setting('org.tagsColumn') !== '' ? n : DEFAULT_TAGS_COLUMN; };
+const beepOn = () => setting('view.beep') !== 'false';
 const restoreOn = () => setting('session.restore') !== 'false';
 const lineNumbers = () => setting('view.lineNumbers') === 'true';
 const wrapOn = () => setting('view.wrap') !== 'false';
@@ -65,6 +69,21 @@ function message(text, isError = false) {
   const el = $('message');
   el.textContent = text;
   el.classList.toggle('error', isError);
+}
+// The short tone Emacs gives for an error, a quit or an undefined key. Browsers play sound only after a tap or key press, which has always happened here.
+let audio = null;
+function beep() {
+  if (!beepOn()) return;
+  try {
+    audio ??= new AudioContext();
+    const osc = audio.createOscillator();
+    const gain = audio.createGain();
+    osc.frequency.value = 440;
+    gain.gain.value = 0.15;
+    osc.connect(gain).connect(audio.destination);
+    osc.start();
+    osc.stop(audio.currentTime + 0.12);
+  } catch (e) { console.error(e); }
 }
 const failure = (e) => message(e?.message ?? String(e), true);
 
@@ -451,12 +470,14 @@ function browse({ mode, suggested = '', current = null }) {
 // ---- Find ------------------------------------------------------------------------------------------
 
 let finding = null;
+const mini = createMinibuffer({ root: $('findbar'), list: $('completions'), bell: () => beep(), restoreFocus: () => { if (viewMode() === 'text') editor.focus({ preventScroll: true }); } });
 
 function startFind() {
   if (finding || shownId === null) return;
   if (viewMode() === 'outline') setView('text');
   finding = { start: toFull(cur.proj, editor.selectionStart), end: toFull(cur.proj, editor.selectionEnd), folds: currentBuffer().folds };
-  const input = h('input', { 'aria-label': 'Search', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false' });
+  let mb;
+  const input = () => mb.input;
   const show = (found) => {
     const b = currentBuffer();
     const opened = reveal(cur.a.foldables, b.folds, b.text.slice(0, found.start).split('\n').length - 1);
@@ -473,11 +494,11 @@ function startFind() {
     renderModeLine();
   };
   const go = (backward, from) => {
-    const q = input.value;
-    if (q === '') { message(''); return; }
+    const q = input().value;
+    if (q === '') { mb.setPrompt('I-search:'); return; }
     const m = search(currentBuffer().text, q, { from, backward });
-    if (!m) { message(`Failing I-search: ${q}`, true); return; }
-    message(m.wrapped ? 'Wrapped' : '');
+    if (!m) { mb.setPrompt('Failing I-search:', true); beep(); return; }
+    mb.setPrompt(m.wrapped ? 'Wrapped I-search:' : 'I-search:');
     show(m);
   };
   const end = (restore) => {
@@ -488,25 +509,27 @@ function startFind() {
     finding = null;
     hit = null;
     paintOverlay();
-    $('findbar').hidden = true;
-    $('findbar').replaceChildren();
+    mb.close();
     message('');
     renderModeLine();
   };
   const selStart = () => toFull(cur.proj, editor.selectionStart);
   const selEnd = () => toFull(cur.proj, editor.selectionEnd);
-  input.addEventListener('input', () => go(false, selStart()));
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); end(false); }
-    else if (e.key === 'Escape') { e.stopPropagation(); end(true); }
+  mb = mini.open({
+    prompt: 'I-search:',
+    label: 'Search',
+    onInput: () => go(false, selStart()),
+    onKey(e) {
+      if (e.key === 'Enter') { e.preventDefault(); end(false); return true; }
+      if (e.key === 'Escape' || (e.ctrlKey && e.key === 'g')) { e.preventDefault(); e.stopPropagation(); end(true); return true; }
+      return false;
+    },
+    buttons: [
+      { label: '▲', aria: 'Previous match', onclick: () => go(true, selStart()) },
+      { label: '▼', aria: 'Next match', onclick: () => go(false, selEnd()) },
+      { label: '✕', aria: 'Cancel search', onclick: () => end(true) },
+    ],
   });
-  $('findbar').replaceChildren(
-    h('span', { class: 'label' }, 'I-search:'), input,
-    h('button', { 'aria-label': 'Previous match', onclick: () => go(true, selStart()) }, '▲'),
-    h('button', { 'aria-label': 'Next match', onclick: () => go(false, selEnd()) }, '▼'),
-    h('button', { 'aria-label': 'Cancel search', onclick: () => end(true) }, '✕'));
-  $('findbar').hidden = false;
-  input.focus();
 }
 
 // ---- Setup, settings, export and import --------------------------------------------------------------
@@ -560,6 +583,7 @@ async function settings() {
           h('button', { class: 'item', onclick: () => close('tags-column') }, h('span', {}, 'Tag column'), h('span', { class: 'meta' }, `${tagsColumn()} ›`)),
           h('button', { class: 'item', onclick: () => close('restore') }, h('span', {}, 'Restore open files on start'), h('span', { class: 'meta' }, restoreOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('tools-text') }, h('span', {}, 'Tool row in the Text view'), h('span', { class: 'meta' }, toolRowOn('text') ? 'On ›' : 'Off ›')),
+          h('button', { class: 'item', onclick: () => close('beep') }, h('span', {}, 'Beep on errors'), h('span', { class: 'meta' }, beepOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('tools-outline') }, h('span', {}, 'Tool row in the Outline view'), h('span', { class: 'meta' }, toolRowOn('outline') ? 'On ›' : 'Off ›')),
           h('div', { class: 'item', style: 'display:flex;align-items:center;justify-content:space-between;padding:4px 0' }, h('span', {}, 'Settings file'),
             h('span', { class: 'row' }, h('button', { onclick: () => close('export') }, 'Export'), h('button', { onclick: () => close('import') }, 'Import')))),
@@ -576,6 +600,7 @@ async function settings() {
     else if (what === 'stars') config.update({ settings: { 'view.hideStars': String(!hideStars()) } });
     else if (what === 'appearance') await appearance();
     else if (what === 'tags-column') await tagsColumnDialog();
+    else if (what === 'beep') config.update({ settings: { 'view.beep': String(!beepOn()) } });
     else if (what === 'restore') config.update({ settings: { 'session.restore': String(!restoreOn()) } });
     else if (what === 'tools-text') config.update({ settings: { 'view.toolRowText': String(!toolRowOn('text')) } });
     else if (what === 'tools-outline') config.update({ settings: { 'view.toolRowOutline': String(!toolRowOn('outline')) } });
@@ -749,8 +774,10 @@ $('btn-view').addEventListener('click', async () => {
 $('btn-menu').addEventListener('click', async () => {
   const what = await choose(null, [
     waiting ? { label: 'Restart to update', meta: `${VERSION} to ${waiting.version}`, value: 'restart' } : null,
+    { label: 'Commands', value: 'commands' },
     { label: 'Settings', value: 'settings' }].filter(Boolean));
   if (what === 'restart') restart();
+  else if (what === 'commands') await commandPalette();
   else if (what === 'settings') await settings();
 });
 
@@ -789,7 +816,7 @@ function runEdit(fn) {
 /** The line at the cursor and what it is: a heading, a list item, or neither. */
 const kindAtCursor = () => {
   const line = lineAt(cur.proj, editor.selectionStart);
-  return { line, kind: cur.a.heads.some((x) => x.line === line) ? 'heading' : cur.a.items.some((x) => x.line === line) ? 'item' : null };
+  return { line, kind: cur.a.heads.some((x) => x.line === line) ? 'heading' : cur.a.items.some((x) => x.line === line) ? 'item' : cur.a.drawers.some((x) => x.line === line) ? 'drawer' : null };
 };
 
 /** Runs the edit for the heading or list item at the cursor, then puts the cursor on the line it ends on. */
@@ -810,7 +837,46 @@ function cycleHeading(line) {
   if (r) { session.setFolds(b.id, r.folds); message(r.state.toUpperCase()); lastCycle = { id: b.id, line, state: r.state }; }
 }
 
+/** The heading the cursor is on or under. */
+const enclosingHead = () => {
+  const { line } = kindAtCursor();
+  return [...cur.a.heads].reverse().find((x) => x.line <= line) ?? null;
+};
+
+/** Runs an edit of the enclosing heading. The cursor stays where it was in the text, or goes to the start of the heading's line when it was on it. */
+function onEnclosingHeading(fn) {
+  const hd = enclosingHead();
+  if (!hd) { message('Not at a heading'); return; }
+  const onHead = kindAtCursor().line === hd.line;
+  const p = cursorOffset();
+  const before = currentBuffer().text.length;
+  const r = runEdit((t) => fn(t, hd.line));
+  if (!r) return;
+  if (onHead) placeCursor(r.line);
+  else placeOffset(p + currentBuffer().text.length - before);
+}
+
+/** Calls `fn(line)` with the line of the enclosing heading. */
+function withHeading(fn) {
+  const hd = enclosingHead();
+  if (!hd) { message('Not at a heading'); return; }
+  return fn(hd.line);
+}
+
 const COMMANDS = {
+  'next-line': () => vertical(1),
+  'previous-line': () => vertical(-1),
+  'scroll-up': () => page(1),
+  'scroll-down': () => page(-1),
+  'forward-char': () => moved(forwardChar(editor.value, focusPoint())),
+  'backward-char': () => moved(backwardChar(editor.value, focusPoint())),
+  'forward-word': () => goTo(forwardWord(editor.value, focusPoint())),
+  'backward-word': () => goTo(backwardWord(editor.value, focusPoint())),
+  'beginning-of-line': () => goTo(startOfLine(editor.value, focusPoint())),
+  'end-of-line': () => goTo(endOfLine(editor.value, focusPoint())),
+  'beginning-of-buffer': () => goTo(0),
+  'end-of-buffer': () => goTo(editor.value.length),
+  'quit': () => message('Quit', true),
   'cycle': () => { const { line, kind } = kindAtCursor(); if (kind === null) message('Not at a heading or list item'); else cycleHeading(line); },
   'cycle-global': () => {
     const b = currentBuffer();
@@ -821,7 +887,8 @@ const COMMANDS = {
   'move-up': () => editHere((t, l) => moveSubtree(t, l, -1), (t, l) => moveItem(t, l, -1)),
   'move-down': () => editHere((t, l) => moveSubtree(t, l, 1), (t, l) => moveItem(t, l, 1)),
   'promote': () => editHere((t, l) => changeLevel(t, l, -1, false), (t, l) => indentItem(t, l, -1, false)),
-  'demote': () => editHere((t, l) => changeLevel(t, l, 1, false), (t, l) => indentItem(t, l, 1, false)),
+  // On plain text Emacs's M-right moves a word forward.
+  'demote': () => (kindAtCursor().kind === null ? COMMANDS['forward-word']() : editHere((t, l) => changeLevel(t, l, 1, false), (t, l) => indentItem(t, l, 1, false))),
   'promote-subtree': () => editHere((t, l) => changeLevel(t, l, -1, true), (t, l) => indentItem(t, l, -1, true)),
   'demote-subtree': () => editHere((t, l) => changeLevel(t, l, 1, true), (t, l) => indentItem(t, l, 1, true)),
   // On a heading or in its body: a new sibling heading after the subtree, as C-RET does in Emacs.
@@ -833,7 +900,17 @@ const COMMANDS = {
     const r = runEdit((t) => insertHeadingAfter(t, head.line));
     if (r) placeCursor(r.line, true);
   },
-  'todo': () => editHere(cycleTodo, null),
+  'todo': () => onEnclosingHeading((t, l) => cycleTodo(t, l, 1, tagsColumn())),
+  'todo-next': () => onEnclosingHeading((t, l) => cycleTodo(t, l, 1, tagsColumn())),
+  'todo-previous': () => onEnclosingHeading((t, l) => cycleTodo(t, l, -1, tagsColumn())),
+  'priority-up': () => onEnclosingHeading((t, l) => stepPriority(t, l, -1, tagsColumn())),
+  'priority-down': () => onEnclosingHeading((t, l) => stepPriority(t, l, 1, tagsColumn())),
+  'priority': () => withHeading(priorityDialog),
+  'set-property': () => withHeading(setPropertyDialog),
+  'delete-property': () => withHeading(deletePropertyDialog),
+  'set-tags': () => withHeading(setTagsDialog),
+  'isearch': () => startFind(),
+  'execute-command': () => commandPalette(),
   'toggle-checkbox': () => { if (!runEdit((t) => toggleCheckbox(t, kindAtCursor().line))) message('Nothing to do here'); },
   'insert-heading-here': () => { const r = runEdit((t) => insertHeadingHere(t, cursorOffset())); if (r) placeOffset(r.pos); },
   'undo': () => stepHistory('undo'),
@@ -884,16 +961,26 @@ function killWith(fn, { append = false }) {
   placeOffset(r.pos);
 }
 
+/**
+ * One line of input. In the Text view the minibuffer asks, as Emacs does; in the Outline view a touch dialog does.
+ * Resolves with the text, or undefined when cancelled.
+ */
+function askText({ prompt, title, help = null, value = '', complete = null, inputMode = 'text', ok = 'OK' }) {
+  if (viewMode() === 'text') return mini.ask({ prompt, value, complete, inputMode });
+  return panel((sheet, close) => {
+    const input = h('input', { inputmode: inputMode, autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': title });
+    input.value = value;
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); close(input.value); } });
+    put(sheet, h('h2', {}, title), help ? h('p', {}, help) : null, input,
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { class: 'primary', onclick: () => close(input.value) }, ok)));
+    input.focus();
+  });
+}
+
 async function gotoLine() {
   const b = currentBuffer();
   const n = lineInfo(b.text, b.text.length).count;
-  const value = await panel((sheet, close) => {
-    const input = h('input', { inputmode: 'numeric', autocomplete: 'off', 'aria-label': 'Line number' });
-    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); close(input.value); } });
-    put(sheet, h('h2', {}, 'Go to line'), h('p', {}, `Enter a number from 1 to ${n}.`), input,
-      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Go')));
-    input.focus();
-  });
+  const value = await askText({ prompt: 'Goto line:', title: 'Go to line', help: `Enter a number from 1 to ${n}.`, inputMode: 'numeric', ok: 'Go' });
   if (value === undefined) return;
   const line = Number(value);
   if (!Number.isInteger(line) || line < 1 || line > n) { message(`Line ${value} is not between 1 and ${n}`, true); return; }
@@ -969,16 +1056,47 @@ function askTitle(title, initial) {
 
 async function setTagsDialog(line) {
   const hd = cur.a.heads.find((x) => x.line === line);
-  const value = await panel((sheet, close) => {
-    const input = h('input', { value: hd.tags.join(':'), autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Tags' });
-    put(sheet, h('h2', {}, 'Tags'), h('p', {}, 'Separate tags with a colon, for example work:home.'),
-      h('div', {}, h('label', {}, 'Tags'), input),
-      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Set')));
-  });
+  const value = await askText({ prompt: 'Tags:', title: 'Tags', help: 'Separate tags with a colon, for example work:home.', value: hd.tags.join(':'), ok: 'Set' });
   if (value === undefined) return;
   const tags = value.split(':').map((s) => s.trim()).filter(Boolean);
   if (tags.some((t) => !/^[\p{L}\p{N}_@#%]+$/u.test(t))) { message('Tags can have letters, digits and _ @ # %', true); return; }
   runEdit((t) => setTags(t, line, tags, tagsColumn()));
+}
+
+async function priorityDialog(line) {
+  const hd = cur.a.heads.find((x) => x.line === line);
+  const value = viewMode() === 'text'
+    ? await mini.ask({ prompt: 'Priority A-C, or SPC to remove:', value: '' })
+    : await choose('Priority', [...['A', 'B', 'C'].map((p) => ({ label: p, meta: hd.priority === p ? 'current' : null, value: p })), { label: 'None', value: '' }]);
+  if (value === undefined) return;
+  const p = value.trim().toUpperCase();
+  if (p !== '' && !/^[A-C]$/.test(p)) { message('Priority must be A, B or C', true); beep(); return; }
+  runEdit((t) => setPriority(t, line, p === '' ? null : p, tagsColumn()));
+}
+
+/** The commands or names that contain every word typed, anywhere. */
+const matchWords = (typed, ...fields) => {
+  const hay = fields.join(' ').toLowerCase();
+  return typed.toLowerCase().split(/\s+/).filter(Boolean).every((w) => hay.includes(w));
+};
+
+async function setPropertyDialog(line) {
+  const names = propertyNames(currentBuffer().text);
+  const name = await askText({ prompt: 'Property:', title: 'Set property', help: 'The name of the property, for example Effort.', ok: 'Next',
+    complete: (t) => names.filter((n) => matchWords(t, n)).map((n) => ({ label: n, value: n })) });
+  if (name === undefined) return;
+  const old = propertiesOf(currentBuffer().text, line).find(([n]) => n === name)?.[1] ?? '';
+  const value = await askText({ prompt: 'Value:', title: name, value: old, ok: 'Set' });
+  if (value === undefined) return;
+  const r = runEdit((t) => setProperty(t, line, name, value));
+  if (r?.drawer != null) { const b = currentBuffer(); session.setFolds(b.id, { ...b.folds, [r.drawer]: 'all' }); }
+}
+
+async function deletePropertyDialog(line) {
+  const names = propertiesOf(currentBuffer().text, line).map(([n]) => n);
+  const name = await askText({ prompt: 'Property:', title: 'Delete property', ok: 'Delete',
+    complete: (t) => names.filter((n) => matchWords(t, n)).map((n) => ({ label: n, value: n })) });
+  if (name !== undefined) runEdit((t) => deleteProperty(t, line, name));
 }
 
 async function headingActions(line) {
@@ -995,17 +1113,21 @@ async function headingActions(line) {
     { label: 'Move up', value: 'move-up' },
     { label: 'Move down', value: 'move-down' },
     { label: 'Insert heading below', value: 'insert' },
+    { label: 'Change priority', meta: hd.priority ? `[#${hd.priority}]` : null, value: 'priority' },
     { label: 'Set tags', meta: hd.tags.length ? `:${hd.tags.join(':')}:` : null, value: 'tags' },
+    { label: 'Set property', value: 'property' },
     { label: 'Edit title', value: 'edit' },
   ]);
   const run = {
-    todo: () => cycleTodo, promote: () => (t, l) => changeLevel(t, l, -1, false), demote: () => (t, l) => changeLevel(t, l, 1, false),
+    todo: () => (t, l) => cycleTodo(t, l, 1, tagsColumn()), promote: () => (t, l) => changeLevel(t, l, -1, false), demote: () => (t, l) => changeLevel(t, l, 1, false),
     'promote-subtree': () => (t, l) => changeLevel(t, l, -1, true), 'demote-subtree': () => (t, l) => changeLevel(t, l, 1, true),
     'move-up': () => (t, l) => moveSubtree(t, l, -1), 'move-down': () => (t, l) => moveSubtree(t, l, 1),
   };
   if (what === undefined) return;
   if (run[what]) runEdit((t) => run[what]()(t, line));
   else if (what === 'tags') await setTagsDialog(line);
+  else if (what === 'priority') await priorityDialog(line);
+  else if (what === 'property') await setPropertyDialog(line);
   else if (what === 'edit') {
     const title = await askTitle('Edit heading title', hd.title);
     if (title !== undefined) runEdit((t) => setTitle(t, line, title, tagsColumn()));
@@ -1030,21 +1152,126 @@ $('outline').addEventListener('pointercancel', () => { swipe = null; });
 
 const outlineOn = {
   cycle: cycleHeading,
-  todo: (line) => runEdit((t) => cycleTodo(t, line)),
+  todo: (line) => runEdit((t) => cycleTodo(t, line, 1, tagsColumn())),
   checkbox: (line) => runEdit((t) => toggleCheckbox(t, line)),
   actions: headingActions,
 };
+
+// ---- The command palette --------------------------------------------------------------------------------
+
+// Every command has a plain label, its Emacs name and (below) the key it is on. `outline` marks the ones that make sense with no cursor.
+const PALETTE = [
+  ['cycle', 'org-cycle', 'Fold or unfold'], ['cycle-global', 'org-shifttab', 'Fold or unfold everything', true],
+  ['todo', 'org-todo', 'Change TODO state'], ['todo-next', 'org-shiftright', 'Next TODO state'], ['todo-previous', 'org-shiftleft', 'Previous TODO state'],
+  ['priority', 'org-priority', 'Set priority'], ['priority-up', 'org-priority-up', 'Raise priority'], ['priority-down', 'org-priority-down', 'Lower priority'],
+  ['set-tags', 'org-set-tags-command', 'Set tags'], ['set-property', 'org-set-property', 'Set property'], ['delete-property', 'org-delete-property', 'Delete property'],
+  ['promote', 'org-metaleft', 'Promote'], ['demote', 'org-metaright', 'Demote'], ['promote-subtree', 'org-shiftmetaleft', 'Promote subtree'], ['demote-subtree', 'org-shiftmetaright', 'Demote subtree'],
+  ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
+  ['insert-heading', 'org-insert-heading-respect-content', 'Insert heading after subtree'], ['insert-heading-here', 'org-meta-return', 'Insert heading here'],
+  ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'],
+  ['isearch', 'isearch-forward', 'Find', true], ['goto-line', 'goto-line', 'Go to line', true],
+  ['undo', 'undo', 'Undo', true], ['redo', 'undo-redo', 'Redo', true],
+  ['select-all', 'mark-whole-buffer', 'Select all'], ['kill-line', 'kill-line', 'Cut to end of line'], ['kill-whole-line', 'kill-whole-line', 'Cut whole line'], ['yank', 'yank', 'Paste'],
+  ['next-line', 'next-line', 'Next line'], ['previous-line', 'previous-line', 'Previous line'], ['forward-char', 'forward-char', 'Forward character'], ['backward-char', 'backward-char', 'Backward character'],
+  ['forward-word', 'forward-word', 'Forward word'], ['backward-word', 'backward-word', 'Backward word'], ['beginning-of-line', 'move-beginning-of-line', 'Start of line'], ['end-of-line', 'move-end-of-line', 'End of line'],
+  ['beginning-of-buffer', 'beginning-of-buffer', 'Start of buffer'], ['end-of-buffer', 'end-of-buffer', 'End of buffer'], ['scroll-up', 'scroll-up-command', 'Page down'], ['scroll-down', 'scroll-down-command', 'Page up'],
+  ['quit', 'keyboard-quit', 'Quit'],
+].map(([command, name, label, outline = false]) => ({ command, name, label, outline, key: Object.entries(TEXT_KEYS).find(([, c]) => c === command)?.[0] ?? '' }));
+
+async function commandPalette() {
+  const text = viewMode() === 'text';
+  const entries = text ? PALETTE : PALETTE.filter((e) => e.outline);
+  const found = (t) => entries.filter((e) => matchWords(t, e.label, e.name));
+  let entry;
+  if (text) {
+    const name = await mini.ask({ prompt: 'M-x', historyKey: 'M-x', require: true,
+      complete: (t) => (t.trim() === '' ? [] : found(t).map((e) => ({ label: e.label, value: e.name, hint: `${e.name}  ${e.key}`.trim() }))) });
+    if (name === undefined || name.trim() === '') return;
+    entry = entries.find((e) => e.name === name);
+    if (!entry) { message('[No match]', true); beep(); return; }
+  } else {
+    entry = await panel((sheet, close) => {
+      sheet.classList.add('full');
+      const input = h('input', { placeholder: 'Search commands', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Search commands' });
+      const list = h('div', { class: 'list' });
+      const fill = () => list.replaceChildren(...found(input.value).map((e) => h('button', { class: 'item', onclick: () => close(e) },
+        h('span', {}, e.label), h('span', { class: 'meta' }, `${e.name}${e.key ? `  ${e.key}` : ''}`))));
+      input.addEventListener('input', fill);
+      fill();
+      put(sheet, h('h2', {}, 'Commands'), input, list, h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel')));
+      input.focus();
+    });
+    if (!entry) return;
+  }
+  goal = null;
+  await COMMANDS[entry.command]();
+}
 
 // Emacs keys in the Text view: a key press becomes a chord, and a chord a command. A key held by the key row
 // (Meta, Ctrl, Shift) applies to the next key only.
 const keymap = createKeymap(TEXT_KEYS);
 
+// Movement keys. The cursor is moved in the text as shown, so folded text is skipped as Emacs skips it. Up and down keep a goal column
+// while they follow each other, and move by screen line when lines wrap.
+const VERTICAL = new Set(['next-line', 'previous-line', 'scroll-up', 'scroll-down']);
+let goal = null;
+
+/** Where the screen lines of the line [start, end) of the shown text begin. */
+function rowStarts(start, end) {
+  if (editor.wrap === 'off' || end - start < 2) return [start];
+  const m = $('mirror');
+  const css = getComputedStyle(editor);
+  m.style.width = `${editor.clientWidth}px`;
+  m.style.paddingLeft = css.paddingLeft;
+  m.style.paddingRight = css.paddingRight;
+  m.textContent = editor.value.slice(start, end);
+  const lineHeight = parseFloat(getComputedStyle(m).lineHeight);
+  if (m.scrollHeight - parseFloat(css.paddingTop) - parseFloat(css.paddingBottom) <= lineHeight * 1.5) return [start];
+  const node = m.firstChild;
+  const rows = [start];
+  const range = document.createRange();
+  let top = null;
+  for (let i = 0; i < end - start; i++) {
+    range.setStart(node, i);
+    range.setEnd(node, i + 1);
+    const rect = range.getClientRects()[0];
+    if (!rect) continue;
+    if (top !== null && rect.top > top + 1) rows.push(start + i);
+    top = rect.top;
+  }
+  return rows;
+}
+
+const focusPoint = () => (editor.selectionDirection === 'backward' ? editor.selectionStart : editor.selectionEnd);
+function goTo(p) { editor.setSelectionRange(p, p); renderModeLine(); }
+const ERRORS = { 'end-of-buffer': 'End of buffer', 'beginning-of-buffer': 'Beginning of buffer' };
+function moved(r) { goTo(r.pos); if (r.error) message(ERRORS[r.error], true); }
+function vertical(dir) {
+  const r = moveVertical(editor.value, focusPoint(), dir, goal, rowStarts);
+  goal = r.goal;
+  moved(r);
+}
+function page(dir) {
+  const lineHeight = parseFloat(getComputedStyle(editor).lineHeight);
+  const rows = Math.max(1, Math.floor(editor.clientHeight / lineHeight) - 2);
+  let p = focusPoint();
+  let error = null;
+  for (let i = 0; i < rows && !error; i++) { const r = moveVertical(editor.value, p, dir, goal, rowStarts); goal = r.goal; p = r.pos; error = r.error; }
+  editor.scrollTop += dir * rows * lineHeight;
+  moved({ pos: p, error: error && p === focusPoint() ? error : null });
+}
+
 function runChord(chord, event, fromRow) {
   const r = keymap.press(chord);
-  if (r.kind === 'run') { event.preventDefault(); message(''); COMMANDS[r.command](); }
-  else if (r.kind === 'prefix') { event.preventDefault(); message(r.echo); }
-  else if (r.echo) { event.preventDefault(); message(r.echo); }
-  else if (fromRow) { event.preventDefault(); message(`${chord} is undefined`); }
+  if (r.kind === 'run') {
+    event.preventDefault();
+    message('');
+    if (!VERTICAL.has(r.command)) goal = null;
+    COMMANDS[r.command]();
+    if ($('message').classList.contains('error')) beep();
+  } else if (r.kind === 'prefix') { event.preventDefault(); message(r.echo); }
+  else if (r.echo) { event.preventDefault(); message(r.echo, true); beep(); }
+  else if (fromRow) { event.preventDefault(); message(`${chord} is undefined`, true); beep(); }
 }
 
 function moveCursor(key, extend) {
@@ -1067,6 +1294,7 @@ function moveCursor(key, extend) {
   renderModeLine();
 }
 
+const HEADING_ONLY = new Set(['S-<up>', 'S-<down>', 'S-<left>', 'S-<right>']);
 const MODIFIER_KEYS = ['Control', 'Alt', 'Meta', 'Shift'];
 
 editor.addEventListener('keydown', (e) => {
@@ -1077,7 +1305,8 @@ editor.addEventListener('keydown', (e) => {
   const held = keyRow.sticky();
   const fromRow = held.ctrl || held.meta || held.shift;
   const chord = chordOf({ key: e.key, ctrl: e.ctrlKey || held.ctrl, meta: e.altKey || e.metaKey || held.meta, shift: e.shiftKey || held.shift });
-  if ((chord === 'C-c' || chord === 'C-x') && !held.ctrl && keymap.pending() === '') return; // a keyboard's own C-c and C-x stay copy and cut; the prefixes come from the key row
+  if (HEADING_ONLY.has(chord) && kindAtCursor().kind !== 'heading') return; // elsewhere the arrows select, as usual
+  if ((chord === 'C-c' || chord === 'C-x' || chord === 'C-v') && !held.ctrl && keymap.pending() === '') return; // a keyboard's own C-c, C-x and C-v stay copy, cut and paste; the prefixes come from the key row
   if (chord) runChord(chord, e, fromRow);
   else if (keymap.pending() && e.key.length === 1) runChord(e.key, e, false);
   if (fromRow && !MODIFIER_KEYS.includes(e.key)) keyRow.clear();

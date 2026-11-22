@@ -92,18 +92,54 @@ export function insertHeadingHere(text, pos) {
   return { text: `${text.slice(0, pos)}\n${mark}${text.slice(pos)}`, pos: pos + 1 + mark.length, remap: (n) => (n > line ? n + 1 : n) };
 }
 
-/** Changes the TODO state in the sequence the heading is in: none, the first word, ..., the last, none. */
-export function cycleTodo(text, line) {
+/**
+ * Changes the TODO state in the sequence the heading is in: none, the first word, ..., the last, none (dir 1);
+ * dir -1 goes the other way; tags are aligned again at `column`. The statistics cookie of the parent heading, [done/total] or [percent%], counts its child
+ * headings that have a TODO word and is brought up to date.
+ */
+export function cycleTodo(text, line, dir = 1, column = DEFAULT_TAGS_COLUMN) {
   const { h, todo } = headOf(text, line);
   const seq = todo.sequences.find((s) => [...s.open, ...s.done].includes(h.todo)) ?? todo.sequences[0];
-  const words = [...seq.open, ...seq.done];
-  const next = h.todo === null ? words[0] : words[words.indexOf(h.todo) + 1] ?? null;
+  const states = [null, ...seq.open, ...seq.done];
+  const at = states.indexOf(h.todo);
+  const next = states[(at + dir + states.length) % states.length];
   const lines = splitLines(text);
   const t = lines[line].text;
   const m = /^(\*+ +)(?:(\S+)(?: +|$))?/.exec(t);
   const rest = h.todo === null ? t.slice(m[1].length) : t.slice(m[0].length);
-  lines[line] = { ...lines[line], text: m[1] + (next === null ? '' : `${next}${rest === '' ? '' : ' '}`) + rest };
+  const changed = m[1] + (next === null ? '' : `${next}${rest === '' ? '' : ' '}`) + rest;
+  lines[line] = { ...lines[line], text: h.tags.length ? withTags(changed.replace(/\s+:[^\s:]+(?::[^\s:]+)*:\s*$/, ''), h.tags, column) : changed };
+  if (h.parent && COOKIE.test(lines[h.parent.line].text)) {
+    const states2 = h.parent.children.map((c) => (c === h ? next : c.todo)).filter((x) => x !== null);
+    const done = states2.filter((x) => todo.done.includes(x)).length;
+    lines[h.parent.line] = { ...lines[h.parent.line], text: withCookie(lines[h.parent.line].text, done, states2.length) };
+  }
   return { text: join(lines), line, remap: same, state: next };
+}
+
+const PRIORITY_DEFAULT = 'B';
+
+/**
+ * Sets the priority of the heading ([#A] to [#C], or null for none), keeping its TODO word, title and tags, which are aligned again.
+ * `step` is what S-up (-1) and S-down (1) do: with no priority they give B; the next one goes up to A or down to C, and past
+ * the end the priority is removed.
+ */
+export function setPriority(text, line, priority, column = DEFAULT_TAGS_COLUMN) {
+  const { h } = headOf(text, line);
+  const lines = splitLines(text);
+  const base = `${'*'.repeat(h.level)} ${h.todo ? `${h.todo} ` : ''}${priority ? `[#${priority}] ` : ''}${h.comment ? 'COMMENT ' : ''}${h.title}`.trimEnd();
+  lines[line] = { ...lines[line], text: withTags(base, h.tags, column) };
+  return { text: join(lines), line, remap: same };
+}
+
+export function stepPriority(text, line, dir, column = DEFAULT_TAGS_COLUMN) {
+  const { h } = headOf(text, line);
+  const code = h.priority ? h.priority.charCodeAt(0) : null;
+  let next;
+  if (code === null) next = PRIORITY_DEFAULT;
+  else if (dir < 0) next = h.priority === 'A' ? null : String.fromCharCode(code - 1);
+  else next = h.priority === 'C' ? null : String.fromCharCode(code + 1);
+  return setPriority(text, line, next, column);
 }
 
 export const DEFAULT_TAGS_COLUMN = -77;
