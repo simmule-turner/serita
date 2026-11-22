@@ -238,7 +238,7 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => rend
 
 // The layer behind the text: line numbers and the search match. It lays out its lines exactly as the editor does.
 let hit = null;
-let marks = []; // the lines a sparse tree matched, shown in the highlight color until C-c C-c
+let marks = []; // what a sparse tree matched ({ line, from, to } in the real text), shown in the highlight color until C-c C-c
 function paintOverlay() {
   const hl = $('hl');
   if (!cur || editor.hidden || (!hit && marks.length === 0 && !lineNumbers())) { hl.replaceChildren(); return; }
@@ -255,7 +255,16 @@ function paintOverlay() {
       const z = Math.min(hit.end, at - 1) - start;
       kids.splice(0, 1, text.slice(0, a), h('mark', {}, text.slice(a, z)), text.slice(z));
     }
-    if (!hit && marks.includes(lineAt(cur.proj, start)) && text !== '') kids.splice(0, 1, h('mark', {}, text));
+    if (!hit && marks.length) {
+      const real = lineAt(cur.proj, start);
+      const here = marks.filter((x) => x.line === real && x.to <= text.length).sort((a, b) => a.from - b.from);
+      if (here.length) {
+        const out = [];
+        let pos = 0;
+        for (const x of here) { if (x.from < pos) continue; out.push(text.slice(pos, x.from), h('mark', {}, text.slice(x.from, x.to))); pos = x.to; }
+        kids.splice(0, 1, ...out, text.slice(pos));
+      }
+    }
     return h('div', { class: 'hl-line', ...(lineNumbers() ? { 'data-n': String(number) } : {}) }, ...kids);
   }));
   hl.scrollTop = editor.scrollTop;
@@ -549,7 +558,8 @@ async function sparse(kind) {
   try { r = sparseTree(b.text, cur.a, { kind, arg }); } catch (e) { failure(e); return; }
   const at = cursorOffset();
   session.setFolds(b.id, r.folds);
-  marks = kind === 'regexp' ? r.lines : [];
+  marks = r.ranges;
+  hit = null;
   if (viewMode() === 'text') placeOffset(at); // the cursor stays on its text; if that is folded away it lands on the heading above
   paintOverlay();
   if (kind === 'match') return;
@@ -1678,8 +1688,9 @@ const keyRow = createKeyRow({
       if ($('message').classList.contains('error')) beep();
       return;
     }
-    if (plainArrow) { moveCursor(key, true); return; }
     const chord = chordOf({ key, ...mods });
+    // Shift and an arrow from the key row: on a heading, or up and down on a timestamp, they are the Org keys, as from a keyboard.
+    if (plainArrow && !(HEADING_ONLY.has(chord) && (kindAtCursor().kind === 'heading' || ((chord === 'S-<up>' || chord === 'S-<down>') && stampAt(currentBuffer().text, cursorOffset()))))) { moveCursor(key, true); return; }
     if (chord) runChord(chord, { preventDefault() {} }, true);
   },
 });

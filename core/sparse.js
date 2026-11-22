@@ -40,7 +40,7 @@ export function matcher(expr, a) {
  * @param {string} text
  * @param {{ heads: any[], todo: { open: string[], done: string[] } }} a the analysis of the text
  * @param {{ kind: 'regexp' | 'match' | 'todo' | 'todo-keyword', arg?: string }} how
- * @returns {{ lines: number[], folds: object }}
+ * @returns {{ lines: number[], ranges: { line: number, from: number, to: number }[], folds: object }}
  */
 export function sparseTree(text, a, { kind, arg = '' }) {
   let lines;
@@ -56,5 +56,14 @@ export function sparseTree(text, a, { kind, arg = '' }) {
     const wanted = arg.split('|').map((x) => x.trim()).filter(Boolean);
     lines = a.heads.filter((h) => h.todo && wanted.includes(h.todo)).map((h) => h.line);
   }
-  return { lines, folds: sparseFolds(a.heads, lines) };
+  // What Emacs highlights: the text a regexp matched, or the TODO keyword of each entry; a tag or property match highlights nothing.
+  const ranges = [];
+  const rows = text.split('\n');
+  if (kind === 'regexp') {
+    const re = emacsRegexp(arg, true);
+    for (const line of lines) for (const m of rows[line].matchAll(re)) if (m[0] !== '') ranges.push({ line, from: m.index, to: m.index + m[0].length });
+  } else if (kind === 'todo' || kind === 'todo-keyword') {
+    for (const line of lines) { const m = /^\*+ +/.exec(rows[line]); const k = a.heads.find((h) => h.line === line).todo; ranges.push({ line, from: m[0].length, to: m[0].length + k.length }); }
+  }
+  return { lines, ranges, folds: sparseFolds(a.heads, lines) };
 }

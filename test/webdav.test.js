@@ -158,3 +158,14 @@ runContract('webdav via the browser interface', () => {
     env: { navigator: { clipboard: (() => { let c = ''; return { writeText: async (t) => { c = t; }, readText: async () => c }; })() } },
   });
 });
+
+test('webdav: every request bypasses the HTTP cache, so a reload sees the server copy', async () => {
+  const fake = createFakeWebdav();
+  const seen = [];
+  const p = createWebdavProvider({ baseUrl: 'https://h.example/dav/', getCredentials: creds,
+    fetch: (url, init) => { seen.push(init.cache); return fake.fetch(url, init); } });
+  await p.write('a.org', 'one');
+  await p.read('a.org');
+  await p.entries();
+  assert.ok(seen.length >= 3 && seen.every((c) => c === 'no-store'));
+});

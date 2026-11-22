@@ -160,9 +160,11 @@ export function stateOf(h, folds) {
 export function cycle(heads, folds, line, last = null) {
   const h = heads.find((x) => x.line === line);
   if (!h || !hasContent(h)) return null;
-  // After a sparse tree the first TAB folds the heading and drops what the tree was holding open, as Emacs does.
-  if (Object.values(folds).includes('show')) {
-    const f = Object.fromEntries(Object.entries(folds).filter(([, how]) => how !== 'show'));
+  // When a sparse tree holds part of this heading's subtree open, the first TAB folds the heading and drops what the tree held open, as Emacs does.
+  const held = Object.entries(folds).filter(([k, how]) => how === 'show' && Number(k) > h.line && Number(k) < h.end).map(([k]) => k);
+  if (held.length) {
+    const f = { ...folds };
+    for (const k of held) delete f[k];
     for (const d of descendants(h)) delete f[d.line];
     f[h.line] = 'all';
     return { folds: f, state: 'folded' };

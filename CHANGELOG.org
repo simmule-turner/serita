@@ -1,5 +1,11 @@
 #+TITLE: Changelog
 
+* 0.7.3
+WebDAV now reads from the server on every request instead of letting the browser reuse an old copy, which could show the original file after a save and then refuse the next save with 412; listing folders is also faster. A refused save now reports both ETags. Sparse trees highlight the matching text or TODO keyword, and S-up and S-down on the key row change a timestamp or heading, as the keyboard does. Verified: browser checks for the key row and highlights, unit tests for WebDAV and sparse trees.
+
+* 0.7.2
+After a sparse tree, TAB on a heading that holds none of the tree open now unfolds it as usual; before, it folded a match under another heading. TAB on a heading with part of the tree open still folds it and drops the tree, as in Emacs. Verified: a unit test for both cases.
+
 * 0.7.1
 Query replace's answer buttons now sit on a row below the prompt, so the prompt is no longer hidden behind them. A sparse tree keeps the cursor on its text (or on the heading above it when its line folds away), so TAB acts on the heading you expect. The key event log is now a screen of its own, opened from Settings, that records key events and lets you Copy or Clear them, instead of covering the top of the editor. Verified: browser checks for each.
 

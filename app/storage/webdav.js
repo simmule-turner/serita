@@ -53,6 +53,7 @@ export function createWebdavProvider({ baseUrl, getCredentials, fetch = (...a) =
         method,
         headers: { Authorization: `Basic ${utf8ToBase64(`${creds.username}:${creds.password}`)}`, ...headers },
         body,
+        cache: 'no-store', // a version check is only true if the reply came from the server, not from the browser's HTTP cache
       });
     } catch (e) { throw new NetworkUnavailable(e); }
   }
@@ -126,7 +127,7 @@ export function createWebdavProvider({ baseUrl, getCredentials, fetch = (...a) =
         const cur = await getFile(path);
         if (cur && cur.version !== baseVersion) return conflict(cur);
         if (!cur && baseVersion !== undefined) return conflict(null);
-        if (cur) throw new WebdavError(res.status, 'the server refused the save although the version is current (does it use weak ETags?)');
+        if (cur) throw new WebdavError(res.status, `the server refused the save although the version is current (sent If-Match ${baseVersion}, the server now reports ${cur.version}; does it use weak ETags?)`);
       }
       throw await fail(res);
     },
@@ -134,15 +135,17 @@ export function createWebdavProvider({ baseUrl, getCredentials, fetch = (...a) =
     async entries(pathPrefix = '') {
       const start = pathPrefix.includes('/') ? pathPrefix.slice(0, pathPrefix.lastIndexOf('/') + 1) : '';
       const files = [];
-      const queue = [start];
-      while (queue.length) {
-        const dir = queue.shift();
-        const entries = await propfind(dir);
-        if (entries === null) continue;
-        for (const e of entries) {
-          if (e.path === dir.replace(/\/$/, '')) continue; // the collection itself
-          if (e.isCollection) queue.push(`${e.path}/`);
-          else files.push({ path: e.path, size: e.size });
+      let level = [start];
+      while (level.length) {
+        const listed = await Promise.all(level.map(async (dir) => ({ dir, entries: await propfind(dir) })));
+        level = [];
+        for (const { dir, entries } of listed) {
+          if (entries === null) continue;
+          for (const e of entries) {
+            if (e.path === dir.replace(/\/$/, '')) continue; // the collection itself
+            if (e.isCollection) level.push(`${e.path}/`);
+            else files.push({ path: e.path, size: e.size });
+          }
         }
       }
       return files.filter((f) => f.path.startsWith(pathPrefix)).sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));

@@ -34,3 +34,20 @@ test('an unfinished TODO is one that is not in the done states', () => {
   assert.deepEqual(sparseTree(text, a, { kind: 'todo' }).lines, [1, 3]);
   assert.deepEqual(sparseTree(text, a, { kind: 'todo-keyword', arg: 'DONE' }).lines, [2]);
 });
+
+test('TAB on a heading the tree does not hold open cycles it as usual and leaves the tree alone', () => {
+  const text = '* A\nbody\n* B\nmatch\n';
+  const a = analyze(text);
+  const { folds } = sparseTree(text, a, { kind: 'regexp', arg: 'match' });
+  const r = cycle(a.foldables, folds, 0);
+  assert.equal(r.folds[0], undefined);
+  assert.equal(r.folds[3], 'show');
+});
+
+test('what a sparse tree highlights: the matched text, or the TODO keyword', () => {
+  const text = '* TODO A :work:\nthe cat sat\n* DONE B\n';
+  const a = analyze(text);
+  assert.deepEqual(sparseTree(text, a, { kind: 'regexp', arg: 'cat' }).ranges, [{ line: 1, from: 4, to: 7 }]);
+  assert.deepEqual(sparseTree(text, a, { kind: 'todo' }).ranges, [{ line: 0, from: 2, to: 6 }]);
+  assert.deepEqual(sparseTree(text, a, { kind: 'match', arg: 'work' }).ranges, []);
+});

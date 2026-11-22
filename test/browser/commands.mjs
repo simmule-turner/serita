@@ -156,6 +156,10 @@ await at('* TODO Pay rent\nSCHEDULED: <2026-11-30 Mon>\n', 2);
 await page.evaluate(() => { const e = document.getElementById('editor'); const o = e.value.indexOf('30'); e.focus(); e.setSelectionRange(o, o); });
 await page.keyboard.press('Shift+ArrowUp');
 ok((await text()) === '* TODO Pay rent\nSCHEDULED: <2026-12-01 Tue>\n', 'S-up on the day of a stamp makes it the next day');
+await at('* TODO Pay rent\nSCHEDULED: <2026-11-30 Mon>\n', 2);
+await page.evaluate(() => { const e = document.getElementById('editor'); const o = e.value.indexOf('30'); e.focus(); e.setSelectionRange(o, o); });
+await page.locator('#keyrow button', { hasText: 'Shift' }).click(); await page.locator('#keyrow button[aria-label*="up" i], #keyrow button:has-text("↑")').first().click();
+ok((await text()) === '* TODO Pay rent\nSCHEDULED: <2026-12-01 Tue>\n', 'Shift and the key row arrow change the timestamp instead of selecting');
 await at('* TODO Report\n', 1); await ctrl('c'); await ctrl('s');
 ok((await prompt()).startsWith('SCHEDULED Date+time ['), 'C-c C-s asks for a date');
 await page.keyboard.type('2026-12-01'); await page.keyboard.press('Enter');
@@ -174,6 +178,8 @@ const lines = await page.evaluate(() => document.getElementById('editor').value)
 ok(lines.includes('match here') && lines.includes('Sub') && !lines.includes('body a') && !lines.includes('body b'), 'only the match and the headings above it show');
 await ctrl('c'); await ctrl('c');
 ok(await page.locator('#hl mark').count() === 0, 'C-c C-c removes the highlights');
+await at('* TODO A\n* TODO B\n* C\n', 1); await ctrl('c'); await page.keyboard.press('/'); await page.keyboard.press('t');
+ok(await page.locator('#hl mark').count() === 2 && (await page.locator('#hl mark').first().textContent()) === 'TODO', 'C-c / t highlights the TODO keyword of each entry');
 await page.keyboard.press('Tab');
 ok(!(await page.evaluate(() => document.getElementById('editor').value)).includes('match here'), 'the first TAB folds the heading');
 
