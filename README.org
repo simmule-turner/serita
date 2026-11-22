@@ -83,7 +83,7 @@ C-M-s and C-M-r search forward and backward for an Emacs regexp; M-r inside a se
 M-% replaces text; C-M-% replaces a regexp (\& is the match, \1 a group, \# the count). Answer each match with y or SPC (replace), n or DEL (skip), ! (replace the rest), . (replace and stop), q or RET (stop), ^ (back). A replacement follows the case of the match unless the search has a capital. On a touch screen each key has a button. Example: M-% ~cat~ RET ~dog~ RET, then ~!~.
 
 ** Sparse trees
-C-c / r shows the lines that match a regexp and the headings above them; C-c / t shows unfinished TODO entries; C-c / T asks for a keyword. C-c C-c removes the highlights; TAB folds the heading. In the Outline view, Menu, then Commands has the same entries.
+C-c / r shows the lines that match a regexp and the headings above them; C-c / t shows unfinished TODO entries; C-c / T asks for a keyword; C-c / m asks for a match such as ~work+urgent~, ~work/TODO~, ~LEVEL=2~ or ~Effort="5h"~ (tags are inherited). C-c C-c removes the highlights; TAB folds the heading. In the Outline view, Menu, then Commands has the same entries.
 
 ** Settings
 Menu, then Settings, sets up GitHub (owner, repository, branch, token) and WebDAV (address, user, password). They are kept in this browser, on this device.

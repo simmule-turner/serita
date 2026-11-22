@@ -29,7 +29,7 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Keep open buffers across a reload (today the browser asks before you leave with unsaved text).
 - Emacs keys beyond the heading and movement commands: editing keys, the minibuffer, M-x, universal argument, and TAB and the M-arrows on plain text lines and tables, and god-mode for the C-c prefix.
 - How Emacs counts a heading's checkbox cookie (this build counts the checkboxes of its top-level items).
-- Sparse trees by tag, property and date (C-c / m, p, d).
+- Sparse trees by date (C-c / d, b, a, D), by C-c / p (Emacs found no match for Effort 2h where the heading has it, and every heading for an empty value; compare in an interactive Emacs), and match expressions with {regexp} tags, priority and TODO sequences.
 - Unresolved in Emacs batch results: TAB on an open drawer line (the first TAB changes nothing, the second folds it), and C-c , SPC, which fails in batch; compare in an interactive Emacs.
 - Search: C-s with the context of the view.
 - What Emacs does with the folds a search opened when the search is accepted (this build leaves them open and closes them on cancel).

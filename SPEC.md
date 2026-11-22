@@ -90,7 +90,7 @@ The scope is the guide's chapters. Each row is a work package: implement every c
 | Visibility cycling | Global and local cycling, startup visibility, drawers | none |
 | Motion | Heading, sibling, parent and level navigation | none |
 | Structure editing | Insert, kill, copy, yank, refile subtrees, sort, clone | none |
-| Sparse trees | Match tags, properties, TODO states, dates, regexps | C-c / r (regexp, case ignored), t (unfinished TODO), T (keyword), C-c C-c clears highlights; tag, property and date matches not yet. A sparse tree replaces the folds; the first TAB after it folds the heading. Lines held open are fold value 'show' |
+| Sparse trees | Match tags, properties, TODO states, dates, regexps | C-c / r (regexp, case ignored), t (unfinished TODO), T (keyword), C-c C-c clears highlights; C-c / m (tags with + - & |, inherited; TODO after /; LEVEL and Property="value" comparisons); C-c / p and date matches not yet. A sparse tree replaces the folds; the first TAB after it folds the heading. Lines held open are fold value 'show' |
 | Plain lists | Bullets, numbers, descriptions, checkboxes, reordering, renumbering | none |
 | Tables | Editing, alignment, rows and columns, formulas, sorting, import and export | formula engine |
 | Hyperlinks | Internal, external and file links, targets, abbreviations, following | native: OS link types, file completion |

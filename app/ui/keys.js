@@ -60,6 +60,7 @@ export const TEXT_KEYS = Object.freeze({
   'M-x': 'execute-command',
   'C-c C-c': 'toggle-checkbox',
   'C-c / r': 'sparse-tree-regexp',
+  'C-c / m': 'sparse-tree-match',
   'C-c / t': 'sparse-tree-todo',
   'C-c / T': 'sparse-tree-todo-keyword',
   'M-RET': 'insert-heading-here',

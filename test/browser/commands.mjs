@@ -160,6 +160,14 @@ ok(await page.locator('#hl mark').count() === 0, 'C-c C-c removes the highlights
 await page.keyboard.press('Tab');
 ok(!(await page.evaluate(() => document.getElementById('editor').value)).includes('match here'), 'the first TAB folds the heading');
 
+// Sparse tree by tag (C-c / m): tags are inherited, so work shows Sub two but not the body lines
+await at('* A :work:\nbody\n** B\nnote\n* C\nother\n', 1);
+await ctrl('c'); await page.keyboard.press('/'); await page.keyboard.press('m');
+ok((await prompt()) === 'Match:', 'C-c / m asks for a match');
+await page.keyboard.type('work'); await page.keyboard.press('Enter');
+const byTag = await page.evaluate(() => document.getElementById('editor').value);
+ok(byTag.includes('** B') && !byTag.includes('note') && !byTag.includes('body'), 'headings that carry the tag, or inherit it, show; their text does not');
+
 // Regexp search (C-M-s, M-r)
 await at('Meeting foo2 notes foo9\n', 1);
 await page.keyboard.press('Alt+Control+s');

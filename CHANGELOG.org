@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.5.1
+Sparse trees by match: C-c / m asks for a match and shows the headings that fit, with the headings above them. A match can use tags (work, work+urgent, work-urgent, home|urgent; tags are inherited from the headings above), TODO keywords after a slash (work/TODO), LEVEL=2, and a property value such as Effort="5h". Verified: replayed Emacs 30.1 results for eight matches.
+
 * 0.5.0
 The Text view gained regexp search (C-M-s, C-M-r, or M-r inside a search, using Emacs regexp syntax), query replace (M-% and C-M-% with Emacs's keys y, SPC, n, DEL, !, ., q, RET and ^, each with a button on a touch screen), and sparse trees (C-c / r for a regexp, t for unfinished TODO entries, T for a keyword; C-c C-c clears the highlights). The first C-g in a failing search now removes the failing text, as Emacs does. Verified: replayed Emacs 30.1 results for regexps, query replace and sparse trees.
 

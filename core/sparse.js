@@ -3,11 +3,43 @@
 
 import { emacsRegexp } from './regexp.js';
 import { sparseFolds } from './outline.js';
+import { propertiesOf } from './properties.js';
+
+const COMPARE = { '=': (a, b) => a === b, '<>': (a, b) => a !== b, '<': (a, b) => a < b, '>': (a, b) => a > b, '<=': (a, b) => a <= b, '>=': (a, b) => a >= b };
+
+/**
+ * A match expression as Emacs's tag search reads it: tags joined with | (or), and + or & (and), - (not); LEVEL=2 and Property="value"
+ * comparisons; and after a /, TODO keywords separated by | (a leading ! negates). Tags are inherited from the headings above.
+ * @returns {(h: any, text: string) => boolean}
+ */
+export function matcher(expr, a) {
+  const [tagPart, todoPart] = expr.split('/');
+  const ors = tagPart.split('|').map((alt) => [...alt.matchAll(/([-+&]?)([^-+&=<>\s]+)(?:(<>|<=|>=|=|<|>)(?:"([^"]*)"|([^-+&|]*)))?/g)].map((m) => ({ not: m[1] === '-', name: m[2], op: m[3], value: m[4] ?? m[5] })));
+  const wantedTodo = (todoPart ?? '').replace(/^!/, '').split('|').map((x) => x.trim()).filter(Boolean);
+  const negate = (todoPart ?? '').startsWith('!');
+  const tagsOf = (h) => { const t = new Set(); for (let x = h; x; x = x.parent) for (const g of x.tags ?? []) t.add(g); return t; };
+  const test = (h, text, term) => {
+    let ok;
+    if (term.op) {
+      const have = term.name.toUpperCase() === 'LEVEL' ? h.level : (propertiesOf(text, h.line).find(([k]) => k.toUpperCase() === term.name.toUpperCase()) ?? [])[1];
+      if (have === undefined) return false;
+      const numeric = term.name.toUpperCase() === 'LEVEL';
+      ok = COMPARE[term.op](numeric ? Number(have) : String(have), numeric ? Number(term.value) : term.value);
+    } else ok = tagsOf(h).has(term.name);
+    return term.not ? !ok : ok;
+  };
+  return (h, text) => {
+    const tagOk = ors.every((o) => o.length === 0) || ors.some((o) => o.length > 0 && o.every((t) => test(h, text, t)));
+    if (!tagOk) return false;
+    if (wantedTodo.length === 0) return true;
+    return negate ? !wantedTodo.includes(h.todo) : wantedTodo.includes(h.todo);
+  };
+}
 
 /**
  * @param {string} text
  * @param {{ heads: any[], todo: { open: string[], done: string[] } }} a the analysis of the text
- * @param {{ kind: 'regexp' | 'todo' | 'todo-keyword', arg?: string }} how
+ * @param {{ kind: 'regexp' | 'match' | 'todo' | 'todo-keyword', arg?: string }} how
  * @returns {{ lines: number[], folds: object }}
  */
 export function sparseTree(text, a, { kind, arg = '' }) {
@@ -15,6 +47,9 @@ export function sparseTree(text, a, { kind, arg = '' }) {
   if (kind === 'regexp') {
     const re = emacsRegexp(arg, true); // matching ignores case even with capitals in the regexp, as in Emacs
     lines = text.split('\n').flatMap((l, i) => { re.lastIndex = 0; return re.test(l) ? [i] : []; });
+  } else if (kind === 'match') {
+    const ok = matcher(arg, a);
+    lines = a.heads.filter((h) => ok(h, text)).map((h) => h.line);
   } else if (kind === 'todo') {
     lines = a.heads.filter((h) => h.todo && !a.todo.done.includes(h.todo)).map((h) => h.line);
   } else {

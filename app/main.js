@@ -533,7 +533,12 @@ async function sparse(kind) {
   if (finding || shownId === null) return;
   let arg = '';
   if (kind !== 'todo') {
-    arg = await askText({ prompt: kind === 'regexp' ? 'Regexp:' : 'Keyword (or KWD1|KWD2|...):', title: kind === 'regexp' ? 'Show matching lines' : 'Show entries with a TODO keyword', help: kind === 'regexp' ? 'Shows the lines that match an Emacs regexp, and the headings above them.' : 'One or more keywords, separated by |.', ok: 'Show' });
+    const ask = {
+      regexp: { prompt: 'Regexp:', title: 'Show matching lines', help: 'Shows the lines that match an Emacs regexp, and the headings above them.' },
+      match: { prompt: 'Match:', title: 'Show matching headings', help: 'Tags such as work+urgent-home or work|home, then / and TODO keywords, or Effort="5h" and LEVEL=2.' },
+      'todo-keyword': { prompt: 'Keyword (or KWD1|KWD2|...):', title: 'Show entries with a TODO keyword', help: 'One or more keywords, separated by |.' },
+    }[kind];
+    arg = await askText({ ...ask, ok: 'Show' });
     if (arg === undefined || arg === '') return;
   }
   const b = currentBuffer();
@@ -542,6 +547,7 @@ async function sparse(kind) {
   session.setFolds(b.id, r.folds);
   marks = kind === 'regexp' ? r.lines : [];
   paintOverlay();
+  if (kind === 'match') return;
   message(kind === 'regexp' ? (r.lines.length ? `${r.lines.length} match${r.lines.length === 1 ? '' : 'es'}` : `No matches for ${arg}`) : `${r.lines.length} TODO ${r.lines.length === 1 ? 'entry' : 'entries'} found`);
 }
 
@@ -1035,6 +1041,7 @@ const COMMANDS = {
   'query-replace-regexp': () => queryReplace(true),
   'execute-command': () => commandPalette(),
   'sparse-tree-regexp': () => sparse('regexp'),
+  'sparse-tree-match': () => sparse('match'),
   'sparse-tree-todo': () => sparse('todo'),
   'sparse-tree-todo-keyword': () => sparse('todo-keyword'),
   'toggle-checkbox': () => {
@@ -1298,7 +1305,7 @@ const PALETTE = [
   ['promote', 'org-metaleft', 'Promote'], ['demote', 'org-metaright', 'Demote'], ['promote-subtree', 'org-shiftmetaleft', 'Promote subtree'], ['demote-subtree', 'org-shiftmetaright', 'Demote subtree'],
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
   ['insert-heading', 'org-insert-heading-respect-content', 'Insert heading after subtree'], ['insert-heading-here', 'org-meta-return', 'Insert heading here'],
-  ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],
+  ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],
   ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true],
   ['undo', 'undo', 'Undo', true], ['redo', 'undo-redo', 'Redo', true],
   ['select-all', 'mark-whole-buffer', 'Select all'], ['kill-line', 'kill-line', 'Cut to end of line'], ['kill-whole-line', 'kill-whole-line', 'Cut whole line'], ['yank', 'yank', 'Paste'],
