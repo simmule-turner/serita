@@ -824,7 +824,15 @@ const COMMANDS = {
   'demote': () => editHere((t, l) => changeLevel(t, l, 1, false), (t, l) => indentItem(t, l, 1, false)),
   'promote-subtree': () => editHere((t, l) => changeLevel(t, l, -1, true), (t, l) => indentItem(t, l, -1, true)),
   'demote-subtree': () => editHere((t, l) => changeLevel(t, l, 1, true), (t, l) => indentItem(t, l, 1, true)),
-  'insert-heading': () => editHere(insertHeadingAfter, null, true),
+  // On a heading or in its body: a new sibling heading after the subtree, as C-RET does in Emacs.
+  'insert-heading': () => {
+    const { line, kind } = kindAtCursor();
+    if (kind === 'item') { message('Not at a heading'); return; }
+    const head = [...cur.a.heads].reverse().find((x) => x.line <= line);
+    if (!head) { message('Not at a heading'); return; }
+    const r = runEdit((t) => insertHeadingAfter(t, head.line));
+    if (r) placeCursor(r.line, true);
+  },
   'todo': () => editHere(cycleTodo, null),
   'toggle-checkbox': () => { if (!runEdit((t) => toggleCheckbox(t, kindAtCursor().line))) message('Nothing to do here'); },
   'insert-heading-here': () => { const r = runEdit((t) => insertHeadingHere(t, cursorOffset())); if (r) placeOffset(r.pos); },

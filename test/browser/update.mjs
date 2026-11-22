@@ -39,6 +39,8 @@ await sheet.getByRole('button', { name: 'Cancel' }).click();
 await page.click('#btn-menu'); await sheet.getByRole('button', { name: 'Settings' }).click();
 const t = await sheet.textContent();
 ok(t.includes(`Installed version${now}`) && t.includes(`New version${next}`), 'Settings shows the installed and the new version');
+const gap = await sheet.locator('.item', { hasText: 'Installed version' }).evaluate((el) => { const [l, v] = el.querySelectorAll('span'); return v.getBoundingClientRect().left - l.getBoundingClientRect().right; });
+ok(gap >= 16, `the version value sits in its own column (${Math.round(gap)}px from the label)`);
 await sheet.getByRole('button', { name: 'Close' }).click();
 
 await page.click('#btn-menu');

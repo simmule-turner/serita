@@ -141,6 +141,13 @@ ok((await focused()) === 'editor' && (await mode()) === 'none', 'pressed again, 
 await page.click('#btn-menu'); await btn('Settings').click(); await btn(/Hide leading stars/).click(); await btn('Close').click();
 ok((await value()).includes('\n * B') && !(await value()).includes('** B'), 'Hide leading stars shows only the last star of a deeper heading');
 
+// C-RET in a heading's body starts a sibling heading after the subtree (checked against Emacs)
+await page.fill('#editor', '* A\nbody\n* Z\n');
+await page.evaluate(() => document.getElementById('editor').focus());
+await caretAt('body');
+await page.keyboard.press('Control+Enter');
+ok((await value()) === '* A\nbody\n* \n* Z\n', 'C-RET on a body line adds a heading after the subtree');
+
 ok(errors.length === 0, `no page errors${errors.length ? ': ' + errors.join('; ') : ''}`);
 await close();
 process.exit(failed ? 1 : 0);

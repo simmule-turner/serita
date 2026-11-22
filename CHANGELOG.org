@@ -1,5 +1,11 @@
 #+TITLE: Changelog
 
+* 0.2.2
+In Settings, Installed version and New version now show the label on the left and the version on the right, with space between them.
+
+* 0.2.1
+C-RET on a line of a heading's body now starts a new heading after that heading's subtree, as Emacs does; before, it did nothing there. Found by replaying the Emacs conformance cases against the Text view. Verified: the cases for TAB, S-TAB, M-RET, M-arrows, checkboxes, tags, TODO cycling and startup folds match Emacs.
+
 * 0.2.0
 Serita reopens your files, tabs, folds and view where you left them, with unsaved edits and scratch text kept as drafts. Appearance in Settings sets Light, Dark or System, the font (monospace by default, like Emacs), the text size (12 to 32, default 18) and the paragraph spacing in the Outline view. The tag column is a setting (-77 by default, as in Emacs). Swiping a heading right to left works like TAB. Buttons are smaller, each view can show or hide its tool row, and commits now refuse to run when git has no name or email.
 
