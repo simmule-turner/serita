@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.7.4
+A Back button, at the bottom left of the text, returns to where you came from (a tab, an agenda row, Go to line, a search, M-< and M->); hold it to see where it goes. The agenda has bolder arrows and moves with a swipe or f and b. Finishing a repeating task now also moves a plain repeating timestamp in the body, and S-left and S-right on a timestamp move the day, all as Emacs does; the stamps use your local time. WebDAV lists one folder at a time and no longer reuses an old copy of a file. Verified: replayed 25 Emacs 30.1 results for repeaters and timestamp keys.
+
 * 0.7.3
 WebDAV now reads from the server on every request instead of letting the browser reuse an old copy, which could show the original file after a save and then refuse the next save with 412; listing folders is also faster. A refused save now reports both ETags. Sparse trees highlight the matching text or TODO keyword, and S-up and S-down on the key row change a timestamp or heading, as the keyboard does. Verified: browser checks for the key row and highlights, unit tests for WebDAV and sparse trees.
 

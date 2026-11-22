@@ -169,3 +169,15 @@ test('webdav: every request bypasses the HTTP cache, so a reload sees the server
   await p.entries();
   assert.ok(seen.length >= 3 && seen.every((c) => c === 'no-store'));
 });
+
+test('webdav: a shallow listing asks once and names the subfolders, even empty ones', async () => {
+  const { fake, p } = make();
+  await p.write('top.org', 'x');
+  await p.write('a/one.org', 'x');
+  await p.write('a/b/two.org', 'x');
+  fake.calls.length = 0;
+  const root = await p.entries('', { shallow: true });
+  assert.deepEqual(root, [{ path: 'a', size: null, folder: true }, { path: 'top.org', size: 1 }]);
+  assert.equal(fake.calls.filter((c) => c.method === 'PROPFIND').length, 1);
+  assert.deepEqual((await p.entries('a/', { shallow: true })).map((e) => e.path), ['a/b', 'a/one.org']);
+});

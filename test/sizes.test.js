@@ -86,3 +86,9 @@ test('cached: an unsent edit shows its own size, a queued new file is listed wit
   offline = false;
   assert.deepEqual(await p.entries(), [{ path: 'a.org', size: 6 }, { path: 'new.org', size: 6 }]);
 });
+
+test('a folder entry from a one-folder listing shows as a folder, empty or not', () => {
+  const r = children([{ path: 'a/sub', size: null, folder: true }, { path: 'a/x.org', size: 3 }], 'a/');
+  assert.deepEqual(r.folders, ['sub']);
+  assert.deepEqual(r.files, [{ name: 'x.org', size: 3 }]);
+});

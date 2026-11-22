@@ -8,6 +8,7 @@ import { analyze } from './outline.js';
 
 const MONTH_NAMES = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const REPEAT_UNITS = ['h', 'd', 'w', 'm', 'y'];
 const two = (n) => String(n).padStart(2, '0');
 const STAMP = /([<[])(\d{4})-(\d\d)-(\d\d)(?: ([^\s\d>\]+.-][^\s>\]]*))?(?: (\d{1,2}):(\d\d))?((?: (?:\+\+|\.\+|\+)\d+[hdwmy])*)([>\]])/g;
 
@@ -41,7 +42,7 @@ export function stampAt(text, offset) {
  * goes up or down by one; on the closing bracket the stamp becomes inactive or active; on the repeater the number changes.
  * @returns {{ text: string, pos: number, said: string | null } | null} null when the cursor is not on a timestamp
  */
-export function shiftStamp(text, offset, dir) {
+export function shiftStamp(text, offset, dir, { sideways = false } = {}) {
   const s = stampAt(text, offset);
   if (!s) return null;
   const r = s.rel;
@@ -49,7 +50,9 @@ export function shiftStamp(text, offset, dir) {
   let repeater = s.repeater;
   let active = s.active;
   let said = null;
-  if (r === s.closeAt) { active = !active; said = `Timestamp is now ${active ? 'active' : 'inactive'}`; }
+  if (sideways) date = utc(s.y, s.m, s.d + dir, s.h, s.mi);
+  else if (r === s.closeAt || r === 0) { active = !active; said = `Timestamp is now ${active ? 'active' : 'inactive'}`; }
+  else if (s.repeaterAt >= 0 && r === s.closeAt - 1) repeater = repeater.replace(/[hdwmy]$/, (u) => REPEAT_UNITS[Math.min(REPEAT_UNITS.length - 1, Math.max(0, REPEAT_UNITS.indexOf(u) + dir))]);
   else if (s.repeaterAt >= 0 && r >= s.repeaterAt) repeater = repeater.replace(/(\d+)(?=[hdwmy]$)/, (n) => String(Math.max(1, +n + dir)));
   else if (s.hasTime && r >= s.timeAt + 3) { const m = s.mi; date = utc(s.y, s.m, s.d, s.h, (dir > 0 ? Math.floor(m / 5) * 5 + 5 : Math.ceil(m / 5) * 5 - 5)); }
   else if (s.hasTime && r >= s.timeAt) date = utc(s.y, s.m, s.d, s.h + dir, s.mi);
@@ -145,23 +148,30 @@ const quote = (s) => `"${s}"`;
 const logLine = (to, from, now) => `- State ${quote(to).padEnd(12)} from ${quote(from).padEnd(12)} ${formatStamp(now, { time: true, active: false })}`;
 
 /**
- * Finishing a repeating task: its SCHEDULED or DEADLINE moves to the next date, the state goes back to `reopen`, :LAST_REPEAT: gets the time,
- * and a "State ... from ..." line is added after the properties drawer. Returns null when the heading has nothing that repeats.
+ * Finishing a repeating task: every active timestamp with a repeater in the entry (up to the next heading) moves to its next date, the state
+ * goes back to `reopen`, :LAST_REPEAT: gets the time, and a "State ... from ..." line is added after the properties drawer.
+ * A CLOSED stamp is dropped. Returns null when the entry has nothing that repeats.
  * @param {{ text: string, line: number, from: string, to: string, reopen: string, now: Date }} o `from` is the state before, `to` the done state
  */
 export function completeRepeat({ text, line, from, to, reopen, now }) {
   const lines = splitLines(text);
-  const plan = lines[line + 1];
-  if (!plan || !/^\s*(?:CLOSED|DEADLINE|SCHEDULED):/.test(plan.text)) return null;
   let any = false;
-  const moved = plan.text.replace(/([<[])(\d{4})-(\d\d)-(\d\d)(?: [^\s\d>\]+.-][^\s>\]]*)?(?: (\d{1,2}):(\d\d))?((?: (?:\+\+|\.\+|\+)\d+[hdwmy])+)([>\]])/g, (all, o, y, mo, d, h, mi, rep, c) => {
-    any = true;
-    const spec = rep.trim().split(/\s+/)[0];
-    const next = nextRepeat(utc(+y, +mo, +d, +(h ?? 0), +(mi ?? 0)), spec, now);
-    return formatStamp(next, { time: h !== undefined, repeater: rep, active: o === '<' });
-  });
+  const REPEATING = /<(\d{4})-(\d\d)-(\d\d)(?: [^\s\d>\]+.-][^\s>\]]*)?(?: (\d{1,2}):(\d\d))?((?: (?:\+\+|\.\+|\+)\d+[hdwmy])+)>/g;
+  const end = lines.findIndex((l, i) => i > line && /^\*+ /.test(l.text));
+  const last = end < 0 ? lines.length : end;
+  for (let i = line + 1; i < last; i++) {
+    lines[i] = { ...lines[i], text: lines[i].text.replace(REPEATING, (all, y, mo, d, h, mi, rep) => {
+      any = true;
+      const next = nextRepeat(utc(+y, +mo, +d, +(h ?? 0), +(mi ?? 0)), rep.trim().split(/\s+/)[0], now);
+      return formatStamp(next, { time: h !== undefined, repeater: rep });
+    }) };
+  }
   if (!any) return null;
-  lines[line + 1] = { ...plan, text: moved };
+  const closed = /^\s*CLOSED:/.test(lines[line + 1]?.text ?? '');
+  if (closed) {
+    const rest = lines[line + 1].text.replace(/CLOSED: *\[[^\]]*\] */, '').trimEnd();
+    if (rest.trim() === '') lines.splice(line + 1, 1); else lines[line + 1] = { ...lines[line + 1], text: rest };
+  }
   const head = lines[line];
   lines[line] = { ...head, text: head.text.replace(new RegExp(`^(\\*+ +)${to}(?=\\s|$)`), `$1${reopen}`) };
   let out = lines.map((l) => l.text + l.eol).join('');

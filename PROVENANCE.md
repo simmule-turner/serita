@@ -74,6 +74,9 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 ### `core/outline.js`, `core/outline-edit.js`, `core/projection.js`, `app/ui/dom.js`, `app/ui/keys.js`, `app/ui/keyrow.js`, `app/ui/outline-view.js`, `test/outline.test.js`, `test/projection.test.js`, `test/keys.test.js`, `test/browser/views.mjs`
 - Written from: the author's requests and mockups, and the Org Compact Guide's description of visibility cycling, #+STARTUP values, TODO sequences, and the structure-editing keys, read as behavior only. The fold model, projection, edit functions and key names are this project's own design. Statement as above.
 
+### `app/ui/history.js`, `test/history.test.js`
+- Written from: the author's request (a floating back button that returns to where the user came from, with a long press that says where) and the author's design. No other program or source was consulted. Statement as above.
+
 ### `app/ui/update.js`, `app/version.js`, `test/update.test.js`, `test/browser/update.mjs`
 - Written from: the author's request (see an update, choose when to restart) and the service worker API as documented (waiting worker, updatefound, message ports, skipWaiting). Statement as above.
 

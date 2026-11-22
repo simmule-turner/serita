@@ -1,7 +1,7 @@
 // Emacs key chords: naming them as Emacs does ("C-c", "M-<up>", "<backtab>") and following a
 // prefix such as "C-c" to the key after it. No DOM here.
 
-const NAMES = { ArrowUp: '<up>', ArrowDown: '<down>', ArrowLeft: '<left>', ArrowRight: '<right>', Enter: 'RET', Tab: 'TAB', Backspace: 'DEL', Escape: 'ESC' };
+const NAMES = { ArrowUp: '<up>', ArrowDown: '<down>', ArrowLeft: '<left>', ArrowRight: '<right>', Enter: 'RET', Tab: 'TAB', Backspace: 'DEL', Escape: 'ESC', ' ': 'SPC' };
 const mods = (c, m, s) => (c ? 'C-' : '') + (m ? 'M-' : '') + (s ? 'S-' : '');
 
 /**
@@ -78,6 +78,7 @@ export const TEXT_KEYS = Object.freeze({
   'C-?': 'redo',
   'C-x h': 'select-all',
   'M-g g': 'goto-line',
+  'C-x C-SPC': 'back',
   'C-k': 'kill-line',
   'C-S-DEL': 'kill-whole-line',
   'C-y': 'yank',

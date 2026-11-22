@@ -38,9 +38,9 @@ Planned work only. Phase order is in SPEC.md section 12.
 
 * Later: dates
 - Date prompt forms beyond ISO, +n d/w/m/y, today, tomorrow and yesterday (Emacs also reads weekday names, month names and more); a calendar popup.
-- S-left and S-right on a timestamp, minute rounding, and S-up on a repeater (written from the manual, not yet compared with Emacs).
-- Repeating tasks with a repeater on a plain timestamp in the body, and the log drawer setting.
-- Clocking and effort (C-c C-x e); the Emacs cases for S-left, S-right, minute rounding and S-up on a repeater failed to run in batch Emacs, so compare them in an interactive Emacs.
+- Repeater unit with S-up and S-down: only w to m on S-up is replayed from Emacs; the other units, S-down, and the ends of the list (h, d, w, m, y) are not. Also S-up on a minute that is already a multiple of 5, and S-left or S-right on a closing bracket.
+- The log drawer setting for repeating tasks.
+- Clocking and effort (C-c C-x e sets :Effort: and says "Effort is now 2:00" in Emacs).
 - Agenda: the time grid, the fortnight and year spans in the screen, agenda files other than the open ones, filters and marks, a short #+CATEGORY (the padding of a category under 12 characters is a guess), the order of items of equal priority beyond what was recorded, and entries with a time of day on overdue tasks.
 
 * Later: Appearance

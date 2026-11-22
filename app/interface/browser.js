@@ -38,7 +38,7 @@ export function createBrowserInterface({ providers, env = globalThis, now = () =
   const need = (cap) => { if (!available[cap]) throw new CapabilityUnavailable(cap, REASONS[cap]); };
   const cancelled = (e) => e?.name === 'AbortError';
 
-  async function entries(prefix = '') {
+  async function entries(prefix = '', options) {
     const providerOnly = prefix.endsWith(':') && PROVIDERS.includes(prefix.slice(0, -1));
     const targets = prefix === ''
       ? Object.keys(providers).map((p) => ({ p, rest: '' }))
@@ -46,7 +46,7 @@ export function createBrowserInterface({ providers, env = globalThis, now = () =
         : [(({ provider: p, path }) => ({ p, rest: path }))(parseName(prefix))];
     const out = [];
     for (const { p, rest } of targets) {
-      for (const e of await provider(p).entries(rest)) out.push({ name: formatName(p, e.path), size: e.size });
+      for (const e of await provider(p).entries(rest, options)) out.push({ name: formatName(p, e.path), size: e.size, ...(e.folder ? { folder: true } : {}) });
     }
     return out.sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
   }

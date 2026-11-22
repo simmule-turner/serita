@@ -13,8 +13,9 @@
  * @property {(name: string, text: string, opts?: { baseVersion?: string }) => Promise<WriteResult>} write
  *   baseVersion is the version last read; omit it only when creating a new file
  * @property {(prefix?: string) => Promise<string[]>} list  full names, sorted
- * @property {(prefix?: string) => Promise<{ name: string, size: number | null }[]>} entries
- *   full names with the size in bytes (null when the storage does not say), sorted by name
+ * @property {(prefix?: string, options?: { shallow?: boolean }) => Promise<{ name: string, size: number | null, folder?: boolean }[]>} entries
+ *   full names with the size in bytes (null when the storage does not say), sorted by name. With shallow, a storage that can list one folder
+ *   at a time (WebDAV) returns only the folder that holds the prefix, with its subfolders as { folder: true }; the others return every file
  * @property {(name: string) => Promise<void>} remove
  * @property {(name: string, cb: (name: string) => void) => () => void} watch  returns unsubscribe
  * @property {() => string[]} providers

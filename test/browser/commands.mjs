@@ -160,6 +160,10 @@ await at('* TODO Pay rent\nSCHEDULED: <2026-11-30 Mon>\n', 2);
 await page.evaluate(() => { const e = document.getElementById('editor'); const o = e.value.indexOf('30'); e.focus(); e.setSelectionRange(o, o); });
 await page.locator('#keyrow button', { hasText: 'Shift' }).click(); await page.locator('#keyrow button[aria-label*="up" i], #keyrow button:has-text("↑")').first().click();
 ok((await text()) === '* TODO Pay rent\nSCHEDULED: <2026-12-01 Tue>\n', 'Shift and the key row arrow change the timestamp instead of selecting');
+await at('* TODO Pay rent\nSCHEDULED: <2026-11-30 Mon>\n', 2);
+await page.evaluate(() => { const e = document.getElementById('editor'); const o = e.value.indexOf('2026'); e.focus(); e.setSelectionRange(o, o); });
+await page.keyboard.press('Shift+ArrowRight');
+ok((await text()) === '* TODO Pay rent\nSCHEDULED: <2026-12-01 Tue>\n', 'S-right on a stamp moves the date a day, wherever the cursor is in it (Emacs: ts-sright-year)');
 await at('* TODO Report\n', 1); await ctrl('c'); await ctrl('s');
 ok((await prompt()).startsWith('SCHEDULED Date+time ['), 'C-c C-s asks for a date');
 await page.keyboard.type('2026-12-01'); await page.keyboard.press('Enter');
@@ -196,15 +200,49 @@ await page.keyboard.type('work'); await page.keyboard.press('Enter');
 const byTag = await page.evaluate(() => document.getElementById('editor').value);
 ok(byTag.includes('** B') && !byTag.includes('note') && !byTag.includes('body'), 'headings that carry the tag, or inherit it, show; their text does not');
 
+// Back: M-> leaves a place; the button returns to it; a long press says where it goes; C-x C-SPC does the same as a tap
+for (let i = 0; i < 40 && await page.locator('#back').isVisible(); i++) await page.locator('#back').click();
+await at('one\ntwo\nthree\nfour\n', 2);
+ok(await page.locator('#back').isHidden(), 'Back is hidden when there is nowhere to go');
+await page.keyboard.press('Alt+>');
+ok(await page.locator('#back').isVisible(), 'Back shows after a jump');
+const before = await sel();
+await page.locator('#back').dispatchEvent('pointerdown'); await page.waitForTimeout(650); await page.locator('#back').dispatchEvent('pointerup');
+ok((await page.locator('#backnote').textContent()).startsWith('Back to ') && (await page.locator('#backnote').textContent()).endsWith('line 2') && (await sel()) === before, 'a long press says where Back goes and does not go');
+await page.locator('#back').click();
+ok((await sel()) === '4-4' && await page.locator('#back').isHidden(), 'tapping Back returns to the place and hides the button');
+await page.keyboard.press('Alt+>');
+await ctrl('x'); await page.keyboard.press('Control+ ');
+ok((await sel()) === '4-4', 'C-x C-SPC goes back too');
 // The agenda (View, Agenda): a week with a scheduled entry; tapping the row goes to the heading
 await at('* TODO Pay rent :home:\nSCHEDULED: <2999-01-01 Mon>\n* Other\n', 1);
 await page.click('#btn-view'); await btn('Agenda').click();
 ok(await page.locator('.sheet.agenda .abar button', { hasText: 'Week' }).count() === 1, 'the agenda has Day, Week and Month');
+{
+  const head = async () => (await page.locator('.sheet.agenda .abody .aday').first().textContent());
+  const first = await head();
+  await page.keyboard.press('f');
+  const later = await head();
+  await page.keyboard.press('b');
+  ok(later !== first && (await head()) === first, 'f moves the agenda later and b earlier, as in Emacs');
+  const box = await page.locator('.sheet.agenda .abody').boundingBox();
+  const swipe = async (dx) => { const y = box.y + 60; const x = box.x + box.width / 2; await page.mouse.move(x, y); await page.mouse.down(); await page.mouse.move(x + dx, y + 5, { steps: 4 }); await page.mouse.up(); };
+  await swipe(-120);
+  ok((await head()) === later, 'a swipe left moves the agenda later, like the arrow');
+  await swipe(120);
+  ok((await head()) === first, 'a swipe right moves it earlier');
+  await swipe(-30);
+  ok((await head()) === first, 'a short swipe does nothing');
+  ok(await page.locator('.sheet.agenda .abar button .chev').count() === 2, 'the arrows are drawn chevrons');
+}
 await page.locator('.sheet.agenda .abar button', { hasText: 'Views' }).click();
 await btn('TODO list').click();
 ok((await page.locator('.sheet.agenda .atitlebar').textContent()).startsWith('Global list of TODO items'), 'Views, TODO list opens the TODO list');
 await page.locator('.sheet.agenda .arow', { hasText: 'Pay rent' }).click();
 ok(await page.locator('.sheet.agenda').count() === 0 && (await sel()).startsWith('0-'), 'tapping a row closes the agenda and goes to the heading');
+await page.locator('#back').click();
+ok(await page.locator('.sheet.agenda').count() === 1, 'Back after an agenda jump returns to the agenda');
+await page.locator('.sheet.agenda .abar button', { hasText: 'Close' }).click();
 
 // Regexp search (C-M-s, M-r)
 await at('Meeting foo2 notes foo9\n', 1);

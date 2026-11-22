@@ -26,6 +26,7 @@ import { createKillRing } from '../core/killring.js';
 import { lineAt, project, toFull, toShown, touchedFold } from '../core/projection.js';
 import { renderOutline } from './ui/outline-view.js';
 import { TEXT_KEYS, chordOf, createKeymap } from './ui/keys.js';
+import { createHistory } from './ui/history.js';
 import { createKeyRow } from './ui/keyrow.js';
 import { askVersion, watchUpdates } from './ui/update.js';
 import { exportSettings, importSettings, inspectSettingsFile, settingsFileName, SettingsFileError } from '../core/settings-file.js';
@@ -46,6 +47,7 @@ const recent = createRecent(localStorage);
 
 const editor = $('editor');
 let shownId = null;
+const places = createHistory(); // where Back returns to
 let cur = null;        // what the views show now: { id, a (the outline), proj (the Text view's projection) }
 let pendingSel = null; // where the cursor goes after the next render, in the real text
 
@@ -176,7 +178,7 @@ function renderModeLine() {
 function render() {
   const s = session.state();
   $('tabs').replaceChildren(...s.buffers.map((b) => h('span', { class: `tab${b.id === s.current ? ' current' : ''}` },
-    h('button', { class: 'title', onclick: () => session.select(b.id), title: b.name ?? b.title }, b.title + (b.dirty ? ' *' : '')),
+    h('button', { class: 'title', onclick: () => { if (b.id !== shownId) leaveHere(); session.select(b.id); }, title: b.name ?? b.title }, b.title + (b.dirty ? ' *' : '')),
     h('button', { 'aria-label': `Close ${b.title}`, onclick: () => closeBuffer(b.id) }, '×'))));
   const shown = s.buffers.find((x) => x.id === s.current);
   const mode = viewMode();
@@ -193,6 +195,7 @@ function render() {
   editor.hidden = mode !== 'text';
   $('outline').hidden = mode !== 'outline';
   $('keyrow').hidden = !(mode === 'text' && emacsKeys() && shown);
+  showBack();
   // With the key row shown, tapping the text does not raise the on-screen keyboard; the keyboard button does.
   editor.inputMode = $('keyrow').hidden || softKeyboard ? 'text' : 'none';
   editor.disabled = !shown;
@@ -437,8 +440,8 @@ function browse({ mode, suggested = '', current = null }) {
     async function load() {
       if (provider === 'device') { listing = { folders: [], files: [] }; loadError = null; draw(); return; }
       try {
-        const all = await app.storage.entries(`${provider}:`);
-        listing = children(all.map((e) => ({ path: parseName(e.name).path, size: e.size })), dir);
+        const all = await app.storage.entries(`${provider}:${dir}`, { shallow: true });
+        listing = children(all.map((e) => ({ path: parseName(e.name).path, size: e.size, folder: e.folder })), dir);
         loadError = null;
       } catch (e) { listing = { folders: [], files: [] }; loadError = e.message; }
       draw();
@@ -610,6 +613,7 @@ function startFind(backward = false, regexp = false) {
       if (JSON.stringify(currentBuffer().folds) !== JSON.stringify(finding.folds)) session.setFolds(shownId, finding.folds);
       editor.setSelectionRange(toShown(cur.proj, finding.start), toShown(cur.proj, finding.end));
     }
+    if (!restore && toFull(cur.proj, editor.selectionStart) !== finding.start) { places.push({ kind: 'place', id: shownId, offset: finding.start }); showBack(); }
     finding = null;
     hit = null;
     paintOverlay();
@@ -932,6 +936,22 @@ async function openAgenda(kind) {
   await agendaScreen();
 }
 
+/** Listeners for a mostly sideways swipe: left asks for 1 (later), right for -1 (earlier). Returns the properties to put on the element. */
+function sidewaysSwipe(onSwipe) {
+  let from = null;
+  return {
+    onpointerdown: (e) => { from = { x: e.clientX, y: e.clientY }; },
+    onpointercancel: () => { from = null; },
+    onpointerup: (e) => {
+      if (!from) return;
+      const dx = e.clientX - from.x;
+      const dy = e.clientY - from.y;
+      from = null;
+      if (Math.abs(dx) >= 60 && Math.abs(dx) > 1.5 * Math.abs(dy)) onSwipe(dx < 0 ? 1 : -1);
+    },
+  };
+}
+
 /** The agenda over the open files: a full screen of rows for the dates, the TODO list, tags or a search. Tapping a row goes to that heading. */
 async function agendaScreen() {
   agendaState.anchor ??= todayDate();
@@ -943,8 +963,14 @@ async function agendaScreen() {
       view = st.kind === 'todo' ? todoList(files, { keyword: st.keyword }) : st.kind === 'tags' ? tagsView(files, { match: st.match }) : st.kind === 'search' ? searchView(files, { words: st.words })
         : agenda(files, { start: st.span === 'week' ? mondayOf(st.anchor) : st.anchor, span: st.span, today: todayDate() });
     } catch (e) { failure(e); st.kind = 'agenda'; return; }
+    let onMoveKey = null;
     const act = await panel((sheet, close) => {
       sheet.classList.add('full', 'agenda');
+      if (st.kind === 'agenda') {
+        // f and b move later and earlier, as in the Emacs agenda; a sideways swipe on the rows does the same.
+        onMoveKey = (e) => { if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'f' || e.key === 'b')) { e.preventDefault(); e.stopPropagation(); close({ move: e.key === 'f' ? 1 : -1 }); } };
+        document.addEventListener('keydown', onMoveKey, true);
+      }
       const row = (e) => h('button', { class: 'arow', onclick: () => close({ jump: e }) },
         h('span', { class: `alabel${e.late > 0 && e.kind !== 'stamp' ? ' late' : ''}` }, [e.clock, e.label].filter(Boolean).join(' ') || e.category),
         h('span', { class: 'atitle' }, [e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ')),
@@ -952,15 +978,16 @@ async function agendaScreen() {
       const body = st.kind === 'agenda'
         ? view.days.flatMap((d) => [h('div', { class: `aday${d.today ? ' today' : ''}` }, d.head), ...d.entries.map(row)])
         : view.entries.length ? view.entries.map(row) : [h('p', { class: 'aempty' }, 'No entries')];
-      const nav = st.kind === 'agenda' ? [h('button', { 'aria-label': 'Earlier', onclick: () => close({ move: -1 }) }, '‹'), h('button', { 'aria-label': 'Later', onclick: () => close({ move: 1 }) }, '›')] : [];
+      const nav = st.kind === 'agenda' ? [h('button', { 'aria-label': 'Earlier', onclick: () => close({ move: -1 }) }, h('span', { class: 'chev left' })), h('button', { 'aria-label': 'Later', onclick: () => close({ move: 1 }) }, h('span', { class: 'chev right' }))] : [];
       put(sheet,
         h('div', { class: 'abar' }, nav[0] ?? null, h('div', { class: 'atitlebar' }, view.title.replace(/:$/, '')), nav[1] ?? null),
-        h('div', { class: 'abody' }, ...body),
+        Object.assign(h('div', { class: 'abody' }, ...body), st.kind === 'agenda' ? sidewaysSwipe((dir) => close({ move: dir })) : {}),
         h('div', { class: 'abar' },
           ...(st.kind === 'agenda' ? SPANS.map(([v, l]) => h('button', { class: st.span === v ? 'primary' : '', onclick: () => close({ span: v }) }, l)) : []),
           h('button', { onclick: () => close({ views: true }) }, 'Views'),
           h('button', { onclick: () => close(undefined) }, 'Close')));
     });
+    if (onMoveKey) document.removeEventListener('keydown', onMoveKey, true);
     if (!act) return;
     if (act.move) agendaMove(act.move);
     else if (act.span) { st.span = act.span; if (act.span === 'week') st.anchor = mondayOf(st.anchor); }
@@ -974,6 +1001,9 @@ async function agendaScreen() {
       if (v) { st.kind = v; st.keyword = null; }
     } else if (act.jump) {
       const e = act.jump;
+      leaveHere();
+      places.push({ kind: 'agenda' });
+      showBack();
       session.select(files[e.file].id);
       setView('text');
       placeCursor(e.line);
@@ -1074,7 +1104,7 @@ function todoStep(dir) {
     const c = cycleTodo(t, l, dir, tagsColumn());
     if (!c.state || !before.todo.done.includes(c.state)) return c;
     // Finishing a repeating task: the date moves on and the task is open again
-    const rep = completeRepeat({ text: c.text, line: l, from: from ?? '', to: c.state, reopen: before.todo.open[0], now: new Date() });
+    const rep = completeRepeat({ text: c.text, line: l, from: from ?? '', to: c.state, reopen: before.todo.open[0], now: localNow() });
     if (!rep) return c;
     said.push(`TODO state changed to ${c.state}`, `TODO state changed to ${before.todo.open[0]}`);
     return { ...c, text: rep.text, state: null };
@@ -1084,6 +1114,8 @@ function todoStep(dir) {
 }
 
 /** Today as the date the prompts offer: the calendar date here, kept as a UTC date. */
+/** The wall-clock time now, as the UTC fields the timestamp code reads. */
+const localNow = () => { const n = new Date(); return new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate(), n.getHours(), n.getMinutes(), n.getSeconds())); };
 const todayDate = () => { const n = new Date(); return new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate())); };
 const dayOf = (d) => d.toISOString().slice(0, 10);
 
@@ -1103,6 +1135,15 @@ function shiftOrPriority(dir) {
   }
   const r = onEnclosingHeading((t, l) => stepPriority(t, l, dir, tagsColumn()));
   if (r) sayPriority(r.line);
+}
+
+/** S-left and S-right: on a timestamp they move the date a day; elsewhere they change the TODO state. */
+function shiftDayOrTodo(dir) {
+  if (viewMode() === 'text') {
+    const r = shiftStamp(currentBuffer().text, cursorOffset(), dir, { sideways: true });
+    if (r) { session.apply(currentBuffer().id, { text: r.text }); placeOffset(r.pos); return; }
+  }
+  todoStep(dir);
 }
 
 async function planHere(keyword, label, said) {
@@ -1140,8 +1181,9 @@ const COMMANDS = {
   'backward-word': () => goTo(backwardWord(editor.value, focusPoint())),
   'beginning-of-line': () => goTo(startOfLine(editor.value, focusPoint())),
   'end-of-line': () => goTo(endOfLine(editor.value, focusPoint())),
-  'beginning-of-buffer': () => goTo(0),
-  'end-of-buffer': () => goTo(editor.value.length),
+  'beginning-of-buffer': () => { leaveHere(); goTo(0); },
+  'end-of-buffer': () => { leaveHere(); goTo(editor.value.length); },
+  'back': () => goBack(),
   'quit': () => message('Quit', true),
   'cycle': () => { const { line, kind } = kindAtCursor(); if (kind === null) message('Not at a heading or list item'); else cycleHeading(line); },
   'cycle-global': () => {
@@ -1168,8 +1210,8 @@ const COMMANDS = {
     if (r) placeCursor(r.line, true);
   },
   'todo': () => todoStep(1),
-  'todo-next': () => todoStep(1),
-  'todo-previous': () => todoStep(-1),
+  'todo-next': () => shiftDayOrTodo(1),
+  'todo-previous': () => shiftDayOrTodo(-1),
   'priority-up': () => shiftOrPriority(-1),
   'priority-down': () => shiftOrPriority(1),
   schedule: () => planHere('SCHEDULED', 'SCHEDULED', 'Scheduled to'),
@@ -1224,6 +1266,33 @@ let wasKill = false;
 /** Where the cursor is in the real text. */
 const cursorOffset = () => toFull(cur.proj, editor.selectionStart);
 
+/** Records where the cursor is before a jump leaves it, so Back can return. */
+function leaveHere() {
+  if (shownId === null || !cur) return;
+  places.push({ kind: 'place', id: shownId, offset: cursorOffset() });
+  showBack();
+}
+
+const placeValid = (e) => e.kind === 'agenda' || session.state().buffers.some((b) => b.id === e.id);
+const showBack = () => { $('back').hidden = places.peek(placeValid) === null; };
+
+/** What the Back button says it will do. */
+function backLabel(e) {
+  if (e.kind === 'agenda') return 'Back to the agenda';
+  const b = session.state().buffers.find((x) => x.id === e.id);
+  return `Back to ${b.title}, line ${b.text.slice(0, e.offset).split('\n').length}`;
+}
+
+function goBack() {
+  const e = places.pop(placeValid);
+  showBack();
+  if (!e) { message('No previous place'); return; }
+  if (e.kind === 'agenda') { agendaScreen(); return; }
+  session.select(e.id);
+  setView('text');
+  placeOffset(Math.min(e.offset, currentBuffer().text.length));
+}
+
 function placeOffset(p) {
   const s = toShown(cur.proj, p);
   editor.setSelectionRange(s, s);
@@ -1274,6 +1343,7 @@ async function gotoLine() {
   if (!Number.isInteger(line) || line < 1 || line > n) { message(`Line ${value} is not between 1 and ${n}`, true); return; }
   const opened = reveal(cur.a.foldables, b.folds, line - 1);
   if (JSON.stringify(opened) !== JSON.stringify(b.folds)) session.setFolds(b.id, opened);
+  leaveHere();
   placeOffset(lineStart(b.text, line));
 }
 
@@ -1427,6 +1497,31 @@ async function headingActions(line) {
 
 // Swiping a heading from right to left cycles it, like TAB.
 let swipe = null;
+// The Back button: a tap goes back; a long press says where it would go.
+{
+  const back = $('back');
+  const note = $('backnote');
+  let timer = null;
+  let held = false;
+  let hide = null;
+  back.addEventListener('mousedown', (e) => e.preventDefault()); // an open keyboard and the cursor stay as they are
+  back.addEventListener('contextmenu', (e) => e.preventDefault());
+  back.addEventListener('pointerdown', () => {
+    held = false;
+    timer = setTimeout(() => {
+      held = true;
+      const e = places.peek(placeValid);
+      if (!e) return;
+      note.textContent = backLabel(e);
+      note.hidden = false;
+      clearTimeout(hide);
+      hide = setTimeout(() => { note.hidden = true; }, 2500);
+    }, 500);
+  });
+  for (const type of ['pointerup', 'pointercancel', 'pointerleave']) back.addEventListener(type, () => clearTimeout(timer));
+  back.addEventListener('click', () => { if (held) { held = false; return; } note.hidden = true; goBack(); });
+}
+
 $('outline').addEventListener('pointerdown', (e) => {
   const row = e.target.closest('.ol-head');
   swipe = row ? { line: Number(row.dataset.line), x: e.clientX, y: e.clientY } : null;
@@ -1457,7 +1552,7 @@ const PALETTE = [
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
   ['insert-heading', 'org-insert-heading-respect-content', 'Insert heading after subtree'], ['insert-heading-here', 'org-meta-return', 'Insert heading here'],
   ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],
-  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true],
+  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true],
   ['undo', 'undo', 'Undo', true], ['redo', 'undo-redo', 'Redo', true],
   ['select-all', 'mark-whole-buffer', 'Select all'], ['kill-line', 'kill-line', 'Cut to end of line'], ['kill-whole-line', 'kill-whole-line', 'Cut whole line'], ['yank', 'yank', 'Paste'],
   ['next-line', 'next-line', 'Next line'], ['previous-line', 'previous-line', 'Previous line'], ['forward-char', 'forward-char', 'Forward character'], ['backward-char', 'backward-char', 'Backward character'],
@@ -1609,7 +1704,7 @@ editor.addEventListener('keydown', (e) => {
   const held = keyRow.sticky();
   const fromRow = held.ctrl || held.meta || held.shift;
   const chord = chordOf({ key: e.key, ctrl: e.ctrlKey || held.ctrl, meta: e.altKey || e.metaKey || held.meta, shift: e.shiftKey || held.shift });
-  if (HEADING_ONLY.has(chord) && kindAtCursor().kind !== 'heading' && !((chord === 'S-<up>' || chord === 'S-<down>') && stampAt(currentBuffer().text, cursorOffset()))) return; // elsewhere the arrows select, as usual
+  if (HEADING_ONLY.has(chord) && kindAtCursor().kind !== 'heading' && !stampAt(currentBuffer().text, cursorOffset())) return; // elsewhere the arrows select, as usual
   if ((chord === 'C-c' || chord === 'C-x' || chord === 'C-v') && !held.ctrl && keymap.pending() === '') return; // a keyboard's own C-c, C-x and C-v stay copy, cut and paste; the prefixes come from the key row
   if (chord) runChord(chord, e, fromRow);
   else if (keymap.pending() && e.key.length === 1) runChord(e.key, e, false);
@@ -1690,7 +1785,7 @@ const keyRow = createKeyRow({
     }
     const chord = chordOf({ key, ...mods });
     // Shift and an arrow from the key row: on a heading, or up and down on a timestamp, they are the Org keys, as from a keyboard.
-    if (plainArrow && !(HEADING_ONLY.has(chord) && (kindAtCursor().kind === 'heading' || ((chord === 'S-<up>' || chord === 'S-<down>') && stampAt(currentBuffer().text, cursorOffset()))))) { moveCursor(key, true); return; }
+    if (plainArrow && !(HEADING_ONLY.has(chord) && (kindAtCursor().kind === 'heading' || stampAt(currentBuffer().text, cursorOffset())))) { moveCursor(key, true); return; }
     if (chord) runChord(chord, { preventDefault() {} }, true);
   },
 });

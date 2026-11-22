@@ -1,0 +1,303 @@
+[
+ {
+  "id": "br-after-text",
+  "input": "* TODO A\nSome notes here.\n<2026-11-30 Mon +1w>\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-t",
+  "text": "* TODO A\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 16:09]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 16:09]\nSome notes here.\n<2026-12-07 Mon +1w>\n",
+  "messages": [
+   "TODO state changed to DONE",
+   "TODO state changed to TODO",
+   "Entry repeats: Plain: <2026-12-07 Mon +1w> ",
+   "Note stored",
+   "Entry repeats: Plain: <2026-12-07 Mon +1w> "
+  ]
+ },
+ {
+  "id": "br-child",
+  "input": "* TODO A\n** B\n<2026-11-30 Mon +1w>\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-t",
+  "text": "* DONE A\n** B\n<2026-11-30 Mon +1w>\n",
+  "messages": [
+   "TODO state changed to DONE"
+  ]
+ },
+ {
+  "id": "br-closed-line",
+  "input": "* TODO A\nCLOSED: [2026-11-01 Sun 10:00]\n<2026-11-30 Mon +1w>\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-t",
+  "text": "* TODO A\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 16:09]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 16:09]\n<2026-12-07 Mon +1w>\n",
+  "messages": [
+   "TODO state changed to DONE",
+   "TODO state changed to TODO",
+   "Entry repeats: Plain: <2026-12-07 Mon +1w> ",
+   "Note stored",
+   "Entry repeats: Plain: <2026-12-07 Mon +1w> "
+  ]
+ },
+ {
+  "id": "br-deadline",
+  "input": "* TODO A\nDEADLINE: <2026-11-30 Mon +1w>\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-t",
+  "text": "* TODO A\nDEADLINE: <2026-12-07 Mon +1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 16:09]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 16:09]",
+  "messages": [
+   "TODO state changed to DONE",
+   "TODO state changed to TODO",
+   "Entry repeats: DEADLINE: <2026-12-07 Mon +1w> ",
+   "Note stored",
+   "Entry repeats: DEADLINE: <2026-12-07 Mon +1w> "
+  ]
+ },
+ {
+  "id": "br-dot-plus",
+  "input": "* TODO A\n<2026-11-02 Mon .+1w>\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-t",
+  "text": "* TODO A\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 16:09]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 16:09]\n<2026-11-29 Sun .+1w>\n",
+  "messages": [
+   "TODO state changed to DONE",
+   "TODO state changed to TODO",
+   "Entry repeats: Plain: <2026-11-29 Sun .+1w> ",
+   "Note stored",
+   "Entry repeats: Plain: <2026-11-29 Sun .+1w> "
+  ]
+ },
+ {
+  "id": "br-drawer",
+  "input": "* TODO A\n:PROPERTIES:\n:ID: x\n:END:\n<2026-11-30 Mon +1w>\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-t",
+  "text": "* TODO A\n:PROPERTIES:\n:ID: x\n:LAST_REPEAT: [2026-11-22 Sun 16:09]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 16:09]\n<2026-12-07 Mon +1w>\n",
+  "messages": [
+   "TODO state changed to DONE",
+   "TODO state changed to TODO",
+   "Entry repeats: Plain: <2026-12-07 Mon +1w> ",
+   "Note stored",
+   "Entry repeats: Plain: <2026-12-07 Mon +1w> "
+  ]
+ },
+ {
+  "id": "br-in-text",
+  "input": "* TODO A\nPay rent <2026-11-30 Mon +1m> today\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-t",
+  "text": "* TODO A\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 16:09]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 16:09]\nPay rent <2026-12-30 Wed +1m> today\n",
+  "messages": [
+   "TODO state changed to DONE",
+   "TODO state changed to TODO",
+   "Entry repeats: Plain: <2026-12-30 Wed +1m> ",
+   "Note stored",
+   "Entry repeats: Plain: <2026-12-30 Wed +1m> "
+  ]
+ },
+ {
+  "id": "br-inactive",
+  "input": "* TODO A\n[2026-11-30 Mon +1w]\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-t",
+  "text": "* DONE A\n[2026-11-30 Mon +1w]\n",
+  "messages": [
+   "TODO state changed to DONE"
+  ]
+ },
+ {
+  "id": "br-no-repeater",
+  "input": "* TODO A\n<2026-11-30 Mon>\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-t",
+  "text": "* DONE A\n<2026-11-30 Mon>\n",
+  "messages": [
+   "TODO state changed to DONE"
+  ]
+ },
+ {
+  "id": "br-plan-and-body",
+  "input": "* TODO A\nSCHEDULED: <2026-11-30 Mon +1w>\n<2026-12-05 Sat +1m>\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-t",
+  "text": "* TODO A\nSCHEDULED: <2026-12-07 Mon +1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 16:09]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 16:09]\n<2027-01-05 Tue +1m>\n",
+  "messages": [
+   "TODO state changed to DONE",
+   "TODO state changed to TODO",
+   "Entry repeats: SCHEDULED: <2026-12-07 Mon +1w> Plain: <2027-01-05 Tue +1m> ",
+   "Note stored",
+   "Entry repeats: SCHEDULED: <2026-12-07 Mon +1w> Plain: <2027-01-05 Tue +1m> "
+  ]
+ },
+ {
+  "id": "br-plus-plus",
+  "input": "* TODO A\n<2026-11-02 Mon ++1w>\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-t",
+  "text": "* TODO A\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 16:09]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 16:09]\n<2026-11-23 Mon ++1w>\n",
+  "messages": [
+   "TODO state changed to DONE",
+   "TODO state changed to TODO",
+   "Entry repeats: Plain: <2026-11-23 Mon ++1w> ",
+   "Note stored",
+   "Entry repeats: Plain: <2026-11-23 Mon ++1w> "
+  ]
+ },
+ {
+  "id": "br-time",
+  "input": "* TODO A\n<2026-11-30 Mon 09:30 +1w>\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-t",
+  "text": "* TODO A\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 16:09]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 16:09]\n<2026-12-07 Mon 09:30 +1w>\n",
+  "messages": [
+   "TODO state changed to DONE",
+   "TODO state changed to TODO",
+   "Entry repeats: Plain: <2026-12-07 Mon 09:30 +1w> ",
+   "Note stored",
+   "Entry repeats: Plain: <2026-12-07 Mon 09:30 +1w> "
+  ]
+ },
+ {
+  "id": "br-two-body",
+  "input": "* TODO A\n<2026-11-30 Mon +1w>\n<2026-12-05 Sat +1m>\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-t",
+  "text": "* TODO A\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 16:09]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 16:09]\n<2026-12-07 Mon +1w>\n<2027-01-05 Tue +1m>\n",
+  "messages": [
+   "TODO state changed to DONE",
+   "TODO state changed to TODO",
+   "Entry repeats: Plain: <2026-12-07 Mon +1w> Plain: <2027-01-05 Tue +1m> ",
+   "Note stored",
+   "Entry repeats: Plain: <2026-12-07 Mon +1w> Plain: <2027-01-05 Tue +1m> "
+  ]
+ },
+ {
+  "id": "ts-body-repeat",
+  "input": "* TODO A\n<2026-11-30 Mon +1w>\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-t",
+  "text": "* TODO A\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 16:09]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-22 Sun 16:09]\n<2026-12-07 Mon +1w>\n",
+  "messages": [
+   "TODO state changed to DONE",
+   "TODO state changed to TODO",
+   "Entry repeats: Plain: <2026-12-07 Mon +1w> ",
+   "Note stored",
+   "Entry repeats: Plain: <2026-12-07 Mon +1w> "
+  ]
+ },
+ {
+  "id": "ts-rep-up",
+  "input": "* A\n<2026-11-30 Mon +1w>\n",
+  "line": 2,
+  "col": 17,
+  "keys": "S-<up>",
+  "text": "* A\n<2026-11-30 Mon +2w>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-rep-unit",
+  "input": "* A\n<2026-11-30 Mon +1w>\n",
+  "line": 2,
+  "col": 18,
+  "keys": "S-<up>",
+  "text": "* A\n<2026-11-30 Mon +1m>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-sleft-day",
+  "input": "* TODO A\nSCHEDULED: <2026-11-30 Mon>\n",
+  "line": 2,
+  "col": 20,
+  "keys": "S-<left>",
+  "text": "* TODO A\nSCHEDULED: <2026-11-29 Sun>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-sright-day",
+  "input": "* TODO A\nSCHEDULED: <2026-11-30 Mon>\n",
+  "line": 2,
+  "col": 20,
+  "keys": "S-<right>",
+  "text": "* TODO A\nSCHEDULED: <2026-12-01 Tue>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-sright-month",
+  "input": "* TODO A\nSCHEDULED: <2026-11-30 Mon>\n",
+  "line": 2,
+  "col": 17,
+  "keys": "S-<right>",
+  "text": "* TODO A\nSCHEDULED: <2026-12-01 Tue>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-sright-year",
+  "input": "* TODO A\nSCHEDULED: <2026-11-30 Mon>\n",
+  "line": 2,
+  "col": 13,
+  "keys": "S-<right>",
+  "text": "* TODO A\nSCHEDULED: <2026-12-01 Tue>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-min-up",
+  "input": "* A\n<2026-11-30 Mon 09:32>\n",
+  "line": 2,
+  "col": 20,
+  "keys": "S-<up>",
+  "text": "* A\n<2026-11-30 Mon 09:35>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-min-down",
+  "input": "* A\n<2026-11-30 Mon 09:32>\n",
+  "line": 2,
+  "col": 20,
+  "keys": "S-<down>",
+  "text": "* A\n<2026-11-30 Mon 09:30>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-hour-down",
+  "input": "* A\n<2026-11-30 Mon 09:32>\n",
+  "line": 2,
+  "col": 17,
+  "keys": "S-<down>",
+  "text": "* A\n<2026-11-30 Mon 08:32>\n",
+  "messages": []
+ },
+ {
+  "id": "ts-open-bracket",
+  "input": "* TODO A\nSCHEDULED: <2026-11-30 Mon>\n",
+  "line": 2,
+  "col": 11,
+  "keys": "S-<up>",
+  "text": "* TODO A\nSCHEDULED: [2026-11-30 Mon]\n",
+  "messages": [
+   "Timestamp is now inactive"
+  ]
+ },
+ {
+  "id": "ts-inactive-toggle",
+  "input": "* A\n[2026-11-30 Mon]\n",
+  "line": 2,
+  "col": 15,
+  "keys": "S-<up>",
+  "text": "* A\n<2026-11-30 Mon>\n",
+  "messages": [
+   "Timestamp is now active"
+  ]
+ }
+]

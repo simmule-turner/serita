@@ -132,9 +132,16 @@ export function createWebdavProvider({ baseUrl, getCredentials, fetch = (...a) =
       throw await fail(res);
     },
 
-    async entries(pathPrefix = '') {
+    /** With shallow, only the folder that holds the prefix is listed, one request, and its folders come back as { folder: true }. */
+    async entries(pathPrefix = '', { shallow = false } = {}) {
       const start = pathPrefix.includes('/') ? pathPrefix.slice(0, pathPrefix.lastIndexOf('/') + 1) : '';
       const files = [];
+      if (shallow) {
+        const here = (await propfind(start)) ?? [];
+        return here.filter((e) => e.path !== start.replace(/\/$/, '') && e.path.startsWith(pathPrefix))
+          .map((e) => (e.isCollection ? { path: e.path, size: null, folder: true } : { path: e.path, size: e.size }))
+          .sort((a, b) => (a.path < b.path ? -1 : a.path > b.path ? 1 : 0));
+      }
       let level = [start];
       while (level.length) {
         const listed = await Promise.all(level.map(async (dir) => ({ dir, entries: await propfind(dir) })));

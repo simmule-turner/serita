@@ -65,14 +65,14 @@ export function createCachedProvider({ remote, cache, isOnline = () => true }) {
       }
     },
 
-    async entries(prefix = '') {
+    async entries(prefix = '', options) {
       const keys = (await cache.keys()).filter((k) => k.startsWith(prefix));
       const recs = new Map(await Promise.all(keys.map(async (k) => [k, await cache.get(k)])));
       const sizeOf = (r) => { const t = r.local ?? r.base?.text; return typeof t === 'string' ? byteLength(t) : null; };
       const deleted = new Set(keys.filter((k) => recs.get(k).deleted));
       let found;
       try {
-        found = await attempt(() => remote.entries(prefix));
+        found = await attempt(() => remote.entries(prefix, options));
       } catch (e) {
         if (!(e instanceof NetworkUnavailable)) throw e;
         found = keys.map((path) => ({ path, size: sizeOf(recs.get(path)) }));

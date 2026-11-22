@@ -77,3 +77,26 @@ test('Emacs typed date forms: month names, am/pm and a time range', () => {
   assert.equal(f('2026-12-03 10:00-11:30'), '<2026-12-03 Thu 10:00-11:30>');
   assert.equal(f('2026-12-1'), '<2026-12-01 Tue>');
 });
+
+const rep = JSON.parse(readFileSync(new URL('./fixtures/emacs-repeat.json', import.meta.url), 'utf8'));
+const repNow = new Date(Date.UTC(2026, 10, 22, 16, 9));
+
+for (const c of rep.filter((x) => x.id.startsWith('br-') || x.id === 'ts-body-repeat')) {
+  test(`Emacs finishing a repeating task: ${c.id}`, () => {
+    const r = completeRepeat({ text: c.input, line: 0, from: 'TODO', to: 'DONE', reopen: 'TODO', now: repNow });
+    // Emacs left no newline after a log line at the end of the buffer.
+    if (r === null) assert.equal(c.text, c.input.replace('* TODO', '* DONE'));
+    else assert.equal(r.text.trimEnd(), c.text.trimEnd());
+  });
+}
+
+for (const c of rep.filter((x) => /^ts-(rep|sleft|sright|min|hour|open|inactive)/.test(x.id) && x.id !== 'ts-body-repeat')) {
+  test(`Emacs S-arrow on a timestamp: ${c.id}`, () => {
+    const lines = c.input.split('\n');
+    const offset = lines.slice(0, c.line - 1).reduce((n, l) => n + l.length + 1, 0) + c.col;
+    const sideways = /left|right/.test(c.keys);
+    const r = shiftStamp(c.input, offset, /up|right/.test(c.keys) ? 1 : -1, { sideways });
+    assert.equal(r.text, c.text);
+    if (c.messages.length) assert.equal(r.said, c.messages[0]);
+  });
+}

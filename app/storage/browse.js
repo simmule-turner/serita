@@ -8,7 +8,7 @@ const cmp = (a, b) => {
 };
 
 /**
- * @param {{ path: string, size: number | null }[]} entries paths relative to the storage root
+ * @param {{ path: string, size: number | null, folder?: boolean }[]} entries paths relative to the storage root; a folder entry names a folder itself
  * @param {string} [dir] "" for the root, otherwise a path ending in "/"
  * @returns {{ folders: string[], files: { name: string, size: number | null }[] }}
  */
@@ -18,6 +18,7 @@ export function children(entries, dir = '') {
   for (const e of entries) {
     if (!e.path.startsWith(dir)) continue;
     const rest = e.path.slice(dir.length);
+    if (e.folder) { folders.add(rest); continue; }
     const i = rest.indexOf('/');
     if (i < 0) files.push({ name: rest, size: e.size });
     else folders.add(rest.slice(0, i));
