@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.4.2
+C-s and C-r start a forward or backward search in the Text view, and press again inside the search for the next or previous match. Letters typed on an on-screen keyboard now count as key presses when Ctrl or Meta is held on the key row, or after a prefix such as C-c, so C-n, C-p, C-s and C-c C-t work from the key row instead of inserting the letter. Cancelling a search returns the cursor to where it began. Verified: the related browser checks pass.
+
 * 0.4.1
 Same as 0.4.0, repackaged with the files at the top level of the zip.
 

@@ -67,6 +67,31 @@ await page.keyboard.press('Control+a'); await page.keyboard.type('plant');
 ok(await page.locator('#findbar .prompt').textContent() === 'I-search:', 'a hit shows the plain prompt');
 await page.keyboard.press('Escape');
 
+// C-s and C-r start a search from the keyboard; the cancel button goes back to where it began
+await at('one two one two one\n', 1);
+await page.evaluate(() => { const e = document.getElementById('editor'); e.setSelectionRange(8, 8); });
+await page.keyboard.press('Control+s'); await page.keyboard.type('one');
+ok(await page.locator('#findbar .prompt').textContent() === 'I-search:', 'C-s opens Find');
+await page.keyboard.press('Control+s');
+await page.getByLabel('Cancel search').click();
+ok(await page.evaluate(() => { const e = document.getElementById('editor'); return e.selectionStart === 8 && e.selectionEnd === 8; }), 'cancelling returns the cursor to where the search began');
+await page.keyboard.press('Control+r'); await page.keyboard.type('two');
+ok(await page.locator('#findbar .prompt').textContent() === 'I-search backward:', 'C-r opens a backward search');
+ok(await page.evaluate(() => { const e = document.getElementById('editor'); return e.selectionStart === 4; }), 'C-r finds the match before the cursor');
+await page.keyboard.press('Escape');
+
+// Letters from an on-screen keyboard arrive as typed text: with Ctrl held on the key row they are chords
+await at('ab\ncd\n', 1);
+await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await page.keyboard.insertText('n');
+ok((await text()) === 'ab\ncd\n' && await page.evaluate(() => document.getElementById('editor').selectionStart === 3), 'Ctrl on the key row and a typed n is C-n');
+await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await page.keyboard.insertText('s');
+ok(await page.locator('#findbar .prompt').textContent() === 'I-search:', 'Ctrl and a typed s is C-s');
+await page.keyboard.press('Escape');
+await at('* H\n', 1);
+await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await page.keyboard.insertText('c');
+await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await page.keyboard.insertText('t');
+ok((await text()) === '* TODO H\n', 'C-c C-t from typed letters changes the TODO state');
+
 // Menu: Commands
 await page.click('#btn-menu');
 const items = await sheet.locator('.item').allTextContents();

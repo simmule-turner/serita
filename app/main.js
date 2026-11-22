@@ -472,11 +472,13 @@ function browse({ mode, suggested = '', current = null }) {
 let finding = null;
 const mini = createMinibuffer({ root: $('findbar'), list: $('completions'), bell: () => beep(), restoreFocus: () => { if (viewMode() === 'text') editor.focus({ preventScroll: true }); } });
 
-function startFind() {
+function startFind(backward = false) {
   if (finding || shownId === null) return;
   if (viewMode() === 'outline') setView('text');
   finding = { start: toFull(cur.proj, editor.selectionStart), end: toFull(cur.proj, editor.selectionEnd), folds: currentBuffer().folds };
   let mb;
+  let dir = backward;
+  const name = () => (dir ? 'I-search backward:' : 'I-search:');
   const input = () => mb.input;
   const show = (found) => {
     const b = currentBuffer();
@@ -495,10 +497,10 @@ function startFind() {
   };
   const go = (backward, from) => {
     const q = input().value;
-    if (q === '') { mb.setPrompt('I-search:'); return; }
+    if (q === '') { mb.setPrompt(name()); return; }
     const m = search(currentBuffer().text, q, { from, backward });
-    if (!m) { mb.setPrompt('Failing I-search:', true); beep(); return; }
-    mb.setPrompt(m.wrapped ? 'Wrapped I-search:' : 'I-search:');
+    if (!m) { mb.setPrompt(`Failing ${name()}`, true); beep(); return; }
+    mb.setPrompt(m.wrapped ? `Wrapped ${name()}` : name());
     show(m);
   };
   const end = (restore) => {
@@ -515,18 +517,21 @@ function startFind() {
   };
   const selStart = () => toFull(cur.proj, editor.selectionStart);
   const selEnd = () => toFull(cur.proj, editor.selectionEnd);
+  // C-s, C-r and the buttons go to the next or previous match; the prompt names the direction last used.
+  const step = (back) => { dir = back; mb.setPrompt(name()); go(back, back ? selStart() : selEnd()); };
   mb = mini.open({
-    prompt: 'I-search:',
+    prompt: name(),
     label: 'Search',
-    onInput: () => go(false, selStart()),
+    onInput: () => go(dir, dir ? selEnd() : selStart()),
     onKey(e) {
       if (e.key === 'Enter') { e.preventDefault(); end(false); return true; }
       if (e.key === 'Escape' || (e.ctrlKey && e.key === 'g')) { e.preventDefault(); e.stopPropagation(); end(true); return true; }
+      if (e.ctrlKey && (e.key === 's' || e.key === 'r')) { e.preventDefault(); step(e.key === 'r'); return true; }
       return false;
     },
     buttons: [
-      { label: '▲', aria: 'Previous match', onclick: () => go(true, selStart()) },
-      { label: '▼', aria: 'Next match', onclick: () => go(false, selEnd()) },
+      { label: '▲', aria: 'Previous match', onclick: () => step(true) },
+      { label: '▼', aria: 'Next match', onclick: () => step(false) },
       { label: '✕', aria: 'Cancel search', onclick: () => end(true) },
     ],
   });
@@ -766,7 +771,7 @@ async function filesMenu() {
 
 $('btn-files').addEventListener('click', filesMenu);
 $('btn-save').addEventListener('click', () => { if (shownId !== null) saveBuffer(shownId); });
-$('btn-find').addEventListener('click', startFind);
+$('btn-find').addEventListener('click', () => startFind());
 $('btn-view').addEventListener('click', async () => {
   const what = await choose(null, ['outline', 'text'].map((v) => ({ label: v === 'outline' ? 'Outline' : 'Text', meta: viewMode() === v ? 'current' : null, value: v })));
   if (what) setView(what);
@@ -909,7 +914,8 @@ const COMMANDS = {
   'set-property': () => withHeading(setPropertyDialog),
   'delete-property': () => withHeading(deletePropertyDialog),
   'set-tags': () => withHeading(setTagsDialog),
-  'isearch': () => startFind(),
+  'isearch-forward': () => startFind(false),
+  'isearch-backward': () => startFind(true),
   'execute-command': () => commandPalette(),
   'toggle-checkbox': () => { if (!runEdit((t) => toggleCheckbox(t, kindAtCursor().line))) message('Nothing to do here'); },
   'insert-heading-here': () => { const r = runEdit((t) => insertHeadingHere(t, cursorOffset())); if (r) placeOffset(r.pos); },
@@ -1169,7 +1175,7 @@ const PALETTE = [
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
   ['insert-heading', 'org-insert-heading-respect-content', 'Insert heading after subtree'], ['insert-heading-here', 'org-meta-return', 'Insert heading here'],
   ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'],
-  ['isearch', 'isearch-forward', 'Find', true], ['goto-line', 'goto-line', 'Go to line', true],
+  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['goto-line', 'goto-line', 'Go to line', true],
   ['undo', 'undo', 'Undo', true], ['redo', 'undo-redo', 'Redo', true],
   ['select-all', 'mark-whole-buffer', 'Select all'], ['kill-line', 'kill-line', 'Cut to end of line'], ['kill-whole-line', 'kill-whole-line', 'Cut whole line'], ['yank', 'yank', 'Paste'],
   ['next-line', 'next-line', 'Next line'], ['previous-line', 'previous-line', 'Previous line'], ['forward-char', 'forward-char', 'Forward character'], ['backward-char', 'backward-char', 'Backward character'],
@@ -1310,6 +1316,18 @@ editor.addEventListener('keydown', (e) => {
   if (chord) runChord(chord, e, fromRow);
   else if (keymap.pending() && e.key.length === 1) runChord(e.key, e, false);
   if (fromRow && !MODIFIER_KEYS.includes(e.key)) keyRow.clear();
+});
+
+// An on-screen keyboard reports its letters as typed text, not as key presses. With Ctrl or Meta held on the key row, or after a prefix such as
+// C-c, such a letter is a key chord and not text to insert.
+editor.addEventListener('beforeinput', (e) => {
+  if (!emacsKeys() || viewMode() !== 'text' || e.inputType !== 'insertText' || e.data?.length !== 1) return;
+  const held = keyRow.sticky();
+  if (!held.ctrl && !held.meta && keymap.pending() === '') return;
+  const chord = chordOf({ key: e.data, ctrl: held.ctrl, meta: held.meta, shift: held.shift });
+  e.preventDefault();
+  runChord(chord ?? e.data, { preventDefault() {} }, true);
+  keyRow.clear();
 });
 
 // Whether the on-screen keyboard is wanted while the key row is shown. The editor keeps focus either way.

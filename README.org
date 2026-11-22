@@ -32,6 +32,7 @@ Settings, Emacs keys, turns on these keys in the Text view:
 - C-RET :: inserts a heading after the current subtree, from the heading or anywhere in its body.
 - C-n, C-p :: move down or up one screen line, keeping the column; C-f, C-b move a character; C-a, C-e go to the start or end of the line; M-f, M-b move a word; M-<, M-> go to the start or end of the text; C-v, M-v move a screen down or up. On plain text M-right moves a word.
 - C-g :: quits a pending key or command. Errors and quits give a short beep (Settings, Beep on errors).
+- C-s, C-r :: search forward or backward; again inside the search, the next or previous match. C-g or the cancel button returns to where you started.
 - C-c C-t :: changes the TODO state, from the heading or anywhere in its body. S-right and S-left go to the next or previous state; the parent's ~[2/4]~ count follows.
 - S-up, S-down :: raise or lower the priority of the heading. C-c , asks for it: A, B, C, or SPC to remove.
 - C-c C-x p :: sets a property: asks for the name, then the value. The drawer is created when needed and starts folded. M-x org-delete-property removes one.

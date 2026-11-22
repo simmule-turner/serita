@@ -81,5 +81,7 @@ export const TEXT_KEYS = Object.freeze({
   'M->': 'end-of-buffer',
   'C-v': 'scroll-up',
   'M-v': 'scroll-down',
+  'C-s': 'isearch-forward',
+  'C-r': 'isearch-backward',
   'C-g': 'quit',
 });
