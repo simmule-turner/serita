@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.4.5
+The Text view now scrolls to the cursor after a movement key, a jump or a search, and puts the cursor in the middle of the screen when it was off screen, as Emacs does; before, the cursor moved but the text stayed where it was. Verified: M-< and M-> show the start and end of a long buffer and a search scrolls to its match.
+
 * 0.4.4
 Settings has a Key event log: when on, the top of the screen lists what the keyboard sends the editor (key, code, typed text, composition, the keys held on the key row) and the chord Serita made of it, so a key that does nothing can be diagnosed from a screenshot. Verified: the log shows the chord for a pressed key.
 

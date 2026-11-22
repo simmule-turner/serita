@@ -488,10 +488,7 @@ function startFind(backward = false) {
     const start = toShown(cur.proj, found.start);
     const m = { start, end: start + (found.end - found.start) };
     editor.setSelectionRange(m.start, m.end);
-    const mirror = $('mirror');
-    mirror.style.width = `${editor.clientWidth}px`;
-    mirror.textContent = `${editor.value.slice(0, m.start)}.`;
-    editor.scrollTop = Math.max(0, mirror.scrollHeight - editor.clientHeight / 2);
+    showCaret(m.start);
     hit = m;
     paintOverlay();
     renderModeLine();
@@ -807,6 +804,7 @@ function placeCursor(line, atEnd = false) {
   const at = atEnd ? Math.max(lineOffset(b.text, line), lineOffset(b.text, line + 1) - (line + 1 < b.text.split('\n').length ? 1 : 0)) : lineOffset(b.text, line);
   const p = toShown(cur.proj, at);
   editor.setSelectionRange(p, p);
+  showCaret(p);
   renderModeLine();
 }
 
@@ -949,6 +947,7 @@ const cursorOffset = () => toFull(cur.proj, editor.selectionStart);
 function placeOffset(p) {
   const s = toShown(cur.proj, p);
   editor.setSelectionRange(s, s);
+  showCaret(s);
   renderModeLine();
 }
 
@@ -1252,7 +1251,21 @@ function rowStarts(start, end) {
 }
 
 const focusPoint = () => (editor.selectionDirection === 'backward' ? editor.selectionStart : editor.selectionEnd);
-function goTo(p) { editor.setSelectionRange(p, p); renderModeLine(); }
+/** Scrolls the text so the position `p` of the shown text is on screen; when it was not, it is put in the middle, as Emacs recenters. */
+function showCaret(p) {
+  const m = $('mirror');
+  const css = getComputedStyle(editor);
+  m.style.width = `${editor.clientWidth}px`;
+  m.style.paddingLeft = css.paddingLeft;
+  m.style.paddingRight = css.paddingRight;
+  m.textContent = editor.value.slice(0, p);
+  const mark = h('span', {}, '\u200b');
+  m.append(mark);
+  const top = mark.getBoundingClientRect().top - m.getBoundingClientRect().top;
+  const lineHeight = parseFloat(css.lineHeight);
+  if (top < editor.scrollTop || top + lineHeight > editor.scrollTop + editor.clientHeight) editor.scrollTop = Math.max(0, top - editor.clientHeight / 2);
+}
+function goTo(p) { editor.setSelectionRange(p, p); showCaret(p); renderModeLine(); }
 const ERRORS = { 'end-of-buffer': 'End of buffer', 'beginning-of-buffer': 'Beginning of buffer' };
 function moved(r) { goTo(r.pos); if (r.error) message(ERRORS[r.error], true); }
 function vertical(dir) {

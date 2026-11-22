@@ -99,6 +99,18 @@ await at('x\n', 1); await page.keyboard.press('Control+e');
 const logged = await page.locator('#keylog').textContent();
 ok(logged.includes('keydown') && logged.includes('chord C-e run end-of-line'), 'the key event log lists key events and the chord they became');
 
+// Movement and search scroll the text to the cursor
+const long = Array.from({ length: 200 }, (_, i) => `line ${i + 1}`).join('\n') + '\nneedle\n';
+await at(long, 1);
+const visible = () => page.evaluate(() => { const e = document.getElementById('editor'); const lh = parseFloat(getComputedStyle(e).lineHeight); const row = e.value.slice(0, e.selectionStart).split('\n').length - 1; const y = 10 + row * lh; return y >= e.scrollTop && y <= e.scrollTop + e.clientHeight; });
+await page.keyboard.press('Alt+>');
+ok(await visible() && await page.evaluate(() => document.getElementById('editor').scrollTop > 1000), 'M-> shows the end of the buffer');
+await page.keyboard.press('Alt+<');
+ok(await visible() && await page.evaluate(() => document.getElementById('editor').scrollTop === 0), 'M-< shows the start of the buffer');
+await page.keyboard.press('Control+s'); await page.keyboard.type('needle');
+ok(await visible(), 'a search scrolls to the match');
+await page.keyboard.press('Escape');
+
 // Menu: Commands
 await page.click('#btn-menu');
 const items = await sheet.locator('.item').allTextContents();
