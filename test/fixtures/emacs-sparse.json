@@ -1,0 +1,182 @@
+[
+ {
+  "id": "spt2-case",
+  "input": "* TODO Alpha :work:\nbody a\n** DONE Sub one\nmatch here\n** TODO Sub two\n*** Deep\nmatch deep\n* Beta\nbody b\n* Gamma match\n",
+  "kind": "regexp",
+  "arg": "MATCH",
+  "visible": [
+   true,
+   false,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   false,
+   true
+  ],
+  "ellipsis": [
+   true,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   true,
+   false,
+   true
+  ]
+ },
+ {
+  "id": "spt2-regexp-multi",
+  "input": "* TODO Alpha :work:\nbody a\n** DONE Sub one\nmatch here\n** TODO Sub two\n*** Deep\nmatch deep\n* Beta\nbody b\n* Gamma match\n",
+  "kind": "regexp",
+  "arg": "match",
+  "visible": [
+   true,
+   false,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   false,
+   true
+  ],
+  "ellipsis": [
+   true,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   true,
+   false,
+   true
+  ]
+ },
+ {
+  "id": "spt2-regexp-title",
+  "input": "* TODO Alpha :work:\nbody a\n** DONE Sub one\nmatch here\n** TODO Sub two\n*** Deep\nmatch deep\n* Beta\nbody b\n* Gamma match\n",
+  "kind": "regexp",
+  "arg": "Gam",
+  "visible": [
+   true,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   true,
+   false,
+   true
+  ],
+  "ellipsis": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   false,
+   true,
+   false,
+   true
+  ]
+ },
+ {
+  "id": "spt2-regexp-deep",
+  "input": "* TODO Alpha :work:\nbody a\n** DONE Sub one\nmatch here\n** TODO Sub two\n*** Deep\nmatch deep\n* Beta\nbody b\n* Gamma match\n",
+  "kind": "regexp",
+  "arg": "deep t",
+  "visible": [
+   true,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   true,
+   false,
+   true
+  ],
+  "ellipsis": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   false,
+   true,
+   false,
+   true
+  ]
+ },
+ {
+  "id": "spt2-todo-count",
+  "input": "* TODO Alpha :work:\nbody a\n** DONE Sub one\nmatch here\n** TODO Sub two\n*** Deep\nmatch deep\n* Beta\nbody b\n* Gamma match\n",
+  "kind": "todo",
+  "arg": "",
+  "visible": [
+   true,
+   false,
+   false,
+   false,
+   true,
+   false,
+   false,
+   true,
+   false,
+   true
+  ],
+  "ellipsis": [
+   true,
+   true,
+   true,
+   false,
+   true,
+   true,
+   false,
+   true,
+   false,
+   true
+  ]
+ },
+ {
+  "id": "spt2-two-trees",
+  "input": "* TODO Alpha :work:\nbody a\n** DONE Sub one\nmatch here\n** TODO Sub two\n*** Deep\nmatch deep\n* Beta\nbody b\n* Gamma match\n",
+  "kind": "regexp",
+  "arg": "Beta",
+  "visible": [
+   true,
+   false,
+   false,
+   false,
+   false,
+   false,
+   false,
+   true,
+   false,
+   true
+  ],
+  "ellipsis": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   false,
+   true,
+   false,
+   true
+  ]
+ }
+]

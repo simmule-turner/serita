@@ -1,4 +1,6 @@
-// Plain incremental search, as Emacs does it by default: case is ignored unless the query
+import { emacsRegexp, hasUpper } from '../../core/regexp.js';
+
+// Incremental search, as Emacs does it by default: case is ignored unless the query
 // contains an uppercase letter. Positions are UTF-16 offsets into the text.
 
 /** Lowercases without changing the length of the text, so offsets stay valid. */
@@ -7,16 +9,39 @@ const fold = (s) => Array.from(s, (c) => { const l = c.toLowerCase(); return l.l
 export const isCaseSensitive = (query) => query !== fold(query);
 
 /**
+ * The next match of an Emacs regexp. Forward: the first match starting at or after `from`. Backward: the last match starting before `from`.
+ * Throws the regexp's error message when the pattern is not valid.
+ */
+function searchRegexp(text, pattern, { from, backward, wrap }) {
+  const re = emacsRegexp(pattern, !hasUpper(pattern));
+  const found = (m, wrapped) => (m ? { start: m.index, end: m.index + m[0].length, wrapped } : null);
+  if (!backward) {
+    re.lastIndex = from;
+    const m = re.exec(text);
+    if (m || !wrap) return found(m, false);
+    re.lastIndex = 0;
+    return found(re.exec(text), true);
+  }
+  const at = new RegExp(re.source, re.flags.replace('g', '') + 'y');
+  const back = (hi, lo, wrapped) => {
+    for (let i = hi; i >= lo; i--) { at.lastIndex = i; const m = at.exec(text); if (m) return found(m, wrapped); }
+    return null;
+  };
+  return back(from - 1, 0, false) ?? (wrap ? back(text.length, from, true) : null);
+}
+
+/**
  * Finds the next match. Forward: the first match starting at or after `from`.
  * Backward: the last match ending at or before `from`. When there is none, the result is null, as in Emacs where the search
  * fails first; with `wrap` it goes on from the other end of the text and says so. Null also when the text does not contain the query.
  * @param {string} text
  * @param {string} query
- * @param {{ from: number, backward?: boolean, wrap?: boolean }} o
+ * @param {{ from: number, backward?: boolean, wrap?: boolean, regexp?: boolean }} o
  * @returns {{ start: number, end: number, wrapped: boolean } | null}
  */
-export function search(text, query, { from, backward = false, wrap = false }) {
+export function search(text, query, { from, backward = false, wrap = false, regexp = false }) {
   if (query === '') return null;
+  if (regexp) return searchRegexp(text, query, { from, backward, wrap });
   const exact = isCaseSensitive(query);
   const hay = exact ? text : fold(text);
   const q = exact ? query : fold(query);

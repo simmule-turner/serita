@@ -1,0 +1,222 @@
+[
+ {
+  "id": "rx-alt",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "zzz\\|bar",
+  "end": 7
+ },
+ {
+  "id": "rx-anychar",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "\\'",
+  "end": 48
+ },
+ {
+  "id": "rx-backref",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "\\(o\\)\\1",
+  "end": 3
+ },
+ {
+  "id": "rx-bol",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "^ab",
+  "end": 19
+ },
+ {
+  "id": "rx-bracket-neg",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "[^a-z]+",
+  "end": 4
+ },
+ {
+  "id": "rx-bracket-special",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "[]x]",
+  "end": 30
+ },
+ {
+  "id": "rx-bracket",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "[a-c]+d",
+  "end": 24
+ },
+ {
+  "id": "rx-case-lower",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 5,
+  "pattern": "foo",
+  "end": 11
+ },
+ {
+  "id": "rx-case-upper",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "Foo",
+  "end": 16
+ },
+ {
+  "id": "rx-class-alpha",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "[[:alpha:]]+2",
+  "end": 12
+ },
+ {
+  "id": "rx-class-digit",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "[[:digit:]]+",
+  "end": 12
+ },
+ {
+  "id": "rx-dot-newline",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "e.l",
+  "end": null,
+  "fails": true,
+  "note": "Emacs stopped at the match of e. because the whole pattern fails"
+ },
+ {
+  "id": "rx-eol",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "e\\{0,1\\}$",
+  "end": 16
+ },
+ {
+  "id": "rx-escape-other",
+  "input": "q\n",
+  "start": 0,
+  "pattern": "\\q",
+  "end": 1
+ },
+ {
+  "id": "rx-greedy",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "f.*o",
+  "end": 16
+ },
+ {
+  "id": "rx-group-star",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "\\(ab\\)+1",
+  "end": 20
+ },
+ {
+  "id": "rx-interval",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "o\\{2\\}",
+  "end": 3
+ },
+ {
+  "id": "rx-invalid",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "\\(a",
+  "end": null,
+  "throws": true
+ },
+ {
+  "id": "rx-lazy",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "f.*?o",
+  "end": 2
+ },
+ {
+  "id": "rx-literal-brace",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "a{2}",
+  "end": 36
+ },
+ {
+  "id": "rx-literal-paren",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "(x)",
+  "end": 31
+ },
+ {
+  "id": "rx-opt",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "foo2?",
+  "end": 3
+ },
+ {
+  "id": "rx-plain",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "bar",
+  "end": 7
+ },
+ {
+  "id": "rx-plus-first",
+  "input": "a+b\n",
+  "start": 0,
+  "pattern": "+",
+  "end": 2
+ },
+ {
+  "id": "rx-space",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "bar\\s-+f",
+  "end": 9
+ },
+ {
+  "id": "rx-star-first",
+  "input": "a*b\n",
+  "start": 0,
+  "pattern": "*",
+  "end": 2
+ },
+ {
+  "id": "rx-symbol",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "\\_<cd_ef\\_>",
+  "end": 27
+ },
+ {
+  "id": "rx-word-bound",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "\\bfoo\\b",
+  "end": 3
+ },
+ {
+  "id": "rx-word-end",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "o\\>",
+  "end": 3
+ },
+ {
+  "id": "rx-word-start",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "\\<foo",
+  "end": 3
+ },
+ {
+  "id": "rx-wordchar",
+  "input": "foo bar foo2 Foo\nab12 cd_ef (x) a{2}\nline three\n",
+  "start": 0,
+  "pattern": "\\w+2",
+  "end": 12
+ }
+]

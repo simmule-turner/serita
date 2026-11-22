@@ -126,13 +126,16 @@ export function hiddenLines(heads, folds) {
     if (how === 'all') for (const i of range(h.line + 1, h.end)) hidden.add(i);
     else if (how === 'body') for (const i of range(h.line + 1, h.bodyEnd)) hidden.add(i);
   }
+  for (const [k, how] of Object.entries(folds)) if (how === 'show') hidden.delete(Number(k));
   return hidden;
 }
 
 /** The headings that show an ellipsis because something under them is hidden. */
 export function ellipsisLines(heads, folds) {
   const out = new Set();
+  const hidden = hiddenLines(heads, folds);
   for (const h of heads) {
+    if (folds[h.line] === 'show' && hidden.has(h.line + 1)) out.add(h.line);
     if ((folds[h.line] === 'all' && h.end > h.line + 1) || (folds[h.line] === 'body' && h.bodyEnd > h.line + 1)) out.add(h.line);
   }
   return out;
@@ -157,6 +160,13 @@ export function stateOf(h, folds) {
 export function cycle(heads, folds, line, last = null) {
   const h = heads.find((x) => x.line === line);
   if (!h || !hasContent(h)) return null;
+  // After a sparse tree the first TAB folds the heading and drops what the tree was holding open, as Emacs does.
+  if (Object.values(folds).includes('show')) {
+    const f = Object.fromEntries(Object.entries(folds).filter(([, how]) => how !== 'show'));
+    for (const d of descendants(h)) delete f[d.line];
+    f[h.line] = 'all';
+    return { folds: f, state: 'folded' };
+  }
   const apply = (state) => {
     const f = { ...folds };
     for (const d of descendants(h)) delete f[d.line];
@@ -233,7 +243,7 @@ export function validFolds(heads, folds) {
   const by = new Map(heads.map((h) => [h.line, h]));
   return Object.fromEntries(Object.entries(folds).filter(([k, how]) => {
     const h = by.get(Number(k));
-    return h && (how === 'all' ? hasContent(h) : h.bodyEnd > h.line + 1);
+    return how === 'show' || (h && (how === 'all' ? hasContent(h) : h.bodyEnd > h.line + 1));
   }));
 }
 
@@ -255,4 +265,23 @@ export function reveal(heads, folds, line) {
     else if (f[h.line] === 'body' && line > h.line && line < h.bodyEnd) delete f[h.line];
   }
   return f;
+}
+
+/**
+ * A sparse tree: everything folded to the top level, except the given lines and the headings above them, which stay visible.
+ * Replaces the folds. Lines before the first heading are left alone.
+ * @param {Head[]} heads headings only
+ * @param {number[]} lines the lines that matched
+ */
+export function sparseFolds(heads, lines) {
+  const folds = {};
+  for (const h of heads) if (!h.parent && hasContent(h)) folds[h.line] = 'all';
+  for (const line of lines) {
+    let h = null;
+    for (const x of heads) if (x.line <= line && line < x.end) h = x;
+    if (!h) continue;
+    if (h.line !== line) folds[line] = 'show';
+    for (let a = h; a; a = a.parent) if (a.parent) folds[a.line] = 'show';
+  }
+  return folds;
 }

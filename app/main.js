@@ -16,6 +16,8 @@ import { analyze, cycle, cycleGlobal, diff, ellipsisLines, hiddenLines, reveal }
 import { backwardChar, backwardWord, forwardChar, forwardWord, lineEnd as endOfLine, lineStart as startOfLine, moveVertical } from '../core/motion.js';
 import { DEFAULT_TAGS_COLUMN, changeLevel, cycleTodo, indentItem, insertHeadingAfter, insertHeadingHere, moveItem, moveSubtree, setPriority, setTags, setTitle, stepPriority, toggleCheckbox } from '../core/outline-edit.js';
 import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../core/properties.js';
+import { startReplace } from '../core/replace.js';
+import { sparseTree } from '../core/sparse.js';
 import { createMinibuffer } from './ui/minibuffer.js';
 import { duplicateLine, indentLine, killLine, killWholeLine, lineInfo, lineStart, moveLine } from '../core/lines.js';
 import { createKillRing } from '../core/killring.js';
@@ -234,9 +236,10 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => rend
 
 // The layer behind the text: line numbers and the search match. It lays out its lines exactly as the editor does.
 let hit = null;
+let marks = []; // the lines a sparse tree matched, shown in the highlight color until C-c C-c
 function paintOverlay() {
   const hl = $('hl');
-  if (!cur || editor.hidden || (!hit && !lineNumbers())) { hl.replaceChildren(); return; }
+  if (!cur || editor.hidden || (!hit && marks.length === 0 && !lineNumbers())) { hl.replaceChildren(); return; }
   hl.style.width = `${editor.clientWidth}px`;
   let at = 0;
   let number = 0;
@@ -250,6 +253,7 @@ function paintOverlay() {
       const z = Math.min(hit.end, at - 1) - start;
       kids.splice(0, 1, text.slice(0, a), h('mark', {}, text.slice(a, z)), text.slice(z));
     }
+    if (!hit && marks.includes(lineAt(cur.proj, start)) && text !== '') kids.splice(0, 1, h('mark', {}, text));
     return h('div', { class: 'hl-line', ...(lineNumbers() ? { 'data-n': String(number) } : {}) }, ...kids);
   }));
   hl.scrollTop = editor.scrollTop;
@@ -474,13 +478,81 @@ let finding = null;
 let lastSearch = '';
 const mini = createMinibuffer({ root: $('findbar'), list: $('completions'), bell: () => beep(), restoreFocus: () => { if (viewMode() === 'text') editor.focus({ preventScroll: true }); } });
 
-function startFind(backward = false) {
+/** Query replace. Text view: Emacs's own keys (y SPC n DEL ! . q RET ^), with a button for each on a touch screen. */
+async function queryReplace(regexp = false) {
+  if (finding || shownId === null) return;
+  if (viewMode() === 'outline') setView('text');
+  const lead = regexp ? 'Query replace regexp' : 'Query replace';
+  const from = await mini.ask({ prompt: `${lead}:`, historyKey: 'replace-from' });
+  if (from === undefined || from === '') return;
+  const to = await mini.ask({ prompt: `${lead} ${from} with:`, historyKey: 'replace-to' });
+  if (to === undefined) return;
+  let s;
+  try { s = startReplace(currentBuffer().text, { from, to, regexp, at: cursorOffset() }); } catch (e) { failure(e); return; }
+  const b0 = currentBuffer();
+  const finish = () => {
+    mb.close();
+    if (s.count === 0 && !s.match) message(`No match for ${from}`);
+    else message(`Replaced ${s.count} occurrence${s.count === 1 ? '' : 's'}`);
+    hit = null;
+    paintOverlay();
+  };
+  const sync = () => {
+    const b = currentBuffer();
+    if (b.text !== s.text) session.apply(b.id, { text: s.text });
+    if (s.done) { finish(); placeOffset(s.point); return; }
+    const opened = reveal(cur.a.foldables, currentBuffer().folds, s.text.slice(0, s.match.start).split('\n').length - 1);
+    if (JSON.stringify(opened) !== JSON.stringify(currentBuffer().folds)) session.setFolds(b.id, opened);
+    const start = toShown(cur.proj, s.match.start);
+    editor.setSelectionRange(start, start);
+    showCaret(start);
+    hit = { start, end: start + (s.match.end - s.match.start) };
+    paintOverlay();
+    renderModeLine();
+  };
+  const press = (key) => { s.answer(key); sync(); };
+  const keys = [['y', 'y'], ['n', 'n'], ['!', '!'], ['.', '.'], ['^', '^'], ['q', 'q']];
+  const mb = mini.open({
+    prompt: `Query replacing ${from} with ${to}: (? for help)`,
+    buttons: keys.map(([label, key]) => ({ label, aria: `Answer ${label}`, onclick: () => press(key) })),
+    onKey(e) {
+      e.preventDefault();
+      const key = e.key === 'Delete' ? 'Backspace' : e.key;
+      if (e.key === 'Escape' || (e.ctrlKey && e.key === 'g')) { e.stopPropagation(); s.answer('q'); sync(); return true; }
+      if ([' ', 'y', 'n', 'Backspace', '!', '.', 'q', 'Enter', '^'].includes(key)) press(key);
+      return true;
+    },
+  });
+  mb.input.readOnly = true;
+  if (s.done) { finish(); return; }
+  sync();
+}
+
+/** A sparse tree (C-c / r, t, T): everything folds to the top level except the matches and the headings above them. */
+async function sparse(kind) {
+  if (finding || shownId === null) return;
+  let arg = '';
+  if (kind !== 'todo') {
+    arg = await askText({ prompt: kind === 'regexp' ? 'Regexp:' : 'Keyword (or KWD1|KWD2|...):', title: kind === 'regexp' ? 'Show matching lines' : 'Show entries with a TODO keyword', help: kind === 'regexp' ? 'Shows the lines that match an Emacs regexp, and the headings above them.' : 'One or more keywords, separated by |.', ok: 'Show' });
+    if (arg === undefined || arg === '') return;
+  }
+  const b = currentBuffer();
+  let r;
+  try { r = sparseTree(b.text, cur.a, { kind, arg }); } catch (e) { failure(e); return; }
+  session.setFolds(b.id, r.folds);
+  marks = kind === 'regexp' ? r.lines : [];
+  paintOverlay();
+  message(kind === 'regexp' ? (r.lines.length ? `${r.lines.length} match${r.lines.length === 1 ? '' : 'es'}` : `No matches for ${arg}`) : `${r.lines.length} TODO ${r.lines.length === 1 ? 'entry' : 'entries'} found`);
+}
+
+function startFind(backward = false, regexp = false) {
   if (finding || shownId === null) return;
   if (viewMode() === 'outline') setView('text');
   finding = { start: toFull(cur.proj, editor.selectionStart), end: toFull(cur.proj, editor.selectionEnd), folds: currentBuffer().folds };
   let mb;
   let dir = backward;
-  const name = () => (dir ? 'I-search backward:' : 'I-search:');
+  // The prompt as Emacs words it: I-search:, Regexp I-search:, Failing regexp I-search backward:, Wrapped I-search:
+  const name = (lead = '') => `${[lead, regexp ? 'regexp' : '', 'I-search', dir ? 'backward' : ''].filter(Boolean).join(' ').replace(/^./, (c) => c.toUpperCase())}:`;
   const input = () => mb.input;
   const show = (found) => {
     const b = currentBuffer();
@@ -497,16 +569,19 @@ function startFind(backward = false) {
   // As in Emacs, a search that runs out of matches fails first; asking again in the same direction goes on from the other end.
   let failing = false;
   let current = null; // the match shown now; typing goes on from it
+  let currentQuery = ''; // the text that found it
   const origin = toFull(cur.proj, editor.selectionStart);
   const go = (backward, from, wrap = false) => {
     const q = input().value;
     if (q === '') { mb.setPrompt(name()); return; }
-    const m = search(currentBuffer().text, q, { from, backward, wrap });
-    if (!m) { failing = true; mb.setPrompt(`Failing ${name()}`, true); beep(); return; }
+    let m;
+    try { m = search(currentBuffer().text, q, { from, backward, wrap, regexp }); } catch { m = null; }
+    if (!m) { failing = true; mb.setPrompt(name('failing'), true); beep(); return; }
     failing = false;
     current = m;
+    currentQuery = q;
     lastSearch = q;
-    mb.setPrompt(m.wrapped ? `Wrapped ${name()}` : name());
+    mb.setPrompt(m.wrapped ? name('wrapped') : name());
     show(m);
   };
   const end = (restore) => {
@@ -535,11 +610,19 @@ function startFind(backward = false) {
   mb = mini.open({
     prompt: name(),
     label: 'Search',
-    onInput: () => go(dir, dir ? (current ? current.start + input().value.length : origin) : (current ? current.start : origin)),
+    onInput: () => go(dir, dir ? (current ? current.start + (regexp ? 1 : input().value.length) : origin) : (current ? current.start : origin)),
     onKey(e) {
       if (e.key === 'Enter') { e.preventDefault(); end(false); return true; }
+      if (e.ctrlKey && e.key === 'g' && failing) { // as in Emacs, the first C-g removes the text that fails and the search goes on
+        e.preventDefault(); e.stopPropagation();
+        input().value = current ? currentQuery : '';
+        failing = false;
+        mb.setPrompt(name());
+        return true;
+      }
       if (e.key === 'Escape' || (e.ctrlKey && e.key === 'g')) { e.preventDefault(); e.stopPropagation(); end(true); return true; }
       if (e.ctrlKey && (e.key === 's' || e.key === 'r')) { e.preventDefault(); step(e.key === 'r'); return true; }
+      if (e.altKey && e.key === 'r') { e.preventDefault(); regexp = !regexp; failing = false; mb.setPrompt(name()); go(dir, dir ? selEnd() : selStart()); return true; }
       return false;
     },
     buttons: [
@@ -946,8 +1029,18 @@ const COMMANDS = {
   'set-tags': () => withHeading(setTagsDialog),
   'isearch-forward': () => startFind(false),
   'isearch-backward': () => startFind(true),
+  'isearch-forward-regexp': () => startFind(false, true),
+  'isearch-backward-regexp': () => startFind(true, true),
+  'query-replace': () => queryReplace(false),
+  'query-replace-regexp': () => queryReplace(true),
   'execute-command': () => commandPalette(),
-  'toggle-checkbox': () => { if (!runEdit((t) => toggleCheckbox(t, kindAtCursor().line))) message('Nothing to do here'); },
+  'sparse-tree-regexp': () => sparse('regexp'),
+  'sparse-tree-todo': () => sparse('todo'),
+  'sparse-tree-todo-keyword': () => sparse('todo-keyword'),
+  'toggle-checkbox': () => {
+    if (marks.length) { marks = []; paintOverlay(); message('Temporary highlights/overlays removed from current buffer'); return; }
+    if (!runEdit((t) => toggleCheckbox(t, kindAtCursor().line))) message('Nothing to do here');
+  },
   'insert-heading-here': () => { const r = runEdit((t) => insertHeadingHere(t, cursorOffset())); if (r) placeOffset(r.pos); },
   'undo': () => stepHistory('undo'),
   'redo': () => stepHistory('redo'),
@@ -1205,8 +1298,8 @@ const PALETTE = [
   ['promote', 'org-metaleft', 'Promote'], ['demote', 'org-metaright', 'Demote'], ['promote-subtree', 'org-shiftmetaleft', 'Promote subtree'], ['demote-subtree', 'org-shiftmetaright', 'Demote subtree'],
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
   ['insert-heading', 'org-insert-heading-respect-content', 'Insert heading after subtree'], ['insert-heading-here', 'org-meta-return', 'Insert heading here'],
-  ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'],
-  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['goto-line', 'goto-line', 'Go to line', true],
+  ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],
+  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true],
   ['undo', 'undo', 'Undo', true], ['redo', 'undo-redo', 'Redo', true],
   ['select-all', 'mark-whole-buffer', 'Select all'], ['kill-line', 'kill-line', 'Cut to end of line'], ['kill-whole-line', 'kill-whole-line', 'Cut whole line'], ['yank', 'yank', 'Paste'],
   ['next-line', 'next-line', 'Next line'], ['previous-line', 'previous-line', 'Previous line'], ['forward-char', 'forward-char', 'Forward character'], ['backward-char', 'backward-char', 'Backward character'],

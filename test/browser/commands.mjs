@@ -20,6 +20,8 @@ const at = async (text, line) => {
 const text = () => page.inputValue('#editor');
 const ctrl = async (k) => { await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await page.keyboard.press(k); };
 const mini = () => page.locator('#findbar input');
+const sel = () => page.evaluate(() => { const e = document.getElementById('editor'); return `${e.selectionStart}-${e.selectionEnd}`; });
+const prompt = () => page.locator('#findbar .prompt').textContent();
 
 // Priorities and TODO from the shifted arrows (Emacs: pri-*, todo2-*)
 await at('* TODO A :work:\n', 1); await page.keyboard.press('Shift+ArrowUp');
@@ -120,9 +122,60 @@ await rowKey('↓'); ok((await where()) === '2:2', 'the down arrow stops at the 
 await rowKey('↓'); ok((await where()) === '3:8', 'and keeps the goal column, as C-n does');
 await rowKey('→'); await rowKey('←'); ok((await where()) === '3:8', 'the right and left arrows move one character');
 
+// The first C-g in a failing search removes the failing text (Emacs: is2-fail-g1, is2-fail-g2)
+await at('one two one two one\nthree\n', 1);
+await page.keyboard.press('Control+s'); await page.keyboard.type('onx');
+await page.keyboard.press('Control+g');
+ok(await page.locator('#findbar input').inputValue() === 'on' && await page.locator('#findbar .prompt').textContent() === 'I-search:', 'the first C-g in a failing search removes the failing text');
+await page.keyboard.press('Control+g');
+ok(await page.locator('#findbar').isHidden(), 'a second C-g ends the search');
+
+// Query replace (M-%): Emacs's keys y n ! q
+await at('a a a a\n', 1);
+await page.keyboard.press('Alt+%');
+ok((await prompt()) === 'Query replace:', 'M-% asks for the text to replace');
+await page.keyboard.type('a'); await page.keyboard.press('Enter');
+ok((await prompt()) === 'Query replace a with:', 'then for the replacement');
+await page.keyboard.type('b'); await page.keyboard.press('Enter');
+ok((await prompt()) === 'Query replacing a with b: (? for help)', 'the per-match prompt is Emacs\'s');
+await page.keyboard.press('y'); await page.keyboard.press('n'); await page.keyboard.press('y');
+ok((await text()) === 'b a b a\n', 'y replaces, n skips');
+await page.keyboard.press('q');
+ok((await text()) === 'b a b a\n' && (await page.locator('#findbar').isHidden()), 'q stops and closes the row');
+await at('a a a\n', 1);
+await page.keyboard.press('Alt+%'); await page.keyboard.type('a'); await page.keyboard.press('Enter'); await page.keyboard.type('b'); await page.keyboard.press('Enter');
+await page.locator('#findbar button[aria-label="Answer !"]').click();
+ok((await text()) === 'b b b\n', 'the ! button replaces the rest');
+
+// Sparse tree (C-c / r) and C-c C-c to clear its highlights
+const sparseText = '* Alpha\nbody a\n** Sub\nmatch here\n* Beta\nbody b\n';
+await at(sparseText, 1);
+await ctrl('c'); await page.keyboard.press('/'); await page.keyboard.press('r');
+ok((await prompt()) === 'Regexp:', 'C-c / r asks for a regexp');
+await page.keyboard.type('MATCH'); await page.keyboard.press('Enter');
+const lines = await page.evaluate(() => document.getElementById('editor').value);
+ok(lines.includes('match here') && lines.includes('Sub') && !lines.includes('body a') && !lines.includes('body b'), 'only the match and the headings above it show');
+await ctrl('c'); await ctrl('c');
+ok(await page.locator('#hl mark').count() === 0, 'C-c C-c removes the highlights');
+await page.keyboard.press('Tab');
+ok(!(await page.evaluate(() => document.getElementById('editor').value)).includes('match here'), 'the first TAB folds the heading');
+
+// Regexp search (C-M-s, M-r)
+await at('Meeting foo2 notes foo9\n', 1);
+await page.keyboard.press('Alt+Control+s');
+ok((await prompt()) === 'Regexp I-search:', 'C-M-s opens a regexp search');
+await page.keyboard.type('foo[0-9]');
+ok((await sel()) === '8-12', 'the regexp finds the first match');
+await page.keyboard.press('Control+s');
+ok((await sel()) === '19-23', 'C-s goes to the next regexp match');
+await page.keyboard.press('Alt+r');
+ok((await prompt()) === 'Failing I-search:' || (await prompt()) === 'I-search:', 'M-r switches to plain search');
+await page.keyboard.press('Escape');
+await page.keyboard.press('Alt+Control+s'); await page.keyboard.type('\\(x');
+ok((await prompt()) === 'Failing regexp I-search:', 'an invalid regexp fails');
+await page.keyboard.press('Escape');
+
 // Emacs results (v0.1.5): search fails before it wraps, direction changes keep the match, an empty C-s recalls
-const sel = () => page.evaluate(() => { const e = document.getElementById('editor'); return `${e.selectionStart}-${e.selectionEnd}`; });
-const prompt = () => page.locator('#findbar .prompt').textContent();
 await at('one two one two one\nthree\n', 1);
 await page.evaluate(() => document.getElementById('editor').setSelectionRange(16, 16));
 await page.keyboard.press('Control+s'); await page.keyboard.type('one');

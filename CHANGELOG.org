@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.5.0
+The Text view gained regexp search (C-M-s, C-M-r, or M-r inside a search, using Emacs regexp syntax), query replace (M-% and C-M-% with Emacs's keys y, SPC, n, DEL, !, ., q, RET and ^, each with a button on a touch screen), and sparse trees (C-c / r for a regexp, t for unfinished TODO entries, T for a keyword; C-c C-c clears the highlights). The first C-g in a failing search now removes the failing text, as Emacs does. Verified: replayed Emacs 30.1 results for regexps, query replace and sparse trees.
+
 * 0.4.7
 Search now follows Emacs: past the last match it fails first and a further C-s wraps, changing direction keeps the current match, and C-s on an empty field recalls the last search. Prompts and echo messages use Emacs's words (Priority A-C, SPC to remove:, Foo value:, Priority of current item set to B, TODO state changed to TODO), and M-left on plain text moves a word back. Verified: replayed Emacs 30.1 results for search, prompts, movement and priorities.
 

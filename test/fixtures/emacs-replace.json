@@ -1,0 +1,148 @@
+[
+ {
+  "id": "qr-all",
+  "input": "Foo foo FOO fOo\nfoo-bar foo\n",
+  "at": 0,
+  "from_": "foo",
+  "to": "bar",
+  "regexp": false,
+  "answers": [
+   "!"
+  ],
+  "text": "Bar bar BAR bar\nbar-bar bar\n",
+  "point": 27
+ },
+ {
+  "id": "qr-case-exact",
+  "input": "Foo foo FOO fOo\nfoo-bar foo\n",
+  "at": 0,
+  "from_": "Foo",
+  "to": "bar",
+  "regexp": false,
+  "answers": [
+   "!"
+  ],
+  "text": "bar foo FOO fOo\nfoo-bar foo\n",
+  "point": 3
+ },
+ {
+  "id": "qr-case",
+  "input": "Foo foo FOO fOo\nfoo-bar foo\n",
+  "at": 0,
+  "from_": "foo",
+  "to": "baz",
+  "regexp": false,
+  "answers": [
+   "!"
+  ],
+  "text": "Baz baz BAZ baz\nbaz-bar baz\n",
+  "point": 27
+ },
+ {
+  "id": "qr-dot",
+  "input": "Foo foo FOO fOo\nfoo-bar foo\n",
+  "at": 0,
+  "from_": "foo",
+  "to": "bar",
+  "regexp": false,
+  "answers": [
+   "n",
+   "."
+  ],
+  "text": "Foo bar FOO fOo\nfoo-bar foo\n",
+  "point": 7
+ },
+ {
+  "id": "qr-empty-to",
+  "input": "Foo foo FOO fOo\nfoo-bar foo\n",
+  "at": 0,
+  "from_": "foo",
+  "to": "",
+  "regexp": false,
+  "answers": [
+   "!"
+  ],
+  "text": "   \n-bar \n",
+  "point": 9
+ },
+ {
+  "id": "qr-folded",
+  "input": "#+STARTUP: overview\n* A\nfoo\n* B\n",
+  "at": 0,
+  "from_": "foo",
+  "to": "bar",
+  "regexp": false,
+  "answers": [
+   "!"
+  ],
+  "text": "#+STARTUP: overview\n* A\nbar\n* B\n",
+  "point": 27
+ },
+ {
+  "id": "qr-from-point",
+  "input": "Foo foo FOO fOo\nfoo-bar foo\n",
+  "at": 16,
+  "from_": "foo",
+  "to": "bar",
+  "regexp": false,
+  "answers": [
+   "!"
+  ],
+  "text": "Foo foo FOO fOo\nbar-bar bar\n",
+  "point": 27
+ },
+ {
+  "id": "qr-q",
+  "input": "Foo foo FOO fOo\nfoo-bar foo\n",
+  "at": 0,
+  "from_": "foo",
+  "to": "bar",
+  "regexp": false,
+  "answers": [
+   "y",
+   "q"
+  ],
+  "text": "Bar foo FOO fOo\nfoo-bar foo\n",
+  "point": 7
+ },
+ {
+  "id": "qr-regexp-amp",
+  "input": "Foo foo FOO fOo\nfoo-bar foo\n",
+  "at": 0,
+  "from_": "fo+",
+  "to": "<\\&>",
+  "regexp": true,
+  "answers": [
+   "!"
+  ],
+  "text": "<Foo> <foo> <FOO> <fOo>\n<foo>-bar <foo>\n",
+  "point": 39
+ },
+ {
+  "id": "qr-regexp-hash",
+  "input": "Foo foo FOO fOo\nfoo-bar foo\n",
+  "at": 0,
+  "from_": "foo",
+  "to": "#\\#",
+  "regexp": true,
+  "answers": [
+   "!"
+  ],
+  "text": "#0 #1 #2 #3\n#4-bar #5\n",
+  "point": 21
+ },
+ {
+  "id": "qr-ret",
+  "input": "Foo foo FOO fOo\nfoo-bar foo\n",
+  "at": 0,
+  "from_": "foo",
+  "to": "bar",
+  "regexp": false,
+  "answers": [
+   "y",
+   "Enter"
+  ],
+  "text": "Bar foo FOO fOo\nfoo-bar foo\n",
+  "point": 7
+ }
+]

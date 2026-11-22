@@ -126,5 +126,8 @@ A separate repository holds questions (case files written by us) and results rec
 ### `core/properties.js`, `test/properties.test.js`, `app/ui/minibuffer.js`, `test/browser/commands.mjs`
 - Written from: the author's mockups and decisions (the minibuffer row, Find with ▲ ▼ ✕, the command palette), and observed results from the conformance corpus for priorities, TODO states and property drawers, read as behavior only. Statement as above.
 
+### `core/regexp.js`, `core/replace.js`, `core/sparse.js`, `test/regexp.test.js`, `test/replace.test.js`, `test/sparse.test.js`
+- Written from: the Emacs manual's description of regexp syntax and query replace, and observed Emacs results (recorded as fixtures) read as data only. Statement as above.
+
 ### `test/browser/appearance.mjs`
 - Written from: the author's mockup and decisions (Appearance screen, heading swipe, restore of open files). Statement as above.

@@ -1,2 +1,2 @@
 // The installed version. A test keeps it equal to package.json and to sw.js.
-export const VERSION = '0.4.7';
+export const VERSION = '0.5.0';

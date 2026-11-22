@@ -35,3 +35,15 @@ test('offsets stay right when lowercasing would change a character length', () =
   const t = 'İx abc';
   assert.deepEqual(search(t, 'abc', { from: 0 }), { start: 3, end: 6, wrapped: false });
 });
+
+test('regexp search: forward from point, backward by start, wrap on request, errors thrown', () => {
+  const t = 'ab1 cd22 ef333';
+  assert.deepEqual(search(t, '[0-9]+', { from: 0, regexp: true }), { start: 2, end: 3, wrapped: false });
+  assert.deepEqual(search(t, '[0-9]+', { from: 3, regexp: true }), { start: 6, end: 8, wrapped: false });
+  assert.deepEqual(search(t, '[0-9]+', { from: 9, backward: true, regexp: true }), { start: 7, end: 8, wrapped: false }); // as re-search-backward: the nearest start
+  assert.equal(search(t, '[0-9]+', { from: 14, regexp: true }), null);
+  assert.equal(search(t, '[0-9]+', { from: 14, regexp: true, wrap: true }).wrapped, true);
+  assert.equal(search('Ab ab', 'ab', { from: 0, regexp: true }).start, 0); // lowercase: ignores case
+  assert.equal(search('Ab ab', 'Ab', { from: 1, regexp: true }), null); // an uppercase letter: exact
+  assert.throws(() => search(t, '\\(a', { from: 0, regexp: true }));
+});

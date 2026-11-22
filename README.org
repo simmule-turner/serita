@@ -76,6 +76,15 @@ In the Outline view, the same questions are touch dialogs. Menu, then Commands, 
 ** Find
 Type to search. The prompt shows ~I-search:~, ~Wrapped I-search:~ or ~Failing I-search:~. The match is highlighted; ▲ and ▼ go to the previous and next match. Past the last match the search fails; one more press wraps. C-s on an empty field recalls the last search. A lowercase query ignores case; an uppercase letter makes it exact. Return keeps the cursor on the match, and × returns to where you started.
 
+** Regexp search
+C-M-s and C-M-r search forward and backward for an Emacs regexp; M-r inside a search switches between plain and regexp. The prompt reads ~Regexp I-search:~.
+
+** Replace
+M-% replaces text; C-M-% replaces a regexp (\& is the match, \1 a group, \# the count). Answer each match with y or SPC (replace), n or DEL (skip), ! (replace the rest), . (replace and stop), q or RET (stop), ^ (back). A replacement follows the case of the match unless the search has a capital. On a touch screen each key has a button. Example: M-% ~cat~ RET ~dog~ RET, then ~!~.
+
+** Sparse trees
+C-c / r shows the lines that match a regexp and the headings above them; C-c / t shows unfinished TODO entries; C-c / T asks for a keyword. C-c C-c removes the highlights; TAB folds the heading. In the Outline view, Menu, then Commands has the same entries.
+
 ** Settings
 Menu, then Settings, sets up GitHub (owner, repository, branch, token) and WebDAV (address, user, password). They are kept in this browser, on this device.
 
