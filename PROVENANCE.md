@@ -86,6 +86,12 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 ### `core/body.js`, `test/body.test.js`
 - Written from: the author's request (edit the text under a heading in the Outline view) and the author's design. No other program or source was consulted. Statement as above.
 
+### `core/capture.js`, `core/lisp-read.js`, `test/capture.test.js`, `test/fixtures/emacs-capture.json`
+- Written from: the author's request (capture as Emacs does it, templates stored as init.el writes them), the Org manual's description of capture templates, and the Emacs 30.1 conformance results for the cp-* cases (the text each template leaves and its errors), read as behavior only. Statement as above.
+
+### `core/refile.js`, `test/refile.test.js`
+- Written from: the author's request (refile and archive as Emacs does), the Org manual's description of refile targets and archive locations, and the Emacs 30.1 conformance results for the rf-* and ar-* cases (the text each operation leaves, its messages and errors), read as behavior only. Statement as above.
+
 ### `app/ui/update.js`, `app/version.js`, `test/update.test.js`, `test/browser/update.mjs`
 - Written from: the author's request (see an update, choose when to restart) and the service worker API as documented (waiting worker, updatefound, message ports, skipWaiting). Statement as above.
 

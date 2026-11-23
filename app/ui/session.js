@@ -105,6 +105,14 @@ export function createSession({ app }) {
       return { ok: true, id };
     },
 
+    /** Opens a file that does not exist yet as an unsaved buffer. */
+    createFile(name, text) {
+      const id = nextId++;
+      buffers = [...buffers, { id, name, text, saved: '', version: null, folds: startupFolds(text), undo: [], redo: [], group: false, at: 0 }];
+      changed();
+      return id;
+    },
+
     select(id) { find(id); current = id; changed(); },
 
     /** What to keep across a reload: the buffers in order, the current one, and the text of buffers that are scratch or unsaved. */

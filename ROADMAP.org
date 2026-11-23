@@ -43,6 +43,11 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Agenda files: a file that cannot be read (batch Emacs crashes, so the wording is unknown) and the restricted agenda for one file (Emacs shows only that file).
 - Agenda: the fortnight and year spans in the screen, agenda files other than the open ones, filters and marks, the order of items of equal priority beyond what was recorded.
 
+* Later: capture, refile and archive
+- Template parts that need the Lisp interpreter or more results: ~:prepare-finalize~, ~file+function~ and other function targets, ~:clock-in~, ~%^T~ and the other ~%^~ prompts, groups of templates, and capture templates typed by key.
+- Capture to a file that does not exist yet (Emacs creates it), ~%a~ where the cursor is above the first heading, ~:prepend~ when the heading has text before its first child or the file has text before its first heading, and the file and heading of Emacs's built-in Task template (batch Emacs did not file it).
+- Refile and archive: ~org-refile-use-cache~, refile to a new heading (confirmation), ~ARCHIVE_TODO~ and the archive of entries with a TODO state, how an ARCHIVE-tagged heading folds, and archiving to a sibling that already exists.
+
 * Later: Appearance
 - Customize Light and Dark colors.
 - Size and spacing controls for tables, once tables exist.

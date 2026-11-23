@@ -17,7 +17,9 @@ import { backwardChar, backwardWord, forwardChar, forwardWord, lineEnd as endOfL
 import { DEFAULT_TAGS_COLUMN, changeLevel, cycleTodo, indentItem, insertHeadingAfter, insertHeadingHere, moveItem, moveSubtree, setPriority, setTags, setTitle, stepPriority, toggleCheckbox } from '../core/outline-edit.js';
 import { parseStringList, formatStringList } from '../core/lisp-list.js';
 import { clockIn, clockOut, cancelClock, openClock, inClockedEntry } from '../core/clock.js';
+import { parseTemplates, promptsOf, expand, place } from '../core/capture.js';
 import { bodyOf, setBody } from '../core/body.js';
+import { archiveSubtree, archiveToSibling, listTargets, parseRefileSettings, refile, refileMessage, toggleArchiveTag } from '../core/refile.js';
 import { isEffort } from '../core/effort.js';
 import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../core/properties.js';
 import { agenda, searchView, tagsView, todoList } from '../core/agenda.js';
@@ -708,7 +710,7 @@ async function settings() {
         h('div', { class: 'list' },
           h('button', { class: 'item', onclick: () => close('github') }, h('span', {}, 'GitHub'), h('span', { class: 'meta' }, `${summary('github')} ›`)),
           h('button', { class: 'item', onclick: () => close('webdav') }, h('span', {}, 'WebDAV'), h('span', { class: 'meta' }, `${summary('webdav')} ›`)),
-          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '5 settings ›')),
+          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '8 settings ›')),
           h('button', { class: 'item', onclick: () => close('appearance') }, h('span', {}, 'Appearance'), h('span', { class: 'meta' }, `${theme()[0].toUpperCase()}${theme().slice(1)}, ${fontSize()}px ›`)),
           h('button', { class: 'item', onclick: () => close('restore') }, h('span', {}, 'Restore open files on start'), h('span', { class: 'meta' }, restoreOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('tools-text') }, h('span', {}, 'Tool row in the Text view'), h('span', { class: 'meta' }, toolRowOn('text') ? 'On ›' : 'Off ›')),
@@ -745,15 +747,21 @@ async function emacsSettings() {
       put(sheet, h('h2', {}, 'Emacs'),
         h('div', { class: 'list' },
           item('agenda-files', 'Agenda files', `${files} ${files === 1 ? 'file' : 'files'}`),
+          item('archive', 'Archive location', archiveLocation()),
           item('beep', 'Beep on errors', beepOn() ? 'On' : 'Off'),
+          item('capture-templates', 'Capture templates', (() => { const n = captureText() ? parseTemplates(captureText()).length : 0; return `${n} ${n === 1 ? 'template' : 'templates'}`; })()),
           item('emacs', 'Emacs keys', emacsKeys() ? 'On' : 'Off'),
           item('stars', 'Hide leading stars', hideStars() ? 'On' : 'Off'),
+          item('refile', 'Refile targets', refileText() ? 'Custom' : 'Top level'),
           item('tags-column', 'Tag column', String(tagsColumn()))),
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
     });
     if (what === undefined) return;
     if (what === 'agenda-files') await agendaFilesDialog();
+    else if (what === 'archive') await archiveLocationDialog();
+    else if (what === 'refile') await refileSettingsDialog();
     else if (what === 'beep') config.update({ settings: { 'view.beep': String(!beepOn()) } });
+    else if (what === 'capture-templates') await captureTemplatesDialog();
     else if (what === 'emacs') config.update({ settings: { 'view.emacsKeys': String(!emacsKeys()) } });
     else if (what === 'stars') config.update({ settings: { 'view.hideStars': String(!hideStars()) } });
     else await tagsColumnDialog();
@@ -928,11 +936,180 @@ $('btn-menu').addEventListener('click', async () => {
   const what = await choose(null, [
     waiting ? { label: 'Restart to update', meta: `${VERSION} to ${waiting.version}`, value: 'restart' } : null,
     { label: 'Commands', value: 'commands' },
+    { label: 'Capture', value: 'capture' },
     { label: 'Settings', value: 'settings' }].filter(Boolean));
   if (what === 'restart') restart();
   else if (what === 'commands') await commandPalette();
+  else if (what === 'capture') await capture();
   else if (what === 'settings') await settings();
 });
+
+// ---- Capture ------------------------------------------------------------------------------------
+
+/** org-capture-templates as the text of its init.el form; Emacs's own template when none is set. */
+const DEFAULT_TEMPLATES = '(setq org-capture-templates \'(("t" "Task" entry (file+headline ".notes" "Tasks") "* TODO %?\\n  %u\\n  %a")))';
+const captureText = () => config.settings()['org-capture-templates'] ?? '';
+const captureTemplates = () => parseTemplates(captureText() || DEFAULT_TEMPLATES);
+
+/** The multi-line field of the capture screen, with the caret where %? was. */
+function askCapture(title, target, initial, caret) {
+  return panel((sheet, close) => {
+    const input = h('textarea', { rows: '10', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Capture' });
+    input.value = initial;
+    put(sheet, h('h2', {}, title), h('p', {}, target), input,
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
+    input.focus();
+    input.setSelectionRange(caret, caret);
+  });
+}
+
+/** Files the captured text into its target file, opening the file when it is not open. */
+async function fileCapture(tpl, captured) {
+  const name = tpl.target.file;
+  let buffer = session.state().buffers.find((b) => b.name === name);
+  if (!buffer) {
+    const opened = await session.openFile(name);
+    if (!opened.ok) { message(`${name} does not exist`, true); return; }
+    buffer = session.state().buffers.find((b) => b.id === opened.id);
+  }
+  const r = place(buffer.text, tpl, captured);
+  session.apply(buffer.id, { text: r.text });
+  message(`Captured to ${name}`);
+}
+
+/** C-c c: choose a template, answer its questions, edit the text, and file it. */
+async function capture() {
+  try {
+    const templates = captureTemplates();
+    const tpl = await choose('Capture', templates.map((t) => ({ label: `${t.key}  ${t.description}`, meta: `${t.target.file} ›`, value: t })));
+    if (!tpl) return;
+    const answers = [];
+    for (const q of promptsOf(tpl.template)) {
+      const a = q.choices.length ? await choose(q.prompt, q.choices.map((c) => ({ label: c, value: c }))) : await askText({ prompt: `${q.prompt}:`, title: q.prompt, value: q.default, ok: 'OK' });
+      if (a === undefined) return;
+      answers.push(a);
+    }
+    const b = currentBuffer();
+    const hd = b ? enclosingHead() : null;
+    const link = b?.name ? (hd ? `[[file:${b.name}::*${hd.title}][${hd.title}]]` : `[[file:${b.name}]]`) : '';
+    const sel = viewMode() === 'text' && editor.selectionStart !== editor.selectionEnd ? editor.value.slice(editor.selectionStart, editor.selectionEnd) : '';
+    const e = expand(tpl.template, { answers, now: localNow(), link, selection: sel });
+    const where = tpl.target.path ? `${tpl.target.file} › ${tpl.target.path.join(' › ')}` : tpl.target.file;
+    const captured = tpl.opts.immediate ? e.text : await askCapture(`Capture: ${tpl.description}`, where, e.text, e.caret);
+    if (captured === undefined) return;
+    await fileCapture(tpl, captured);
+  } catch (e) { failure(e); }
+}
+
+/** Settings, Emacs, Capture templates: the init.el form, as text. */
+async function captureTemplatesDialog() {
+  for (;;) {
+    const text = await panel((sheet, close) => {
+      const input = h('textarea', { rows: '12', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Capture templates', style: 'font-family:monospace' });
+      input.value = captureText() || '(setq org-capture-templates\n  \'())';
+      put(sheet, h('h2', {}, 'Capture templates'),
+        h('p', {}, 'The templates as init.el sets them, with setq or add-to-list.'), input,
+        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
+    });
+    if (text === undefined) return;
+    try { const n = parseTemplates(text).length; config.update({ settings: { 'org-capture-templates': n ? text.trim() : '' } }); message(`${n} capture ${n === 1 ? 'template' : 'templates'}`); return; } catch (e) { message(e.message, true); }
+  }
+}
+
+// ---- Refile and archive -------------------------------------------------------------------------
+
+const DEFAULT_REFILE = '(setq org-refile-targets \'((nil :level . 1)))';
+const refileText = () => config.settings()['org-refile-settings'] ?? '';
+const archiveLocation = () => config.settings()['org-archive-location'] || '%s_archive::';
+const bufferName = (b) => b.name ?? b.title;
+
+/** The text of a file that may be a refile or archive target: its open buffer, or the file opened. */
+async function bufferFor(name) {
+  let b = session.state().buffers.find((x) => x.name === name);
+  if (!b) {
+    const opened = await session.openFile(name);
+    if (!opened.ok) return null;
+    b = session.state().buffers.find((x) => x.id === opened.id);
+  }
+  return b;
+}
+
+/** C-c C-w (C-c M-w keeps the original): choose where the heading and its subtree go. */
+async function refileHere(copy = false, hd = enclosingHead()) {
+  if (!hd) { message('Not at a heading'); return; }
+  try {
+    const settings = parseRefileSettings(refileText() || DEFAULT_REFILE);
+    const b = currentBuffer();
+    const cname = bufferName(b);
+    const names = new Set([cname]);
+    for (const t of settings.targets) for (const n of t.files === 'agenda' ? agendaFileNames() : t.files ?? []) names.add(n);
+    const files = [];
+    for (const n of names) { const x = n === cname ? b : await bufferFor(n); if (x) files.push({ name: n, text: x.text, id: x.id }); }
+    const targets = listTargets(files, settings, { current: cname, agenda: agendaFileNames() });
+    if (!targets.length) { message('No refile targets', true); return; }
+    const t = await choose(copy ? 'Refile (and keep) to' : 'Refile to', targets.map((x) => ({ label: x.label, meta: files.length > 1 ? x.file : null, value: x })));
+    if (!t) return;
+    const same = t.file === cname;
+    const other = same ? null : files.find((f) => f.name === t.file);
+    const r = refile(b.text, hd.line, t, { otherText: other?.text ?? null, reverse: settings.reverse, copy });
+    session.apply(b.id, { text: r.text });
+    if (other) session.apply(other.id, { text: r.otherText });
+    message(refileMessage(t, t.file, copy));
+  } catch (e) { failure(e); }
+}
+
+/** C-c C-x C-a: the subtree goes to the archive location, with where it came from kept in properties. */
+async function archiveHere(hd = enclosingHead()) {
+  if (!hd) { message('Not at a heading'); return; }
+  try {
+    const b = currentBuffer();
+    const cname = bufferName(b);
+    const loc = archiveLocation();
+    const file = loc.slice(0, loc.indexOf('::')).replace('%s', cname);
+    const ab = file && file !== cname ? await (async () => { const x = session.state().buffers.find((y) => y.name === file); if (x) return x; const o = await session.openFile(file); return o.ok ? session.state().buffers.find((y) => y.id === o.id) : null; })() : null;
+    const category = /^#\+CATEGORY:[ \t]*(\S.*?)[ \t]*$/im.exec(b.text)?.[1] ?? cname.replace(/^.*\//, '').replace(/\.[^.]*$/, '');
+    const r = archiveSubtree(b.text, hd.line, { fileName: cname, category, location: loc, now: localNow(), archiveText: ab?.text ?? null });
+    session.apply(b.id, { text: r.text });
+    if (r.archive) {
+      if (ab) session.apply(ab.id, { text: r.archive.text });
+      else { session.createFile(r.archive.file, r.archive.text); session.select(b.id); }
+    }
+    message(r.message);
+  } catch (e) { failure(e); }
+}
+
+function archiveSibling(hd = enclosingHead()) {
+  if (!hd) { message('Not at a heading'); return; }
+  runEdit((t) => archiveToSibling(t, hd.line, { now: localNow(), column: tagsColumn() }));
+}
+
+function archiveTag(hd = enclosingHead()) {
+  if (!hd) { message('Not at a heading'); return; }
+  const m = runEdit((t) => toggleArchiveTag(t, hd.line, tagsColumn()));
+  if (m) message(m.message);
+}
+
+/** Settings, Emacs, Refile targets and Archive location: the init.el forms, as text. */
+async function refileSettingsDialog() {
+  for (;;) {
+    const text = await panel((sheet, close) => {
+      const input = h('textarea', { rows: '8', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Refile targets', style: 'font-family:monospace' });
+      input.value = refileText() || DEFAULT_REFILE;
+      put(sheet, h('h2', {}, 'Refile targets'),
+        h('p', {}, 'org-refile-targets, org-refile-use-outline-path and org-reverse-note-order, as init.el sets them with setq.'), input,
+        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
+    });
+    if (text === undefined) return;
+    try { parseRefileSettings(text); config.update({ settings: { 'org-refile-settings': text.trim() === DEFAULT_REFILE ? '' : text.trim() } }); message('Refile targets set'); return; } catch (e) { message(e.message, true); }
+  }
+}
+
+async function archiveLocationDialog() {
+  const value = await askText({ prompt: 'Archive location:', title: 'Archive location', help: 'A file and a heading separated by ::. %s is the name of the file. The default is %s_archive::', value: archiveLocation(), ok: 'Set' });
+  if (value === undefined) return;
+  if (!value.includes('::')) { message('The archive location needs ::', true); return; }
+  config.update({ settings: { 'org-archive-location': value === '%s_archive::' ? '' : value } });
+}
 
 // ---- The agenda ---------------------------------------------------------------------------------
 
@@ -1348,6 +1525,12 @@ const COMMANDS = {
   'end-of-buffer': () => { leaveHere(); goTo(editor.value.length); },
   'back': () => goBack(),
   'effort': () => setEffort(),
+  'capture': () => capture(),
+  'refile': () => refileHere(false),
+  'refile-copy': () => refileHere(true),
+  'archive-subtree': () => archiveHere(),
+  'archive-sibling': () => archiveSibling(),
+  'archive-tag': () => archiveTag(),
   'clock-in': () => clockInHere(),
   'clock-out': () => clockOutNow(),
   'clock-cancel': () => clockCancel(),
@@ -1654,6 +1837,8 @@ async function headingActions(line) {
     { label: 'Move up', value: 'move-up' },
     { label: 'Move down', value: 'move-down' },
     { label: 'Insert heading below', value: 'insert' },
+    { label: 'Refile', value: 'refile' },
+    { label: 'Archive', value: 'archive' },
     { group: 'Dates and clock' },
     { label: 'Schedule', value: 'schedule' },
     { label: 'Deadline', value: 'deadline' },
@@ -1679,6 +1864,8 @@ async function headingActions(line) {
   else if (what === 'schedule') await planHere('SCHEDULED', 'SCHEDULED', 'Scheduled to', hd);
   else if (what === 'deadline') await planHere('DEADLINE', 'DEADLINE', 'Deadline on', hd);
   else if (what === 'clock-in') clockInHere(hd);
+  else if (what === 'refile') await refileHere(false, hd);
+  else if (what === 'archive') await archiveHere(hd);
   else if (what === 'body') {
     const body = await askBody(hd.title || '(empty heading)', bodyOf(b.text, line));
     if (body !== undefined) runEdit((t) => setBody(t, line, body));
@@ -1748,7 +1935,7 @@ const PALETTE = [
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
   ['insert-heading', 'org-insert-heading-respect-content', 'Insert heading after subtree'], ['insert-heading-here', 'org-meta-return', 'Insert heading here'],
   ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],
-  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true], ['effort', 'org-set-effort', 'Set effort'], ['clock-in', 'org-clock-in', 'Clock in'], ['clock-out', 'org-clock-out', 'Clock out'], ['clock-cancel', 'org-clock-cancel', 'Cancel clock'], ['agenda-file-add', 'org-agenda-file-to-front', 'Add file to agenda files', true], ['agenda-file-remove', 'org-remove-file', 'Remove file from agenda files', true],
+  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true], ['effort', 'org-set-effort', 'Set effort'], ['capture', 'org-capture', 'Capture', true], ['refile', 'org-refile', 'Refile'], ['refile-copy', 'org-copy-subtree', 'Refile and keep'], ['archive-subtree', 'org-archive-subtree', 'Archive'], ['archive-sibling', 'org-archive-to-archive-sibling', 'Archive to sibling'], ['archive-tag', 'org-toggle-archive-tag', 'Toggle archive tag'], ['clock-in', 'org-clock-in', 'Clock in'], ['clock-out', 'org-clock-out', 'Clock out'], ['clock-cancel', 'org-clock-cancel', 'Cancel clock'], ['agenda-file-add', 'org-agenda-file-to-front', 'Add file to agenda files', true], ['agenda-file-remove', 'org-remove-file', 'Remove file from agenda files', true],
   ['undo', 'undo', 'Undo', true], ['redo', 'undo-redo', 'Redo', true],
   ['select-all', 'mark-whole-buffer', 'Select all'], ['kill-line', 'kill-line', 'Cut to end of line'], ['kill-whole-line', 'kill-whole-line', 'Cut whole line'], ['yank', 'yank', 'Paste'],
   ['next-line', 'next-line', 'Next line'], ['previous-line', 'previous-line', 'Previous line'], ['forward-char', 'forward-char', 'Forward character'], ['backward-char', 'backward-char', 'Backward character'],

@@ -80,6 +80,8 @@ export const TEXT_KEYS = Object.freeze({
   'M-g g': 'goto-line',
   'C-x C-SPC': 'back',
   'C-c C-x e': 'effort',
+  'C-c c': 'capture',
+  'C-c C-w': 'refile', 'C-c M-w': 'refile-copy', 'C-c C-x C-a': 'archive-subtree', 'C-c $': 'archive-subtree', 'C-c C-x A': 'archive-sibling', 'C-c C-x a': 'archive-tag',
   'C-c C-x C-i': 'clock-in',
   'C-c C-x C-o': 'clock-out',
   'C-c C-x C-q': 'clock-cancel',

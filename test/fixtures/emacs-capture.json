@@ -1,0 +1,270 @@
+[
+ {
+  "id": "cp-entry-file",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" entry (file \"f.org\") \"* TODO %?\\n\" )",
+  "typed": "Buy milk",
+  "answers": [],
+  "error": null,
+  "text": "* Existing\nbody\n* TODO Buy milk\n"
+ },
+ {
+  "id": "cp-entry-file-nonl",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" entry (file \"f.org\") \"* TODO %?\" )",
+  "typed": "Buy milk",
+  "answers": [],
+  "error": null,
+  "text": "* Existing\nbody\n* TODO Buy milk\n"
+ },
+ {
+  "id": "cp-entry-prepend",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" entry (file \"f.org\") \"* TODO %?\\n\" :prepend t)",
+  "typed": "Buy milk",
+  "answers": [],
+  "error": null,
+  "text": "* TODO Buy milk\n* Existing\nbody\n"
+ },
+ {
+  "id": "cp-headline",
+  "input": "* Inbox\n** Old one\n* Other\n",
+  "tpl": "(\"k\" \"Desc\" entry (file+headline \"f.org\" \"Inbox\") \"* %?\\n\" )",
+  "typed": "New",
+  "answers": [],
+  "error": null,
+  "text": "* Inbox\n** Old one\n** New\n* Other\n"
+ },
+ {
+  "id": "cp-headline-prepend",
+  "input": "* Inbox\n** Old one\n* Other\n",
+  "tpl": "(\"k\" \"Desc\" entry (file+headline \"f.org\" \"Inbox\") \"* %?\\n\" :prepend t)",
+  "typed": "New",
+  "answers": [],
+  "error": null,
+  "text": "* Inbox\n** New\n** Old one\n* Other\n"
+ },
+ {
+  "id": "cp-headline-missing",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" entry (file+headline \"f.org\" \"Inbox\") \"* %?\\n\" )",
+  "typed": "New",
+  "answers": [],
+  "error": null,
+  "text": "* Existing\nbody\n* Inbox\n** New\n"
+ },
+ {
+  "id": "cp-headline-sub",
+  "input": "* A\n** Inbox\n** Z\n",
+  "tpl": "(\"k\" \"Desc\" entry (file+headline \"f.org\" \"Inbox\") \"* %?\\n\" )",
+  "typed": "New",
+  "answers": [],
+  "error": null,
+  "text": "* A\n** Inbox\n*** New\n** Z\n"
+ },
+ {
+  "id": "cp-olp",
+  "input": "* A\n** B\n*** C\n* D\n",
+  "tpl": "(\"k\" \"Desc\" entry (file+olp \"f.org\" \"A\" \"B\") \"* %?\\n\" )",
+  "typed": "New",
+  "answers": [],
+  "error": null,
+  "text": "* A\n** B\n*** C\n*** New\n* D\n"
+ },
+ {
+  "id": "cp-olp-missing",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" entry (file+olp \"f.org\" \"A\" \"B\") \"* %?\\n\" )",
+  "typed": "New",
+  "answers": [],
+  "error": "Heading not found on level 1: A",
+  "text": "* Existing\nbody\n"
+ },
+ {
+  "id": "cp-olp-partial",
+  "input": "* A\n* D\n",
+  "tpl": "(\"k\" \"Desc\" entry (file+olp \"f.org\" \"A\" \"B\") \"* %?\\n\" )",
+  "typed": "New",
+  "answers": [],
+  "error": "Heading not found on level 2: B",
+  "text": "* A\n* D\n"
+ },
+ {
+  "id": "cp-item",
+  "input": "* List\n- one\n- two\n* Z\n",
+  "tpl": "(\"k\" \"Desc\" item (file+headline \"f.org\" \"List\") \"- %?\\n\" )",
+  "typed": "three",
+  "answers": [],
+  "error": null,
+  "text": "* List\n- one\n- two\n- three\n* Z\n"
+ },
+ {
+  "id": "cp-item-prepend",
+  "input": "* List\n- one\n- two\n* Z\n",
+  "tpl": "(\"k\" \"Desc\" item (file+headline \"f.org\" \"List\") \"- %?\\n\" :prepend t)",
+  "typed": "zero",
+  "answers": [],
+  "error": null,
+  "text": "* List\n- zero\n- one\n- two\n* Z\n"
+ },
+ {
+  "id": "cp-item-nolist",
+  "input": "* List\ntext\n* Z\n",
+  "tpl": "(\"k\" \"Desc\" item (file+headline \"f.org\" \"List\") \"- %?\\n\" )",
+  "typed": "one",
+  "answers": [],
+  "error": null,
+  "text": "* List\ntext\n- one\n* Z\n"
+ },
+ {
+  "id": "cp-checkitem",
+  "input": "* List\n- [ ] one\n* Z\n",
+  "tpl": "(\"k\" \"Desc\" checkitem (file+headline \"f.org\" \"List\") \"- [ ] %?\\n\" )",
+  "typed": "two",
+  "answers": [],
+  "error": null,
+  "text": "* List\n- [ ] one\n- [ ] two\n* Z\n"
+ },
+ {
+  "id": "cp-table",
+  "input": "* T\n| a | b |\n|---+---|\n| 1 | 2 |\n* Z\n",
+  "tpl": "(\"k\" \"Desc\" table-line (file+headline \"f.org\" \"T\") \"| %? | |\\n\" )",
+  "typed": "x",
+  "answers": [],
+  "error": null,
+  "text": "* T\n| a | b |\n|---+---|\n| 1 | 2 |\n| x |   |\n* Z\n"
+ },
+ {
+  "id": "cp-table-none",
+  "input": "* T\ntext\n* Z\n",
+  "tpl": "(\"k\" \"Desc\" table-line (file+headline \"f.org\" \"T\") \"| %? | |\\n\" )",
+  "typed": "x",
+  "answers": [],
+  "error": null,
+  "text": "* T\ntext\n|   |   |\n|---+---|\n| x |   |\n* Z\n"
+ },
+ {
+  "id": "cp-plain",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" plain (file \"f.org\") \"plain %?\\n\" )",
+  "typed": "text",
+  "answers": [],
+  "error": null,
+  "text": "* Existing\nbody\nplain text\n"
+ },
+ {
+  "id": "cp-empty-lines",
+  "input": "* Inbox\n** Old one\n* Other\n",
+  "tpl": "(\"k\" \"Desc\" entry (file+headline \"f.org\" \"Inbox\") \"* %?\\n\" :empty-lines 1)",
+  "typed": "New",
+  "answers": [],
+  "error": null,
+  "text": "* Inbox\n** Old one\n\n** New\n\n* Other\n"
+ },
+ {
+  "id": "cp-empty-before",
+  "input": "* Inbox\n** Old one\n* Other\n",
+  "tpl": "(\"k\" \"Desc\" entry (file+headline \"f.org\" \"Inbox\") \"* %?\\n\" :empty-lines-before 1)",
+  "typed": "New",
+  "answers": [],
+  "error": null,
+  "text": "* Inbox\n** Old one\n\n** New\n* Other\n"
+ },
+ {
+  "id": "cp-prompt",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" entry (file \"f.org\") \"* %^{Title} for %\\\\1 and %^{Other}\\n\" )",
+  "typed": "",
+  "answers": [
+   "Alpha",
+   "Beta"
+  ],
+  "error": null,
+  "text": "* Existing\nbody\n* Alpha for Alpha and Beta\n"
+ },
+ {
+  "id": "cp-prompt-choices",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" entry (file \"f.org\") \"* %^{Pick|a|b|c}\\n\" )",
+  "typed": "",
+  "answers": [
+   "b"
+  ],
+  "error": null,
+  "text": "* Existing\nbody\n* b\n"
+ },
+ {
+  "id": "cp-prompt-blank",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" entry (file \"f.org\") \"* %^{Title} tail\\n\" )",
+  "typed": "",
+  "answers": [
+   ""
+  ],
+  "error": null,
+  "text": "* Existing\nbody\n*  tail\n"
+ },
+ {
+  "id": "cp-time",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" entry (file \"f.org\") \"* Year %<%Y> 100%% %?\\n\" )",
+  "typed": "x",
+  "answers": [],
+  "error": null,
+  "text": "* Existing\nbody\n* Year 2026 100%% x\n"
+ },
+ {
+  "id": "cp-stamps",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" entry (file \"f.org\") \"* %U %T %t %u\\n\" )",
+  "typed": "",
+  "answers": [],
+  "error": null,
+  "text": "* Existing\nbody\n* [2026-11-22 Sun 18:26] <2026-11-22 Sun 18:26> <2026-11-22 Sun> [2026-11-22 Sun]\n"
+ },
+ {
+  "id": "cp-link",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" entry (file \"f.org\") \"* From %a\\n\" )",
+  "typed": "",
+  "answers": [],
+  "error": null,
+  "text": "* Existing\nbody\n* From [[file:FILE::*Existing][Existing]]\n"
+ },
+ {
+  "id": "cp-caret",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" entry (file \"f.org\") \"* A %? B\\nbody\\n\" )",
+  "typed": "x",
+  "answers": [],
+  "error": null,
+  "text": "* Existing\nbody\n* A x B\nbody\n"
+ },
+ {
+  "id": "cp-multi",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" entry (file \"f.org\") \"* TODO %?\\n:PROPERTIES:\\n:X: 1\\n:END:\\nbody\\n\" )",
+  "typed": "T",
+  "answers": [],
+  "error": null,
+  "text": "* Existing\nbody\n* TODO T\n:PROPERTIES:\n:X: 1\n:END:\nbody\n"
+ },
+ {
+  "id": "cp-immediate",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" entry (file \"f.org\") \"* TODO fixed\\n\" :immediate-finish t)",
+  "typed": "",
+  "answers": [],
+  "error": null,
+  "text": "* Existing\nbody\n* TODO fixed\n"
+ },
+ {
+  "id": "cp-level-deeper",
+  "input": "* Existing\nbody\n",
+  "tpl": "(\"k\" \"Desc\" entry (file \"f.org\") \"** %?\\n\" )",
+  "typed": "New",
+  "answers": [],
+  "error": null,
+  "text": "* Existing\nbody\n* New\n"
+ }
+]

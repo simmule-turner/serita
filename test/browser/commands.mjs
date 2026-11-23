@@ -12,7 +12,7 @@ await page.goto(`${base}/`);
 await page.waitForSelector('.tab.current');
 const sheet = page.locator('.sheet');
 const btn = (n) => sheet.getByRole('button', { name: n, exact: true });
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/5 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/8 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
 const at = async (text, line) => {
   await page.fill('#editor', text);
   await page.evaluate((l) => { const e = document.getElementById('editor'); const o = e.value.split('\n').slice(0, l - 1).reduce((n, s) => n + s.length + 1, 0); e.focus(); e.setSelectionRange(o, o); }, line);
@@ -247,7 +247,7 @@ await page.locator('.sheet.agenda .abar button', { hasText: 'Close' }).click();
 await page.evaluate(() => document.getElementById('editor').focus());
 await page.keyboard.press('Alt+x'); await page.keyboard.type('org-agenda-file-to-front'); await page.keyboard.press('Enter');
 ok((await page.locator('#message').textContent()).includes('File added to front of agenda file list'), 'C-c [ lists the current file');
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/5 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/8 settings/).click();
 ok((await btn(/Agenda files/).textContent()).includes('1 file'), 'Settings shows how many agenda files there are');
 await btn(/Agenda files/).click();
 ok((await sheet.textContent()).includes('agenda-test.org (App storage)'), 'the Agenda files screen lists the file with its storage');
@@ -336,10 +336,36 @@ await at('* H\n', 1); await ctrl('c'); await ctrl('x'); await page.keyboard.pres
 ok((await prompt()) === 'Foo value:', 'the value prompt names the property');
 await page.keyboard.press('Escape');
 
+// Capture: templates are set as init.el writes them; Capture asks the template's questions, shows the text, and files it
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/8 settings/).click(); await btn(/Capture templates/).click();
+await sheet.locator('textarea').fill(`(setq org-capture-templates '(("t" "Todo" entry (file+headline "agenda-test.org" "Inbox") "* TODO %^{What}\\n")))`);
+await btn('Save').click();
+ok((await page.locator('#message').textContent()) === '1 capture template', 'saving the templates counts them');
+await btn('‹ Settings').click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Capture').click();
+ok((await sheet.textContent()).includes('t  Todo'), 'Capture lists the templates by key and description');
+await btn(/Todo/).click();
+ok((await prompt()) === 'What:', 'the template question is asked');
+await page.keyboard.type('Milk'); await page.keyboard.press('Enter');
+ok((await sheet.locator('textarea').inputValue()) === '* TODO Milk\n', 'the capture screen shows the expanded template');
+await btn('Save').click();
+await page.waitForFunction(() => /^Captured|does not exist|Heading/.test(document.getElementById('message').textContent));
+ok((await page.locator('#message').textContent()) === 'Captured to agenda-test.org', 'Save files the captured text');
+
+// Refile and archive: Refile lists the targets; Archive tags and archives from the command list
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/8 settings/).click();
+ok((await sheet.textContent()).includes('Refile targets') && (await sheet.textContent()).includes('Archive location'), 'Settings, Emacs lists Refile targets and Archive location');
+await btn('‹ Settings').click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn(/Commands/).click(); await page.keyboard.type('org-refile'); await page.keyboard.press('Enter');
+await page.waitForFunction(() => /Refile to|Not at a heading|No refile/.test(document.body.textContent));
+const refileShown = /Refile to/.test(await page.locator('.sheet').first().textContent().catch(() => ''));
+if (refileShown) { ok(true, 'Refile lists the targets'); await page.keyboard.press('Escape'); }
+else ok(/Not at a heading/.test(await page.locator('#message').textContent()), 'Refile off a heading says so');
+
 // Menu: Commands
 await page.click('#btn-menu');
 const items = await sheet.locator('.item').allTextContents();
-ok(items[0].startsWith('Commands') && items[1].startsWith('Settings'), 'the menu has Commands above Settings');
+ok(items[0].startsWith('Commands') && items[1].startsWith('Capture') && items[2].startsWith('Settings'), 'the menu has Commands, Capture and Settings');
 await btn(/Commands/).click(); await page.keyboard.type('flip');
 await page.keyboard.press('Escape');
 ok(errors.length === 0, `no page errors ${errors.join('; ')}`);

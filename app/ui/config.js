@@ -2,7 +2,7 @@
 // maps of string to string. The names match the settings file (core/settings-file.js).
 // In the browser both live in the browser's own storage for this site, which is stated on the setup screen.
 
-export const SETTING_KEYS = Object.freeze(['github.owner', 'github.repo', 'github.branch', 'webdav.url', 'webdav.username', 'view.mode', 'view.emacsKeys', 'view.hideStars', 'view.lineNumbers', 'view.wrap', 'view.fontSize', 'view.toolRowText', 'view.toolRowOutline', 'view.theme', 'view.font', 'view.paragraphSpacing', 'org.tagsColumn', 'session.restore', 'view.beep', 'view.keyLog', 'org-agenda-files']);
+export const SETTING_KEYS = Object.freeze(['github.owner', 'github.repo', 'github.branch', 'webdav.url', 'webdav.username', 'view.mode', 'view.emacsKeys', 'view.hideStars', 'view.lineNumbers', 'view.wrap', 'view.fontSize', 'view.toolRowText', 'view.toolRowOutline', 'view.theme', 'view.font', 'view.paragraphSpacing', 'org.tagsColumn', 'session.restore', 'view.beep', 'view.keyLog', 'org-agenda-files', 'org-capture-templates', 'org-refile-settings', 'org-archive-location']);
 export const SECRET_KEYS = Object.freeze(['github.token', 'webdav.password']);
 
 /**

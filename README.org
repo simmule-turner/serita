@@ -103,6 +103,33 @@ The agenda covers the files on the agenda files list, not the tabs that happen t
 ** Agenda
 View, then Agenda, lists what is scheduled, due or dated in the open files, by Day, Week or Month; the arrows, a swipe left or right, or f and b move through time, and a tap on a row goes to that heading. Overdue tasks show again on today ("Sched. 3x:" is three days late), deadlines show "In 3 d." as they near, and repeating tasks appear on each of their dates. Views switches to the TODO list, a tags view (a match such as ~work+urgent~) or a search for words. In the Text view C-c a a opens the agenda, C-c a t the TODO list, C-c a m tags and C-c a s a search.
 
+** Capture
+C-c c (or Menu, Capture) lists the capture templates by key and description. Tap one, answer its questions, edit the text, and Save files it into the template's target; Cancel drops it.
+
+A template is set as ~init.el~ writes it, in Settings, Emacs, Capture templates:
+
+#+begin_example
+(setq org-capture-templates
+  '(("t" "Todo" entry (file+headline "notes.org" "Inbox")
+     "* TODO %?\n")))
+#+end_example
+
+Types are ~entry~, ~item~, ~checkitem~, ~table-line~ and ~plain~; targets are ~file~, ~file+headline~ (made when missing) and ~file+olp~; options are ~:prepend~, ~:empty-lines~, ~:empty-lines-before~, ~:empty-lines-after~ and ~:immediate-finish~. Escapes: ~%^{Prompt|default}~ or ~%^{Prompt|a|b|c}~ asks, ~%\1~ repeats an answer, ~%<%Y-%m-%d>~, ~%U~, ~%T~, ~%t~, ~%u~, ~%a~ (a link to the heading you were on), ~%i~ (the selected text) and ~%?~ (where the caret starts). With no templates set, Emacs's own Task template files into ~.notes~ under Tasks.
+
+** Refile and archive
+C-c C-w lists the places the heading can go; tap one and the heading with its subtree moves there, as its last child. C-c M-w files a copy and keeps the original. In the Outline view, a heading's actions include Refile and Archive.
+
+Which headings are listed is set as ~init.el~ writes it, in Settings, Emacs, Refile targets:
+
+#+begin_example
+(setq org-refile-targets '((nil :maxlevel . 2) ("notes.org" :level 1))
+      org-refile-use-outline-path t)
+#+end_example
+
+A target is a file (~nil~ is this one, ~org-agenda-files~ is the agenda files) with ~:maxlevel~, ~:level~, ~:tag~, ~:todo~ or ~:regexp~. ~org-refile-use-outline-path~ shows the path of each heading, and ~org-reverse-note-order~ puts the subtree first instead of last.
+
+C-c C-x C-a (or C-c $) archives the subtree into the file named in Settings, Emacs, Archive location, ~%s_archive::~ unless you change it; ~::* Archived~ keeps it in the same file under a heading. The entry records when and where it came from in ARCHIVE_TIME, ARCHIVE_FILE, ARCHIVE_OLPATH and ARCHIVE_CATEGORY properties. C-c C-x A moves it under an Archive heading among its siblings, and C-c C-x a toggles the ARCHIVE tag.
+
 ** Settings
 Menu, then Settings, sets up GitHub (owner, repository, branch, token) and WebDAV (address, user, password). They are kept in this browser, on this device.
 
