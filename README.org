@@ -101,7 +101,9 @@ C-c C-x e asks for the effort of the heading and sets its ~Effort~ property: ~2:
 The agenda covers the files on the agenda files list, not the tabs that happen to be open; a file that is open shows its current text. C-c [ puts the current file on the list and C-c ] takes it off; Settings, Emacs, Agenda files shows the list and adds files from any storage. The list is saved as ~org-agenda-files~, the way an ~init.el~ would set it.
 
 ** Agenda
-View, then Agenda, lists what is scheduled, due or dated in the open files, by Day, Week or Month; the arrows, a swipe left or right, or f and b move through time, and a tap on a row goes to that heading. Overdue tasks show again on today ("Sched. 3x:" is three days late), deadlines show "In 3 d." as they near, and repeating tasks appear on each of their dates. Views switches to the TODO list, a tags view (a match such as ~work+urgent~) or a search for words. In the Text view C-c a a opens the agenda, C-c a t the TODO list, C-c a m tags and C-c a s a search.
+View, then Agenda, lists what is scheduled, due or dated in the open files, by Day, Week, 2 weeks, Month or Year; the arrows, a swipe left or right, or f and b move through time, and a tap on a row goes to that heading. Overdue tasks show again on today ("Sched. 3x:" is three days late), deadlines show "In 3 d." as they near, and repeating tasks appear on each of their dates. Views switches to the TODO list, a tags view (a match such as ~work+urgent~) or a search for words. On a day with timed entries a time grid (8:00, 10:00 and so on, with a line for now on today) shows the free hours; Settings, Emacs, Agenda time grid turns it off.
+
+Filter keeps some of the rows: by tag (~+work -home~), category (~+calls~), effort (~<1:00~, ~>0:30~, ~=2:00~; entries with no effort stay only for ~>~) and an Emacs regexp (~+rent~ keeps lines that match, ~-rent~ hides them). The filters show in the title and Clear all filters removes them. Mark turns a tap into a mark; All and None mark every row or none, and Act on N sets the TODO state, adds or removes a tag, sets the priority, schedules, sets a deadline or archives every marked entry. In the Text view C-c a a opens the agenda, C-c a t the TODO list, C-c a m tags and C-c a s a search.
 
 ** Capture
 C-c c (or Menu, Capture) lists the capture templates by key and description. Tap one, answer its questions, edit the text, and Save files it into the template's target; Cancel drops it.
@@ -134,7 +136,9 @@ C-c C-x C-a (or C-c $) archives the subtree into the file named in Settings, Ema
 The ~examples~ folder holds a file for each area: outline, dates, clocking, capture, refile and archive, a weekly review, a project with clocking, find and replace, and ~config.org~, which lists every setting with an example. The first time the app opens it offers them as sample documents, and File, Sample documents lists them later. One opens as a new tab and is saved only if you save it; follow the line at its top.
 
 ** Log settings
-Settings, Emacs, Log into drawer names the drawer (such as LOGBOOK) that holds the log line of a repeating task; empty leaves the line in the text. Log repeats set to Off records nothing when a repeating task is done.
+Settings, Emacs, Log into drawer names the drawer (such as LOGBOOK) that holds the log line of a repeating task; empty leaves the line in the text. Log repeats is Time, Note or Off: Time adds the log line, Note asks for a note under it too (Skip adds the line alone and the cross leaves it out), Off records nothing when a repeating task is done.
+
+Settings, Emacs, Archive marks done (nil, t or a keyword such as CANCELLED) marks a TODO heading done before it is archived, and Archive saves lists the properties kept on the archived entry (time, file, olpath, category, todo, itags). Refile new headings (Not allowed, Ask first or Allowed) adds New heading under… to the refile list: pick the parent and a title, and the heading is made at the end of the parent's subtree first.
 
 ** Settings
 Menu, then Settings, sets up GitHub (owner, repository, branch, token) and WebDAV (address, user, password). They are kept in this browser, on this device.

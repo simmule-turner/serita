@@ -38,6 +38,8 @@
 %s_archive::
 #+end_src
 ** Logging
-org-log-into-drawer is a drawer name such as LOGBOOK; org-log-repeat is on unless set to nil.
+org-log-into-drawer is a drawer name such as LOGBOOK; org-log-repeat is on unless set to nil, or note to ask for a note too.
+** Archive and refile options
+org-archive-mark-done is nil, t or a done keyword; org-archive-save-context-info lists the properties kept on an archived entry; org-refile-allow-creating-parent-nodes is nil, confirm or t; org-agenda-use-time-grid is on unless set to nil.
 ** Keys of the settings above
-org-agenda-files, org-capture-templates, org-refile-settings, org-archive-location, org-log-into-drawer, org-log-repeat
+org-agenda-files, org-capture-templates, org-refile-settings, org-archive-location, org-log-into-drawer, org-log-repeat, org-archive-mark-done, org-archive-save-context-info, org-refile-allow-creating-parent-nodes, org-agenda-use-time-grid

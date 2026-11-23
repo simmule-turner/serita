@@ -127,3 +127,16 @@ test('org-log-into-drawer puts the log line in a drawer; org-log-repeat nil reco
     '* TODO A\nSCHEDULED: <2026-12-07 Mon +1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 17:27]\n:END:\n:LOGBOOK:\n- State "DONE"       from "TODO"       [2026-11-22 Sun 17:27]\n:END:\n');
   assert.equal(completeRepeat({ ...o, log: false }).text, '* TODO A\nSCHEDULED: <2026-12-07 Mon +1w>\n');
 });
+
+// Emacs results, conformance v0.1.24: org-log-repeat note.
+test('a repeat with a note adds the note under the log line, an empty note only the line, a cancelled note nothing', () => {
+  const T = '* TODO Water plants\nSCHEDULED: <2026-11-23 Mon +1w>\n';
+  const o = { text: T, line: 0, from: 'TODO', to: 'DONE', reopen: 'TODO', now: new Date(Date.UTC(2026, 10, 22, 23, 47)) };
+  const head = '* TODO Water plants\nSCHEDULED: <2026-11-30 Mon +1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 23:47]\n:END:\n';
+  const line = '- State "DONE"       from "TODO"       [2026-11-22 Sun 23:47]';
+  assert.equal(completeRepeat({ ...o, note: 'watered the ferns' }).text, `${head}${line} \\\\\n  watered the ferns`);
+  assert.equal(completeRepeat({ ...o, note: 'one\ntwo' }).text, `${head}${line} \\\\\n  one\n  two`);
+  assert.equal(completeRepeat({ ...o, note: '' }).text, `${head}${line}`);
+  assert.equal(completeRepeat({ ...o, note: null }).text, head);
+  assert.equal(completeRepeat({ ...o, note: 'n1', drawer: 'LOGBOOK' }).text, `${head}:LOGBOOK:\n${line} \\\\\n  n1\n:END:\n`);
+});

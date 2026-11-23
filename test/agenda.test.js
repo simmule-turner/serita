@@ -35,3 +35,10 @@ for (const c of grid) {
     assert.equal(agenda(files, { start: date(c.start), span: c.span, today: date(c.today), warn: c.warn, now: c.now }).text, c.text);
   });
 }
+
+test('the time grid can be turned off', () => {
+  const files = [{ name: 'f.org', text: '* TODO A\nSCHEDULED: <2026-11-30 Mon 10:00>\n' }];
+  const o = { start: new Date(Date.UTC(2026, 10, 30)), span: 1, today: new Date(Date.UTC(2026, 10, 30)), now: '09:00' };
+  assert.match(agenda(files, o).text, /\.{6} -{16}/);
+  assert.doesNotMatch(agenda(files, { ...o, timeGrid: false }).text, /-{16}/);
+});

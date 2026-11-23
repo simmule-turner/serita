@@ -130,6 +130,22 @@ export function refile(text, line, target, { otherText = null, reverse = false, 
   return { text: insert(rest, target.line > head.line ? { ...target, line: target.line - gone } : target, sub, reverse), otherText: null };
 }
 
+/**
+ * A new heading `title` at the end of the target's subtree, one level deeper, with a blank line before it (org-refile-new-child).
+ * @returns {{ text: string, line: number }} the new text and the line of the new heading
+ */
+export function newChild(text, target, title) {
+  const a = analyze(text);
+  const parent = a.heads.find((x) => x.line === target.line);
+  if (!parent) throw new Error('Not at a heading');
+  const lines = splitLines(text);
+  let at = parent.end;
+  if (at > 0 && lines[at - 1].eol === '') lines[at - 1] = { ...lines[at - 1], eol: '\n' };
+  if (at > 0 && lines[at - 1].text.trim() !== '') { lines.splice(at, 0, { text: '', eol: '\n' }); at++; }
+  lines.splice(at, 0, { text: `${'*'.repeat(parent.level + 1)} ${title}`, eol: '\n' });
+  return { text: join(lines), line: at };
+}
+
 /** What Emacs says when a refile is done. */
 export const refileMessage = (target, file, copy) => `Refile${copy ? ' (and keep)' : ''} to "${target.label}" in file ${file}: done`;
 
@@ -148,12 +164,23 @@ export function parseArchiveLocation(loc, fileName) {
 
 const ensureBlankBefore = (lines, at) => { if (at > 0 && lines[at - 1].text.trim() !== '') { if (lines[at - 1].eol === '') lines[at - 1] = { ...lines[at - 1], eol: '\n' }; lines.splice(at, 0, { text: '', eol: '\n' }); return at + 1; } return at; };
 
+/** The properties org-archive-save-context-info saves, in the order Emacs writes them. */
+export const ARCHIVE_CONTEXT = ['time', 'file', 'olpath', 'category', 'todo', 'itags'];
+
 /**
  * Archives the subtree at `line`: the entry goes to the archive location with where it came from recorded in properties.
  * @param {{ fileName: string, category: string, location: string, now: Date, archiveText: string|null }} o archiveText is the text of the archive file, null when it does not exist yet
  * @returns {{ text: string, archive: { file: string, text: string }|null, message: string }}
  */
-export function archiveSubtree(text, line, { fileName, category, location, now, archiveText, column = DEFAULT_TAGS_COLUMN }) {
+export function archiveSubtree(text, line, { fileName, category, location, now, archiveText, column = DEFAULT_TAGS_COLUMN, markDone = null, contextInfo = ARCHIVE_CONTEXT }) {
+  const done = markDone === null ? null : markDone === true ? analyze(text).todo.done[0] : markDone;
+  const before = analyze(text).heads.find((x) => x.line === line);
+  // org-archive-mark-done: a TODO heading that is not done yet is marked done first; the saved state is the one it had.
+  if (done && before?.todo && !analyze(text).todo.done.includes(before.todo)) {
+    const ls = splitLines(text);
+    ls[line] = { ...ls[line], text: ls[line].text.replace(new RegExp(`^(\\*+ +)${before.todo}(?=\\s|$)`), `$1${done}`) };
+    text = join(ls);
+  }
   const loc = parseArchiveLocation(location, fileName);
   const a = analyze(text);
   const head = a.heads.find((x) => x.line === line);
@@ -187,12 +214,13 @@ export function archiveSubtree(text, line, { fileName, category, location, now, 
   const withProps = (() => {
     let t = entry;
     const stamp = formatStamp(now, { time: true, active: false }).slice(1, -1);
-    t = setProperty(t, 0, 'ARCHIVE_TIME', stamp).text;
-    t = setProperty(t, 0, 'ARCHIVE_FILE', fileName).text;
-    if (path.length) t = setProperty(t, 0, 'ARCHIVE_OLPATH', path.join('/')).text;
-    t = setProperty(t, 0, 'ARCHIVE_CATEGORY', own).text;
-    if (head.todo) t = setProperty(t, 0, 'ARCHIVE_TODO', head.todo).text;
-    if (itags.length) t = setProperty(t, 0, 'ARCHIVE_ITAGS', itags.join(' ')).text;
+    const has = (k) => contextInfo.includes(k);
+    if (has('time')) t = setProperty(t, 0, 'ARCHIVE_TIME', stamp).text;
+    if (has('file')) t = setProperty(t, 0, 'ARCHIVE_FILE', fileName).text;
+    if (has('olpath') && path.length) t = setProperty(t, 0, 'ARCHIVE_OLPATH', path.join('/')).text;
+    if (has('category')) t = setProperty(t, 0, 'ARCHIVE_CATEGORY', own).text;
+    if (has('todo') && before.todo) t = setProperty(t, 0, 'ARCHIVE_TODO', before.todo).text;
+    if (has('itags') && itags.length) t = setProperty(t, 0, 'ARCHIVE_ITAGS', itags.join(' ')).text;
     return t;
   })();
   if (sameFile) {

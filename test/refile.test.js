@@ -1,7 +1,7 @@
 // Refile and archive, against results Emacs 30.1 gave (conformance v0.1.20).
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { archiveSubtree, archiveToSibling, listTargets, parseRefileSettings, refile, toggleArchiveTag } from '../core/refile.js';
+import { archiveSubtree, archiveToSibling, listTargets, newChild, parseRefileSettings, refile, toggleArchiveTag } from '../core/refile.js';
 
 const T = '* A\n** A1\n*** A1a\n** A2\n* B\nbody b\n** B1\n* C :x:\n';
 const NOW = new Date(Date.UTC(2026, 10, 22, 18, 54));
@@ -74,4 +74,31 @@ test('refiling to another level realigns tags; archive to sibling reuses an Arch
   assert.equal(r.split('\n')[1].length, 77);
   assert.equal(archiveToSibling('* P\n** A1\n** Archive :ARCHIVE:\n*** Old\n** A2\n', 4, { now: NOW, column: 0 }).text, '* P\n** A1\n** Archive :ARCHIVE:\n*** Old\n*** A2\n:PROPERTIES:\n:ARCHIVE_TIME: 2026-11-22 Sun 18:54\n:END:\n');
   assert.equal(archiveToSibling('* A\n* B\n', 1, { now: NOW, column: -77 }).text, `* A\n* Archive${' '.repeat(59)}:ARCHIVE:\n** B\n:PROPERTIES:\n:ARCHIVE_TIME: 2026-11-22 Sun 18:54\n:END:\n`);
+});
+
+// Emacs results, conformance v0.1.23: org-archive-mark-done and org-archive-save-context-info.
+test('archive marks a TODO heading done and saves only the context asked for', () => {
+  const o = { fileName: '/tmp/f.org', category: 'f', now: NOW, archiveText: null, location: '%s_archive::' };
+  const BIG = '* P :work:\n** TODO Kid :own:\nSCHEDULED: <2026-12-01 Tue>\ntext\n* B\n';
+  const kid = BIG.split('\n').findIndex((l) => /Kid/.test(l));
+  const body = (r) => r.archive.text.replace(/^[^]*?from file [^\n]*\n\n\n/, '');
+  assert.match(body(archiveSubtree(BIG, kid, { ...o, markDone: true })), /^\* DONE Kid +:own:\nSCHEDULED: <2026-12-01 Tue>\n:PROPERTIES:[^]*:ARCHIVE_TODO: TODO\n/);
+  assert.match(body(archiveSubtree(BIG, kid, { ...o, markDone: null })), /^\* TODO Kid/);
+  assert.match(body(archiveSubtree('#+TODO: TODO | DONE CANCELLED\n* TODO A\n* B\n', 1, { ...o, markDone: 'CANCELLED' })), /^\* CANCELLED A\n:PROPERTIES:[^]*:ARCHIVE_TODO: TODO\n/);
+  assert.match(body(archiveSubtree('* DONE A\nCLOSED: [2026-11-01 Sun 10:00]\n* B\n', 0, { ...o, markDone: 'DONE' })), /^\* DONE A\nCLOSED: \[2026-11-01 Sun 10:00\]\n:PROPERTIES:/);
+  const props = (info) => body(archiveSubtree(BIG, kid, { ...o, contextInfo: info })).match(/:ARCHIVE_\w+:/g) ?? [];
+  assert.deepEqual(props(['time']), [':ARCHIVE_TIME:']);
+  assert.deepEqual(props([]), []);
+  assert.deepEqual(props(['file', 'todo', 'itags']), [':ARCHIVE_FILE:', ':ARCHIVE_TODO:', ':ARCHIVE_ITAGS:']);
+  assert.deepEqual(props(['olpath', 'category']), [':ARCHIVE_OLPATH:', ':ARCHIVE_CATEGORY:']);
+});
+
+// Emacs results, conformance v0.1.24: a new heading under a target gets a blank line before it.
+test('a new child heading goes at the end of the target subtree', () => {
+  const T2 = '* A\n** A1\n* B\n';
+  const ts = targets('(setq org-refile-targets \'((nil :maxlevel . 1)))', T2);
+  const r = newChild(T2, find(ts, 'B'), 'Newkid');
+  assert.equal(r.text, '* A\n** A1\n* B\n\n** Newkid\n');
+  assert.equal(r.line, 4);
+  assert.equal(newChild('* A\n** A1\n* B', find(ts, 'A'), 'N').text, '* A\n** A1\n\n** N\n* B');
 });

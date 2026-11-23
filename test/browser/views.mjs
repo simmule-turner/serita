@@ -95,7 +95,7 @@ ok((await value()).includes('- [X] one') && (await value()).includes('- [ ] two'
 
 // Emacs keys and the key row
 ok(!(await page.locator('#keyrow').isVisible()), 'the key row is hidden while Emacs keys are off');
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/10 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/14 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click();
 await btn('Close').click();
 ok(await page.locator('#keyrow').isVisible(), 'Emacs keys on shows the key row');
 ok((await page.locator('#keyrow button').allTextContents()).join(',') === 'Meta,Ctrl,Shift,Tab,←,↑,↓,→,⌨,Float', 'the key row has the keys in order, with the keyboard and Float buttons last');
@@ -170,7 +170,7 @@ await page.locator('#keyrow .kbd').click();
 ok((await focused()) === 'editor' && (await mode()) === 'none', 'pressed again, it stops the keyboard and the focus stays, so the arrows still work');
 
 // Hide leading stars
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/10 settings/).click(); await btn(/Hide leading stars/).click(); await btn('‹ Settings').click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/14 settings/).click(); await btn(/Hide leading stars/).click(); await btn('‹ Settings').click(); await btn('Close').click();
 ok((await value()).includes('\n * B') && !(await value()).includes('** B'), 'Hide leading stars shows only the last star of a deeper heading');
 
 // C-RET in a heading's body starts a sibling heading after the subtree (checked against Emacs)

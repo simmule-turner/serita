@@ -189,7 +189,7 @@ const logLine = (to, from, now) => `- State ${quote(to).padEnd(12)} from ${quote
  * A CLOSED stamp is dropped. Returns null when the entry has nothing that repeats.
  * @param {{ text: string, line: number, from: string, to: string, reopen: string, now: Date }} o `from` is the state before, `to` the done state
  */
-export function completeRepeat({ text, line, from, to, reopen, now, drawer = null, log = true }) {
+export function completeRepeat({ text, line, from, to, reopen, now, drawer = null, log = true, note }) {
   const lines = splitLines(text);
   let any = false;
   const REPEATING = /<(\d{4})-(\d\d)-(\d\d)(?: [^\s\d>\]+.-][^\s>\]]*)?(?: (\d{1,2}):(\d\d))?((?: (?:\+\+|\.\+|\+)\d+[hdwmy])+)>/g;
@@ -221,7 +221,11 @@ export function completeRepeat({ text, line, from, to, reopen, now, drawer = nul
   if (/^\s*:PROPERTIES:/i.test(after[at]?.text ?? '')) while (!/^\s*:END:/i.test(after[at].text)) at++;
   const insertAt = /^\s*:END:/i.test(after[at]?.text ?? '') ? at + 1 : at;
   if (after[insertAt - 1] && after[insertAt - 1].eol === '') after[insertAt - 1] = { ...after[insertAt - 1], eol: '\n' };
-  const entry = { text: logLine(to, from, now), eol: '\n' };
+  // org-log-repeat note: `note` is the text typed (a string; empty adds the line alone), or null when the note was cancelled, which adds no line.
+  const noteLines = typeof note === 'string' && note.trim() !== '' ? ` \\\\\n${note.replace(/\n+$/, '').split('\n').map((l) => `  ${l}`).join('\n')}` : '';
+  // Emacs stores a note without a line end when it goes at the very end of the file.
+  const entry = { text: logLine(to, from, now) + noteLines, eol: note !== undefined && drawer === null && insertAt >= after.length ? '' : '\n' };
+  if (note === null) return { text: out, line };
   const open = drawer === null ? -1 : after.findIndex((l, i) => i >= insertAt && l.text.trim().toUpperCase() === `:${drawer.toUpperCase()}:`);
   if (drawer === null) after.splice(insertAt, 0, entry);
   else if (open >= 0 && open === insertAt) after.splice(open + 1, 0, entry);

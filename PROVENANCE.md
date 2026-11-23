@@ -153,5 +153,8 @@ A separate repository holds questions (case files written by us) and results rec
 ### `core/regexp.js`, `core/replace.js`, `core/sparse.js`, `core/timestamp.js`, `core/agenda.js`, `test/timestamp.test.js`, `test/agenda.test.js`, `test/regexp.test.js`, `test/replace.test.js`, `test/sparse.test.js`
 - Written from: the Emacs manual's description of regexp syntax and query replace, and observed Emacs results (recorded as fixtures) read as data only. Statement as above.
 
+### `core/agenda-filter.js`, `test/agenda-filter.test.js`
+- Written from: observed Emacs 30.1 results for the agenda's tag, category, effort and regexp filters and for marks and bulk actions (conformance v0.1.23 and v0.1.24), read as behavior only. Statement as above.
+
 ### `test/browser/appearance.mjs`
 - Written from: the author's mockup and decisions (Appearance screen, heading swipe, restore of open files). Statement as above.

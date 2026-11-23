@@ -12,7 +12,7 @@ await page.goto(`${base}/`);
 await page.waitForSelector('.tab.current');
 const sheet = page.locator('.sheet');
 const btn = (n) => sheet.getByRole('button', { name: n, exact: true });
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/10 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/14 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
 const at = async (text, line) => {
   await page.fill('#editor', text);
   await page.evaluate((l) => { const e = document.getElementById('editor'); const o = e.value.split('\n').slice(0, l - 1).reduce((n, s) => n + s.length + 1, 0); e.focus(); e.setSelectionRange(o, o); }, line);
@@ -247,7 +247,7 @@ await page.locator('.sheet.agenda .abar button', { hasText: 'Close' }).click();
 await page.evaluate(() => document.getElementById('editor').focus());
 await page.keyboard.press('Alt+x'); await page.keyboard.type('org-agenda-file-to-front'); await page.keyboard.press('Enter');
 ok((await page.locator('#message').textContent()).includes('File added to front of agenda file list'), 'C-c [ lists the current file');
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/10 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/14 settings/).click();
 ok((await btn(/Agenda files/).textContent()).includes('1 file'), 'Settings shows how many agenda files there are');
 await btn(/Agenda files/).click();
 ok((await sheet.textContent()).includes('agenda-test.org (App storage)'), 'the Agenda files screen lists the file with its storage');
@@ -256,7 +256,28 @@ ok((await sheet.textContent()).includes('The agenda is empty until you add one')
 await btn('Add current file').click();
 await btn('Close').click(); await btn('‹ Settings').click(); await btn('Close').click();
 await page.click('#btn-view'); await btn('Agenda').click();
-ok(await page.locator('.sheet.agenda .abar button', { hasText: 'Week' }).count() === 1, 'the agenda has Day, Week and Month');
+ok(JSON.stringify((await page.locator('.sheet.agenda .abar button').allTextContents()).filter((t) => t.trim())).includes('"Day","Week","2 weeks","Month","Year"'), 'the agenda has Day, Week, 2 weeks, Month and Year');
+await page.locator('.sheet.agenda .abar button', { hasText: '2 weeks' }).click();
+ok(/^Fortnight-agenda/.test((await page.locator('.sheet.agenda').textContent()).trim()) || (await page.locator('.sheet.agenda .aday').count()) === 14, 'the 2 weeks span shows fourteen days');
+await page.locator('.sheet.agenda .abar button', { hasText: 'Year' }).click();
+ok((await page.locator('.sheet.agenda .aday').count()) >= 365, 'the Year span shows every day of the year');
+await page.locator('.sheet.agenda .abar button', { hasText: /^Week$/ }).click();
+// Filter and Mark on the TODO list
+await page.locator('.sheet.agenda .abar button', { hasText: 'Views' }).click(); await btn('TODO list').click();
+await page.locator('.sheet.agenda .abar button', { hasText: /^Filter/ }).click(); await btn(/^Tag/).click();
+await page.keyboard.type('+nothing'); await page.keyboard.press('Enter');
+ok(await page.locator('.sheet.agenda .arow').count() === 0 && (await page.locator('.sheet.agenda .atitlebar').textContent()).includes('[+nothing]'), 'Filter by a tag nothing has hides every row and shows the filter in the title');
+await page.locator('.sheet.agenda .abar button', { hasText: /^Filter/ }).click(); await btn(/^Tag/).click();
+await page.keyboard.type('+home'); await page.keyboard.press('Enter');
+ok(await page.locator('.sheet.agenda .arow').count() === 1, 'Filter by +home keeps the entry with that tag');
+await page.locator('.sheet.agenda .abar button', { hasText: 'Mark' }).click();
+await page.locator('.sheet.agenda .arow').first().click();
+ok((await page.locator('.sheet.agenda .arow.marked').count()) === 1 && (await page.locator('.sheet.agenda .abar button', { hasText: 'Act on 1' }).count()) === 1, 'Mark turns a tap into a mark and counts them');
+await page.locator('.sheet.agenda .abar button', { hasText: 'Act on 1' }).click(); await btn('Priority').click(); await btn('A').click();
+await page.waitForFunction(() => document.getElementById('message').textContent.includes('Acted on 1 entries'));
+await page.locator('.sheet.agenda .abar button', { hasText: /^Filter/ }).click(); await btn('Clear all filters').click();
+ok((await page.locator('.sheet.agenda .arow').first().textContent()).includes('[#A]'), 'the bulk action set the priority of the marked entry');
+await page.locator('.sheet.agenda .abar button', { hasText: 'Views' }).click(); await btn('Agenda').click();
 {
   const head = async () => (await page.locator('.sheet.agenda .abody .aday').first().textContent());
   const first = await head();
@@ -337,7 +358,7 @@ ok((await prompt()) === 'Foo value:', 'the value prompt names the property');
 await page.keyboard.press('Escape');
 
 // Capture: templates are set as init.el writes them; Capture asks the template's questions, shows the text, and files it
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/10 settings/).click(); await btn(/Capture templates/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/14 settings/).click(); await btn(/Capture templates/).click();
 await sheet.locator('textarea').fill(`(setq org-capture-templates '(("t" "Todo" entry (file+headline "agenda-test.org" "Inbox") "* TODO %^{What}\\n")))`);
 await btn('Save').click();
 ok((await page.locator('#message').textContent()) === '1 capture template', 'saving the templates counts them');
@@ -362,8 +383,16 @@ ok((await sheet.locator('.item', { hasText: 'GitHub' }).locator('.meta').textCon
 await sheet.getByLabel('Dismiss').click();
 
 // Refile and archive: Refile lists the targets; Archive tags and archives from the command list
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/10 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/14 settings/).click();
 ok((await sheet.textContent()).includes('Refile targets') && (await sheet.textContent()).includes('Archive location'), 'Settings, Emacs lists Refile targets and Archive location');
+const emacsText = await sheet.textContent();
+ok(['Archive marks done', 'Archive saves', 'Refile new headings', 'Log repeats'].every((n) => emacsText.includes(n)), 'Settings, Emacs lists the archive, refile and log options');
+await btn(/Log repeats/).click(); await btn(/^Note/).click();
+ok((await sheet.textContent()).includes('Log repeats: note') && (await sheet.textContent()).includes('Note ›'), 'Log repeats can be set to Note');
+await btn(/Archive saves/).click(); await sheet.getByLabel('Archive saves').fill('time bogus'); await btn('Set').click();
+ok((await page.locator('#message').textContent()).includes('bogus is not one of'), 'Archive saves refuses a name Emacs does not have');
+await btn(/Archive saves/).click(); await sheet.getByLabel('Archive saves').fill('time file'); await btn('Set').click();
+ok((await sheet.textContent()).includes('Archive saves: time file'), 'Archive saves keeps the names given');
 await btn(/Refile targets/).click(); await btn('Save').click();
 ok((await sheet.textContent()).includes('Refile targets set'), 'saving the refile targets says so on the Emacs screen');
 await sheet.getByLabel('Dismiss').click();

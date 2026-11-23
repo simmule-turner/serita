@@ -172,3 +172,4 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 .sheet .chip { display: inline-flex; flex-direction: column; justify-content: center; min-height: 44px; padding: 4px 12px; border-radius: 8px; font-size: 15px; text-align: left; }
 .sheet .chip small { font-size: 11px; color: var(--muted); }
 .sheet .chip.add { flex-direction: row; align-items: center; border-style: dashed; color: var(--muted); }
+.arow.marked { background: var(--bar); box-shadow: inset 3px 0 0 var(--accent, currentColor); }

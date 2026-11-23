@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.8.4
+The agenda gains Filter (tag, category, effort, regexp) and Mark, with actions on every marked entry: TODO state, tags, priority, schedule, deadline, archive. It also has 2 weeks and Year spans and a setting for the time grid. Log repeats can ask for a note, archiving can mark the entry done and choose which properties it keeps, and refile can create a new heading under a target. Verified: the filters, notes and archive options against Emacs results.
+
 * 0.8.3
 The Outline view's Commands sheet has a Show all button that lists every command in alphabetical order, with the ones that need the Text view dimmed, so you can see everything the app can do. A heading's Structure actions now start with Insert heading below, Archive and Refile, then the moves, then promote and demote. Verified: the Outline view browser checks.
 

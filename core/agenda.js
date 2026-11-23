@@ -7,6 +7,8 @@ import { analyze } from './outline.js';
 import { splitLines } from './parse.js';
 import { propertiesOf } from './properties.js';
 import { matcher } from './sparse.js';
+import { effortMinutes } from './effort.js';
+import { keeps } from './agenda-filter.js';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -63,7 +65,7 @@ function headings(files) {
     for (const h of a.heads) {
       const own = [];
       for (let i = h.line + 1; i < h.bodyEnd; i++) own.push(lines[i].text);
-      out.push({ file: fi, category: categoryOf(h), line: h.line, h, a, own, order: out.length });
+      out.push({ file: fi, category: categoryOf(h), line: h.line, h, a, own, text: f.text, order: out.length });
     }
   });
   return out;
@@ -94,14 +96,17 @@ export function entryText(e, withLabel) {
   return left.length + tags.length + 1 > 79 ? `${left} ${tags}` : `${left}${' '.repeat(79 - left.length - tags.length)}${tags}`;
 }
 
-const base = (hd) => ({ file: hd.file, line: hd.line, category: hd.category, todo: hd.h.todo, priority: hd.h.priority, title: hd.h.title, tags: hd.h.tags, done: done(hd) });
+const inheritedTags = (h) => { const out = []; for (let x = h; x; x = x.parent) out.unshift(...x.tags); return [...new Set(out)]; };
+const base = (hd) => ({ file: hd.file, line: hd.line, category: hd.category, todo: hd.h.todo, priority: hd.h.priority, title: hd.h.title, tags: hd.h.tags, done: done(hd),
+  itags: inheritedTags(hd.h), effort: effortMinutes(propertiesOf(hd.text, hd.line).find(([n]) => n.toUpperCase() === 'EFFORT')?.[1]),
+  text: [hd.h.todo, hd.h.priority ? `[#${hd.h.priority}]` : null, hd.h.title].filter(Boolean).join(' ') });
 
 /**
  * The agenda for a span of days.
  * @param {{ category: string, text: string }[]} files
  * @param {{ start: Date, span: 'day'|'week'|'fortnight'|'month'|'year'|number, today: Date, warn?: number, now?: string }} o dates are UTC dates
  */
-export function agenda(files, { start, span, today, warn = 14, now = null }) {
+export function agenda(files, { start, span, today, warn = 14, now = null, timeGrid = true, filter = null }) {
   let from = start;
   let days = typeof span === 'number' ? span : { day: 1, week: 7, fortnight: 14 }[span];
   if (span === 'month') { from = utc(start.getUTCFullYear(), start.getUTCMonth() + 1, 1); days = Math.round((utc(start.getUTCFullYear(), start.getUTCMonth() + 2, 1) - from) / DAY); }
@@ -151,13 +156,13 @@ export function agenda(files, { start, span, today, warn = 14, now = null }) {
   const outDays = [];
   for (let i = 0; i < days; i++) {
     const d = addDays(from, i);
-    const entries = byDay.get(key(d)).map((e, i2) => ({ ...e, order: i2 })).sort((a, b) =>
+    const entries = byDay.get(key(d)).filter((e) => keeps(e, filter)).map((e, i2) => ({ ...e, order: i2 })).sort((a, b) =>
       (a.time && !b.time ? -1 : !a.time && b.time ? 1 : a.time && b.time && a.time !== b.time ? (a.time < b.time ? -1 : 1) : 0)
       || prioOf(b) - prioOf(a) || (b.sortLate ?? b.late) - (a.sortLate ?? a.late) || a.order - b.order);
     const head = `${DAYS[d.getUTCDay()].padEnd(10)} ${String(d.getUTCDate()).padStart(2)} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}${d.getUTCDay() === 1 ? ` W${two(weekOf(d))}` : ''}`;
     // The time grid shows on every day of a day agenda, and on today only in longer ones, and only for a day that has an entry with a time.
     const isToday = key(d) === key(today);
-    const rows = (days === 1 || isToday) && entries.some((e) => e.time) ? gridLines(entries, isToday ? now : null) : entries.map((entry) => ({ entry }));
+    const rows = timeGrid && (days === 1 || isToday) && entries.some((e) => e.time) ? gridLines(entries, isToday ? now : null) : entries.map((entry) => ({ entry }));
     lines.push(head, ...rows.map((r) => (r.entry ? entryText(r.entry, true) : r.text)));
     outDays.push({ date: d, head, today: isToday, entries, rows });
   }
@@ -167,31 +172,31 @@ export function agenda(files, { start, span, today, warn = 14, now = null }) {
 const sortByPriority = (list) => list.map((e, i) => ({ e, i })).sort((a, b) => prioOf(b.e) - prioOf(a.e) || a.i - b.i).map((x) => x.e);
 
 /** The global list of TODO items: every open state, or only `keyword`. */
-export function todoList(files, { keyword = null } = {}) {
+export function todoList(files, { keyword = null, filter = null } = {}) {
   const words = [...new Set(files.flatMap((f) => { const a = analyze(f.text); return [...a.todo.open, ...a.todo.done]; }))].sort();
-  const entries = sortByPriority(headings(files).filter((hd) => hd.h.todo && (keyword ? hd.h.todo === keyword : !done(hd))).map((hd) => base(hd)));
+  const entries = sortByPriority(headings(files).filter((hd) => hd.h.todo && (keyword ? hd.h.todo === keyword : !done(hd))).map((hd) => base(hd)).filter((e) => keeps(e, filter)));
   const head = [`Global list of TODO items of type: ${keyword ?? 'ALL'}`, `Press ‘N r’ (e.g. ‘0 r’) to search again: (0)[ALL] ${words.map((w, i) => `(${i + 1})${w}`).join(' ')}`];
   return { title: head[0], entries, text: `${[...head, ...entries.map((e) => entryText(e, false))].join('\n')}\n` };
 }
 
 /** The headings whose tags (inherited from above), TODO state, level or properties fit a match such as work+urgent/TODO. */
-export function tagsView(files, { match, todoOnly = false }) {
+export function tagsView(files, { match, todoOnly = false, filter = null }) {
   const entries = [];
   for (const hd of headings(files)) {
     if (todoOnly && (!hd.h.todo || done(hd))) continue;
-    if (matcher(match, hd.a)(hd.h, files[hd.file].text)) entries.push(base(hd));
+    if (matcher(match, hd.a)(hd.h, files[hd.file].text)) { const e = base(hd); if (keeps(e, filter)) entries.push(e); }
   }
   const head = [`Headlines with TAGS match: ${match}`, 'Press ‘C-u r’ to search again'];
   return { title: head[0], entries, text: `${[...head, ...entries.map((e) => entryText(e, false))].join('\n')}\n` };
 }
 
 /** The headings whose own text has every word (case ignored). */
-export function searchView(files, { words }) {
+export function searchView(files, { words, filter = null }) {
   const wanted = words.toLowerCase().split(/\s+/).filter(Boolean);
   const entries = [];
   for (const hd of headings(files)) {
     const text = [`${'*'.repeat(hd.h.level)} ${hd.h.todo ?? ''} ${hd.h.title}`, ...hd.own].join('\n').toLowerCase();
-    if (wanted.length && wanted.every((w) => text.includes(w))) entries.push(base(hd));
+    if (wanted.length && wanted.every((w) => text.includes(w))) { const e = base(hd); if (keeps(e, filter)) entries.push(e); }
   }
   const head = [`Search words: ${words}`, 'Press ‘[’, ‘]’ to add/sub word, ‘{’, ‘}’ to add/sub regexp, ‘C-u r’ for a fresh search'];
   return { title: head[0], entries: sortByPriority(entries), text: `${[...head, ...sortByPriority(entries).map((e) => entryText(e, false))].join('\n')}\n` };

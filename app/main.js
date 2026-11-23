@@ -20,10 +20,11 @@ import { clockIn, clockOut, cancelClock, openClock, inClockedEntry } from '../co
 import { parseTemplates, promptsOf, expand, place } from '../core/capture.js';
 import { bodyOf, setBody } from '../core/body.js';
 import { MONTH_NAMES, monthGrid, stepMonth, stepTime } from '../core/calendar.js';
-import { archiveSubtree, archiveToSibling, listTargets, parseRefileSettings, refile, refileMessage, toggleArchiveTag } from '../core/refile.js';
+import { archiveSubtree, ARCHIVE_CONTEXT, newChild, archiveToSibling, listTargets, parseRefileSettings, refile, refileMessage, toggleArchiveTag } from '../core/refile.js';
 import { isEffort } from '../core/effort.js';
 import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../core/properties.js';
 import { agenda, searchView, tagsView, todoList } from '../core/agenda.js';
+import { filterActive, filterLabel, noFilter, parseEffort, parseSigned } from '../core/agenda-filter.js';
 import { startReplace } from '../core/replace.js';
 import { sparseTree } from '../core/sparse.js';
 import { completeRepeat, formatStamp, insertStamp, parseDate, setPlanning, shiftStamp, stampAt } from '../core/timestamp.js';
@@ -85,7 +86,8 @@ const keyLogOn = () => setting('view.keyLog') === 'true';
 const beepOn = () => setting('view.beep') !== 'false';
 /** org-log-into-drawer: the drawer's name, or null for none. org-log-repeat: on (time) unless set off. */
 const logDrawer = () => setting('org-log-into-drawer') || null;
-const logRepeatOn = () => setting('org-log-repeat') !== 'nil';
+const logRepeatMode = () => (setting('org-log-repeat') === 'nil' ? 'off' : setting('org-log-repeat') === 'note' ? 'note' : 'time');
+const logRepeatOn = () => logRepeatMode() !== 'off';
 const restoreOn = () => setting('session.restore') !== 'false';
 const lineNumbers = () => setting('view.lineNumbers') === 'true';
 const wrapOn = () => setting('view.wrap') !== 'false';
@@ -766,7 +768,7 @@ async function settings() {
         h('div', { class: 'list' },
           h('button', { class: 'item', onclick: () => close('github') }, h('span', {}, 'GitHub'), h('span', { class: 'meta' }, `${summary('github')} ›`)),
           h('button', { class: 'item', onclick: () => close('webdav') }, h('span', {}, 'WebDAV'), h('span', { class: 'meta' }, `${summary('webdav')} ›`)),
-          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '10 settings ›')),
+          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '14 settings ›')),
           h('button', { class: 'item', onclick: () => close('appearance') }, h('span', {}, 'Appearance'), h('span', { class: 'meta' }, `${theme()[0].toUpperCase()}${theme().slice(1)}, ${fontSize()}px ›`)),
           h('button', { class: 'item', onclick: () => close('restore') }, h('span', {}, 'Restore open files on start'), h('span', { class: 'meta' }, restoreOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('tools-text') }, h('span', {}, 'Tool row in the Text view'), h('span', { class: 'meta' }, toolRowOn('text') ? 'On ›' : 'Off ›')),
@@ -803,13 +805,17 @@ async function emacsSettings() {
         h('div', { class: 'list' },
           item('agenda-files', 'Agenda files', `${files} ${files === 1 ? 'file' : 'files'}`),
           item('archive', 'Archive location', archiveLocation()),
+          item('archive-done', 'Archive marks done', archiveMarkDone() === null ? 'Off' : archiveMarkDone() === true ? 'On' : archiveMarkDone()),
+          item('archive-context', 'Archive saves', archiveContext().length ? archiveContext().join(' ') : 'Nothing'),
+          item('time-grid', 'Agenda time grid', timeGridOn() ? 'On' : 'Off'),
           item('beep', 'Beep on errors', beepOn() ? 'On' : 'Off'),
           item('capture-templates', 'Capture templates', (() => { const n = captureText() ? parseTemplates(captureText()).length : 0; return `${n} ${n === 1 ? 'template' : 'templates'}`; })()),
           item('emacs', 'Emacs keys', emacsKeys() ? 'On' : 'Off'),
           item('stars', 'Hide leading stars', hideStars() ? 'On' : 'Off'),
           item('log-drawer', 'Log into drawer', logDrawer() ?? 'Off'),
-          item('log-repeat', 'Log repeats', logRepeatOn() ? 'Time' : 'Off'),
+          item('log-repeat', 'Log repeats', { time: 'Time', note: 'Note', off: 'Off' }[logRepeatMode()]),
           item('refile', 'Refile targets', refileText() ? 'Custom' : 'Top level'),
+          item('refile-new', 'Refile new headings', { nil: 'Not allowed', confirm: 'Ask', t: 'Allowed' }[refileNew()]),
           item('tags-column', 'Tag column', String(tagsColumn()))),
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
     });
@@ -818,12 +824,16 @@ async function emacsSettings() {
     $('message').textContent = '';
     if (what === 'agenda-files') await agendaFilesDialog();
     else if (what === 'archive') await archiveLocationDialog();
+    else if (what === 'time-grid') config.update({ settings: { 'org-agenda-use-time-grid': timeGridOn() ? 'nil' : '' } });
+    else if (what === 'archive-done') await archiveDoneDialog();
+    else if (what === 'archive-context') await archiveContextDialog();
+    else if (what === 'refile-new') await refileNewDialog();
     else if (what === 'refile') await refileSettingsDialog();
     else if (what === 'beep') config.update({ settings: { 'view.beep': String(!beepOn()) } });
     else if (what === 'capture-templates') await captureTemplatesDialog();
     else if (what === 'emacs') config.update({ settings: { 'view.emacsKeys': String(!emacsKeys()) } });
     else if (what === 'log-drawer') await logDrawerDialog();
-    else if (what === 'log-repeat') config.update({ settings: { 'org-log-repeat': logRepeatOn() ? 'nil' : '' } });
+    else if (what === 'log-repeat') await logRepeatDialog();
     else if (what === 'stars') config.update({ settings: { 'view.hideStars': String(!hideStars()) } });
     else await tagsColumnDialog();
     note = $('message').classList.contains('error') ? '' : $('message').textContent;
@@ -1088,6 +1098,11 @@ async function captureTemplatesDialog() {
 
 const DEFAULT_REFILE = '(setq org-refile-targets \'((nil :level . 1)))';
 const refileText = () => config.settings()['org-refile-settings'] ?? '';
+/** org-archive-mark-done: null (nil), true (t) or a keyword. org-archive-save-context-info: the names saved. */
+const archiveMarkDone = () => { const v = setting('org-archive-mark-done'); return !v || v === 'nil' ? null : v === 't' ? true : v; };
+const archiveContext = () => { const v = setting('org-archive-save-context-info'); return !v ? ARCHIVE_CONTEXT : v === 'nil' ? [] : v.split(/\s+/); };
+const refileNew = () => setting('org-refile-allow-creating-parent-nodes') || 'nil';
+const timeGridOn = () => setting('org-agenda-use-time-grid') !== 'nil';
 const archiveLocation = () => config.settings()['org-archive-location'] || '%s_archive::';
 const bufferName = (b) => b.name ?? b.title;
 
@@ -1103,11 +1118,12 @@ async function bufferFor(name) {
 }
 
 /** C-c C-w (C-c M-w keeps the original): choose where the heading and its subtree go. */
-async function refileHere(copy = false, hd = enclosingHead()) {
+async function refileHere(copy = false, hd0 = enclosingHead()) {
+  let hd = hd0;
   if (!hd) { message('Not at a heading'); return; }
   try {
     const settings = parseRefileSettings(refileText() || DEFAULT_REFILE);
-    const b = currentBuffer();
+    let b = currentBuffer();
     const cname = bufferName(b);
     const names = new Set([cname]);
     for (const t of settings.targets) for (const n of t.files === 'agenda' ? agendaFileNames() : t.files ?? []) names.add(n);
@@ -1115,8 +1131,23 @@ async function refileHere(copy = false, hd = enclosingHead()) {
     for (const n of names) { const x = n === cname ? b : await bufferFor(n); if (x) files.push({ name: n, text: x.text, id: x.id }); }
     const targets = listTargets(files, settings, { current: cname, agenda: agendaFileNames() });
     if (!targets.length) { message('No refile targets', true); return; }
-    const t = await choose(copy ? 'Refile (and keep) to' : 'Refile to', targets.map((x) => ({ label: x.label, meta: files.length > 1 ? x.file : null, value: x })));
+    const rows = targets.map((x) => ({ label: x.label, meta: files.length > 1 ? x.file : null, value: x }));
+    let t = await choose(copy ? 'Refile (and keep) to' : 'Refile to', [...rows, ...(refileNew() === 'nil' ? [] : [{ group: 'New' }, { label: 'New heading under…', value: 'new' }])]);
     if (!t) return;
+    if (t === 'new') {
+      // org-refile-allow-creating-parent-nodes: the new heading is made first, at the end of the parent's subtree
+      const parent = await choose('New heading under', rows.filter((x) => x.value.line >= 0));
+      if (!parent) return;
+      const title = await askTitle('New heading', '');
+      if (title === undefined || title.trim() === '') return;
+      if (refileNew() === 'confirm' && !(await ask('New heading', `Create new node "${title.trim()}"?`, [{ label: 'No', value: false }, { label: 'Yes', value: true, primary: true }]))) return;
+      const home = files.find((f) => f.name === parent.file);
+      const made = newChild(home.text, parent, title.trim());
+      session.apply(home.id, { text: made.text });
+      t = { label: `${parent.label}/${title.trim()}`, file: parent.file, line: made.line, level: parent.level + 1 };
+      if (home.id === b.id) { const grew = made.text.split('\n').length - home.text.split('\n').length; if (made.line <= hd.line) hd = { ...hd, line: hd.line + grew, end: hd.end + grew }; b = currentBuffer(); }
+      home.text = made.text;
+    }
     const same = t.file === cname;
     const other = same ? null : files.find((f) => f.name === t.file);
     const r = refile(b.text, hd.line, t, { otherText: other?.text ?? null, reverse: settings.reverse, copy, column: tagsColumn() });
@@ -1137,7 +1168,7 @@ async function archiveHere(hd = enclosingHead()) {
     const file = loc.slice(0, loc.indexOf('::')).replace('%s', cname);
     const ab = file && file !== cname ? await (async () => { const x = session.state().buffers.find((y) => y.name === file); if (x) return x; const o = await session.openFile(file); return o.ok ? session.state().buffers.find((y) => y.id === o.id) : null; })() : null;
     const category = /^#\+CATEGORY:[ \t]*(\S.*?)[ \t]*$/im.exec(b.text)?.[1] ?? cname.replace(/^.*\//, '').replace(/\.[^.]*$/, '');
-    const r = archiveSubtree(b.text, hd.line, { fileName: cname, category, location: loc, now: localNow(), archiveText: ab?.text ?? null, column: tagsColumn() });
+    const r = archiveSubtree(b.text, hd.line, { fileName: cname, category, location: loc, now: localNow(), archiveText: ab?.text ?? null, column: tagsColumn(), markDone: archiveMarkDone(), contextInfo: archiveContext() });
     session.apply(b.id, { text: r.text });
     if (r.archive) {
       if (ab) session.apply(ab.id, { text: r.archive.text });
@@ -1190,6 +1221,47 @@ async function logDrawerDialog() {
   message(name ? `Log lines go in :${name}:` : 'Log lines go in the text');
 }
 
+async function logRepeatDialog() {
+  const v = await choose('Log repeats', [{ label: 'Time', meta: 'a log line with the time', value: '' }, { label: 'Note', meta: 'asks for a note too', value: 'note' }, { label: 'Off', meta: 'nothing is recorded', value: 'nil' }]);
+  if (v === undefined) return;
+  config.update({ settings: { 'org-log-repeat': v } });
+  message(`Log repeats: ${{ '': 'time', note: 'note', nil: 'off' }[v]}`);
+}
+
+/** A one-line setting with [‹ Emacs][Reset][Set]; `check` returns the stored text, or throws a message. */
+async function lineSetting({ title, help, shown, key, check, said }) {
+  const value = await panel((sheet, close) => {
+    const input = h('input', { value: shown, autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': title });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); close(input.value); } });
+    put(sheet, h('h2', {}, title), h('p', {}, help), input,
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { onclick: () => close(RESET) }, 'Reset'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Set')));
+    input.focus();
+  });
+  if (value === undefined) return;
+  try {
+    const stored = value === RESET ? '' : check(value.trim());
+    config.update({ settings: { [key]: stored } });
+    message(said(stored));
+  } catch (e) { message(e.message, true); }
+}
+
+const archiveDoneDialog = () => lineSetting({ title: 'Archive marks done', key: 'org-archive-mark-done', shown: String(setting('org-archive-mark-done') || 'nil'),
+  help: 'nil leaves the state alone. t marks a TODO heading with the first done keyword before it is archived; a keyword such as CANCELLED uses that one.',
+  check: (v) => { if (v === 'nil' || v === '') return ''; if (v === 't' || /^[A-Z][A-Z0-9_-]*$/.test(v)) return v; throw new Error('Use nil, t or a keyword such as DONE'); },
+  said: (v) => `Archive marks done: ${v || 'nil'}` });
+
+const archiveContextDialog = () => lineSetting({ title: 'Archive saves', key: 'org-archive-save-context-info', shown: archiveContext().join(' ') || 'nil',
+  help: `The properties kept on an archived entry, separated by spaces: ${ARCHIVE_CONTEXT.join(' ')}. nil saves none.`,
+  check: (v) => { if (v === 'nil') return 'nil'; const names = v.split(/\s+/).filter(Boolean); const bad = names.find((n) => !ARCHIVE_CONTEXT.includes(n)); if (bad) throw new Error(`${bad} is not one of ${ARCHIVE_CONTEXT.join(' ')}`); return names.join(' ') === ARCHIVE_CONTEXT.join(' ') ? '' : names.join(' '); },
+  said: (v) => `Archive saves: ${v === 'nil' ? 'nothing' : v || 'everything'}` });
+
+async function refileNewDialog() {
+  const v = await choose('Refile new headings', [{ label: 'Not allowed', value: 'nil' }, { label: 'Ask first', value: 'confirm' }, { label: 'Allowed', value: 't' }]);
+  if (v === undefined) return;
+  config.update({ settings: { 'org-refile-allow-creating-parent-nodes': v === 'nil' ? '' : v } });
+  message(`Refile new headings: ${{ nil: 'not allowed', confirm: 'ask first', t: 'allowed' }[v]}`);
+}
+
 async function archiveLocationDialog() {
   const value = await panel((sheet, close) => {
     const input = h('input', { value: archiveLocation(), autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Archive location' });
@@ -1207,7 +1279,8 @@ async function archiveLocationDialog() {
 
 // ---- The agenda ---------------------------------------------------------------------------------
 
-const agendaState = { kind: 'agenda', span: 'week', anchor: null, match: '', words: '', keyword: null };
+const agendaState = { kind: 'agenda', span: 'week', anchor: null, match: '', words: '', keyword: null, filter: noFilter(), marking: false, marked: new Set() };
+const entryKey = (e) => `${e.file}:${e.line}`;
 const mondayOf = (d) => new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * 86400000);
 /** The category Org gives a file: its name without the folder and the extension. */
 const categoryOfName = (name) => parseName(name).path.replace(/^.*\//, '').replace(/\.[^.]*$/, '');
@@ -1237,7 +1310,8 @@ async function agendaSources() {
   if (unread.length) message(`Cannot read ${unread.join(', ')}`, true);
   return files;
 }
-const SPANS = [['day', 'Day'], ['week', 'Week'], ['month', 'Month']];
+const SPANS = [['day', 'Day'], ['week', 'Week'], ['fortnight', '2 weeks'], ['month', 'Month'], ['year', 'Year']];
+const weekly = (span) => span === 'week' || span === 'fortnight';
 
 /** Moves the agenda's start by one span, forward or back. */
 /** The agenda goes to the span that holds today (Emacs: .). */
@@ -1248,8 +1322,10 @@ function agendaToday() {
 
 function agendaMove(dir) {
   const a = agendaState.anchor;
-  agendaState.anchor = agendaState.span === 'day' ? new Date(a.getTime() + dir * 86400000)
-    : agendaState.span === 'month' ? new Date(Date.UTC(a.getUTCFullYear(), a.getUTCMonth() + dir, 1)) : new Date(a.getTime() + dir * 7 * 86400000);
+  const sp = agendaState.span;
+  agendaState.anchor = sp === 'day' ? new Date(a.getTime() + dir * 86400000)
+    : sp === 'month' ? new Date(Date.UTC(a.getUTCFullYear(), a.getUTCMonth() + dir, 1))
+    : sp === 'year' ? new Date(Date.UTC(a.getUTCFullYear() + dir, 0, 1)) : new Date(a.getTime() + dir * (sp === 'fortnight' ? 14 : 7) * 86400000);
 }
 
 /** Opens the agenda at a view; the tags and search views ask first. */
@@ -1289,8 +1365,8 @@ async function agendaScreen() {
     const st = agendaState;
     let view;
     try {
-      view = st.kind === 'todo' ? todoList(files, { keyword: st.keyword }) : st.kind === 'tags' ? tagsView(files, { match: st.match }) : st.kind === 'search' ? searchView(files, { words: st.words })
-        : agenda(files, { start: st.span === 'week' ? mondayOf(st.anchor) : st.anchor, span: st.span, today: todayDate(), now: localClock() });
+      view = st.kind === 'todo' ? todoList(files, { keyword: st.keyword, filter: st.filter }) : st.kind === 'tags' ? tagsView(files, { match: st.match, filter: st.filter }) : st.kind === 'search' ? searchView(files, { words: st.words, filter: st.filter })
+        : agenda(files, { start: weekly(st.span) ? mondayOf(st.anchor) : st.anchor, span: st.span, today: todayDate(), now: localClock(), timeGrid: timeGridOn(), filter: st.filter });
     } catch (e) { failure(e); st.kind = 'agenda'; return; }
     let onMoveKey = null;
     const act = await panel((sheet, close) => {
@@ -1304,7 +1380,14 @@ async function agendaScreen() {
         };
         document.addEventListener('keydown', onMoveKey, true);
       }
-      const row = (e) => h('button', { class: 'arow', onclick: () => close({ jump: e }) },
+      const counter = h('button', { class: 'primary', onclick: () => close({ act: true }) }, '');
+      const count = () => { counter.textContent = `Act on ${st.marked.size}`; counter.disabled = st.marked.size === 0; };
+      const row = (e) => h('button', { class: `arow${st.marking && st.marked.has(entryKey(e)) ? ' marked' : ''}`, 'aria-pressed': st.marking ? String(st.marked.has(entryKey(e))) : null, onclick: (ev) => {
+        if (!st.marking) { close({ jump: e }); return; }
+        const k = entryKey(e);
+        if (st.marked.has(k)) st.marked.delete(k); else st.marked.add(k);
+        ev.currentTarget.classList.toggle('marked', st.marked.has(k)); ev.currentTarget.setAttribute('aria-pressed', String(st.marked.has(k))); count();
+      } },
         h('span', { class: `alabel${e.late > 0 && e.kind !== 'stamp' ? ' late' : ''}` }, [e.clock, e.label].filter(Boolean).join(' ') || e.category),
         h('span', { class: 'atitle' }, [e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ')),
         e.tags.length ? h('span', { class: 'atags' }, `:${e.tags.join(':')}:`) : null);
@@ -1313,18 +1396,25 @@ async function agendaScreen() {
         : view.entries.length ? view.entries.map(row) : [h('p', { class: 'aempty' }, 'No entries')];
       const nav = st.kind === 'agenda' ? [h('button', { 'aria-label': 'Earlier', onclick: () => close({ move: -1 }) }, h('span', { class: 'chev left' })), h('button', { 'aria-label': 'Later', onclick: () => close({ move: 1 }) }, h('span', { class: 'chev right' }))] : [];
       put(sheet,
-        h('div', { class: 'abar' }, nav[0] ?? null, st.kind === 'agenda' ? h('button', { onclick: () => close({ today: true }) }, 'Today') : null, h('div', { class: 'atitlebar' }, view.title.replace(/:$/, '')), nav[1] ?? null),
+        h('div', { class: 'abar' }, nav[0] ?? null, st.kind === 'agenda' ? h('button', { onclick: () => close({ today: true }) }, 'Today') : null, h('div', { class: 'atitlebar' }, `${view.title.replace(/:$/, '')}${filterActive(st.filter) ? ` ${filterLabel(st.filter)}` : ''}`), nav[1] ?? null),
         Object.assign(h('div', { class: 'abody' }, ...body), st.kind === 'agenda' ? sidewaysSwipe((dir) => close({ move: dir })) : {}),
+        st.kind === 'agenda' ? h('div', { class: 'abar' }, ...SPANS.map(([v, l]) => h('button', { class: st.span === v ? 'primary' : '', onclick: () => close({ span: v }) }, l))) : null,
         h('div', { class: 'abar' },
-          ...(st.kind === 'agenda' ? SPANS.map(([v, l]) => h('button', { class: st.span === v ? 'primary' : '', onclick: () => close({ span: v }) }, l)) : []),
-          h('button', { onclick: () => close({ views: true }) }, 'Views'),
-          h('button', { onclick: () => close(undefined) }, 'Close')));
+          ...(st.marking ? [h('button', { onclick: () => close({ markAll: true }) }, 'All'), h('button', { onclick: () => close({ markNone: true }) }, 'None'), counter, h('button', { onclick: () => close({ marking: false }) }, 'Done')]
+            : [h('button', { onclick: () => close({ filter: true }) }, filterActive(st.filter) ? 'Filter ●' : 'Filter'), h('button', { onclick: () => close({ marking: true }) }, 'Mark'),
+              h('button', { onclick: () => close({ views: true }) }, 'Views'), h('button', { onclick: () => close(undefined) }, 'Close')])));
+      count();
     });
     if (onMoveKey) document.removeEventListener('keydown', onMoveKey, true);
     if (!act) return;
     if (act.today) agendaToday();
     else if (act.move) agendaMove(act.move);
-    else if (act.span) { st.span = act.span; if (act.span === 'week') st.anchor = mondayOf(st.anchor); }
+    else if (act.filter) await agendaFilterDialog(st);
+    else if (act.marking !== undefined) { st.marking = act.marking; if (!act.marking) st.marked.clear(); }
+    else if (act.markNone) st.marked.clear();
+    else if (act.markAll) for (const e of view.days ? view.days.flatMap((d) => d.entries) : view.entries) st.marked.add(entryKey(e));
+    else if (act.act) { await bulkAction(st, files, view); st.marked.clear(); st.marking = false; try { files = await agendaSources(); } catch (e) { failure(e); return; } }
+    else if (act.span) { st.span = act.span; if (weekly(act.span)) st.anchor = mondayOf(st.anchor); }
     else if (act.views) {
       const v = await choose('Views', [{ label: 'Agenda', value: 'agenda' }, { label: 'TODO list', value: 'todo' }, { label: 'Tags', value: 'tags' }, { label: 'Search', value: 'search' }]);
       if (v === 'tags' || v === 'search') {
@@ -1351,6 +1441,86 @@ async function agendaScreen() {
       return;
     }
   }
+}
+
+/** The Filter button: by tag, category, effort or regexp, typed as Emacs's / commands take them; Clear removes them all. */
+async function agendaFilterDialog(st) {
+  const f = st.filter;
+  const v = await choose('Filter', [
+    { label: 'Tag', meta: filterLabel({ ...noFilter(), tags: f.tags }) || null, value: 'tags' }, { label: 'Category', meta: filterLabel({ ...noFilter(), category: f.category }) || null, value: 'category' },
+    { label: 'Effort', meta: f.effort ? `${f.effort.op}${f.effort.minutes} min` : null, value: 'effort' }, { label: 'Regexp', meta: filterLabel({ ...noFilter(), regexp: f.regexp }) || null, value: 'regexp' },
+    ...(filterActive(f) ? [{ label: 'Clear all filters', value: 'clear' }] : []),
+  ]);
+  if (v === undefined) return;
+  if (v === 'clear') { st.filter = noFilter(); return; }
+  const help = { tags: 'Tags to keep (+work) or hide (-home), separated by spaces. Empty removes the tag filter.', category: 'A category to keep (+calls) or hide (-calls).',
+    effort: 'An effort limit such as <1:00, >0:30 or =2:00. Empty removes it.', regexp: 'An Emacs regexp the line must match (+rent) or must not match (-rent).' }[v];
+  const typed = await askText({ prompt: `${v === 'tags' ? 'Tag' : v === 'category' ? 'Category' : v === 'effort' ? 'Effort' : 'Regexp'}:`, title: `Filter by ${v === 'tags' ? 'tag' : v}`, help, ok: 'Filter' });
+  if (typed === undefined) return;
+  try { st.filter = { ...f, [v]: v === 'effort' ? (typed.trim() ? parseEffort(typed) : null) : parseSigned(typed) }; } catch (e) { failure(e); }
+}
+
+/** The actions on the marked entries (Emacs: B): each is done to every entry in the order marked, and the rest of the lines are kept in step. */
+async function bulkAction(st, files, view) {
+  const all = view.days ? view.days.flatMap((d) => d.entries) : view.entries;
+  const byKey = new Map(all.map((e) => [entryKey(e), e]));
+  const marked = [...st.marked].map((k) => byKey.get(k)).filter(Boolean);
+  if (!marked.length) return;
+  const words = [...new Set(files.flatMap((f) => { const a = analyze(f.text); return [...a.todo.open, ...a.todo.done]; }))];
+  const what = await choose(`${marked.length} marked`, [
+    { label: 'TODO state', value: 'todo' }, { label: 'Add tag', value: 'tag+' }, { label: 'Remove tag', value: 'tag-' }, { label: 'Priority', value: 'priority' },
+    { label: 'Schedule', value: 'schedule' }, { label: 'Deadline', value: 'deadline' }, { label: 'Archive', value: 'archive' },
+  ]);
+  if (what === undefined) return;
+  let edit;
+  if (what === 'todo') {
+    const state = await choose('TODO state', [...words.map((w) => ({ label: w, value: w })), { label: 'None', value: '' }]);
+    if (state === undefined) return;
+    edit = (t, l) => { let cur = t; for (let i = 0; i < 30; i++) { const hd = analyze(cur).heads.find((x) => x.line === l); if ((hd?.todo ?? '') === state) break; cur = cycleTodo(cur, l, 1, tagsColumn()).text; } return { text: cur }; };
+  } else if (what === 'tag+' || what === 'tag-') {
+    const typed = await askText({ prompt: 'Tag:', title: what === 'tag+' ? 'Add tag' : 'Remove tag', ok: 'Set' });
+    if (typed === undefined || !typed.trim()) return;
+    const tag = typed.trim();
+    if (!/^[\p{L}\p{N}_@#%]+$/u.test(tag)) { message('Tags can have letters, digits and _ @ # %', true); return; }
+    edit = (t, l) => { const tags = analyze(t).heads.find((x) => x.line === l).tags; return setTags(t, l, what === 'tag+' ? [...new Set([...tags, tag])] : tags.filter((x) => x !== tag), tagsColumn()); };
+  } else if (what === 'priority') {
+    const p = await choose('Priority', [...['A', 'B', 'C'].map((x) => ({ label: x, value: x })), { label: 'None', value: '' }]);
+    if (p === undefined) return;
+    edit = (t, l) => setPriority(t, l, p === '' ? null : p, tagsColumn());
+  } else if (what === 'schedule' || what === 'deadline') {
+    const stamp = await askStamp(what === 'schedule' ? 'SCHEDULED' : 'DEADLINE');
+    if (stamp === null) return;
+    edit = (t, l) => setPlanning(t, l, what === 'schedule' ? 'SCHEDULED' : 'DEADLINE', stamp);
+  }
+  const pending = marked.map((e) => ({ file: e.file, line: e.line }));
+  let done = 0;
+  const texts = files.map((f) => f.text);
+  const created = [];
+  for (let i = 0; i < pending.length; i++) {
+    const { file, line } = pending[i];
+    const before = texts[file];
+    let after;
+    if (what === 'archive') {
+      const f = files[file];
+      const loc = archiveLocation();
+      const archName = loc.slice(0, loc.indexOf('::')).replace('%s', f.name);
+      const r = archiveSubtree(before, line, { fileName: f.name, category: f.category, location: loc, now: localNow(), archiveText: created.find((c) => c.file === archName)?.text ?? (await bufferFor(archName))?.text ?? null, column: tagsColumn(), markDone: archiveMarkDone(), contextInfo: archiveContext() });
+      after = r.text;
+      if (r.archive) { const c = created.find((x) => x.file === r.archive.file); if (c) c.text = r.archive.text; else created.push({ file: r.archive.file, text: r.archive.text }); }
+    } else after = edit(before, line).text;
+    texts[file] = after;
+    const grew = after.split('\n').length - before.split('\n').length;
+    if (grew) for (let j = i + 1; j < pending.length; j++) if (pending[j].file === file && pending[j].line > line) pending[j].line += grew;
+    done++;
+  }
+  for (const [i, f] of files.entries()) {
+    if (texts[i] === f.text) continue;
+    let id = f.id;
+    if (id === null) { const opened = await session.openFile(f.name); if (!opened.ok) { failure(new Error(`${f.name} does not exist`)); continue; } id = opened.id; }
+    session.apply(id, { text: texts[i] });
+  }
+  for (const c of created) { const b = await bufferFor(c.file); if (b) session.apply(b.id, { text: c.text }); else session.createFile(c.file, c.text); }
+  message(`Acted on ${done} entries`);
 }
 
 // ---- Structure commands, the Outline view's taps, and the Emacs keys ------------------------------------
@@ -1436,16 +1606,39 @@ function sayPriority(line) {
   message(p ? `Priority of current item set to ${p}` : 'Priority removed');
 }
 
+/** The note asked for when a repeating task is finished (org-log-repeat note): its text, or null when cancelled. */
+function askNote(from, to) {
+  return panel((sheet, close) => {
+    const input = h('textarea', { rows: '6', autocapitalize: 'sentences', 'aria-label': 'Note' });
+    put(sheet, h('h2', {}, 'Insert note'), h('p', {}, `Insert note for state change from "${from}" to "${to}".`), input,
+      h('div', { class: 'row' }, h('button', { onclick: () => close(null) }, 'Skip'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
+    input.focus();
+  }).then((v) => (v === undefined ? null : v));
+}
+
 /** Changes the TODO state of the enclosing heading and says the new state. */
-function todoStep(dir) {
+async function todoStep(dir) {
   const said = [];
+  // org-log-repeat note: when finishing a repeating task, the note is asked for first
+  let note;
+  if (logRepeatMode() === 'note') {
+    const hd = enclosingHead();
+    try {
+      const t = currentBuffer().text;
+      const before = analyze(t);
+      const from = before.heads.find((x) => x.line === hd?.line)?.todo ?? null;
+      const c = hd ? cycleTodo(t, hd.line, dir, tagsColumn()) : null;
+      if (c?.state && before.todo.done.includes(c.state) && completeRepeat({ text: c.text, line: hd.line, from: from ?? '', to: c.state, reopen: before.todo.open[0], now: localNow() }))
+        note = await askNote(from ?? '', c.state);
+    } catch { /* the plain path reports it */ }
+  }
   const r = onEnclosingHeading((t, l) => {
     const before = analyze(t);
     const from = before.heads.find((x) => x.line === l)?.todo ?? null;
     const c = cycleTodo(t, l, dir, tagsColumn());
     if (!c.state || !before.todo.done.includes(c.state)) return c;
     // Finishing a repeating task: the date moves on and the task is open again
-    const rep = completeRepeat({ text: c.text, line: l, from: from ?? '', to: c.state, reopen: before.todo.open[0], now: localNow(), drawer: logDrawer(), log: logRepeatOn() });
+    const rep = completeRepeat({ text: c.text, line: l, from: from ?? '', to: c.state, reopen: before.todo.open[0], now: localNow(), drawer: logDrawer(), log: logRepeatOn(), note });
     if (!rep) return c;
     said.push(`TODO state changed to ${c.state}`, `TODO state changed to ${before.todo.open[0]}`);
     return { ...c, text: rep.text, state: null };
