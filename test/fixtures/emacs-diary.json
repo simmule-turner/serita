@@ -1,0 +1,752 @@
+{
+ "dy-all": {
+  "text": "Nov 5, 2026 Dentist\n11/10/2026 Slash date\n2026-11-11 ISO date\nNov 12 Yearly Nov 12\n12 Nov Day first style\nMonday Standup\n*/15 Monthly on the 15th\n%%(diary-anniversary 11 20 1990) Anna's birthday (%d)\n%%(diary-block 11 24 2026 11 26 2026) Conference\n%%(diary-float t 4 4) Thanksgiving\n%%(diary-cyclic 7 11 2 2026) Every seven days\n%%(diary-date 11 28 2026) Date sexp\n&Nov 27 2026 Non-marking\nNov 29 2026 12:30 Lunch\n  continued line\nNov 30, 2026 Last day\n%%(and (= (calendar-extract-month date) 11) (= (calendar-extract-day date) 3)) Expression\n",
+  "start": [
+   2026,
+   11,
+   1
+  ],
+  "days": 30,
+  "style": "american",
+  "want": [
+   [
+    11,
+    2,
+    2026,
+    "Every seven days"
+   ],
+   [
+    11,
+    2,
+    2026,
+    "Standup"
+   ],
+   [
+    11,
+    3,
+    2026,
+    "Expression"
+   ],
+   [
+    11,
+    5,
+    2026,
+    "Dentist"
+   ],
+   [
+    11,
+    9,
+    2026,
+    "Every seven days"
+   ],
+   [
+    11,
+    9,
+    2026,
+    "Standup"
+   ],
+   [
+    11,
+    10,
+    2026,
+    "Slash date"
+   ],
+   [
+    11,
+    12,
+    2026,
+    "Yearly Nov 12"
+   ],
+   [
+    11,
+    15,
+    2026,
+    "Monthly on the 15th"
+   ],
+   [
+    11,
+    16,
+    2026,
+    "Every seven days"
+   ],
+   [
+    11,
+    16,
+    2026,
+    "Standup"
+   ],
+   [
+    11,
+    20,
+    2026,
+    "Anna's birthday (36)"
+   ],
+   [
+    11,
+    23,
+    2026,
+    "Every seven days"
+   ],
+   [
+    11,
+    23,
+    2026,
+    "Standup"
+   ],
+   [
+    11,
+    24,
+    2026,
+    "Conference"
+   ],
+   [
+    11,
+    25,
+    2026,
+    "Conference"
+   ],
+   [
+    11,
+    26,
+    2026,
+    "Conference"
+   ],
+   [
+    11,
+    26,
+    2026,
+    "Thanksgiving"
+   ],
+   [
+    11,
+    27,
+    2026,
+    "2026 Non-marking"
+   ],
+   [
+    11,
+    28,
+    2026,
+    "Date sexp"
+   ],
+   [
+    11,
+    29,
+    2026,
+    "2026 12:30 Lunch\n  continued line"
+   ],
+   [
+    11,
+    30,
+    2026,
+    "Every seven days"
+   ],
+   [
+    11,
+    30,
+    2026,
+    "Last day"
+   ],
+   [
+    11,
+    30,
+    2026,
+    "Standup"
+   ]
+  ]
+ },
+ "dy-oct": {
+  "text": "Nov 5, 2026 Dentist\n11/10/2026 Slash date\n2026-11-11 ISO date\nNov 12 Yearly Nov 12\n12 Nov Day first style\nMonday Standup\n*/15 Monthly on the 15th\n%%(diary-anniversary 11 20 1990) Anna's birthday (%d)\n%%(diary-block 11 24 2026 11 26 2026) Conference\n%%(diary-float t 4 4) Thanksgiving\n%%(diary-cyclic 7 11 2 2026) Every seven days\n%%(diary-date 11 28 2026) Date sexp\n&Nov 27 2026 Non-marking\nNov 29 2026 12:30 Lunch\n  continued line\nNov 30, 2026 Last day\n%%(and (= (calendar-extract-month date) 11) (= (calendar-extract-day date) 3)) Expression\n",
+  "start": [
+   2026,
+   10,
+   1
+  ],
+  "days": 31,
+  "style": "american",
+  "want": [
+   [
+    10,
+    5,
+    2026,
+    "Standup"
+   ],
+   [
+    10,
+    12,
+    2026,
+    "Standup"
+   ],
+   [
+    10,
+    15,
+    2026,
+    "Monthly on the 15th"
+   ],
+   [
+    10,
+    19,
+    2026,
+    "Standup"
+   ],
+   [
+    10,
+    22,
+    2026,
+    "Thanksgiving"
+   ],
+   [
+    10,
+    26,
+    2026,
+    "Standup"
+   ]
+  ]
+ },
+ "dy-dec": {
+  "text": "Nov 5, 2026 Dentist\n11/10/2026 Slash date\n2026-11-11 ISO date\nNov 12 Yearly Nov 12\n12 Nov Day first style\nMonday Standup\n*/15 Monthly on the 15th\n%%(diary-anniversary 11 20 1990) Anna's birthday (%d)\n%%(diary-block 11 24 2026 11 26 2026) Conference\n%%(diary-float t 4 4) Thanksgiving\n%%(diary-cyclic 7 11 2 2026) Every seven days\n%%(diary-date 11 28 2026) Date sexp\n&Nov 27 2026 Non-marking\nNov 29 2026 12:30 Lunch\n  continued line\nNov 30, 2026 Last day\n%%(and (= (calendar-extract-month date) 11) (= (calendar-extract-day date) 3)) Expression\n",
+  "start": [
+   2026,
+   12,
+   1
+  ],
+  "days": 31,
+  "style": "american",
+  "want": [
+   [
+    12,
+    7,
+    2026,
+    "Every seven days"
+   ],
+   [
+    12,
+    7,
+    2026,
+    "Standup"
+   ],
+   [
+    12,
+    14,
+    2026,
+    "Every seven days"
+   ],
+   [
+    12,
+    14,
+    2026,
+    "Standup"
+   ],
+   [
+    12,
+    15,
+    2026,
+    "Monthly on the 15th"
+   ],
+   [
+    12,
+    21,
+    2026,
+    "Every seven days"
+   ],
+   [
+    12,
+    21,
+    2026,
+    "Standup"
+   ],
+   [
+    12,
+    24,
+    2026,
+    "Thanksgiving"
+   ],
+   [
+    12,
+    28,
+    2026,
+    "Every seven days"
+   ],
+   [
+    12,
+    28,
+    2026,
+    "Standup"
+   ]
+  ]
+ },
+ "dy-one": {
+  "text": "Nov 5, 2026 Dentist\n11/10/2026 Slash date\n2026-11-11 ISO date\nNov 12 Yearly Nov 12\n12 Nov Day first style\nMonday Standup\n*/15 Monthly on the 15th\n%%(diary-anniversary 11 20 1990) Anna's birthday (%d)\n%%(diary-block 11 24 2026 11 26 2026) Conference\n%%(diary-float t 4 4) Thanksgiving\n%%(diary-cyclic 7 11 2 2026) Every seven days\n%%(diary-date 11 28 2026) Date sexp\n&Nov 27 2026 Non-marking\nNov 29 2026 12:30 Lunch\n  continued line\nNov 30, 2026 Last day\n%%(and (= (calendar-extract-month date) 11) (= (calendar-extract-day date) 3)) Expression\n",
+  "start": [
+   2026,
+   11,
+   12
+  ],
+  "days": 1,
+  "style": "american",
+  "want": [
+   [
+    11,
+    12,
+    2026,
+    "Yearly Nov 12"
+   ]
+  ]
+ },
+ "dy-weekday-names": {
+  "text": "Mon Short\nMonday Full\nSat Weekend\nSunday Sun\n",
+  "start": [
+   2026,
+   11,
+   1
+  ],
+  "days": 7,
+  "style": "american",
+  "want": [
+   [
+    11,
+    1,
+    2026,
+    "Sun"
+   ],
+   [
+    11,
+    2,
+    2026,
+    "Short"
+   ],
+   [
+    11,
+    2,
+    2026,
+    "Full"
+   ],
+   [
+    11,
+    7,
+    2026,
+    "Weekend"
+   ]
+  ]
+ },
+ "dy-european": {
+  "text": "5 Nov 2026 Euro full\n10/11/2026 Euro slash\n5 Nov Euro yearly\n",
+  "start": [
+   2026,
+   11,
+   1
+  ],
+  "days": 14,
+  "style": "european",
+  "want": [
+   [
+    11,
+    5,
+    2026,
+    "Euro yearly"
+   ],
+   [
+    11,
+    5,
+    2026,
+    "Euro full"
+   ],
+   [
+    11,
+    10,
+    2026,
+    "Euro slash"
+   ]
+  ]
+ },
+ "dy-iso": {
+  "text": "2026-11-05 Iso\n2026/11/06 IsoSlash\n",
+  "start": [
+   2026,
+   11,
+   1
+  ],
+  "days": 14,
+  "style": "iso",
+  "want": [
+   [
+    11,
+    5,
+    2026,
+    "Iso"
+   ],
+   [
+    11,
+    6,
+    2026,
+    "IsoSlash"
+   ]
+  ]
+ },
+ "dy-star": {
+  "text": "*/20/2026 Any month the 20th\n11/*/2026 Every day of Nov\n*/*/2026 Every day\nNov * Every day of Nov any year\n",
+  "start": [
+   2026,
+   11,
+   18
+  ],
+  "days": 4,
+  "style": "american",
+  "want": [
+   [
+    11,
+    18,
+    2026,
+    "Every day of Nov"
+   ],
+   [
+    11,
+    18,
+    2026,
+    "Every day"
+   ],
+   [
+    11,
+    18,
+    2026,
+    "Every day of Nov any year"
+   ],
+   [
+    11,
+    19,
+    2026,
+    "Every day of Nov"
+   ],
+   [
+    11,
+    19,
+    2026,
+    "Every day"
+   ],
+   [
+    11,
+    19,
+    2026,
+    "Every day of Nov any year"
+   ],
+   [
+    11,
+    20,
+    2026,
+    "Any month the 20th"
+   ],
+   [
+    11,
+    20,
+    2026,
+    "Every day of Nov"
+   ],
+   [
+    11,
+    20,
+    2026,
+    "Every day"
+   ],
+   [
+    11,
+    20,
+    2026,
+    "Every day of Nov any year"
+   ],
+   [
+    11,
+    21,
+    2026,
+    "Every day of Nov"
+   ],
+   [
+    11,
+    21,
+    2026,
+    "Every day"
+   ],
+   [
+    11,
+    21,
+    2026,
+    "Every day of Nov any year"
+   ]
+  ]
+ },
+ "dy-sexps": {
+  "text": "%%(diary-day-of-year) x\n%%(diary-remind (quote (diary-anniversary 11 20 1990)) 3) Reminder\n%%(diary-float 11 1 1) First Monday\n%%(diary-float 11 1 -1) Last Monday\n%%(diary-anniversary 1990 11 20) ISO order anniversary\n%%(diary-anniversary 20 11 1990) European order anniversary\n",
+  "start": [
+   2026,
+   11,
+   1
+  ],
+  "days": 30,
+  "style": "american",
+  "want": [
+   [
+    11,
+    1,
+    2026,
+    "Day 305 of 2026; 60 days remaining in the year"
+   ],
+   [
+    11,
+    2,
+    2026,
+    "Day 306 of 2026; 59 days remaining in the year"
+   ],
+   [
+    11,
+    2,
+    2026,
+    "First Monday"
+   ],
+   [
+    11,
+    3,
+    2026,
+    "Day 307 of 2026; 58 days remaining in the year"
+   ],
+   [
+    11,
+    4,
+    2026,
+    "Day 308 of 2026; 57 days remaining in the year"
+   ],
+   [
+    11,
+    5,
+    2026,
+    "Day 309 of 2026; 56 days remaining in the year"
+   ],
+   [
+    11,
+    6,
+    2026,
+    "Day 310 of 2026; 55 days remaining in the year"
+   ],
+   [
+    11,
+    7,
+    2026,
+    "Day 311 of 2026; 54 days remaining in the year"
+   ],
+   [
+    11,
+    8,
+    2026,
+    "Day 312 of 2026; 53 days remaining in the year"
+   ],
+   [
+    11,
+    9,
+    2026,
+    "Day 313 of 2026; 52 days remaining in the year"
+   ],
+   [
+    11,
+    10,
+    2026,
+    "Day 314 of 2026; 51 days remaining in the year"
+   ],
+   [
+    11,
+    11,
+    2026,
+    "Day 315 of 2026; 50 days remaining in the year"
+   ],
+   [
+    11,
+    12,
+    2026,
+    "Day 316 of 2026; 49 days remaining in the year"
+   ],
+   [
+    11,
+    13,
+    2026,
+    "Day 317 of 2026; 48 days remaining in the year"
+   ],
+   [
+    11,
+    14,
+    2026,
+    "Day 318 of 2026; 47 days remaining in the year"
+   ],
+   [
+    11,
+    15,
+    2026,
+    "Day 319 of 2026; 46 days remaining in the year"
+   ],
+   [
+    11,
+    16,
+    2026,
+    "Day 320 of 2026; 45 days remaining in the year"
+   ],
+   [
+    11,
+    17,
+    2026,
+    "Day 321 of 2026; 44 days remaining in the year"
+   ],
+   [
+    11,
+    17,
+    2026,
+    "Reminder: Only 3 days until Reminder"
+   ],
+   [
+    11,
+    18,
+    2026,
+    "Day 322 of 2026; 43 days remaining in the year"
+   ],
+   [
+    11,
+    19,
+    2026,
+    "Day 323 of 2026; 42 days remaining in the year"
+   ],
+   [
+    11,
+    20,
+    2026,
+    "Day 324 of 2026; 41 days remaining in the year"
+   ],
+   [
+    11,
+    20,
+    2026,
+    "Reminder"
+   ],
+   [
+    11,
+    21,
+    2026,
+    "Day 325 of 2026; 40 days remaining in the year"
+   ],
+   [
+    11,
+    22,
+    2026,
+    "Day 326 of 2026; 39 days remaining in the year"
+   ],
+   [
+    11,
+    23,
+    2026,
+    "Day 327 of 2026; 38 days remaining in the year"
+   ],
+   [
+    11,
+    24,
+    2026,
+    "Day 328 of 2026; 37 days remaining in the year"
+   ],
+   [
+    11,
+    25,
+    2026,
+    "Day 329 of 2026; 36 days remaining in the year"
+   ],
+   [
+    11,
+    26,
+    2026,
+    "Day 330 of 2026; 35 days remaining in the year"
+   ],
+   [
+    11,
+    27,
+    2026,
+    "Day 331 of 2026; 34 days remaining in the year"
+   ],
+   [
+    11,
+    28,
+    2026,
+    "Day 332 of 2026; 33 days remaining in the year"
+   ],
+   [
+    11,
+    29,
+    2026,
+    "Day 333 of 2026; 32 days remaining in the year"
+   ],
+   [
+    11,
+    30,
+    2026,
+    "Day 334 of 2026; 31 days remaining in the year"
+   ],
+   [
+    11,
+    30,
+    2026,
+    "Last Monday"
+   ]
+  ]
+ },
+ "dy-time": {
+  "text": "Nov 5 2026 9:30am Early\nNov 5 2026 14:00 Afternoon\n&Nov 5 2026 Hidden\n",
+  "start": [
+   2026,
+   11,
+   5
+  ],
+  "days": 1,
+  "style": "american",
+  "want": [
+   [
+    11,
+    5,
+    2026,
+    "2026 9:30am Early"
+   ],
+   [
+    11,
+    5,
+    2026,
+    "2026 14:00 Afternoon"
+   ],
+   [
+    11,
+    5,
+    2026,
+    "2026 Hidden"
+   ]
+  ]
+ },
+ "dy-order": {
+  "text": "Nov 5 2026 B entry\nNov 5 2026 A entry\nNov 5 2026 9:00 timed\n",
+  "start": [
+   2026,
+   11,
+   5
+  ],
+  "days": 1,
+  "style": "american",
+  "want": [
+   [
+    11,
+    5,
+    2026,
+    "2026 B entry"
+   ],
+   [
+    11,
+    5,
+    2026,
+    "2026 A entry"
+   ],
+   [
+    11,
+    5,
+    2026,
+    "2026 9:00 timed"
+   ]
+  ]
+ }
+}

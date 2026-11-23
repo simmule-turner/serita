@@ -173,3 +173,7 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 .sheet .chip small { font-size: 11px; color: var(--muted); }
 .sheet .chip.add { flex-direction: row; align-items: center; border-style: dashed; color: var(--muted); }
 .arow.marked { background: var(--bar); box-shadow: inset 3px 0 0 var(--accent, currentColor); }
+.sheet.calendar .cal { padding: 8px 4px; }
+.sheet .cal .day { position: relative; }
+.sheet .cal .day.has::after { content: ''; position: absolute; bottom: 4px; left: 50%; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: var(--accent); }
+.sheet .cal .day.on.has::after { background: var(--accent-fg); }

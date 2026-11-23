@@ -12,7 +12,7 @@ await page.goto(`${base}/`);
 await page.waitForSelector('.tab.current');
 const sheet = page.locator('.sheet');
 const btn = (n) => sheet.getByRole('button', { name: n, exact: true });
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/14 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/22 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
 const at = async (text, line) => {
   await page.fill('#editor', text);
   await page.evaluate((l) => { const e = document.getElementById('editor'); const o = e.value.split('\n').slice(0, l - 1).reduce((n, s) => n + s.length + 1, 0); e.focus(); e.setSelectionRange(o, o); }, line);
@@ -247,7 +247,7 @@ await page.locator('.sheet.agenda .abar button', { hasText: 'Close' }).click();
 await page.evaluate(() => document.getElementById('editor').focus());
 await page.keyboard.press('Alt+x'); await page.keyboard.type('org-agenda-file-to-front'); await page.keyboard.press('Enter');
 ok((await page.locator('#message').textContent()).includes('File added to front of agenda file list'), 'C-c [ lists the current file');
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/14 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/22 settings/).click();
 ok((await btn(/Agenda files/).textContent()).includes('1 file'), 'Settings shows how many agenda files there are');
 await btn(/Agenda files/).click();
 ok((await sheet.textContent()).includes('agenda-test.org (App storage)'), 'the Agenda files screen lists the file with its storage');
@@ -278,6 +278,22 @@ await page.waitForFunction(() => document.getElementById('message').textContent.
 await page.locator('.sheet.agenda .abar button', { hasText: /^Filter/ }).click(); await btn('Clear all filters').click();
 ok((await page.locator('.sheet.agenda .arow').first().textContent()).includes('[#A]'), 'the bulk action set the priority of the marked entry');
 await page.locator('.sheet.agenda .abar button', { hasText: 'Views' }).click(); await btn('Agenda').click();
+await page.locator('.sheet.agenda .abar button', { hasText: 'Close' }).click();
+// The calendar: a month, a dot under today (it has an entry), the entries of the tapped day
+await page.click('#btn-view'); await btn(/^Calendar/).click();
+const monthName = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][nowDate.getMonth()];
+ok((await page.locator('.sheet.calendar .atitlebar').textContent()) === `${monthName} ${nowDate.getFullYear()}`, 'View, Calendar shows this month');
+ok(await page.locator('.sheet.calendar .day.today.has').count() === 1, 'today has a dot because an agenda entry is dated today');
+ok((await page.locator('.sheet.calendar .arow').first().textContent()).includes('Timed'), 'the entries of the selected day are listed under the month');
+await page.getByLabel('Later').click();
+ok((await page.locator('.sheet.calendar .atitlebar').textContent()) !== `${monthName} ${nowDate.getFullYear()}`, 'the arrow moves to the next month');
+await page.locator('.sheet.calendar .abar button', { hasText: 'Today' }).click();
+await page.locator('.sheet.calendar .arow').first().click();
+ok((await page.locator('#editor').inputValue()).includes('Timed'), 'tapping an entry opens its heading');
+await page.click('#back');
+ok(await page.locator('.sheet.calendar').count() === 1, 'Back returns to the calendar');
+await page.locator('.sheet.calendar .abar button', { hasText: 'Close' }).click();
+await page.click('#btn-view'); await btn('Agenda').click();
 {
   const head = async () => (await page.locator('.sheet.agenda .abody .aday').first().textContent());
   const first = await head();
@@ -358,7 +374,7 @@ ok((await prompt()) === 'Foo value:', 'the value prompt names the property');
 await page.keyboard.press('Escape');
 
 // Capture: templates are set as init.el writes them; Capture asks the template's questions, shows the text, and files it
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/14 settings/).click(); await btn(/Capture templates/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/22 settings/).click(); await btn(/Capture templates/).click();
 await sheet.locator('textarea').fill(`(setq org-capture-templates '(("t" "Todo" entry (file+headline "agenda-test.org" "Inbox") "* TODO %^{What}\\n")))`);
 await btn('Save').click();
 ok((await page.locator('#message').textContent()) === '1 capture template', 'saving the templates counts them');
@@ -383,7 +399,7 @@ ok((await sheet.locator('.item', { hasText: 'GitHub' }).locator('.meta').textCon
 await sheet.getByLabel('Dismiss').click();
 
 // Refile and archive: Refile lists the targets; Archive tags and archives from the command list
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/14 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/22 settings/).click();
 ok((await sheet.textContent()).includes('Refile targets') && (await sheet.textContent()).includes('Archive location'), 'Settings, Emacs lists Refile targets and Archive location');
 const emacsText = await sheet.textContent();
 ok(['Archive marks done', 'Archive saves', 'Refile new headings', 'Log repeats'].every((n) => emacsText.includes(n)), 'Settings, Emacs lists the archive, refile and log options');
@@ -410,6 +426,33 @@ const items = await sheet.locator('.item').allTextContents();
 ok(items[0].startsWith('Commands') && items[1].startsWith('Capture') && items[2].startsWith('Settings'), 'the menu has Commands, Capture and Settings');
 await btn(/Commands/).click(); await page.keyboard.type('flip');
 await page.keyboard.press('Escape');
+// The diary: a file of entries, shown in the calendar and the agenda when the setting is on
+await at('*/*/* Every day\n', 0);
+await page.click('#btn-files'); await btn('Save as').click(); await sheet.getByLabel('File name').fill('diary-test.org'); await btn('Save').click();
+await page.waitForFunction(() => document.getElementById('message').textContent.startsWith('Wrote'));
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/22 settings/).click();
+await btn(/Diary file/).click(); await sheet.getByLabel('Diary file').fill('diary-test.org'); await btn('Set').click();
+await btn(/Diary in the agenda/).click();
+ok((await btn(/Diary in the agenda/).textContent()).includes('On') && (await btn(/Diary file/).textContent()).includes('diary-test.org'), 'Settings, Emacs sets the diary file and turns the diary on');
+await sheet.getByLabel('Dismiss').click();
+await page.click('#btn-view'); await btn(/^Calendar/).click();
+await page.locator('.sheet.calendar .arow', { hasText: 'Every day' }).waitFor({ timeout: 3000 }).catch(() => {});
+ok((await page.locator('.sheet.calendar .arow').allTextContents()).some((t) => t.includes('Diary') && t.includes('Every day')), 'the calendar lists the diary entry of the day with the category Diary');
+await page.locator('.sheet.calendar .abar button', { hasText: 'Close' }).click();
+// Settings: the holiday categories and whether holidays show in the agenda
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/22 settings/).click();
+ok((await btn(/^Holidays General/).textContent()).includes('General, Christian, Solar'), 'all three holiday categories are on by default');
+await btn(/Holidays in the agenda/).click();
+ok((await btn(/Holidays in the agenda/).textContent()).includes('On'), 'Holidays in the agenda turns on');
+await btn(/^Holidays General/).click(); await btn(/^Solar/).click();
+ok((await btn(/^Solar/).textContent()).includes('Off'), 'a holiday category can be turned off');
+await sheet.getByLabel('Dismiss').click();
+// Holidays: the calendar lists them for the chosen day
+await page.click('#btn-view'); await btn(/^Calendar/).click();
+for (let i = 0; i < 13 && !/December/.test(await page.locator('.sheet.calendar .atitlebar').textContent()); i++) await page.locator('.sheet.calendar [aria-label="Later"]').click();
+await page.locator('.sheet.calendar .day:not(.other)', { hasText: /^25$/ }).click();
+ok((await page.locator('.sheet.calendar .arow.holiday').allTextContents()).some((t) => t.includes('Christmas')), 'the calendar lists Christmas on December 25');
+await page.locator('.sheet.calendar .abar button', { hasText: 'Close' }).click();
 ok(errors.length === 0, `no page errors ${errors.join('; ')}`);
 await close();
 process.exit(failed ? 1 : 0);

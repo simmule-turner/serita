@@ -42,3 +42,17 @@ test('the time grid can be turned off', () => {
   assert.match(agenda(files, o).text, /\.{6} -{16}/);
   assert.doesNotMatch(agenda(files, { ...o, timeGrid: false }).text, /-{16}/);
 });
+
+test('diary entries show on their days with the category Diary', () => {
+  const o = { start: new Date(Date.UTC(2026, 10, 30)), span: 1, today: new Date(Date.UTC(2026, 10, 30)), now: null };
+  const r = agenda([], { ...o, diary: { text: 'Nov 30, 2026 Last day\nMonday Standup\n%%(diary-anniversary 11 20 1990) Anna (%d)\n', style: 'american' } });
+  assert.deepEqual(r.days[0].entries.map((e) => [e.category, e.title]), [['Diary', 'Last day'], ['Diary', 'Standup']]);
+  assert.match(r.text, /^ {2}Diary: {6}Last day$/m);
+});
+
+// Emacs 30.1 (conformance v0.1.27) listed the holidays among the Diary lines of the week of December 21, 2026
+test('holidays show as Diary lines, with a solar time as the line time', () => {
+  const v = agenda([], { start: new Date(Date.UTC(2026, 11, 21)), span: 'week', today: new Date(Date.UTC(2026, 10, 30)), now: null, timeGrid: false, holidays: { which: ['christian', 'solar'], zone: 'America/New_York' } });
+  const lines = v.days.flatMap((d) => d.entries.map((e) => `${d.date.toISOString().slice(0, 10)} ${e.category}: ${[e.label, e.title].filter(Boolean).join(' ')}`));
+  assert.deepEqual(lines, ['2026-12-21 Diary: 15:49...... Winter Solstice (EST)', '2026-12-25 Diary: Christmas']);
+});

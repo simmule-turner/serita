@@ -153,6 +153,18 @@ A separate repository holds questions (case files written by us) and results rec
 ### `core/regexp.js`, `core/replace.js`, `core/sparse.js`, `core/timestamp.js`, `core/agenda.js`, `test/timestamp.test.js`, `test/agenda.test.js`, `test/regexp.test.js`, `test/replace.test.js`, `test/sparse.test.js`
 - Written from: the Emacs manual's description of regexp syntax and query replace, and observed Emacs results (recorded as fixtures) read as data only. Statement as above.
 
+### `core/diary.js`, `test/diary.test.js`
+- Written from: observed Emacs 30.1 diary listings for the date forms and the calendar sexps (conformance v0.1.25), recorded as fixtures and read as behavior only. Statement as above.
+
+### `core/holidays.js`, `test/holidays.test.js`
+- Written from: observed Emacs 30.1 holiday lists for the general and Christian categories and the local forms (conformance v0.1.26), recorded as fixtures and read as behavior only, and the published Gauss/Meeus rule for the date of Easter. Statement as above.
+
+### `core/contacts.js`, `test/contacts.test.js`
+- Written from: observed Emacs 30.1 results with org-contacts 1.3 for which dates and properties it accepts (conformance v0.1.30 to v0.1.32), and the author's example contacts and agenda with the lines Emacs showed, read as behavior only. Statement as above.
+
+### `core/solar.js`, `test/solar.test.js`
+- Written from: the published equinox and solstice algorithm in Jean Meeus, Astronomical Algorithms, chapter 27, and the times Emacs 30.1 listed for 2026 to 2028 (conformance v0.1.26), read as behavior only. Statement as above.
+
 ### `core/agenda-filter.js`, `test/agenda-filter.test.js`
 - Written from: observed Emacs 30.1 results for the agenda's tag, category, effort and regexp filters and for marks and bulk actions (conformance v0.1.23 and v0.1.24), read as behavior only. Statement as above.
 

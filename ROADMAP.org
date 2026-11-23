@@ -36,7 +36,7 @@ Planned work only. Phase order is in SPEC.md section 12.
 - The heading title popup's three buttons, which insert at the cursor: footnote (A with a superscript 1), timer (stopwatch), and timestamp (calendar: C-c ., C-c !, C-u C-c ., S-up and S-down change it). They arrive with their features: timestamps and timers in the dates phase, footnotes in the markup phase.
 
 * Later: dates
-- A full calendar (holidays, birthdays, diary entries, marks for days with agenda items) as its own month view; the date prompt's calendar is a plain picker.
+- Calendar: the Hebrew, Islamic, Bahá'í and Chinese holiday categories; solar times and daylight saving lines for zones outside the United States, and their zone names; org-contacts-birthday-format and the anniversary property of org-contacts-anniversaries; the exact order and display of diary entries in the agenda; the wording of diary-remind for counts other than 3.
 - Agenda files: a file that cannot be read (batch Emacs crashes, so the wording is unknown) and the restricted agenda for one file (Emacs shows only that file).
 - Agenda: agenda files other than the open ones, filters by top headline and by saved views, bulk actions that need a prompt Emacs shows (refile, scatter, function), the order of items of equal priority beyond what was recorded, an effort filter's sign (Emacs ignored it in our results).
 

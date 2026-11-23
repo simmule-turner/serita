@@ -8,7 +8,7 @@ import { createProviders } from './ui/providers.js';
 import { search } from './ui/find.js';
 import { createRecent } from './ui/recent.js';
 import { children, parentDir } from './storage/browse.js';
-import { parseName } from '../core/names.js';
+import { formatName, parseName } from '../core/names.js';
 import { formatSize } from '../core/bytes.js';
 import { VERSION } from './version.js';
 import { h, kept } from './ui/dom.js';
@@ -25,6 +25,7 @@ import { isEffort } from '../core/effort.js';
 import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../core/properties.js';
 import { agenda, searchView, tagsView, todoList } from '../core/agenda.js';
 import { filterActive, filterLabel, noFilter, parseEffort, parseSigned } from '../core/agenda-filter.js';
+import { holidayList } from '../core/holidays.js';
 import { startReplace } from '../core/replace.js';
 import { sparseTree } from '../core/sparse.js';
 import { completeRepeat, formatStamp, insertStamp, parseDate, setPlanning, shiftStamp, stampAt } from '../core/timestamp.js';
@@ -768,7 +769,7 @@ async function settings() {
         h('div', { class: 'list' },
           h('button', { class: 'item', onclick: () => close('github') }, h('span', {}, 'GitHub'), h('span', { class: 'meta' }, `${summary('github')} ›`)),
           h('button', { class: 'item', onclick: () => close('webdav') }, h('span', {}, 'WebDAV'), h('span', { class: 'meta' }, `${summary('webdav')} ›`)),
-          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '14 settings ›')),
+          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '22 settings ›')),
           h('button', { class: 'item', onclick: () => close('appearance') }, h('span', {}, 'Appearance'), h('span', { class: 'meta' }, `${theme()[0].toUpperCase()}${theme().slice(1)}, ${fontSize()}px ›`)),
           h('button', { class: 'item', onclick: () => close('restore') }, h('span', {}, 'Restore open files on start'), h('span', { class: 'meta' }, restoreOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('tools-text') }, h('span', {}, 'Tool row in the Text view'), h('span', { class: 'meta' }, toolRowOn('text') ? 'On ›' : 'Off ›')),
@@ -810,8 +811,16 @@ async function emacsSettings() {
           item('time-grid', 'Agenda time grid', timeGridOn() ? 'On' : 'Off'),
           item('beep', 'Beep on errors', beepOn() ? 'On' : 'Off'),
           item('capture-templates', 'Capture templates', (() => { const n = captureText() ? parseTemplates(captureText()).length : 0; return `${n} ${n === 1 ? 'template' : 'templates'}`; })()),
+          item('contacts-files', 'Contacts files', contactFiles().length ? `${contactFiles().length} ${contactFiles().length === 1 ? 'file' : 'files'}` : 'None'),
+          item('birthday-property', 'Birthday property', contactProperty()),
+          item('date-style', 'Date style', { american: 'American', european: 'European', iso: 'ISO' }[dateStyle()]),
+          item('diary-file', 'Diary file', diaryFile() || 'None'),
+          item('diary-on', 'Diary in the agenda', diaryOn() ? 'On' : 'Off'),
           item('emacs', 'Emacs keys', emacsKeys() ? 'On' : 'Off'),
           item('stars', 'Hide leading stars', hideStars() ? 'On' : 'Off'),
+          item('holidays', 'Holidays', holidayKinds().length ? holidayKinds().map((k) => HOLIDAY_KINDS.find((x) => x[0] === k)?.[1] ?? k).join(', ') : 'None'),
+          item('holidays-agenda', 'Holidays in the agenda', holidaysInAgenda() ? 'On' : 'Off'),
+          item('holidays-local', 'Local holidays', localHolidays() ? 'Custom' : 'None'),
           item('log-drawer', 'Log into drawer', logDrawer() ?? 'Off'),
           item('log-repeat', 'Log repeats', { time: 'Time', note: 'Note', off: 'Off' }[logRepeatMode()]),
           item('refile', 'Refile targets', refileText() ? 'Custom' : 'Top level'),
@@ -824,6 +833,14 @@ async function emacsSettings() {
     $('message').textContent = '';
     if (what === 'agenda-files') await agendaFilesDialog();
     else if (what === 'archive') await archiveLocationDialog();
+    else if (what === 'contacts-files') await contactFilesDialog();
+    else if (what === 'birthday-property') await birthdayPropertyDialog();
+    else if (what === 'date-style') await dateStyleDialog();
+    else if (what === 'holidays') await holidaysDialog();
+    else if (what === 'holidays-agenda') config.update({ settings: { 'diary-show-holidays-flag': holidaysInAgenda() ? '' : 't' } });
+    else if (what === 'holidays-local') await localHolidaysDialog();
+    else if (what === 'diary-file') await diaryFileDialog();
+    else if (what === 'diary-on') config.update({ settings: { 'org-agenda-include-diary': diaryOn() ? '' : 't' } });
     else if (what === 'time-grid') config.update({ settings: { 'org-agenda-use-time-grid': timeGridOn() ? 'nil' : '' } });
     else if (what === 'archive-done') await archiveDoneDialog();
     else if (what === 'archive-context') await archiveContextDialog();
@@ -1005,8 +1022,9 @@ $('btn-files').addEventListener('click', filesMenu);
 $('btn-save').addEventListener('click', () => { if (shownId !== null) saveBuffer(shownId); });
 $('btn-find').addEventListener('click', () => startFind());
 $('btn-view').addEventListener('click', async () => {
-  const what = await choose(null, [{ label: 'Agenda', value: 'agenda' }, ...['outline', 'text'].map((v) => ({ label: v === 'outline' ? 'Outline' : 'Text', meta: viewMode() === v ? 'current' : null, value: v }))]);
+  const what = await choose(null, [{ label: 'Agenda', value: 'agenda' }, { label: 'Calendar', value: 'calendar' }, ...['outline', 'text'].map((v) => ({ label: v === 'outline' ? 'Outline' : 'Text', meta: viewMode() === v ? 'current' : null, value: v }))]);
   if (what === 'agenda') await agendaScreen();
+  else if (what === 'calendar') await calendarScreen();
   else if (what) setView(what);
 });
 $('btn-menu').addEventListener('click', async () => {
@@ -1102,6 +1120,19 @@ const refileText = () => config.settings()['org-refile-settings'] ?? '';
 const archiveMarkDone = () => { const v = setting('org-archive-mark-done'); return !v || v === 'nil' ? null : v === 't' ? true : v; };
 const archiveContext = () => { const v = setting('org-archive-save-context-info'); return !v ? ARCHIVE_CONTEXT : v === 'nil' ? [] : v.split(/\s+/); };
 const refileNew = () => setting('org-refile-allow-creating-parent-nodes') || 'nil';
+const diaryOn = () => setting('org-agenda-include-diary') === 't';
+const diaryFile = () => { const v = setting('diary-file') || ''; if (!v) return ''; const p = parseName(v); return formatName(p.provider, p.path); };
+const dateStyle = () => ({ european: 'european', iso: 'iso' }[setting('calendar-date-style')] ?? 'american');
+const HOLIDAY_KINDS = [['general', 'General'], ['christian', 'Christian'], ['solar', 'Solar']];
+const holidayKinds = () => { const v = setting('calendar-holidays'); return v === undefined || v === '' ? HOLIDAY_KINDS.map((k) => k[0]) : v === 'nil' ? [] : v.split(/\s+/); };
+const contactFiles = () => (setting('org-contacts-files') || '').split(/\s+/).filter(Boolean).map((n) => { const p = parseName(n); return formatName(p.provider, p.path); });
+const contactProperty = () => setting('org-contacts-birthday-property') || 'BIRTHDAY';
+let contactTexts = []; // the text of the contacts files the last agenda or calendar read
+const contactOpts = () => (contactTexts.length ? { texts: contactTexts, property: contactProperty() } : null);
+const holidaysInAgenda = () => setting('diary-show-holidays-flag') === 't';
+const localHolidays = () => setting('holiday-local-holidays') || '';
+const holidayOpts = () => ({ which: holidayKinds(), localText: localHolidays() });
+let diaryText = null; // { name, text, style } of the diary the last agenda or calendar read
 const timeGridOn = () => setting('org-agenda-use-time-grid') !== 'nil';
 const archiveLocation = () => config.settings()['org-archive-location'] || '%s_archive::';
 const bufferName = (b) => b.name ?? b.title;
@@ -1262,6 +1293,39 @@ async function refileNewDialog() {
   message(`Refile new headings: ${{ nil: 'not allowed', confirm: 'ask first', t: 'allowed' }[v]}`);
 }
 
+async function dateStyleDialog() {
+  const v = await choose('Date style', [{ label: 'American', meta: 'Nov 5, 2026 and 11/5/2026', value: 'american' }, { label: 'European', meta: '5 Nov 2026 and 5/11/2026', value: 'european' }, { label: 'ISO', meta: '2026-11-05', value: 'iso' }]);
+  if (v === undefined) return;
+  config.update({ settings: { 'calendar-date-style': v === 'american' ? '' : v } });
+  message(`Date style: ${v}`);
+}
+
+async function holidaysDialog() {
+  for (;;) {
+    const on = holidayKinds();
+    const v = await choose('Holidays', HOLIDAY_KINDS.map(([value, label]) => ({ label, meta: on.includes(value) ? 'On' : 'Off', value })));
+    if (v === undefined) return;
+    const next = HOLIDAY_KINDS.map((k) => k[0]).filter((k) => (k === v ? !on.includes(k) : on.includes(k)));
+    config.update({ settings: { 'calendar-holidays': next.length === HOLIDAY_KINDS.length ? '' : next.length ? next.join(' ') : 'nil' } });
+  }
+}
+
+const localHolidaysDialog = () => lineSetting({ title: 'Local holidays', key: 'holiday-local-holidays', shown: localHolidays(),
+  help: 'Your own holidays as Emacs forms, for example (holiday-fixed 3 14 "Pi Day") (holiday-float 11 4 4 "Fourth Thursday"). Empty means none.',
+  check: (v) => v, said: (v) => (v ? 'Local holidays set' : 'No local holidays') });
+
+const contactFilesDialog = () => lineSetting({ title: 'Contacts files', key: 'org-contacts-files', shown: contactFiles().join(' '),
+  help: 'The files with your contacts, as storage names such as github:contacts.org, separated by spaces. Empty means none.',
+  check: (v) => v, said: (v) => (v ? 'Contacts files set' : 'No contacts files') });
+
+const birthdayPropertyDialog = () => lineSetting({ title: 'Birthday property', key: 'org-contacts-birthday-property', shown: contactProperty(),
+  help: 'The property of a contact that holds the birthday, for use by org-contacts-anniversaries. Empty means BIRTHDAY.',
+  check: (v) => v, said: (v) => `Birthday property is ${v || 'BIRTHDAY'}` });
+
+const diaryFileDialog = () => lineSetting({ title: 'Diary file', key: 'diary-file', shown: diaryFile(),
+  help: 'The file with your diary entries, as a storage name such as github:diary. Empty means none.',
+  check: (v) => v, said: (v) => (v ? `Diary file is ${v}` : 'No diary file') });
+
 async function archiveLocationDialog() {
   const value = await panel((sheet, close) => {
     const input = h('input', { value: archiveLocation(), autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Archive location' });
@@ -1309,6 +1373,26 @@ async function agendaSources() {
   }
   if (unread.length) message(`Cannot read ${unread.join(', ')}`, true);
   return files;
+}
+/** The diary file's text when the agenda includes the diary: { name, text, style }, or null. */
+async function diaryData() {
+  contactTexts = [];
+  for (const name of contactFiles()) {
+    const open = session.state().buffers.find((b) => b.name === name);
+    try {
+      const r = open ? { text: open.text } : await app.storage.read(name);
+      if (r) contactTexts.push(r.text); else message(`Cannot read ${name} (not found)`, true);
+    } catch (e) { message(`Cannot read ${name} (${e.message})`, true); }
+  }
+  diaryText = null;
+  if (!diaryOn() || !diaryFile()) return null;
+  const open = session.state().buffers.find((b) => b.name === diaryFile());
+  try {
+    const r = open ? { text: open.text } : await app.storage.read(diaryFile());
+    if (!r) { message(`Cannot read ${diaryFile()} (not found)`, true); return null; }
+    diaryText = { name: diaryFile(), text: r.text, style: dateStyle() };
+  } catch (e) { message(`Cannot read ${diaryFile()} (${e.message})`, true); }
+  return diaryText;
 }
 const SPANS = [['day', 'Day'], ['week', 'Week'], ['fortnight', '2 weeks'], ['month', 'Month'], ['year', 'Year']];
 const weekly = (span) => span === 'week' || span === 'fortnight';
@@ -1361,12 +1445,13 @@ async function agendaScreen() {
   agendaState.anchor ??= todayDate();
   let files;
   try { files = await agendaSources(); } catch (e) { failure(e); return; }
+  let diary = await diaryData();
   for (;;) {
     const st = agendaState;
     let view;
     try {
       view = st.kind === 'todo' ? todoList(files, { keyword: st.keyword, filter: st.filter }) : st.kind === 'tags' ? tagsView(files, { match: st.match, filter: st.filter }) : st.kind === 'search' ? searchView(files, { words: st.words, filter: st.filter })
-        : agenda(files, { start: weekly(st.span) ? mondayOf(st.anchor) : st.anchor, span: st.span, today: todayDate(), now: localClock(), timeGrid: timeGridOn(), filter: st.filter });
+        : agenda(files, { start: weekly(st.span) ? mondayOf(st.anchor) : st.anchor, span: st.span, today: todayDate(), now: localClock(), timeGrid: timeGridOn(), filter: st.filter, diary, holidays: holidaysInAgenda() ? holidayOpts() : null, contacts: contactOpts() });
     } catch (e) { failure(e); st.kind = 'agenda'; return; }
     let onMoveKey = null;
     const act = await panel((sheet, close) => {
@@ -1413,7 +1498,7 @@ async function agendaScreen() {
     else if (act.marking !== undefined) { st.marking = act.marking; if (!act.marking) st.marked.clear(); }
     else if (act.markNone) st.marked.clear();
     else if (act.markAll) for (const e of view.days ? view.days.flatMap((d) => d.entries) : view.entries) st.marked.add(entryKey(e));
-    else if (act.act) { await bulkAction(st, files, view); st.marked.clear(); st.marking = false; try { files = await agendaSources(); } catch (e) { failure(e); return; } }
+    else if (act.act) { await bulkAction(st, files, view); st.marked.clear(); st.marking = false; try { files = await agendaSources(); diary = await diaryData(); } catch (e) { failure(e); return; } }
     else if (act.span) { st.span = act.span; if (weekly(act.span)) st.anchor = mondayOf(st.anchor); }
     else if (act.views) {
       const v = await choose('Views', [{ label: 'Agenda', value: 'agenda' }, { label: 'TODO list', value: 'todo' }, { label: 'Tags', value: 'tags' }, { label: 'Search', value: 'search' }]);
@@ -1424,24 +1509,77 @@ async function agendaScreen() {
       }
       if (v) { st.kind = v; st.keyword = null; }
     } else if (act.jump) {
-      const e = act.jump;
-      leaveHere();
-      places.push({ kind: 'agenda' });
-      showBack();
-      const f = files[e.file];
-      let id = f.id;
-      if (id === null) {
-        const opened = await session.openFile(f.name);
-        if (!opened.ok) { failure(new Error(`${f.name} does not exist`)); return; }
-        id = opened.id;
-      }
-      session.select(id);
-      setView('text');
-      placeCursor(e.line);
+      await jumpTo(files, act.jump, 'agenda');
       return;
     }
   }
 }
+
+/** Opens the heading of an agenda or calendar entry in the Text view; Back returns to `from`. */
+async function jumpTo(files, e, from) {
+  leaveHere();
+  places.push({ kind: from });
+  showBack();
+  const f = e.diary ? { id: session.state().buffers.find((b) => b.name === diaryFile())?.id ?? null, name: diaryFile() } : files[e.file];
+  let id = f.id;
+  if (id === null) {
+    const opened = await session.openFile(f.name);
+    if (!opened.ok) { failure(new Error(`${f.name} does not exist`)); return; }
+    id = opened.id;
+  }
+  session.select(id);
+  setView('text');
+  placeCursor(e.line);
+}
+
+// ---- The calendar -----------------------------------------------------------------------------------
+
+const calendarState = { y: null, m: null, day: null };
+const isoOf = (d) => d.toISOString().slice(0, 10);
+
+/** A month to look at: a dot under each day that has something in the agenda files, and the entries of the day you tap. */
+async function calendarScreen() {
+  const t = todayDate();
+  calendarState.y ??= t.getUTCFullYear(); calendarState.m ??= t.getUTCMonth() + 1; calendarState.day ??= isoOf(t);
+  let files;
+  try { files = await agendaSources(); } catch (e) { failure(e); return; }
+  const diary = await diaryData();
+  for (;;) {
+    const { y, m } = calendarState;
+    const view = agenda(files, { start: new Date(Date.UTC(y, m - 1, 1)), span: 'month', today: todayDate(), now: null, timeGrid: false, diary, contacts: contactOpts() });
+    const byDay = new Map(view.days.map((d) => [isoOf(d.date), d.entries]));
+    const hol = new Map();
+    for (const x of holidayList(y, m, holidayOpts())) { const k = `${x.y}-${String(x.m).padStart(2, '0')}-${String(x.d).padStart(2, '0')}`; hol.set(k, [...(hol.get(k) ?? []), x.name]); }
+    const act = await panel((sheet, close) => {
+      sheet.classList.add('full', 'calendar');
+      const two = (n) => String(n).padStart(2, '0');
+      const cell = (c) => {
+        const iso = `${c.y}-${two(c.m)}-${two(c.d)}`;
+        return h('button', { class: `day${c.other ? ' other' : ''}${iso === isoOf(t) ? ' today' : ''}${iso === calendarState.day ? ' on' : ''}${byDay.get(iso)?.length || hol.has(iso) ? ' has' : ''}`, 'aria-label': iso, onclick: () => close({ day: iso }) }, String(c.d));
+      };
+      const picked = byDay.get(calendarState.day) ?? [];
+      const row = (e) => h('button', { class: 'arow', onclick: () => close({ jump: e }) },
+        h('span', { class: `alabel${e.late > 0 && e.kind !== 'stamp' ? ' late' : ''}` }, [e.clock, e.label].filter(Boolean).join(' ') || e.category),
+        h('span', { class: 'atitle' }, [e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ')),
+        e.tags.length ? h('span', { class: 'atags' }, `:${e.tags.join(':')}:`) : null);
+      put(sheet,
+        h('div', { class: 'abar' }, h('button', { 'aria-label': 'Earlier', onclick: () => close({ move: -1 }) }, h('span', { class: 'chev left' })), h('div', { class: 'atitlebar' }, `${MONTH_NAMES[m - 1]} ${y}`), h('button', { 'aria-label': 'Later', onclick: () => close({ move: 1 }) }, h('span', { class: 'chev right' }))),
+        Object.assign(h('div', { class: 'abody' },
+          h('div', { class: 'cal' }, ...['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((n) => h('span', { class: 'dow' }, n)), ...monthGrid(y, m).map(cell)),
+          h('div', { class: 'aday' }, calendarState.day),
+          ...(hol.get(calendarState.day) ?? []).map((n) => h('div', { class: 'arow holiday' }, h('span', { class: 'alabel' }, 'Holiday'), h('span', { class: 'atitle' }, n))),
+          ...(picked.length || hol.has(calendarState.day) ? picked.map(row) : [h('p', { class: 'aempty' }, 'Nothing on this day')])), sidewaysSwipe((dir) => close({ move: dir }))),
+        h('div', { class: 'abar' }, h('button', { onclick: () => close({ today: true }) }, 'Today'), h('button', { onclick: () => close({ agenda: true }) }, 'Agenda'), h('button', { onclick: () => close(undefined) }, 'Close')));
+    });
+    if (!act) return;
+    if (act.move) { const n = stepMonth(y, m, act.move); calendarState.y = n.y; calendarState.m = n.m; }
+    else if (act.today) { calendarState.y = t.getUTCFullYear(); calendarState.m = t.getUTCMonth() + 1; calendarState.day = isoOf(t); }
+    else if (act.day) { calendarState.day = act.day; const [yy, mm] = act.day.split('-').map(Number); calendarState.y = yy; calendarState.m = mm; }
+    else if (act.agenda) { agendaState.kind = 'agenda'; agendaState.span = 'day'; agendaState.anchor = new Date(`${calendarState.day}T00:00:00Z`); await agendaScreen(); return; }
+    else if (act.jump) { await jumpTo(files, act.jump, 'calendar'); return; }
+  }
+}
+
 
 /** The Filter button: by tag, category, effort or regexp, typed as Emacs's / commands take them; Clear removes them all. */
 async function agendaFilterDialog(st) {
@@ -1464,7 +1602,7 @@ async function agendaFilterDialog(st) {
 async function bulkAction(st, files, view) {
   const all = view.days ? view.days.flatMap((d) => d.entries) : view.entries;
   const byKey = new Map(all.map((e) => [entryKey(e), e]));
-  const marked = [...st.marked].map((k) => byKey.get(k)).filter(Boolean);
+  const marked = [...st.marked].map((k) => byKey.get(k)).filter((e) => e && !e.diary && e.kind !== 'sexp');
   if (!marked.length) return;
   const words = [...new Set(files.flatMap((f) => { const a = analyze(f.text); return [...a.todo.open, ...a.todo.done]; }))];
   const what = await choose(`${marked.length} marked`, [
@@ -1941,6 +2079,7 @@ const COMMANDS = {
   'execute-command': () => commandPalette(),
   agenda: () => openAgenda('agenda'),
   'agenda-todo': () => openAgenda('todo'),
+  'calendar': () => calendarScreen(),
   'agenda-tags': () => openAgenda('tags'),
   'agenda-search': () => openAgenda('search'),
   'sparse-tree-regexp': () => sparse('regexp'),
@@ -1983,12 +2122,13 @@ function leaveHere() {
   showBack();
 }
 
-const placeValid = (e) => e.kind === 'agenda' || session.state().buffers.some((b) => b.id === e.id);
+const placeValid = (e) => e.kind === 'agenda' || e.kind === 'calendar' || session.state().buffers.some((b) => b.id === e.id);
 const showBack = () => { $('back').hidden = places.peek(placeValid) === null; };
 
 /** What the Back button says it will do. */
 function backLabel(e) {
   if (e.kind === 'agenda') return 'Back to the agenda';
+  if (e.kind === 'calendar') return 'Back to the calendar';
   const b = session.state().buffers.find((x) => x.id === e.id);
   return `Back to ${b.title}, line ${b.text.slice(0, e.offset).split('\n').length}`;
 }
@@ -1998,6 +2138,7 @@ function goBack() {
   showBack();
   if (!e) { message('No previous place'); return; }
   if (e.kind === 'agenda') { agendaScreen(); return; }
+  if (e.kind === 'calendar') { calendarScreen(); return; }
   session.select(e.id);
   setView('text');
   placeOffset(Math.min(e.offset, currentBuffer().text.length));
@@ -2304,6 +2445,7 @@ const outlineOn = {
 
 // Every command has a plain label, its Emacs name and (below) the key it is on. `outline` marks the ones that make sense with no cursor.
 const PALETTE = [
+  ['calendar', 'calendar', 'Calendar', true],
   ['cycle', 'org-cycle', 'Fold or unfold'], ['cycle-global', 'org-shifttab', 'Fold or unfold everything', true],
   ['todo', 'org-todo', 'Change TODO state'], ['todo-next', 'org-shiftright', 'Next TODO state'], ['todo-previous', 'org-shiftleft', 'Previous TODO state'],
   ['agenda', 'org-agenda-list', 'Agenda', true], ['agenda-todo', 'org-todo-list', 'TODO list', true], ['agenda-tags', 'org-tags-view', 'Agenda by tags', true], ['agenda-search', 'org-search-view', 'Agenda search', true], ['schedule', 'org-schedule', 'Schedule'], ['deadline', 'org-deadline', 'Set deadline'], ['timestamp', 'org-timestamp', 'Insert timestamp'], ['timestamp-inactive', 'org-timestamp-inactive', 'Insert inactive timestamp'], ['priority', 'org-priority', 'Set priority'], ['priority-up', 'org-priority-up', 'Raise priority'], ['priority-down', 'org-priority-down', 'Lower priority'],

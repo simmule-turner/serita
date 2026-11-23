@@ -1,0 +1,335 @@
+{
+"general-2026": [
+[
+1,
+1,
+"New Year's Day"
+],
+[
+1,
+19,
+"Martin Luther King Day"
+],
+[
+2,
+2,
+"Groundhog Day"
+],
+[
+2,
+14,
+"Valentine's Day"
+],
+[
+2,
+16,
+"President's Day"
+],
+[
+3,
+17,
+"St. Patrick's Day"
+],
+[
+4,
+1,
+"April Fools' Day"
+],
+[
+5,
+10,
+"Mother's Day"
+],
+[
+5,
+25,
+"Memorial Day"
+],
+[
+6,
+14,
+"Flag Day"
+],
+[
+6,
+21,
+"Father's Day"
+],
+[
+7,
+4,
+"Independence Day"
+],
+[
+9,
+7,
+"Labor Day"
+],
+[
+10,
+12,
+"Columbus Day"
+],
+[
+10,
+31,
+"Halloween"
+],
+[
+11,
+11,
+"Veteran's Day"
+],
+[
+11,
+26,
+"Thanksgiving"
+]
+],
+"general-2027": [
+[
+1,
+1,
+"New Year's Day"
+],
+[
+1,
+18,
+"Martin Luther King Day"
+],
+[
+2,
+2,
+"Groundhog Day"
+],
+[
+2,
+14,
+"Valentine's Day"
+],
+[
+2,
+15,
+"President's Day"
+],
+[
+3,
+17,
+"St. Patrick's Day"
+],
+[
+4,
+1,
+"April Fools' Day"
+],
+[
+5,
+9,
+"Mother's Day"
+],
+[
+5,
+31,
+"Memorial Day"
+],
+[
+6,
+14,
+"Flag Day"
+],
+[
+6,
+20,
+"Father's Day"
+],
+[
+7,
+4,
+"Independence Day"
+],
+[
+9,
+6,
+"Labor Day"
+],
+[
+10,
+11,
+"Columbus Day"
+],
+[
+10,
+31,
+"Halloween"
+],
+[
+11,
+11,
+"Veteran's Day"
+],
+[
+11,
+25,
+"Thanksgiving"
+]
+],
+"general-2028": [
+[
+1,
+1,
+"New Year's Day"
+],
+[
+1,
+17,
+"Martin Luther King Day"
+],
+[
+2,
+2,
+"Groundhog Day"
+],
+[
+2,
+14,
+"Valentine's Day"
+],
+[
+2,
+21,
+"President's Day"
+],
+[
+3,
+17,
+"St. Patrick's Day"
+],
+[
+4,
+1,
+"April Fools' Day"
+],
+[
+5,
+14,
+"Mother's Day"
+],
+[
+5,
+29,
+"Memorial Day"
+],
+[
+6,
+14,
+"Flag Day"
+],
+[
+6,
+18,
+"Father's Day"
+],
+[
+7,
+4,
+"Independence Day"
+],
+[
+9,
+4,
+"Labor Day"
+],
+[
+10,
+9,
+"Columbus Day"
+],
+[
+10,
+31,
+"Halloween"
+],
+[
+11,
+11,
+"Veteran's Day"
+],
+[
+11,
+23,
+"Thanksgiving"
+]
+],
+"christian-2026": [
+[
+2,
+18,
+"Ash Wednesday"
+],
+[
+4,
+3,
+"Good Friday"
+],
+[
+4,
+5,
+"Easter Sunday"
+],
+[
+12,
+25,
+"Christmas"
+]
+],
+"christian-2027": [
+[
+2,
+10,
+"Ash Wednesday"
+],
+[
+3,
+26,
+"Good Friday"
+],
+[
+3,
+28,
+"Easter Sunday"
+],
+[
+12,
+25,
+"Christmas"
+]
+],
+"christian-2028": [
+[
+3,
+1,
+"Ash Wednesday"
+],
+[
+4,
+14,
+"Good Friday"
+],
+[
+4,
+16,
+"Easter Sunday"
+],
+[
+12,
+25,
+"Christmas"
+]
+],
+"local": [
+"H 3 (((3 14 2026) \"Pi Day\"))",
+"H 7 (((7 4 2026) \"Sexp day\"))",
+"H 11 (((11 26 2026) \"Fourth Thursday\") ((12 25 2026) \"Xmas\"))",
+"H 12 (((11 26 2026) \"Fourth Thursday\") ((12 25 2026) \"Xmas\"))"
+]
+}

@@ -9,6 +9,9 @@ import { propertiesOf } from './properties.js';
 import { matcher } from './sparse.js';
 import { effortMinutes } from './effort.js';
 import { keeps } from './agenda-filter.js';
+import { diaryEntries, hooks } from './diary.js';
+import { anniversaries, parseContacts } from './contacts.js';
+import { holidaysOf } from './holidays.js';
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -106,7 +109,7 @@ const base = (hd) => ({ file: hd.file, line: hd.line, category: hd.category, tod
  * @param {{ category: string, text: string }[]} files
  * @param {{ start: Date, span: 'day'|'week'|'fortnight'|'month'|'year'|number, today: Date, warn?: number, now?: string }} o dates are UTC dates
  */
-export function agenda(files, { start, span, today, warn = 14, now = null, timeGrid = true, filter = null }) {
+export function agenda(files, { start, span, today, warn = 14, now = null, timeGrid = true, filter = null, diary = null, holidays = null, contacts = null }) {
   let from = start;
   let days = typeof span === 'number' ? span : { day: 1, week: 7, fortnight: 14 }[span];
   if (span === 'month') { from = utc(start.getUTCFullYear(), start.getUTCMonth() + 1, 1); days = Math.round((utc(start.getUTCFullYear(), start.getUTCMonth() + 2, 1) - from) / DAY); }
@@ -146,6 +149,36 @@ export function agenda(files, { start, span, today, warn = 14, now = null, timeG
         if (!st || !st.active) continue;
         for (const d of occurrences(st, from, to)) put(d, { ...base(hd), kind: 'stamp', label: '', clock: st.time ? timeLabel(st) : '', late: 0, time: st.time });
       }
+    }
+  }
+  // Contacts: org-contacts-anniversaries in a diary or in an agenda file (an option: { texts, property, format })
+  const book = contacts ? parseContacts(contacts.texts) : [];
+  hooks['org-contacts-anniversaries'] = (args, date) => ({ lines: anniversaries(book, date, { field: args[0] ?? contacts?.property ?? 'BIRTHDAY', ...(contacts?.format ? { format: contacts.format } : {}) }) });
+  // Sexp lines (%%(...)) in the agenda files show on their day with the file's category, with no time or label
+  files.forEach((f, i) => {
+    if (!f.text.includes('%%(')) return;
+    for (const e of diaryEntries(f.text, { y: from.getUTCFullYear(), m: from.getUTCMonth() + 1, d: from.getUTCDate() }, days, { sexpOnly: true })) {
+      const text = e.text.split('\n')[0];
+      put(utc(e.y, e.m, e.d), { file: i, line: e.line, category: f.category, todo: null, priority: null, title: text, tags: [], itags: [], effort: null, text, done: false, kind: 'sexp', label: '', clock: '', late: 0, time: null });
+    }
+  });
+  // Holidays (options like holidaysOf takes) show as Diary lines, as Emacs shows them; a solar time becomes the line's time
+  if (holidays) {
+    const last = new Date(from.getTime() + (days - 1) * 86400000);
+    for (let y = from.getUTCFullYear(); y <= last.getUTCFullYear(); y++) {
+      for (const x of holidaysOf(y, holidays)) {
+        const at = utc(x.y, x.m, x.d);
+        if (at < from || at > last) continue;
+        const text = x.said ?? x.name;
+        put(at, { file: -1, line: 0, diary: true, category: 'Diary', todo: null, priority: null, title: text, tags: [], itags: [], effort: null, text, done: false, kind: 'diary', label: x.time ? `${x.time}......` : '', clock: '', late: 0, time: null });
+      }
+    }
+  }
+  // The diary: its entries for each day show with the category Diary (org-agenda-include-diary)
+  if (diary) {
+    for (const e of diaryEntries(diary.text, { y: from.getUTCFullYear(), m: from.getUTCMonth() + 1, d: from.getUTCDate() }, days, { style: diary.style })) {
+      const first = e.text.split('\n')[0];
+      put(utc(e.y, e.m, e.d), { file: -1, line: e.line, diary: true, category: 'Diary', todo: null, priority: null, title: first, tags: [], itags: [], effort: null, text: first, done: false, kind: 'diary', label: '', clock: '', late: 0, time: null });
     }
   }
   const lines = [];

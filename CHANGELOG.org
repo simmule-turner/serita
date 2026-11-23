@@ -1,5 +1,14 @@
 #+TITLE: Changelog
 
+* 0.8.7
+Birthdays from your contacts now appear in the agenda and the calendar. Name your contacts files in Settings, add ~%%(org-contacts-anniversaries)~ to your diary or to an agenda file, and each contact with a birthday shows as ~Birthday: Jane Doe (36th)~ on the day. The property is BIRTHDAY unless you change it. Sexp lines in agenda files now work like Emacs.
+
+* 0.8.6
+Holidays now include the equinoxes, solstices and daylight saving changes, in your own time zone, and each holiday category can be turned on or off. A new setting, Holidays in the agenda, shows holidays on the agenda's days, apart from the diary setting. Solar times follow the minutes Emacs lists for 2026 to 2028.
+
+* 0.8.5
+The calendar is now a month view you can use daily: a dot marks each day with an entry, a holiday, or a diary item, and tapping a day lists them. Your diary file works in the calendar and the agenda, with dates, weekdays and the usual calendar expressions. General and Christian holidays are built in, and you can add your own. Verified against Emacs listings for 2026 to 2028.
+
 * 0.8.4
 The agenda gains Filter (tag, category, effort, regexp) and Mark, with actions on every marked entry: TODO state, tags, priority, schedule, deadline, archive. It also has 2 weeks and Year spans and a setting for the time grid. Log repeats can ask for a note, archiving can mark the entry done and choose which properties it keeps, and refile can create a new heading under a target. Verified: the filters, notes and archive options against Emacs results.
 
