@@ -74,7 +74,7 @@ Swipe a heading in the Outline view from right to left to fold or unfold it, lik
 ** Minibuffer
 In the Text view, questions are asked on the line at the bottom, as in Emacs: the prompt sits in the field, RET accepts and C-g or Esc cancels. The buttons ✓ and ✕ do the same by touch. Completions appear above the key row.
 
-In the Outline view, the same questions are touch dialogs. Menu, then Commands, lists every command with its Emacs name and key; type to narrow the list.
+In the Outline view, the same questions are touch dialogs. Menu, then Commands, lists the commands that work without a cursor, with their Emacs names and keys; type to narrow the list, or tap Show all for every command in alphabetical order.
 
 ** Find
 Type to search. The prompt shows ~I-search:~, ~Wrapped I-search:~ or ~Failing I-search:~. The match is highlighted; ▲ and ▼ go to the previous and next match. Past the last match the search fails; one more press wraps. C-s on an empty field recalls the last search. A lowercase query ignores case; an uppercase letter makes it exact. Return keeps the cursor on the match, and × returns to where you started.

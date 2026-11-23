@@ -180,6 +180,16 @@ await caretAt('body');
 await page.keyboard.press('Control+Enter');
 ok((await value()) === '* A\nbody\n* \n* Z\n', 'C-RET on a body line adds a heading after the subtree');
 
+// Commands in the Outline view: Show all lists every command sorted, the ones needing the Text view dimmed
+await view('Outline');
+await page.click('#btn-menu'); await btn(/Commands/).click();
+const fewer = await sheet.locator('.item').count();
+await btn('Show all').click();
+const labels = await sheet.locator('.palette .item > span:first-child, .item > span:first-child').allTextContents();
+const listed = labels.slice(-(await sheet.locator('.list .item').count()));
+ok((await sheet.locator('.list .item').count()) > fewer && (await sheet.locator('.list .item.dim').count()) > 0, 'Show all lists more commands, the ones that need the Text view dimmed');
+ok(JSON.stringify(listed) === JSON.stringify([...listed].sort((a, b) => a.localeCompare(b))), 'Show all sorts the commands by label');
+await page.keyboard.press('Escape');
 ok(errors.length === 0, `no page errors${errors.length ? ': ' + errors.join('; ') : ''}`);
 await close();
 process.exit(failed ? 1 : 0);

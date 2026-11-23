@@ -2013,8 +2013,8 @@ async function headingActions(line) {
         h('div', { class: 'group' }, 'Text'),
         ...[['Edit title', 'edit'], ['Edit body', 'body']].map(([l, v]) => h('button', { class: 'item', onclick: () => close(v) }, h('span', {}, l))),
         h('div', { class: 'group' }, 'Structure'),
-        ...[['Promote', 'promote', hd.level > 1 ? `to level ${hd.level - 1}` : null], ['Demote', 'demote', `to level ${hd.level + 1}`], ['Promote subtree', 'promote-subtree'], ['Demote subtree', 'demote-subtree'],
-          ['Move up', 'move-up'], ['Move down', 'move-down'], ['Insert heading below', 'insert'], ['Refile', 'refile'], ['Archive', 'archive']]
+        ...[['Insert heading below', 'insert'], ['Archive', 'archive'], ['Refile', 'refile'], ['Move up', 'move-up'], ['Move down', 'move-down'],
+          ['Promote', 'promote', hd.level > 1 ? `to level ${hd.level - 1}` : null], ['Demote', 'demote', `to level ${hd.level + 1}`], ['Promote subtree', 'promote-subtree'], ['Demote subtree', 'demote-subtree']]
           .map(([l, v, m]) => h('button', { class: 'item', onclick: () => close(v) }, h('span', {}, l), m ? h('span', { class: 'meta' }, m) : null)),
       ]),
       h('p', { class: 'note' }, 'Tap a chip to change it. + Add lists what is not set.'),
@@ -2144,11 +2144,15 @@ async function commandPalette() {
       sheet.classList.add('full', 'palette');
       const input = h('input', { placeholder: 'Search commands', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Search commands' });
       const list = h('div', { class: 'list' });
-      const fill = () => list.replaceChildren(...found(input.value).map((e) => h('button', { class: 'item', onclick: () => close(e) },
+      let all = false; // Show all lists every command, sorted; those that need the Text view are dimmed
+      const shown = (t) => (all ? PALETTE.filter((e) => matchWords(t, e.label, e.name)).sort((a, b) => a.label.localeCompare(b.label)) : found(t));
+      const fill = () => list.replaceChildren(...shown(input.value).map((e) => h('button', { class: `item${e.outline ? '' : ' dim'}`,
+        onclick: () => (e.outline ? close(e) : message('Needs the Text view')) },
         h('span', {}, e.label), h('span', { class: 'meta' }, `${e.name}${e.key ? `  ${e.key}` : ''}`))));
       input.addEventListener('input', fill);
       fill();
-      put(sheet, h('h2', {}, 'Commands'), input, list);
+      const more = h('div', { class: 'row' }, h('button', { class: 'showall', onclick: () => { all = true; more.style.display = 'none'; fill(); } }, 'Show all'));
+      put(sheet, h('h2', {}, 'Commands'), input, list, more);
       input.focus();
     });
     if (!entry) return;
