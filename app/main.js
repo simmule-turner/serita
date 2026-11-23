@@ -40,8 +40,18 @@ import { exportSettings, importSettings, inspectSettingsFile, settingsFileName, 
 const $ = (id) => document.getElementById(id);
 
 /** Puts the given content in a panel, leaving out anything empty. */
+/** Set by the x on a sheet: the sheets that would open next to continue the chain do not. Cleared by the next tap or key. */
+let dismissed = false;
+for (const ev of ['pointerdown', 'keydown']) document.addEventListener(ev, () => { dismissed = false; }, true);
+
 function put(sheet, ...kids) {
-  sheet.replaceChildren(...kept(kids));
+  let all = kept(kids);
+  const head = all[0]?.tagName === 'H2' ? h('div', { class: 'head' }, all[0], h('button', { class: 'dismiss', 'aria-label': 'Dismiss', onclick: () => sheet.dismiss?.() }, '×')) : null;
+  if (head) all = all.slice(1);
+  // The buttons at the bottom stay put; only what is above them scrolls. A row holding just Cancel is left out: the x says the same.
+  let row = all[all.length - 1]?.classList?.contains('row') ? all.pop() : null;
+  if (row && row.children.length === 1 && row.textContent === 'Cancel' && head) row = null;
+  sheet.replaceChildren(...[head, h('div', { class: 'body' }, ...all), row].filter(Boolean));
   for (const b of sheet.querySelectorAll('button')) if (b.textContent === 'Cancel') b.classList.add('cancel');
 }
 
@@ -108,6 +118,7 @@ const failure = (e) => message(e?.message ?? String(e), true);
  */
 function panel(build) {
   return new Promise((resolve) => {
+    if (dismissed) { resolve(undefined); return; }
     const scrim = h('div', { class: 'scrim' });
     const sheet = h('div', { class: 'sheet', role: 'dialog' });
     const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); close(undefined); } };
@@ -116,6 +127,7 @@ function panel(build) {
       document.removeEventListener('keydown', onKey, true);
       resolve(value);
     }
+    sheet.dismiss = () => { dismissed = true; close(undefined); };
     scrim.addEventListener('click', () => close(undefined));
     // Pressing a button in a panel leaves focus where it was, so an open keyboard and the cursor stay as they are.
     const keepFocus = (e) => { if (e.target.closest('button')) e.preventDefault(); };
@@ -749,11 +761,12 @@ async function settings() {
 
 /** Settings, Emacs: the settings that are Emacs's own, in alphabetical order. */
 async function emacsSettings() {
+  let note = '';
   for (;;) {
     const what = await panel((sheet, close) => {
       const files = agendaFileNames().length;
       const item = (key, label, meta) => h('button', { class: 'item', onclick: () => close(key) }, h('span', {}, label), h('span', { class: 'meta' }, `${meta} ›`));
-      put(sheet, h('h2', {}, 'Emacs'),
+      put(sheet, h('h2', {}, 'Emacs'), note ? h('p', {}, note) : null,
         h('div', { class: 'list' },
           item('agenda-files', 'Agenda files', `${files} ${files === 1 ? 'file' : 'files'}`),
           item('archive', 'Archive location', archiveLocation()),
@@ -766,6 +779,8 @@ async function emacsSettings() {
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
     });
     if (what === undefined) return;
+    note = '';
+    $('message').textContent = '';
     if (what === 'agenda-files') await agendaFilesDialog();
     else if (what === 'archive') await archiveLocationDialog();
     else if (what === 'refile') await refileSettingsDialog();
@@ -774,8 +789,12 @@ async function emacsSettings() {
     else if (what === 'emacs') config.update({ settings: { 'view.emacsKeys': String(!emacsKeys()) } });
     else if (what === 'stars') config.update({ settings: { 'view.hideStars': String(!hideStars()) } });
     else await tagsColumnDialog();
+    note = $('message').classList.contains('error') ? '' : $('message').textContent;
   }
 }
+
+/** What a Reset button closes its panel with. */
+const RESET = Symbol('reset');
 
 async function tagsColumnDialog() {
   const value = await panel((sheet, close) => {
@@ -784,10 +803,11 @@ async function tagsColumnDialog() {
     put(sheet, h('h2', {}, 'Tag column'),
       h('p', {}, `A negative number is the column where the heading and its tags end; a positive one is the column where the tags start; 0 puts them one space after the title. The default is ${DEFAULT_TAGS_COLUMN}.`),
       input,
-      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Set')));
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { onclick: () => close(RESET) }, 'Reset'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Set')));
     input.focus();
   });
   if (value === undefined) return;
+  if (value === RESET) { config.update({ settings: { 'org.tagsColumn': '' } }); message(`Tag column is ${DEFAULT_TAGS_COLUMN}`); return; }
   if (!/^-?\d+$/.test(value.trim())) { message('Enter a whole number', true); return; }
   config.update({ settings: { 'org.tagsColumn': String(Number(value)) } });
 }
@@ -1018,9 +1038,10 @@ async function captureTemplatesDialog() {
       input.value = captureText() || '(setq org-capture-templates\n  \'())';
       put(sheet, h('h2', {}, 'Capture templates'),
         h('p', {}, 'The templates as init.el sets them, with setq or add-to-list.'), input,
-        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
+        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { onclick: () => close(RESET) }, 'Reset'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
     });
     if (text === undefined) return;
+    if (text === RESET) { config.update({ settings: { 'org-capture-templates': '' } }); message('Capture templates reset'); return; }
     try { const n = parseTemplates(text).length; config.update({ settings: { 'org-capture-templates': n ? text.trim() : '' } }); message(`${n} capture ${n === 1 ? 'template' : 'templates'}`); return; } catch (e) { message(e.message, true); }
   }
 }
@@ -1107,16 +1128,25 @@ async function refileSettingsDialog() {
       input.value = refileText() || DEFAULT_REFILE;
       put(sheet, h('h2', {}, 'Refile targets'),
         h('p', {}, 'org-refile-targets, org-refile-use-outline-path and org-reverse-note-order, as init.el sets them with setq.'), input,
-        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
+        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { onclick: () => close(RESET) }, 'Reset'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
     });
     if (text === undefined) return;
+    if (text === RESET) { config.update({ settings: { 'org-refile-settings': '' } }); message('Refile targets reset'); return; }
     try { parseRefileSettings(text); config.update({ settings: { 'org-refile-settings': text.trim() === DEFAULT_REFILE ? '' : text.trim() } }); message('Refile targets set'); return; } catch (e) { message(e.message, true); }
   }
 }
 
 async function archiveLocationDialog() {
-  const value = await askText({ prompt: 'Archive location:', title: 'Archive location', help: 'A file and a heading separated by ::. %s is the name of the file. The default is %s_archive::', value: archiveLocation(), ok: 'Set' });
+  const value = await panel((sheet, close) => {
+    const input = h('input', { value: archiveLocation(), autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Archive location' });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); close(input.value); } });
+    put(sheet, h('h2', {}, 'Archive location'),
+      h('p', {}, 'A file and a heading separated by ::. %s is the name of the file. The default is %s_archive::'), input,
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { onclick: () => close(RESET) }, 'Reset'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Set')));
+    input.focus();
+  });
   if (value === undefined) return;
+  if (value === RESET) { config.update({ settings: { 'org-archive-location': '' } }); message('Archive location is %s_archive::'); return; }
   if (!value.includes('::')) { message('The archive location needs ::', true); return; }
   config.update({ settings: { 'org-archive-location': value === '%s_archive::' ? '' : value } });
 }
@@ -1945,7 +1975,7 @@ const PALETTE = [
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
   ['insert-heading', 'org-insert-heading-respect-content', 'Insert heading after subtree'], ['insert-heading-here', 'org-meta-return', 'Insert heading here'],
   ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],
-  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true], ['effort', 'org-set-effort', 'Set effort'], ['capture', 'org-capture', 'Capture', true], ['refile', 'org-refile', 'Refile'], ['refile-copy', 'org-copy-subtree', 'Refile and keep'], ['archive-subtree', 'org-archive-subtree', 'Archive'], ['archive-sibling', 'org-archive-to-archive-sibling', 'Archive to sibling'], ['archive-tag', 'org-toggle-archive-tag', 'Toggle archive tag'], ['clock-in', 'org-clock-in', 'Clock in'], ['clock-out', 'org-clock-out', 'Clock out'], ['clock-cancel', 'org-clock-cancel', 'Cancel clock'], ['agenda-file-add', 'org-agenda-file-to-front', 'Add file to agenda files', true], ['agenda-file-remove', 'org-remove-file', 'Remove file from agenda files', true],
+  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true], ['effort', 'org-set-effort', 'Set effort'], ['capture', 'org-capture', 'Capture', true], ['refile', 'org-refile', 'Refile'], ['refile-copy', 'org-refile-copy', 'Refile and keep'], ['archive-subtree', 'org-archive-subtree', 'Archive'], ['archive-sibling', 'org-archive-to-archive-sibling', 'Archive to sibling'], ['archive-tag', 'org-toggle-archive-tag', 'Toggle archive tag'], ['clock-in', 'org-clock-in', 'Clock in'], ['clock-out', 'org-clock-out', 'Clock out'], ['clock-cancel', 'org-clock-cancel', 'Cancel clock'], ['agenda-file-add', 'org-agenda-file-to-front', 'Add file to agenda files', true], ['agenda-file-remove', 'org-remove-file', 'Remove file from agenda files', true],
   ['undo', 'undo', 'Undo', true], ['redo', 'undo-redo', 'Redo', true],
   ['select-all', 'mark-whole-buffer', 'Select all'], ['kill-line', 'kill-line', 'Cut to end of line'], ['kill-whole-line', 'kill-whole-line', 'Cut whole line'], ['yank', 'yank', 'Paste'],
   ['next-line', 'next-line', 'Next line'], ['previous-line', 'previous-line', 'Previous line'], ['forward-char', 'forward-char', 'Forward character'], ['backward-char', 'backward-char', 'Backward character'],
@@ -1967,14 +1997,14 @@ async function commandPalette() {
     if (!entry) { message('[No match]', true); beep(); return; }
   } else {
     entry = await panel((sheet, close) => {
-      sheet.classList.add('full');
+      sheet.classList.add('full', 'palette');
       const input = h('input', { placeholder: 'Search commands', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Search commands' });
       const list = h('div', { class: 'list' });
       const fill = () => list.replaceChildren(...found(input.value).map((e) => h('button', { class: 'item', onclick: () => close(e) },
         h('span', {}, e.label), h('span', { class: 'meta' }, `${e.name}${e.key ? `  ${e.key}` : ''}`))));
       input.addEventListener('input', fill);
       fill();
-      put(sheet, h('h2', {}, 'Commands'), input, list, h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel')));
+      put(sheet, h('h2', {}, 'Commands'), input, list);
       input.focus();
     });
     if (!entry) return;

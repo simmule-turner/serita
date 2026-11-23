@@ -355,7 +355,11 @@ ok((await page.locator('#message').textContent()) === 'Captured to agenda-test.o
 // Refile and archive: Refile lists the targets; Archive tags and archives from the command list
 await page.click('#btn-menu'); await btn('Settings').click(); await btn(/8 settings/).click();
 ok((await sheet.textContent()).includes('Refile targets') && (await sheet.textContent()).includes('Archive location'), 'Settings, Emacs lists Refile targets and Archive location');
-await btn('‹ Settings').click(); await btn('Close').click();
+await btn(/Refile targets/).click(); await btn('Save').click();
+ok((await sheet.textContent()).includes('Refile targets set'), 'saving the refile targets says so on the Emacs screen');
+await sheet.getByLabel('Dismiss').click();
+await page.waitForTimeout(100);
+ok((await page.locator('.sheet').count()) === 0, 'the x on the Emacs screen leaves Settings at once');
 await page.click('#btn-menu'); await btn(/Commands/).click(); await page.keyboard.type('org-refile'); await page.keyboard.press('Enter');
 await page.waitForFunction(() => /Refile to|Not at a heading|No refile/.test(document.body.textContent));
 const refileShown = /Refile to/.test(await page.locator('.sheet').first().textContent().catch(() => ''));

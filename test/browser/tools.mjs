@@ -57,14 +57,14 @@ const fixed = await page.evaluate(() => {
 });
 ok(fixed.y === 0 && fixed.over <= 0 && fixed.top === 0, 'the page itself never scrolls, so the bars stay put');
 
-// A menu over an open keyboard: focus stays in the text, and Cancel stays on screen when the space is short
+// A menu over an open keyboard: focus stays in the text, and the x stays on screen when the space is short
 await page.evaluate(() => document.getElementById('editor').focus());
 await page.setViewportSize({ width: 390, height: 360 });
 await tool('Lines and text').click();
-const cancel = await btn('Cancel').boundingBox();
-ok(cancel !== null && cancel.y + cancel.height <= 360, 'Cancel stays on screen in a short window');
+const cancel = await page.locator('.sheet').getByLabel('Dismiss').boundingBox();
+ok(cancel !== null && cancel.y + cancel.height <= 360, 'the x stays on screen in a short window');
 ok((await page.evaluate(() => document.activeElement.id)) === 'editor', 'opening the menu leaves the focus in the text');
-await btn('Cancel').click();
+await page.locator('.sheet').getByLabel('Dismiss').click();
 ok((await page.evaluate(() => document.activeElement.id)) === 'editor', 'closing it leaves the focus in the text');
 await page.setViewportSize({ width: 390, height: 800 });
 
