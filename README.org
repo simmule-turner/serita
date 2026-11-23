@@ -18,7 +18,7 @@ The toolbar has Files and Save at the left, Find in the middle, and View and Men
 ** Views
 View switches between Outline and Text; both show the same document and the same folding.
 
-The Outline view lists headings as a tree. The arrow at the left of a heading cycles its visibility, like TAB in Emacs: folded, children, whole subtree. Tap a TODO word to change its state, a checkbox to toggle it, and a heading's title for its actions, in groups: Text (edit the title or the body), Structure (promote, demote, the subtree, move, insert a heading below), Dates and clock (schedule, deadline, clock in) and State (TODO state, priority, tags, property, effort). Edit title and Insert heading below open a popup with a text field, where Enter accepts it; Edit body opens a larger field for the text under the heading.
+The Outline view lists headings as a tree. The arrow at the left of a heading cycles its visibility, like TAB in Emacs: folded, children, whole subtree. Tap a TODO word to change its state, a checkbox to toggle it, and a heading's title for its actions. The values that are set show as chips (state, priority, scheduled, deadline, tags, effort) that you tap to change; + Add lists what is not set, plus Property, Clock in and Timestamp. Below are Text (edit the title or the body) and Structure (promote, demote, the subtree, move, insert a heading below, refile, archive). Edit title and Insert heading below open a popup with a text field, where Enter accepts it; Edit body opens a larger field for the text under the heading.
 
 A checkbox toggles when you tap it. The checkbox of the item above it, and the ~[2/4]~ or ~[50%]~ counts of that item and of the heading, follow. A list item folds with its arrow, like a heading.
 

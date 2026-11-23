@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.8.2
+Tapping a heading in the Outline view now shows its current values as chips (state, priority, scheduled, deadline, tags, effort) that you tap to change, then a short list of text and structure actions. + Add lists what is not set, plus Property, Clock in and Timestamp, so the Active/Inactive switch is reachable. GitHub and WebDAV rows say Configured or Not set up, and the date sheet no longer raises the keyboard on its own. Verified: the Outline view browser checks.
+
 * 0.8.1
 The first time Serita opens it offers sample documents, and File, Sample documents lists them later. A weekly review, outline and folding, dates and repeaters, clocking, a project, capture, refile and archive, and find and replace each open as a new tab to try. An example settings file lists every setting. A test keeps the examples loading, parsing and showing what they claim. Verified: the examples against the app's own agenda, capture and archive.
 

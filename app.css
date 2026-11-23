@@ -168,3 +168,7 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 .sheet .item .btns { display: flex; gap: 8px; flex: none; }
 .sheet .item .btns button { min-height: 36px; padding: 0 14px; }
 .sheet .note { text-align: center; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.sheet .chips { display: flex; flex-wrap: wrap; gap: 8px; padding: 4px 0 8px; }
+.sheet .chip { display: inline-flex; flex-direction: column; justify-content: center; min-height: 44px; padding: 4px 12px; border-radius: 8px; font-size: 15px; text-align: left; }
+.sheet .chip small { font-size: 11px; color: var(--muted); }
+.sheet .chip.add { flex-direction: row; align-items: center; border-style: dashed; color: var(--muted); }

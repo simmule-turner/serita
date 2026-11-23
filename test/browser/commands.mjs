@@ -352,6 +352,15 @@ await btn('Save').click();
 await page.waitForFunction(() => /^Captured|does not exist|Heading/.test(document.getElementById('message').textContent));
 ok((await page.locator('#message').textContent()) === 'Captured to agenda-test.org', 'Save files the captured text');
 
+// Settings: GitHub and WebDAV say Configured, with the arrow, instead of showing the address
+await page.evaluate(() => localStorage.setItem('serita.settings', JSON.stringify({ ...JSON.parse(localStorage.getItem('serita.settings') ?? '{}'), 'webdav.url': 'https://cloud.example.com/remote.php/dav/files/someone/a/very/long/path/to/org-files', 'webdav.username': 'someone' })));
+await page.evaluate(() => localStorage.setItem('serita.secrets', JSON.stringify({ ...JSON.parse(localStorage.getItem('serita.secrets') ?? '{}'), 'webdav.password': 'pw' })));
+await page.reload(); await page.waitForSelector('.tab.current');
+await page.click('#btn-menu'); await btn('Settings').click();
+ok((await sheet.locator('.item', { hasText: 'WebDAV' }).locator('.meta').textContent()) === 'Configured ›', 'a set-up WebDAV row says Configured');
+ok((await sheet.locator('.item', { hasText: 'GitHub' }).locator('.meta').textContent()) === 'Not set up ›', 'a GitHub row that is not set up says so');
+await sheet.getByLabel('Dismiss').click();
+
 // Refile and archive: Refile lists the targets; Archive tags and archives from the command list
 await page.click('#btn-menu'); await btn('Settings').click(); await btn(/10 settings/).click();
 ok((await sheet.textContent()).includes('Refile targets') && (await sheet.textContent()).includes('Archive location'), 'Settings, Emacs lists Refile targets and Archive location');

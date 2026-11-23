@@ -35,9 +35,9 @@ await view('Outline');
 ok((await page.locator('.ol-head .title').allTextContents()).includes('Dx'), 'the edit is in the document the Outline view shows');
 
 await page.locator('.ol-head .title').first().click();
-ok((await sheet.textContent()).includes('Promote subtree') && (await sheet.textContent()).includes('TODO to DONE'), 'tapping a heading opens its actions');
-await btn(/Change TODO state/).click();
-ok((await page.locator('.ol-head .st').first().textContent()) === 'DONE', 'Change TODO state moves TODO to DONE');
+ok((await sheet.textContent()).includes('Promote subtree') && (await sheet.locator('.chip').first().textContent()) === 'StateTODO', 'tapping a heading opens its actions, with the state as a chip');
+await sheet.locator('.chip', { hasText: 'State' }).click();
+ok((await page.locator('.ol-head .st').first().textContent()) === 'DONE', 'the State chip moves TODO to DONE');
 
 await page.locator('.ol-head .title').nth(1).click();
 await btn('Move up').click();
@@ -56,9 +56,9 @@ await page.locator('.sheet textarea').fill('Fresh');
 await sheet.getByRole('button', { name: 'OK', exact: true }).click();
 ok((await page.locator('.ol-head .title').allTextContents()).includes('Fresh') && (await page.locator('#editor').isHidden()), 'Insert heading below adds a heading from the popup, without leaving the Outline view');
 
-// The heading actions are grouped Text, Structure, Dates and clock, State; Edit body edits the text under the heading
+// The heading actions are chips for what is set, then Text and Structure; Edit body edits the text under the heading
 await page.locator('.ol-head .title', { hasText: 'Fresh' }).click();
-ok(JSON.stringify(await page.locator('.sheet .group').allTextContents()) === '["Text","Structure","Dates and clock","State"]', 'the heading actions are grouped Text, Structure, Dates and clock, State');
+ok(JSON.stringify(await page.locator('.sheet .group').allTextContents()) === '["Text","Structure"]', 'the heading actions are grouped Text, Structure, with the values that are set as chips above');
 await btn('Edit body').click();
 await page.locator('.sheet textarea').fill('first\nsecond');
 await sheet.getByRole('button', { name: 'Save', exact: true }).click();
@@ -67,11 +67,15 @@ ok((await value()).includes('Fresh\nfirst\nsecond\n'), 'Edit body writes the tex
 // The Outline view's date prompt: a month to tap, steppers for the time
 await view('Outline');
 await page.locator('.ol-head .title', { hasText: 'Fresh' }).click();
-await btn('Schedule').click();
+await btn('+ Add').click();
+await btn('Scheduled').click();
 const dateField = sheet.getByLabel('Date');
+ok(await page.evaluate(() => document.activeElement?.getAttribute('aria-label') !== 'Date'), 'the date field is not focused when the sheet opens, so the keyboard stays down');
 await dateField.fill('2026-12-15 09:30');
 ok((await sheet.getByRole('button', { name: '2026-12-15', exact: true }).getAttribute('aria-pressed')) === 'true', 'the typed date is the day marked in the month');
+await dateField.focus();
 await sheet.getByRole('button', { name: 'Hour later' }).click();
+ok(await page.evaluate(() => document.activeElement?.getAttribute('aria-label') !== 'Date'), 'tapping a control takes the focus out of the field, so the keyboard goes away');
 await sheet.getByRole('button', { name: 'Minutes later' }).click();
 ok((await dateField.inputValue()) === '2026-12-15 10:35', 'the steppers change the hour by one and the minutes by five');
 await sheet.getByRole('button', { name: '2026-12-16', exact: true }).click();

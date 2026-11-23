@@ -756,9 +756,7 @@ async function setup(p) {
 }
 
 function summary(p) {
-  const s = config.settings();
-  if (p === 'github') return config.githubReady() ? `${s['github.owner']}/${s['github.repo']}` : 'not set up';
-  return config.webdavReady() ? s['webdav.url'] : 'not set up';
+  return (p === 'github' ? config.githubReady() : config.webdavReady()) ? 'Configured' : 'Not set up';
 }
 
 async function settings() {
@@ -1515,7 +1513,8 @@ function askDateSheet({ label, base, active, canToggle }) {
       h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { onclick: () => write(base, parsed()?.time ?? null, null) }, 'Today'),
         h('button', { class: 'primary', onclick: () => close({ typed: input.value, active: isActive }) }, 'Set')));
     draw();
-    input.focus();
+    // The keyboard opens only when the field is tapped, and goes away when a control below it is tapped, so the controls stay in reach.
+    sheet.addEventListener('pointerdown', (e) => { if (e.target.closest('button')) input.blur(); });
   });
 }
 
@@ -1651,6 +1650,14 @@ async function planHere(keyword, label, said, hd = enclosingHead()) {
   if (stamp === null) return;
   runEdit((t) => setPlanning(t, hd.line, keyword, stamp));
   message(`${said} ${stamp}`);
+}
+
+/** Adds a timestamp at the end of the heading's own text, as a new body line. */
+async function addTimestampBody(hd) {
+  const stamp = await askStamp('', true, true);
+  if (stamp === null) return;
+  const body = bodyOf(currentBuffer().text, hd.line);
+  runEdit((t) => setBody(t, hd.line, body === '' ? stamp : `${body.replace(/\n$/, '')}\n${stamp}`));
 }
 
 async function insertTimestamp(active) {
@@ -1983,31 +1990,49 @@ async function headingActions(line) {
   const hd = cur.a.heads.find((x) => x.line === line);
   let next = null;
   try { next = cycleTodo(b.text, line).state; } catch { /* the heading is gone */ }
-  const what = await choose(hd.title || '(empty heading)', [
-    { group: 'Text' },
-    { label: 'Edit title', value: 'edit' },
-    { label: 'Edit body', value: 'body' },
-    { group: 'Structure' },
-    { label: 'Promote', meta: hd.level > 1 ? `to level ${hd.level - 1}` : null, value: 'promote' },
-    { label: 'Demote', meta: `to level ${hd.level + 1}`, value: 'demote' },
-    { label: 'Promote subtree', value: 'promote-subtree' },
-    { label: 'Demote subtree', value: 'demote-subtree' },
-    { label: 'Move up', value: 'move-up' },
-    { label: 'Move down', value: 'move-down' },
-    { label: 'Insert heading below', value: 'insert' },
-    { label: 'Refile', value: 'refile' },
-    { label: 'Archive', value: 'archive' },
-    { group: 'Dates and clock' },
-    { label: 'Schedule', value: 'schedule' },
-    { label: 'Deadline', value: 'deadline' },
-    { label: 'Clock in', value: 'clock-in' },
-    { group: 'State' },
-    { label: 'Change TODO state', meta: `${hd.todo ?? 'none'} to ${next ?? 'none'}`, value: 'todo' },
-    { label: 'Change priority', meta: hd.priority ? `[#${hd.priority}]` : null, value: 'priority' },
-    { label: 'Set tags', meta: hd.tags.length ? `:${hd.tags.join(':')}:` : null, value: 'tags' },
-    { label: 'Set property', value: 'property' },
-    { label: 'Set effort', value: 'effort' },
-  ]);
+  const own = b.text.split('\n')[line + 1] ?? '';
+  const planned = (k) => new RegExp(`${k}:\\s*([<[][^>\\]]*[>\\]])`).exec(/^\s*(?:CLOSED|DEADLINE|SCHEDULED):/.test(own) ? own : '')?.[1] ?? null;
+  const effort = propertiesOf(b.text, line).find(([n]) => n === 'Effort')?.[1] || null;
+  // What is set shows as a chip with its value; what is not set is under Add.
+  const fields = [
+    { value: 'todo', label: 'State', now: hd.todo, set: 'TODO state', meta: `${hd.todo ?? 'none'} to ${next ?? 'none'}` },
+    { value: 'priority', label: 'Priority', now: hd.priority ? `[#${hd.priority}]` : null, set: 'Priority' },
+    { value: 'schedule', label: 'Scheduled', now: planned('SCHEDULED'), set: 'Scheduled' },
+    { value: 'deadline', label: 'Deadline', now: planned('DEADLINE'), set: 'Deadline' },
+    { value: 'tags', label: 'Tags', now: hd.tags.length ? `:${hd.tags.join(':')}:` : null, set: 'Tags' },
+    { value: 'effort', label: 'Effort', now: effort, set: 'Effort' },
+  ];
+  const what = await panel((sheet, close) => {
+    put(sheet,
+      h('h2', {}, hd.title || '(empty heading)'),
+      h('div', { class: 'chips' }, [
+        ...fields.filter((f) => f.now).map((f) => h('button', { class: 'chip', onclick: () => close(f.value) }, h('small', {}, f.label), f.now)),
+        h('button', { class: 'chip add', onclick: () => close('add') }, '+ Add'),
+      ]),
+      h('div', { class: 'list' }, [
+        h('div', { class: 'group' }, 'Text'),
+        ...[['Edit title', 'edit'], ['Edit body', 'body']].map(([l, v]) => h('button', { class: 'item', onclick: () => close(v) }, h('span', {}, l))),
+        h('div', { class: 'group' }, 'Structure'),
+        ...[['Promote', 'promote', hd.level > 1 ? `to level ${hd.level - 1}` : null], ['Demote', 'demote', `to level ${hd.level + 1}`], ['Promote subtree', 'promote-subtree'], ['Demote subtree', 'demote-subtree'],
+          ['Move up', 'move-up'], ['Move down', 'move-down'], ['Insert heading below', 'insert'], ['Refile', 'refile'], ['Archive', 'archive']]
+          .map(([l, v, m]) => h('button', { class: 'item', onclick: () => close(v) }, h('span', {}, l), m ? h('span', { class: 'meta' }, m) : null)),
+      ]),
+      h('p', { class: 'note' }, 'Tap a chip to change it. + Add lists what is not set.'),
+    );
+  });
+  if (what === 'add') {
+    const more = await choose('Add', [
+      ...fields.filter((f) => !f.now).map((f) => ({ label: f.set, value: f.value })),
+      { label: 'Property', value: 'property' }, { label: 'Clock in', value: 'clock-in' }, { label: 'Timestamp', value: 'timestamp' },
+    ]);
+    if (more === undefined) return;
+    return headingDo(more, hd, line, next);
+  }
+  return headingDo(what, hd, line, next);
+}
+
+async function headingDo(what, hd, line, next) {
+  const b = currentBuffer();
   const run = {
     todo: () => (t, l) => cycleTodo(t, l, 1, tagsColumn()), promote: () => (t, l) => changeLevel(t, l, -1, false), demote: () => (t, l) => changeLevel(t, l, 1, false),
     'promote-subtree': () => (t, l) => changeLevel(t, l, -1, true), 'demote-subtree': () => (t, l) => changeLevel(t, l, 1, true),
@@ -2022,6 +2047,7 @@ async function headingActions(line) {
   else if (what === 'schedule') await planHere('SCHEDULED', 'SCHEDULED', 'Scheduled to', hd);
   else if (what === 'deadline') await planHere('DEADLINE', 'DEADLINE', 'Deadline on', hd);
   else if (what === 'clock-in') clockInHere(hd);
+  else if (what === 'timestamp') await addTimestampBody(hd);
   else if (what === 'refile') await refileHere(false, hd);
   else if (what === 'archive') await archiveHere(hd);
   else if (what === 'body') {
