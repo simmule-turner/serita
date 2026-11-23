@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.8.0
+The Outline view's date prompt shows a month to tap and steppers for the hour and minutes, with the typed field kept as it was. Settings, Emacs gains Log into drawer and Log repeats, so a repeating task's log line goes in a drawer or is left out, as in Emacs. The Settings screen cuts long GitHub and WebDAV values with an ellipsis, lines up the Settings file row, and shows latest and installed versions on one row. Verified: Emacs 30.1 results for the log settings.
+
 * 0.7.9
 Every sheet and dialog now behaves the same way. An x on the title line leaves the whole chain of screens at once; only what is above the buttons scrolls, so nothing slides under Cancel; buttons in a row are the same size; and settings with a default have a Reset button. Settings confirmations show on the Emacs screen. The command for refiling a copy is org-refile-copy. Verified: the seven browser checks and the unit tests.
 

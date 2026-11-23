@@ -117,3 +117,13 @@ for (const c of prompt) {
     assert.equal(formatStamp(r.date, { time: r.time }), c.stamp);
   });
 }
+
+// Conformance v0.1.16 (lg-*): the log settings for repeating tasks
+test('org-log-into-drawer puts the log line in a drawer; org-log-repeat nil records nothing', () => {
+  const t = '* TODO A\nSCHEDULED: <2026-11-30 Mon +1w>\n';
+  const now = new Date(Date.UTC(2026, 10, 22, 17, 27));
+  const o = { text: t, line: 0, from: 'TODO', to: 'DONE', reopen: 'TODO', now };
+  assert.equal(completeRepeat({ ...o, drawer: 'LOGBOOK' }).text,
+    '* TODO A\nSCHEDULED: <2026-12-07 Mon +1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-22 Sun 17:27]\n:END:\n:LOGBOOK:\n- State "DONE"       from "TODO"       [2026-11-22 Sun 17:27]\n:END:\n');
+  assert.equal(completeRepeat({ ...o, log: false }).text, '* TODO A\nSCHEDULED: <2026-12-07 Mon +1w>\n');
+});

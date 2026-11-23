@@ -189,7 +189,7 @@ const logLine = (to, from, now) => `- State ${quote(to).padEnd(12)} from ${quote
  * A CLOSED stamp is dropped. Returns null when the entry has nothing that repeats.
  * @param {{ text: string, line: number, from: string, to: string, reopen: string, now: Date }} o `from` is the state before, `to` the done state
  */
-export function completeRepeat({ text, line, from, to, reopen, now }) {
+export function completeRepeat({ text, line, from, to, reopen, now, drawer = null, log = true }) {
   const lines = splitLines(text);
   let any = false;
   const REPEATING = /<(\d{4})-(\d\d)-(\d\d)(?: [^\s\d>\]+.-][^\s>\]]*)?(?: (\d{1,2}):(\d\d))?((?: (?:\+\+|\.\+|\+)\d+[hdwmy])+)>/g;
@@ -211,14 +211,20 @@ export function completeRepeat({ text, line, from, to, reopen, now }) {
   const head = lines[line];
   lines[line] = { ...head, text: head.text.replace(new RegExp(`^(\\*+ +)${to}(?=\\s|$)`), `$1${reopen}`) };
   let out = lines.map((l) => l.text + l.eol).join('');
+  // With org-log-repeat nil nothing is recorded: no :LAST_REPEAT: and no log line.
+  if (!log) return { text: out, line };
   out = setProperty(out, line, 'LAST_REPEAT', formatStamp(now, { time: true, active: false })).text;
-  // The log line goes after the properties drawer, as Emacs puts it with no drawer for logs.
+  // The log line goes after the properties drawer, or inside the log drawer (org-log-into-drawer) that follows it.
   const after = splitLines(out);
   let at = line + 1;
   if (/^\s*(?:CLOSED|DEADLINE|SCHEDULED):/.test(after[at].text)) at++;
-  if (/^\s*:PROPERTIES:/i.test(after[at]?.text ?? '')) while (!/^\s*:END:/i.test(after[at].text)) at++, at;
+  if (/^\s*:PROPERTIES:/i.test(after[at]?.text ?? '')) while (!/^\s*:END:/i.test(after[at].text)) at++;
   const insertAt = /^\s*:END:/i.test(after[at]?.text ?? '') ? at + 1 : at;
   if (after[insertAt - 1] && after[insertAt - 1].eol === '') after[insertAt - 1] = { ...after[insertAt - 1], eol: '\n' };
-  after.splice(insertAt, 0, { text: logLine(to, from, now), eol: '\n' });
+  const entry = { text: logLine(to, from, now), eol: '\n' };
+  const open = drawer === null ? -1 : after.findIndex((l, i) => i >= insertAt && l.text.trim().toUpperCase() === `:${drawer.toUpperCase()}:`);
+  if (drawer === null) after.splice(insertAt, 0, entry);
+  else if (open >= 0 && open === insertAt) after.splice(open + 1, 0, entry);
+  else after.splice(insertAt, 0, { text: `:${drawer}:`, eol: '\n' }, entry, { text: ':END:', eol: '\n' });
   return { text: after.map((l) => l.text + l.eol).join(''), line };
 }

@@ -5,7 +5,6 @@ Planned work only. Phase order is in SPEC.md section 12.
 * Phase 1: Foundations (in progress)
 - Try the GitHub and WebDAV providers against real servers; the tests use fakes built from the documentation.
 - WebDAV from a browser needs the server to allow cross-origin requests for its methods and headers; check this against your server. The native apps are not limited this way.
-- WebDAV listing sends one request per folder; a large tree will be slow.
 - Server errors (5xx) are reported today, not queued.
 - GitHub: files over 1 MB, branch names containing a slash, and an empty repository (none are verified against the live service yet).
 - Merge for very large, very different files (it asks the user to pick a side today).
@@ -37,9 +36,9 @@ Planned work only. Phase order is in SPEC.md section 12.
 - The heading title popup's three buttons, which insert at the cursor: footnote (A with a superscript 1), timer (stopwatch), and timestamp (calendar: C-c ., C-c !, C-u C-c ., S-up and S-down change it). They arrive with their features: timestamps and timers in the dates phase, footnotes in the markup phase.
 
 * Later: dates
-- A calendar popup for date prompts.
+- A full calendar (holidays, birthdays, diary entries, marks for days with agenda items) as its own month view; the date prompt's calendar is a plain picker.
 - The time grid on the agenda screen (the agenda model already makes it, as Emacs does; the screen shows entries only until a mockup is approved), and the setting that turns it off.
-- The log drawer settings for repeating tasks (~org-log-into-drawer~, ~org-log-repeat~): Emacs puts the log line in a :LOGBOOK: drawer or leaves it out; this build always writes the default form.
+- ~org-log-repeat~ set to note (it asks for a note in a separate buffer; not yet checked against Emacs).
 - Agenda files: a file that cannot be read (batch Emacs crashes, so the wording is unknown) and the restricted agenda for one file (Emacs shows only that file).
 - Agenda: the fortnight and year spans in the screen, agenda files other than the open ones, filters and marks, the order of items of equal priority beyond what was recorded.
 

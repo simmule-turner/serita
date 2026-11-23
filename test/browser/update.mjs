@@ -38,8 +38,8 @@ ok((await sheet.textContent()).includes(`${now} to ${next}`), 'Menu offers Resta
 await sheet.getByRole('button', { name: 'Cancel' }).click();
 await page.click('#btn-menu'); await sheet.getByRole('button', { name: 'Settings' }).click();
 const t = await sheet.textContent();
-ok(t.includes(`Installed version${now}`) && t.includes(`New version${next}`), 'Settings shows the installed and the new version');
-const gap = await sheet.locator('.item', { hasText: 'Installed version' }).evaluate((el) => { const [l, v] = el.querySelectorAll('span'); return v.getBoundingClientRect().left - l.getBoundingClientRect().right; });
+ok(t.includes(`Versions (latest/installed)${next}/${now}`), 'Settings shows the latest and the installed version');
+const gap = await sheet.locator('.item', { hasText: 'Versions (latest/installed)' }).evaluate((el) => { const [l, v] = el.querySelectorAll('span'); return v.getBoundingClientRect().left - l.getBoundingClientRect().right; });
 ok(gap >= 16, `the version value sits in its own column (${Math.round(gap)}px from the label)`);
 await sheet.getByRole('button', { name: 'Close' }).click();
 
@@ -48,7 +48,7 @@ await Promise.all([page.waitForEvent('load'), sheet.getByRole('button', { name: 
 await page.waitForSelector('.tab.current');
 await page.click('#btn-menu'); await sheet.getByRole('button', { name: 'Settings' }).click();
 const t2 = await sheet.textContent();
-ok(t2.includes(`Installed version${next}`) && !t2.includes('New version'), 'after Restart the new version is installed');
+ok(t2.includes(`Versions (latest/installed)${next}/${next}`), 'after Restart the new version is installed');
 ok(errors.length === 0, `no page errors${errors.length ? ': ' + errors.join('; ') : ''}`);
 await close();
 process.exit(failed ? 1 : 0);

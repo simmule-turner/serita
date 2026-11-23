@@ -64,6 +64,25 @@ await page.locator('.sheet textarea').fill('first\nsecond');
 await sheet.getByRole('button', { name: 'Save', exact: true }).click();
 await view('Text');
 ok((await value()).includes('Fresh\nfirst\nsecond\n'), 'Edit body writes the text under the heading');
+// The Outline view's date prompt: a month to tap, steppers for the time
+await view('Outline');
+await page.locator('.ol-head .title', { hasText: 'Fresh' }).click();
+await btn('Schedule').click();
+const dateField = sheet.getByLabel('Date');
+await dateField.fill('2026-12-15 09:30');
+ok((await sheet.getByRole('button', { name: '2026-12-15', exact: true }).getAttribute('aria-pressed')) === 'true', 'the typed date is the day marked in the month');
+await sheet.getByRole('button', { name: 'Hour later' }).click();
+await sheet.getByRole('button', { name: 'Minutes later' }).click();
+ok((await dateField.inputValue()) === '2026-12-15 10:35', 'the steppers change the hour by one and the minutes by five');
+await sheet.getByRole('button', { name: '2026-12-16', exact: true }).click();
+ok((await dateField.inputValue()) === '2026-12-16 10:35', 'tapping a day keeps the time');
+await sheet.getByRole('button', { name: 'Off', exact: true }).click();
+ok((await dateField.inputValue()) === '2026-12-16', 'No time removes the time');
+await sheet.getByRole('button', { name: 'Next month' }).click();
+ok((await sheet.textContent()).includes('January 2027'), 'the arrows change the month');
+await sheet.getByRole('button', { name: 'Set', exact: true }).click();
+await view('Text');
+ok((await value()).includes('SCHEDULED: <2026-12-16 Wed>'), 'Set puts the chosen date on the heading');
 await view('Outline');
 await page.locator('.ol-line .box').first().click();
 ok((await page.locator('.ol-line .box').first().textContent()) === '[X]', 'tapping a checkbox in the Outline view toggles it');
@@ -72,7 +91,7 @@ ok((await value()).includes('- [X] one') && (await value()).includes('- [ ] two'
 
 // Emacs keys and the key row
 ok(!(await page.locator('#keyrow').isVisible()), 'the key row is hidden while Emacs keys are off');
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/8 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/10 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click();
 await btn('Close').click();
 ok(await page.locator('#keyrow').isVisible(), 'Emacs keys on shows the key row');
 ok((await page.locator('#keyrow button').allTextContents()).join(',') === 'Meta,Ctrl,Shift,Tab,←,↑,↓,→,⌨,Float', 'the key row has the keys in order, with the keyboard and Float buttons last');
@@ -147,7 +166,7 @@ await page.locator('#keyrow .kbd').click();
 ok((await focused()) === 'editor' && (await mode()) === 'none', 'pressed again, it stops the keyboard and the focus stays, so the arrows still work');
 
 // Hide leading stars
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/8 settings/).click(); await btn(/Hide leading stars/).click(); await btn('‹ Settings').click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/10 settings/).click(); await btn(/Hide leading stars/).click(); await btn('‹ Settings').click(); await btn('Close').click();
 ok((await value()).includes('\n * B') && !(await value()).includes('** B'), 'Hide leading stars shows only the last star of a deeper heading');
 
 // C-RET in a heading's body starts a sibling heading after the subtree (checked against Emacs)

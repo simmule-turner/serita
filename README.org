@@ -89,7 +89,7 @@ M-% replaces text; C-M-% replaces a regexp (\& is the match, \1 a group, \# the 
 C-c / r shows the lines that match a regexp and the headings above them; C-c / t shows unfinished TODO entries; C-c / T asks for a keyword; C-c / m asks for a match such as ~work+urgent~, ~work/TODO~, ~LEVEL=2~ or ~Effort="5h"~ (tags are inherited). C-c C-c removes the highlights; TAB folds the heading. In the Outline view, Menu, then Commands has the same entries.
 
 ** Dates
-C-c C-s schedules the heading and C-c C-d sets its deadline; C-c . inserts a timestamp and C-c ! an inactive one. The prompt takes a date (~2026-12-01~, ~dec 5~, ~12/5~, ~fri~, ~+3d~, ~-1w~, ~+2fri~; a date that has gone by means next year) with an optional time (~14:30~); empty means today. S-up and S-down on a timestamp change the part under the cursor: year, month, day (or weekday), hour, minute, or a repeater's number or unit; on either bracket they switch between active and inactive. S-left and S-right move the date a day. Marking a task with a repeater (~+1w~, ~++1w~, ~.+1w~) DONE moves its date to the next one, on a SCHEDULED or DEADLINE line or on any active timestamp in the entry, and keeps it open.
+C-c C-s schedules the heading and C-c C-d sets its deadline; C-c . inserts a timestamp and C-c ! an inactive one. The prompt takes a date (~2026-12-01~, ~dec 5~, ~12/5~, ~fri~, ~+3d~, ~-1w~, ~+2fri~; a date that has gone by means next year) with an optional time (~14:30~); empty means today. In the Outline view the prompt also shows a month to tap, steppers for the hour and the minutes, and a No time switch. S-up and S-down on a timestamp change the part under the cursor: year, month, day (or weekday), hour, minute, or a repeater's number or unit; on either bracket they switch between active and inactive. S-left and S-right move the date a day. Marking a task with a repeater (~+1w~, ~++1w~, ~.+1w~) DONE moves its date to the next one, on a SCHEDULED or DEADLINE line or on any active timestamp in the entry, and keeps it open.
 
 ** Clocking
 C-c C-x C-i starts a clock on the heading: a ~CLOCK:~ line in its ~:LOGBOOK:~ drawer. C-c C-x C-o stops it and records the time spent; C-c C-x C-q cancels it. Clocking in on another heading stops the running clock first.
@@ -129,6 +129,9 @@ Which headings are listed is set as ~init.el~ writes it, in Settings, Emacs, Ref
 A target is a file (~nil~ is this one, ~org-agenda-files~ is the agenda files) with ~:maxlevel~, ~:level~, ~:tag~, ~:todo~ or ~:regexp~. ~org-refile-use-outline-path~ shows the path of each heading, and ~org-reverse-note-order~ puts the subtree first instead of last.
 
 C-c C-x C-a (or C-c $) archives the subtree into the file named in Settings, Emacs, Archive location, ~%s_archive::~ unless you change it; ~::* Archived~ keeps it in the same file under a heading. The entry records when and where it came from in ARCHIVE_TIME, ARCHIVE_FILE, ARCHIVE_OLPATH and ARCHIVE_CATEGORY properties. C-c C-x A moves it under an Archive heading among its siblings, and C-c C-x a toggles the ARCHIVE tag.
+
+** Log settings
+Settings, Emacs, Log into drawer names the drawer (such as LOGBOOK) that holds the log line of a repeating task; empty leaves the line in the text. Log repeats set to Off records nothing when a repeating task is done.
 
 ** Settings
 Menu, then Settings, sets up GitHub (owner, repository, branch, token) and WebDAV (address, user, password). They are kept in this browser, on this device.

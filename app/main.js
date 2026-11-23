@@ -19,6 +19,7 @@ import { parseStringList, formatStringList } from '../core/lisp-list.js';
 import { clockIn, clockOut, cancelClock, openClock, inClockedEntry } from '../core/clock.js';
 import { parseTemplates, promptsOf, expand, place } from '../core/capture.js';
 import { bodyOf, setBody } from '../core/body.js';
+import { MONTH_NAMES, monthGrid, stepMonth, stepTime } from '../core/calendar.js';
 import { archiveSubtree, archiveToSibling, listTargets, parseRefileSettings, refile, refileMessage, toggleArchiveTag } from '../core/refile.js';
 import { isEffort } from '../core/effort.js';
 import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../core/properties.js';
@@ -82,6 +83,9 @@ const paragraphSpacing = () => Math.min(32, Math.max(0, Number(setting('view.par
 const tagsColumn = () => { const n = Number(setting('org.tagsColumn')); return Number.isInteger(n) && setting('org.tagsColumn') !== undefined && setting('org.tagsColumn') !== '' ? n : DEFAULT_TAGS_COLUMN; };
 const keyLogOn = () => setting('view.keyLog') === 'true';
 const beepOn = () => setting('view.beep') !== 'false';
+/** org-log-into-drawer: the drawer's name, or null for none. org-log-repeat: on (time) unless set off. */
+const logDrawer = () => setting('org-log-into-drawer') || null;
+const logRepeatOn = () => setting('org-log-repeat') !== 'nil';
 const restoreOn = () => setting('session.restore') !== 'false';
 const lineNumbers = () => setting('view.lineNumbers') === 'true';
 const wrapOn = () => setting('view.wrap') !== 'false';
@@ -731,19 +735,17 @@ async function settings() {
         h('div', { class: 'list' },
           h('button', { class: 'item', onclick: () => close('github') }, h('span', {}, 'GitHub'), h('span', { class: 'meta' }, `${summary('github')} ›`)),
           h('button', { class: 'item', onclick: () => close('webdav') }, h('span', {}, 'WebDAV'), h('span', { class: 'meta' }, `${summary('webdav')} ›`)),
-          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '8 settings ›')),
+          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '10 settings ›')),
           h('button', { class: 'item', onclick: () => close('appearance') }, h('span', {}, 'Appearance'), h('span', { class: 'meta' }, `${theme()[0].toUpperCase()}${theme().slice(1)}, ${fontSize()}px ›`)),
           h('button', { class: 'item', onclick: () => close('restore') }, h('span', {}, 'Restore open files on start'), h('span', { class: 'meta' }, restoreOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('tools-text') }, h('span', {}, 'Tool row in the Text view'), h('span', { class: 'meta' }, toolRowOn('text') ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('keylog') }, h('span', {}, 'Key event log'), h('span', { class: 'meta' }, keyLogOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('tools-outline') }, h('span', {}, 'Tool row in the Outline view'), h('span', { class: 'meta' }, toolRowOn('outline') ? 'On ›' : 'Off ›')),
-          h('div', { class: 'item', style: 'display:flex;align-items:center;justify-content:space-between;padding:4px 0' }, h('span', {}, 'Settings file'),
-            h('span', { class: 'row' }, h('button', { onclick: () => close('export') }, 'Export'), h('button', { onclick: () => close('import') }, 'Import')))),
-        h('div', { class: 'list' },
-          h('div', { class: 'item' }, h('span', {}, 'Installed version'), h('span', { class: 'meta' }, VERSION)),
-          waiting ? h('div', { class: 'item' }, h('span', {}, 'New version'), h('span', { class: 'meta' }, waiting.version)) : null),
+          h('div', { class: 'item' }, h('span', {}, 'Settings file'),
+            h('span', { class: 'btns' }, h('button', { onclick: () => close('export') }, 'Export'), h('button', { onclick: () => close('import') }, 'Import'))),
+          h('p', { class: 'note' }, 'Tokens and passwords are stored on this device.'),
+          h('div', { class: 'item' }, h('span', {}, 'Versions (latest/installed)'), h('span', { class: 'meta' }, `${waiting?.version ?? VERSION}/${VERSION}`))),
         waiting ? h('div', { class: 'row' }, h('button', { class: 'primary', onclick: () => { close(undefined); restart(); } }, 'Restart to update')) : null,
-        h('p', {}, 'Tokens and passwords are kept in this browser, on this device.'),
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Close')));
     });
     if (what === undefined) return;
@@ -774,6 +776,8 @@ async function emacsSettings() {
           item('capture-templates', 'Capture templates', (() => { const n = captureText() ? parseTemplates(captureText()).length : 0; return `${n} ${n === 1 ? 'template' : 'templates'}`; })()),
           item('emacs', 'Emacs keys', emacsKeys() ? 'On' : 'Off'),
           item('stars', 'Hide leading stars', hideStars() ? 'On' : 'Off'),
+          item('log-drawer', 'Log into drawer', logDrawer() ?? 'Off'),
+          item('log-repeat', 'Log repeats', logRepeatOn() ? 'Time' : 'Off'),
           item('refile', 'Refile targets', refileText() ? 'Custom' : 'Top level'),
           item('tags-column', 'Tag column', String(tagsColumn()))),
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
@@ -787,6 +791,8 @@ async function emacsSettings() {
     else if (what === 'beep') config.update({ settings: { 'view.beep': String(!beepOn()) } });
     else if (what === 'capture-templates') await captureTemplatesDialog();
     else if (what === 'emacs') config.update({ settings: { 'view.emacsKeys': String(!emacsKeys()) } });
+    else if (what === 'log-drawer') await logDrawerDialog();
+    else if (what === 'log-repeat') config.update({ settings: { 'org-log-repeat': logRepeatOn() ? 'nil' : '' } });
     else if (what === 'stars') config.update({ settings: { 'view.hideStars': String(!hideStars()) } });
     else await tagsColumnDialog();
     note = $('message').classList.contains('error') ? '' : $('message').textContent;
@@ -1136,6 +1142,22 @@ async function refileSettingsDialog() {
   }
 }
 
+async function logDrawerDialog() {
+  const value = await panel((sheet, close) => {
+    const input = h('input', { value: logDrawer() ?? '', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Log into drawer', placeholder: 'LOGBOOK' });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); close(input.value); } });
+    put(sheet, h('h2', {}, 'Log into drawer'),
+      h('p', {}, 'The name of the drawer that holds the log line of a repeating task, such as LOGBOOK. Empty puts the line in the text, after the properties.'), input,
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { onclick: () => close(RESET) }, 'Reset'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Set')));
+    input.focus();
+  });
+  if (value === undefined) return;
+  const name = value === RESET ? '' : value.trim();
+  if (!/^[A-Za-z0-9_-]*$/.test(name)) { message('A drawer name is letters, digits, - and _', true); return; }
+  config.update({ settings: { 'org-log-into-drawer': name } });
+  message(name ? `Log lines go in :${name}:` : 'Log lines go in the text');
+}
+
 async function archiveLocationDialog() {
   const value = await panel((sheet, close) => {
     const input = h('input', { value: archiveLocation(), autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Archive location' });
@@ -1391,7 +1413,7 @@ function todoStep(dir) {
     const c = cycleTodo(t, l, dir, tagsColumn());
     if (!c.state || !before.todo.done.includes(c.state)) return c;
     // Finishing a repeating task: the date moves on and the task is open again
-    const rep = completeRepeat({ text: c.text, line: l, from: from ?? '', to: c.state, reopen: before.todo.open[0], now: localNow() });
+    const rep = completeRepeat({ text: c.text, line: l, from: from ?? '', to: c.state, reopen: before.todo.open[0], now: localNow(), drawer: logDrawer(), log: logRepeatOn() });
     if (!rep) return c;
     said.push(`TODO state changed to ${c.state}`, `TODO state changed to ${before.todo.open[0]}`);
     return { ...c, text: rep.text, state: null };
@@ -1407,10 +1429,72 @@ const localClock = () => { const n = new Date(); return `${String(n.getHours()).
 const todayDate = () => { const n = new Date(); return new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate())); };
 const dayOf = (d) => d.toISOString().slice(0, 10);
 
+/** The date prompt of the Outline view: the typed field with a month to tap, the time, and for a new timestamp whether it is active. */
+function askDateSheet({ label, base, active, canToggle }) {
+  return panel((sheet, close) => {
+    const two = (n) => String(n).padStart(2, '0');
+    const iso = (y, m, d) => `${y}-${two(m)}-${two(d)}`;
+    const input = h('input', { autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Date', placeholder: dayOf(base) });
+    let shown = { y: base.getUTCFullYear(), m: base.getUTCMonth() + 1 };
+    let isActive = active;
+    const read = () => { try { return parseDate(input.value, base); } catch { return null; } };
+    const write = (d, time, until) => { input.value = `${iso(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate())}${time ? ` ${two(time[0])}:${two(time[1])}${until ? `-${until}` : ''}` : ''}`; follow(); draw(); };
+    const parsed = () => { const r = read(); return r && { date: r.date, time: r.time ? [r.date.getUTCHours(), r.date.getUTCMinutes()] : null, until: r.until }; };
+    const follow = () => { const p = input.value.trim() === '' ? null : parsed(); if (p) shown = { y: p.date.getUTCFullYear(), m: p.date.getUTCMonth() + 1 }; };
+    const title = h('span', { style: 'font-weight:500' });
+    const grid = h('div', { class: 'cal' });
+    const hours = h('span', {}); const minutes = h('span', {});
+    const noTime = h('button', { onclick: () => { const p = parsed() ?? { date: base, time: null }; write(p.date, p.time ? null : [new Date().getHours(), Math.floor(new Date().getMinutes() / 5) * 5], null); } });
+    const activeBtn = h('button', { onclick: () => { isActive = !isActive; draw(); } });
+    const bump = (part, dir) => {
+      const p = parsed() ?? { date: base, time: null };
+      const now = p.time ?? [new Date().getHours(), Math.floor(new Date().getMinutes() / 5) * 5];
+      const t = stepTime(now[0], now[1], part, dir);
+      write(p.date, [t.hour, t.minute], p.until);
+    };
+    function draw() {
+      const p = input.value.trim() === '' ? null : parsed();
+      const sel = p ? iso(p.date.getUTCFullYear(), p.date.getUTCMonth() + 1, p.date.getUTCDate()) : '';
+      title.textContent = `${MONTH_NAMES[shown.m - 1]} ${shown.y}`;
+      grid.replaceChildren(...['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((n) => h('span', { class: 'dow' }, n)),
+        ...monthGrid(shown.y, shown.m).map((c) => {
+          const key = iso(c.y, c.m, c.d);
+          return h('button', { class: `day${c.other ? ' other' : ''}${key === dayOf(base) ? ' today' : ''}${key === sel ? ' on' : ''}`, 'aria-label': key, 'aria-pressed': String(key === sel),
+            onclick: () => write(new Date(Date.UTC(c.y, c.m - 1, c.d)), p?.time ?? null, p?.until) }, String(c.d));
+        }));
+      hours.textContent = p?.time ? two(p.time[0]) : '--';
+      minutes.textContent = p?.time ? two(p.time[1]) : '--';
+      noTime.textContent = p?.time ? 'Off' : 'On';
+      activeBtn.textContent = isActive ? 'Active' : 'Inactive';
+    }
+    input.addEventListener('input', () => { follow(); draw(); });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); close({ typed: input.value, active: isActive }); } });
+    const stepper = (part, shownEl, name) => h('div', { class: 'stepper' }, h('button', { 'aria-label': `${name} earlier`, onclick: () => bump(part, -1) }, '−'), shownEl, h('button', { 'aria-label': `${name} later`, onclick: () => bump(part, 1) }, '+'));
+    put(sheet, h('h2', {}, label),
+      h('p', {}, `Date+time [${dayOf(base)}]:`), input,
+      h('div', { class: 'calhead' }, h('button', { 'aria-label': 'Previous month', onclick: () => { shown = stepMonth(shown.y, shown.m, -1); draw(); } }, '‹'), title,
+        h('button', { 'aria-label': 'Next month', onclick: () => { shown = stepMonth(shown.y, shown.m, 1); draw(); } }, '›')),
+      grid,
+      h('div', { class: 'timerow' }, h('span', {}, 'Time'), h('div', { class: 'tpair' }, stepper('hour', hours, 'Hour'), h('span', {}, ':'), stepper('minute', minutes, 'Minutes'))),
+      h('div', { class: 'timerow' }, h('span', {}, 'No time'), noTime),
+      canToggle ? h('div', { class: 'timerow' }, h('span', {}, 'Timestamp'), activeBtn) : null,
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { onclick: () => write(base, parsed()?.time ?? null, null) }, 'Today'),
+        h('button', { class: 'primary', onclick: () => close({ typed: input.value, active: isActive }) }, 'Set')));
+    draw();
+    input.focus();
+  });
+}
+
 /** Asks for a date ("2026-12-01", "+3d", "tomorrow 14:30") and returns the stamp text, or null when cancelled. */
-async function askStamp(label, active = true) {
+async function askStamp(label, active = true, canToggle = false) {
   const base = todayDate();
-  const typed = await askText({ prompt: `${label} Date+time [${dayOf(base)}]:`, title: label, help: 'A date such as 2026-12-01, +3d, -1w, tomorrow, optionally with a time such as 14:30.', ok: 'Set' });
+  let typed;
+  if (viewMode() === 'text') typed = await mini.ask({ prompt: `${label} Date+time [${dayOf(base)}]:`, value: '', complete: null, inputMode: 'text' });
+  else {
+    const got = await askDateSheet({ label: label || (active ? 'Timestamp' : 'Inactive timestamp'), base, active, canToggle });
+    if (got === undefined) return null;
+    typed = got.typed; active = got.active;
+  }
   if (typed === undefined) return null;
   try { const d = parseDate(typed, base); return formatStamp(d.date, { time: d.time, until: d.until, active }); } catch (e) { failure(e); return null; }
 }
@@ -1536,7 +1620,7 @@ async function planHere(keyword, label, said, hd = enclosingHead()) {
 }
 
 async function insertTimestamp(active) {
-  const stamp = await askStamp('', active);
+  const stamp = await askStamp('', active, true);
   if (stamp === null) return;
   const at = cursorOffset();
   const r = runEdit((t) => insertStamp(t, at, stamp));

@@ -12,7 +12,7 @@ await page.goto(`${base}/`);
 await page.waitForSelector('.tab.current');
 const sheet = page.locator('.sheet');
 const btn = (n) => sheet.getByRole('button', { name: n, exact: true });
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/8 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/10 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
 const at = async (text, line) => {
   await page.fill('#editor', text);
   await page.evaluate((l) => { const e = document.getElementById('editor'); const o = e.value.split('\n').slice(0, l - 1).reduce((n, s) => n + s.length + 1, 0); e.focus(); e.setSelectionRange(o, o); }, line);
@@ -247,7 +247,7 @@ await page.locator('.sheet.agenda .abar button', { hasText: 'Close' }).click();
 await page.evaluate(() => document.getElementById('editor').focus());
 await page.keyboard.press('Alt+x'); await page.keyboard.type('org-agenda-file-to-front'); await page.keyboard.press('Enter');
 ok((await page.locator('#message').textContent()).includes('File added to front of agenda file list'), 'C-c [ lists the current file');
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/8 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/10 settings/).click();
 ok((await btn(/Agenda files/).textContent()).includes('1 file'), 'Settings shows how many agenda files there are');
 await btn(/Agenda files/).click();
 ok((await sheet.textContent()).includes('agenda-test.org (App storage)'), 'the Agenda files screen lists the file with its storage');
@@ -337,7 +337,7 @@ ok((await prompt()) === 'Foo value:', 'the value prompt names the property');
 await page.keyboard.press('Escape');
 
 // Capture: templates are set as init.el writes them; Capture asks the template's questions, shows the text, and files it
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/8 settings/).click(); await btn(/Capture templates/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/10 settings/).click(); await btn(/Capture templates/).click();
 await sheet.locator('textarea').fill(`(setq org-capture-templates '(("t" "Todo" entry (file+headline "agenda-test.org" "Inbox") "* TODO %^{What}\\n")))`);
 await btn('Save').click();
 ok((await page.locator('#message').textContent()) === '1 capture template', 'saving the templates counts them');
@@ -353,7 +353,7 @@ await page.waitForFunction(() => /^Captured|does not exist|Heading/.test(documen
 ok((await page.locator('#message').textContent()) === 'Captured to agenda-test.org', 'Save files the captured text');
 
 // Refile and archive: Refile lists the targets; Archive tags and archives from the command list
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/8 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/10 settings/).click();
 ok((await sheet.textContent()).includes('Refile targets') && (await sheet.textContent()).includes('Archive location'), 'Settings, Emacs lists Refile targets and Archive location');
 await btn(/Refile targets/).click(); await btn('Save').click();
 ok((await sheet.textContent()).includes('Refile targets set'), 'saving the refile targets says so on the Emacs screen');

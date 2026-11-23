@@ -147,3 +147,24 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 .agrid .agline { flex: 1; border-top: 1px dashed var(--line); }
 .agrid.now { color: var(--danger); }
 .agrid.now .agline { border-top: 1px solid currentColor; }
+
+.sheet .calhead { display: flex; align-items: center; justify-content: space-between; }
+.sheet .calhead button { width: 44px; min-width: 44px; padding: 0; }
+.sheet .cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; text-align: center; }
+.sheet .cal .dow { color: var(--muted); font-size: 12px; padding: 4px 0; }
+.sheet .cal .day { min-height: 38px; min-width: 0; padding: 0; border: 0; background: transparent; font-size: 15px; }
+.sheet .cal .day.other { color: var(--muted); }
+.sheet .cal .day.today { border: 1px solid var(--line); }
+.sheet .cal .day.on { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); }
+.sheet .timerow { display: flex; align-items: center; justify-content: space-between; min-height: 44px; font-size: 15px; }
+.sheet .timerow > button { min-height: 36px; padding: 0 14px; }
+.sheet .tpair { display: flex; align-items: center; gap: 4px; }
+.sheet .timerow .stepper { gap: 4px; }
+.sheet .timerow .stepper span { min-width: 28px; }
+.sheet .timerow .stepper button { min-width: 40px; }
+
+.sheet .item > span:first-child { flex: none; white-space: nowrap; }
+.sheet .item .meta { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sheet .item .btns { display: flex; gap: 8px; flex: none; }
+.sheet .item .btns button { min-height: 36px; padding: 0 14px; }
+.sheet .note { text-align: center; padding: 10px 14px; border-bottom: 1px solid var(--line); }
