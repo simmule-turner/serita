@@ -5,8 +5,8 @@ import { splitLines } from './parse.js';
 import { analyze } from './outline.js';
 import { readForms, isSym } from './lisp-read.js';
 import { emacsRegexp } from './regexp.js';
-import { setProperty } from './properties.js';
-import { setTags } from './outline-edit.js';
+import { propertiesOf, setProperty } from './properties.js';
+import { DEFAULT_TAGS_COLUMN, setTags } from './outline-edit.js';
 import { formatStamp } from './timestamp.js';
 
 const join = (lines) => lines.map((l) => l.text + l.eol).join('');
@@ -85,7 +85,7 @@ export function listTargets(files, settings, { current, agenda = [] }) {
 // ---- Moving subtrees --------------------------------------------------------------------------------------------------------
 
 /** The subtree at `line`: its lines with the headings' levels set so the first is at `level`, and the text without it. */
-function cut(text, line, level) {
+function cut(text, line, level, column = DEFAULT_TAGS_COLUMN) {
   const a = analyze(text);
   const h = a.heads.find((x) => x.line === line);
   if (!h) throw new Error('Not at a heading');
@@ -94,7 +94,9 @@ function cut(text, line, level) {
   if (sub.length && sub[sub.length - 1].eol === '') sub[sub.length - 1].eol = '\n';
   const delta = level - h.level;
   for (const l of sub) if (/^\*+(?: |$)/.test(l.text)) { const stars = /^\*+/.exec(l.text)[0].length; l.text = '*'.repeat(Math.max(1, stars + delta)) + l.text.slice(stars); }
-  return { sub, rest: join([...lines.slice(0, h.line), ...lines.slice(h.end)]), head: h, a };
+  let moved = join(sub);
+  if (delta !== 0) for (const x of analyze(moved).heads) if (x.tags.length) moved = setTags(moved, x.line, x.tags, column).text;
+  return { sub: splitLines(moved), rest: join([...lines.slice(0, h.line), ...lines.slice(h.end)]), head: h, a };
 }
 
 function insert(text, target, sub, reverse) {
@@ -116,12 +118,12 @@ function insert(text, target, sub, reverse) {
  * Moves (or copies) the subtree at `line` of `text` under `target`. For another file give its text as `otherText`.
  * @returns {{ text: string, otherText: string|null }} the new texts
  */
-export function refile(text, line, target, { otherText = null, reverse = false, copy = false } = {}) {
+export function refile(text, line, target, { otherText = null, reverse = false, copy = false, column = DEFAULT_TAGS_COLUMN } = {}) {
   const { head, a } = (() => { const aa = analyze(text); return { a: aa, head: aa.heads.find((x) => x.line === line) }; })();
   if (!head) throw new Error('Not at a heading');
   const level = target.line < 0 ? 1 : (otherText === null ? a : analyze(otherText)).heads.find((x) => x.line === target.line)?.level + 1;
   if (otherText === null && target.line >= head.line && target.line < head.end) throw new Error('Cannot refile to position inside the tree or region');
-  const { sub, rest } = cut(text, line, level);
+  const { sub, rest } = cut(text, line, level, column);
   if (otherText !== null) return { text: copy ? text : rest, otherText: insert(otherText, target, sub, reverse) };
   if (copy) return { text: insert(text, target, sub, reverse), otherText: null };
   const gone = head.end - head.line;
@@ -151,7 +153,7 @@ const ensureBlankBefore = (lines, at) => { if (at > 0 && lines[at - 1].text.trim
  * @param {{ fileName: string, category: string, location: string, now: Date, archiveText: string|null }} o archiveText is the text of the archive file, null when it does not exist yet
  * @returns {{ text: string, archive: { file: string, text: string }|null, message: string }}
  */
-export function archiveSubtree(text, line, { fileName, category, location, now, archiveText }) {
+export function archiveSubtree(text, line, { fileName, category, location, now, archiveText, column = DEFAULT_TAGS_COLUMN }) {
   const loc = parseArchiveLocation(location, fileName);
   const a = analyze(text);
   const head = a.heads.find((x) => x.line === line);
@@ -177,15 +179,21 @@ export function archiveSubtree(text, line, { fileName, category, location, now, 
     } else { level = h.level + 1; at = h.end; }
   }
   const sameHeadEnd = sameFile ? head : null;
-  const { sub, rest } = cut(text, line, level);
+  const { sub, rest } = cut(text, line, level, column);
   const entry = join(sub);
+  let own = category;
+  for (let x = head; x; x = x.parent) { const p = propertiesOf(text, x.line).find(([n]) => n.toUpperCase() === 'CATEGORY'); if (p) { own = p[1]; break; } }
+  const itags = []; for (let x = head.parent; x; x = x.parent) itags.unshift(...x.tags);
   const withProps = (() => {
     let t = entry;
     const stamp = formatStamp(now, { time: true, active: false }).slice(1, -1);
     t = setProperty(t, 0, 'ARCHIVE_TIME', stamp).text;
     t = setProperty(t, 0, 'ARCHIVE_FILE', fileName).text;
     if (path.length) t = setProperty(t, 0, 'ARCHIVE_OLPATH', path.join('/')).text;
-    return setProperty(t, 0, 'ARCHIVE_CATEGORY', category).text;
+    t = setProperty(t, 0, 'ARCHIVE_CATEGORY', own).text;
+    if (head.todo) t = setProperty(t, 0, 'ARCHIVE_TODO', head.todo).text;
+    if (itags.length) t = setProperty(t, 0, 'ARCHIVE_ITAGS', itags.join(' ')).text;
+    return t;
   })();
   if (sameFile) {
     // the entry is cut from the file first, so the places in it have moved up
@@ -220,30 +228,31 @@ export function toggleArchiveTag(text, line, column) {
 }
 
 /** C-c C-x A: moves the subtree under an "Archive" heading, tagged ARCHIVE, among its parent's children. */
-export function archiveToSibling(text, line, { now, column }) {
+export function archiveToSibling(text, line, { now, column = DEFAULT_TAGS_COLUMN }) {
   const a = analyze(text);
   const head = a.heads.find((x) => x.line === line);
   if (!head) throw new Error('Not at a heading');
-  if (!head.parent) throw new Error('A top-level heading has no archive sibling here');
-  const parentLine = head.parent.line;
-  const { sub, rest } = cut(text, line, 1);
+  const parentLine = head.parent ? head.parent.line : -1;
+  const { sub, rest } = cut(text, line, 1, column);
   let t = rest;
   let ra = analyze(t);
-  let parent = ra.heads.find((x) => x.line === parentLine);
-  let arch = parent.children.find((c) => c.tags.includes('ARCHIVE'));
+  const kids = parentLine < 0 ? ra.heads.filter((x) => x.level === 1) : ra.heads.find((x) => x.line === parentLine).children;
+  let arch = kids.find((c) => c.title === 'Archive' && c.tags.includes('ARCHIVE'));
   if (!arch) {
     const lines = splitLines(t);
-    const at = parent.end;
+    const at = parentLine < 0 ? lines.length : ra.heads.find((x) => x.line === parentLine).end;
+    const level = parentLine < 0 ? 1 : ra.heads.find((x) => x.line === parentLine).level + 1;
     if (at > 0 && lines[at - 1].eol === '') lines[at - 1] = { ...lines[at - 1], eol: '\n' };
-    lines.splice(at, 0, { text: `${'*'.repeat(parent.level + 1)} Archive`, eol: '\n' });
+    lines.splice(at, 0, { text: `${'*'.repeat(level)} Archive`, eol: '\n' });
     t = setTags(join(lines), at, ['ARCHIVE'], column).text;
     ra = analyze(t); arch = ra.heads.find((x) => x.line === at);
   }
   const lines = splitLines(t);
   const lv = arch.level + 1;
-  const entry = splitLines(sub.map((l) => l.text + l.eol).join('').replace(/^\*+/gm, (m) => '*'.repeat(m.length - 1 + lv)));
+  let moved = sub.map((l) => l.text + l.eol).join('').replace(/^\*+/gm, (m) => '*'.repeat(m.length - 1 + lv));
+  for (const x of analyze(moved).heads) if (x.tags.length) moved = setTags(moved, x.line, x.tags, column).text;
   const stamp = formatStamp(now, { time: true, active: false }).slice(1, -1);
-  const withProp = splitLines(setProperty(join(entry), 0, 'ARCHIVE_TIME', stamp).text);
+  const withProp = splitLines(setProperty(moved, 0, 'ARCHIVE_TIME', stamp).text);
   const at = arch.end;
   if (at > 0 && lines[at - 1].eol === '') lines[at - 1] = { ...lines[at - 1], eol: '\n' };
   lines.splice(at, 0, ...withProp);

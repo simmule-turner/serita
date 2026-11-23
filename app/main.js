@@ -441,8 +441,17 @@ function browse({ mode, suggested = '', current = null }) {
   return panel((sheet, close) => {
     let listing = { folders: [], files: [] };
     let loadError = null;
-    const nameInput = mode === 'saveas' ? h('input', { value: suggested, 'aria-label': 'File name', oninput: () => draw() }) : null;
+    const nameInput = mode === 'saveas' ? h('input', { value: suggested, 'aria-label': 'File name', oninput: () => update() }) : null;
     const ok = h('button', { class: 'primary' });
+    const exists = h('p', { class: 'tag', hidden: '' });
+    // Typing only updates the notice and the button; drawing the sheet again would take the keyboard away.
+    function update() {
+      const typed = nameInput?.value.trim() ?? '';
+      const there = listing.files.find((f) => f.name === typed);
+      exists.hidden = !there;
+      exists.textContent = there ? `${there.name} exists${there.size === null ? '' : ` (${formatSize(there.size)})`}. Saving replaces it.` : '';
+      if (mode === 'saveas') ok.textContent = there ? 'Replace' : 'Save';
+    }
 
     async function load() {
       if (provider === 'device') { listing = { folders: [], files: [] }; loadError = null; draw(); return; }
@@ -466,8 +475,6 @@ function browse({ mode, suggested = '', current = null }) {
       provider = p; dir = ''; load();
     }
     function draw() {
-      const typed = nameInput?.value.trim() ?? '';
-      const there = listing.files.find((f) => f.name === typed);
       put(sheet, 
         h('h2', {}, mode === 'open' ? 'Open' : 'Save as'),
         h('div', { class: 'list' }, h('button', { class: 'item', onclick: change }, h('span', {}, `Storage: ${providerLabel(provider)}`), h('span', { class: 'meta' }, 'Change'))),
@@ -481,13 +488,15 @@ function browse({ mode, suggested = '', current = null }) {
             else { nameInput.value = f.name; draw(); }
           } }, h('span', {}, f.name), h('span', { class: 'meta' }, formatSize(f.size))))),
         nameInput,
-        there ? h('p', { class: 'tag' }, `${there.name} exists${there.size === null ? '' : ` (${formatSize(there.size)})`}. Saving replaces it.`) : null,
+        exists,
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'),
-          mode === 'saveas' ? Object.assign(ok, { textContent: there ? 'Replace' : 'Save', onclick: async () => {
+          mode === 'saveas' ? Object.assign(ok, { onclick: async () => {
+            const typed = nameInput.value.trim();
             if (!typed) return;
             if (provider !== 'device') { close(`${provider}:${dir}${typed}`); return; }
             try { const path = await providers.device.pickSave(typed); if (path) close(`device:${path}`); } catch (e) { loadError = e.message; draw(); }
           } }) : null));
+      update();
     }
     load();
   });
@@ -969,8 +978,7 @@ async function fileCapture(tpl, captured) {
   let buffer = session.state().buffers.find((b) => b.name === name);
   if (!buffer) {
     const opened = await session.openFile(name);
-    if (!opened.ok) { message(`${name} does not exist`, true); return; }
-    buffer = session.state().buffers.find((b) => b.id === opened.id);
+    buffer = opened.ok ? session.state().buffers.find((b) => b.id === opened.id) : session.state().buffers.find((b) => b.id === session.createFile(name, ''));
   }
   const r = place(buffer.text, tpl, captured);
   session.apply(buffer.id, { text: r.text });
@@ -991,7 +999,8 @@ async function capture() {
     }
     const b = currentBuffer();
     const hd = b ? enclosingHead() : null;
-    const link = b?.name ? (hd ? `[[file:${b.name}::*${hd.title}][${hd.title}]]` : `[[file:${b.name}]]`) : '';
+    const above = b ? editor.value.split('\n')[kindAtCursor().line] ?? '' : '';
+    const link = b?.name ? (hd ? `[[file:${b.name}::*${hd.title}][${hd.title}]]` : above.trim() ? `[[file:${b.name}::${above.trim()}]]` : `[[file:${b.name}]]`) : '';
     const sel = viewMode() === 'text' && editor.selectionStart !== editor.selectionEnd ? editor.value.slice(editor.selectionStart, editor.selectionEnd) : '';
     const e = expand(tpl.template, { answers, now: localNow(), link, selection: sel });
     const where = tpl.target.path ? `${tpl.target.file} › ${tpl.target.path.join(' › ')}` : tpl.target.file;
@@ -1051,7 +1060,7 @@ async function refileHere(copy = false, hd = enclosingHead()) {
     if (!t) return;
     const same = t.file === cname;
     const other = same ? null : files.find((f) => f.name === t.file);
-    const r = refile(b.text, hd.line, t, { otherText: other?.text ?? null, reverse: settings.reverse, copy });
+    const r = refile(b.text, hd.line, t, { otherText: other?.text ?? null, reverse: settings.reverse, copy, column: tagsColumn() });
     session.apply(b.id, { text: r.text });
     if (other) session.apply(other.id, { text: r.otherText });
     message(refileMessage(t, t.file, copy));
@@ -1065,10 +1074,11 @@ async function archiveHere(hd = enclosingHead()) {
     const b = currentBuffer();
     const cname = bufferName(b);
     const loc = archiveLocation();
+    if (b.name === null && loc.slice(0, loc.indexOf('::')).includes('%s')) { message('No file associated to buffer', true); return; }
     const file = loc.slice(0, loc.indexOf('::')).replace('%s', cname);
     const ab = file && file !== cname ? await (async () => { const x = session.state().buffers.find((y) => y.name === file); if (x) return x; const o = await session.openFile(file); return o.ok ? session.state().buffers.find((y) => y.id === o.id) : null; })() : null;
     const category = /^#\+CATEGORY:[ \t]*(\S.*?)[ \t]*$/im.exec(b.text)?.[1] ?? cname.replace(/^.*\//, '').replace(/\.[^.]*$/, '');
-    const r = archiveSubtree(b.text, hd.line, { fileName: cname, category, location: loc, now: localNow(), archiveText: ab?.text ?? null });
+    const r = archiveSubtree(b.text, hd.line, { fileName: cname, category, location: loc, now: localNow(), archiveText: ab?.text ?? null, column: tagsColumn() });
     session.apply(b.id, { text: r.text });
     if (r.archive) {
       if (ab) session.apply(ab.id, { text: r.archive.text });

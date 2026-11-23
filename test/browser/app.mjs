@@ -21,6 +21,10 @@ ok((await page.locator('#modeline').textContent()).startsWith('**'), 'mode line 
 
 await page.click('#btn-files'); await btn('Save as').click();
 await sheet.getByLabel('File name').fill('notes.org');
+// typing must not redraw the sheet: the field keeps focus (the keyboard stays up) and is the same element
+await page.evaluate(() => { const i = document.querySelector('input[aria-label="File name"]'); i.focus(); window.__nameField = i; });
+await page.keyboard.type('x'); await page.keyboard.press('Backspace');
+ok(await page.evaluate(() => document.activeElement === window.__nameField && document.body.contains(window.__nameField)), 'typing in the Save as name keeps the field and its focus');
 await btn('Save').click();
 await page.waitForFunction(() => document.getElementById('message').textContent.startsWith('Wrote local:notes.org'));
 ok((await page.locator('#modeline').textContent()).includes('notes.org (App storage)'), 'Save as names the buffer and the mode line shows the storage');

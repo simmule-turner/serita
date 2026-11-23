@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.7.8
+Typing a name in Save as no longer hides the keyboard on every character. Archive follows Emacs more closely: it records the TODO word and inherited tags, keeps the entry's own category and existing properties, realigns tags when the level changes, and archive-to-sibling reuses an Archive heading and works on top-level headings. Archiving from an unsaved tab says it needs a file. Capture creates a target file that does not exist yet, and %a above the first heading links to that line. Verified: Emacs 30.1 results for archive and capture.
+
 * 0.7.7
 Capture and refile work as in Emacs. C-c c files a note from a template set as init.el writes it (Settings, Emacs, Capture templates), with Emacs's % escapes and placement rules. C-c C-w moves a heading and its subtree to a chosen target, C-c M-w copies it, and C-c C-x C-a archives it, keeping where it came from in properties; targets and the archive location are set in Settings, Emacs. Verified: results from Emacs 30.1 for capture, refile and archive.
 
