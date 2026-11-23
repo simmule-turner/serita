@@ -1,0 +1,6 @@
+#+TITLE: Find and replace
+# CC0 1.0: public domain. C-s finds, C-M-s finds by Emacs regexp, M-% replaces one by one (y, n, !, q).
+
+* Practice
+The quick brown fox jumps over the lazy dog. The dog sleeps; the fox leaves.
+Dates look like 2026-11-23 and 2026-12-01; a regexp such as [0-9]+-[0-9]+-[0-9]+ finds both.

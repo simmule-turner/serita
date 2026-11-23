@@ -1,0 +1,14 @@
+#+TITLE: Dates, repeaters and deadlines
+# CC0 1.0: public domain. Put the cursor on a timestamp and press S-up or S-down; C-c C-s and C-c C-d set a date.
+
+* TODO Pay the rent
+SCHEDULED: <2026-12-01 Tue +1m>
+Marking it DONE moves the date a month on and keeps the task open.
+* TODO Water the plants
+SCHEDULED: <2026-11-24 Tue 08:00 +1w>
+* TODO File the report
+DEADLINE: <2026-12-04 Fri -3d>
+The -3d warns three days ahead in the agenda.
+* A meeting
+<2026-11-25 Wed 14:00-15:30>
+An active timestamp shows in the agenda; an inactive one, [2026-11-25 Wed], stays in the text.

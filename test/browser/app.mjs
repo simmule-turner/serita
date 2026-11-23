@@ -164,6 +164,24 @@ await p4.click('#btn-files'); await sheet4.getByRole('button', { name: 'New', ex
 await p4.click('#btn-files'); await sheet4.getByRole('button', { name: 'Open', exact: true }).click();
 ok((await sheet4.locator('.path').textContent()) === 'local:work/', 'Open starts in the folder of the last saved file');
 
+// The first open offers the sample documents once; they open as unsaved tabs, and File offers them again
+const ctx5 = await browser.newContext({ firstRun: true });
+const p5 = await ctx5.newPage();
+await p5.goto(`${base}/`);
+const sheet5 = p5.locator('.sheet');
+await sheet5.getByText('Sample documents').first().waitFor();
+ok((await sheet5.getByRole('button', { name: /Weekly review/ }).count()) === 1 && (await sheet5.getByRole('button', { name: 'Start empty', exact: true }).count()) === 1, 'the first open lists the examples and Start empty');
+await sheet5.getByRole('button', { name: /Weekly review/ }).click();
+await p5.waitForSelector('.tab.current');
+ok((await p5.locator('.tab.current').textContent()).includes('weekly-review.org') && (await p5.locator('#editor').inputValue()).includes('#+TITLE: Weekly review'), 'choosing an example opens it as a new tab');
+await p5.reload();
+await p5.waitForSelector('.tab.current');
+ok((await p5.locator('.sheet').count()) === 0, 'the examples are offered only the first time');
+await p5.click('#btn-files'); await sheet5.getByRole('button', { name: 'Sample documents', exact: true }).click();
+ok((await sheet5.getByRole('button', { name: /Outline and folding/ }).count()) === 1, 'File lists the sample documents');
+await ctx5.close();
+
+
 ok(errors.length === 0, `no page errors${errors.length ? ': ' + errors.join('; ') : ''}`);
 await close();
 process.exit(failed ? 1 : 0);

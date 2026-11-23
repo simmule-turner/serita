@@ -1,0 +1,43 @@
+#+TITLE: Example configuration
+# CC0 1.0: public domain. Every setting Serita keeps, with what it does and its default. Settings that are Emacs's own take the form init.el uses.
+
+* Settings kept in the app
+- github.owner, github.repo, github.branch :: the GitHub repository files are stored in.
+- webdav.url, webdav.username :: the WebDAV server.
+- view.mode :: Text or Outline.
+- view.emacsKeys :: Emacs keys in the Text view (on).
+- view.hideStars :: hide leading stars (off).
+- view.lineNumbers, view.wrap :: line numbers and wrapping in the Text view.
+- view.fontSize, view.font, view.theme, view.paragraphSpacing :: appearance.
+- view.toolRowText, view.toolRowOutline :: the tool row in each view.
+- view.beep :: beep on errors (on).
+- view.keyLog :: the key event log (off).
+- org.tagsColumn :: the column tags align to (-77).
+- session.restore :: reopen the files that were open (on).
+
+* Emacs settings, as init.el writes them
+** Agenda files
+#+begin_src emacs-lisp
+(setq org-agenda-files '("capture.org" "weekly-review.org" "project.org"))
+#+end_src
+** Capture templates
+#+begin_src emacs-lisp
+(setq org-capture-templates
+  '(("t" "Task" entry (file+headline "capture.org" "Tasks") "* TODO %?\n  %u")
+    ("n" "Note" entry (file+headline "capture.org" "Inbox") "* %?\n")
+    ("j" "Journal" entry (file+olp "capture.org" "Journal") "* %U %?")
+    ("l" "Log" table-line (file+headline "capture.org" "Log") "| %U | %? |")))
+#+end_src
+** Refile targets
+#+begin_src emacs-lisp
+(setq org-refile-targets '((nil :maxlevel . 2))
+      org-refile-use-outline-path t)
+#+end_src
+** Archive location
+#+begin_src emacs-lisp
+%s_archive::
+#+end_src
+** Logging
+org-log-into-drawer is a drawer name such as LOGBOOK; org-log-repeat is on unless set to nil.
+** Keys of the settings above
+org-agenda-files, org-capture-templates, org-refile-settings, org-archive-location, org-log-into-drawer, org-log-repeat

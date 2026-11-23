@@ -1,0 +1,11 @@
+#+TITLE: Refile and archive
+# CC0 1.0: public domain. C-c C-w refiles a heading to a target; C-c C-x C-a archives it into refile-archive.org_archive.
+
+* Projects
+** Alpha
+* Inbox
+** Call the plumber
+Some details.
+*** Find the number
+** Buy stamps
+* Someday

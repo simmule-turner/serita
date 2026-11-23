@@ -89,6 +89,9 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 ### `core/capture.js`, `core/lisp-read.js`, `test/capture.test.js`, `test/fixtures/emacs-capture.json`
 - Written from: the author's request (capture as Emacs does it, templates stored as init.el writes them), the Org manual's description of capture templates, and the Emacs 30.1 conformance results for the cp-* cases (the text each template leaves and its errors), read as behavior only. Statement as above.
 
+### `examples/*.org`, `test/examples.test.js`
+- Written from: the author's request (SPEC.md section 9: a runnable example per chapter) and this project's own behavior. The text is original and dedicated to the public domain (CC0 1.0). No other program or source was consulted. Statement as above.
+
 ### `core/calendar.js`, `test/calendar.test.js`
 - Written from: the author's request (a month to tap in the date prompt, with the time) and the calendar's own arithmetic (weeks start on Sunday; minutes step by five as the timestamp keys do). No other program or source was consulted. Statement as above.
 

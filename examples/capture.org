@@ -1,0 +1,11 @@
+#+TITLE: Capture
+# CC0 1.0: public domain. This file is the target of the templates in config.org: C-c c, choose "t", answer, Save.
+
+* Tasks
+** TODO Call the dentist
+  [2026-11-23 Mon]
+* Inbox
+* Journal
+* Log
+| Date | Item |
+|------+------|

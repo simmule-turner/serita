@@ -518,6 +518,39 @@ function browse({ mode, suggested = '', current = null }) {
   });
 }
 
+// ---- Sample documents -----------------------------------------------------------------------------
+
+const SAMPLES = [
+  ['weekly-review', 'Weekly review', 'Agenda for a week'], ['outline', 'Outline and folding', 'TAB, S-TAB'], ['dates', 'Dates and repeaters', 'Schedule, deadline'],
+  ['clocking', 'Clocking and effort', 'Clock in, out'], ['project', 'A project with clocking', 'Tasks and time'], ['capture', 'Capture', 'Templates and a target'],
+  ['refile-archive', 'Refile and archive', 'Move and archive'], ['search-replace', 'Find and replace', 'C-s, M-%'],
+];
+
+/** The list of examples. Returns the chosen file, or undefined. */
+function askSample() {
+  return panel((sheet, close) => {
+    put(sheet, h('h2', {}, 'Sample documents'),
+      h('p', {}, 'Open one to try Serita. It opens as a new tab and is saved only if you save it.'),
+      h('div', { class: 'list' }, SAMPLES.map(([file, label, hint]) => h('button', { class: 'item', onclick: () => close(file) }, h('span', {}, label), h('span', { class: 'meta' }, `${hint} ›`)))),
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Start empty')));
+  });
+}
+
+/** Opens an example as a new, unsaved tab. */
+async function openSample(file) {
+  try {
+    const r = await fetch(`examples/${file}.org`);
+    if (!r.ok) throw new Error(`Could not load ${file}.org`);
+    const id = session.newScratch(`${file}.org`);
+    session.setText(id, await r.text());
+  } catch (e) { failure(e); }
+}
+
+async function openSamples() {
+  const file = await askSample();
+  if (file) await openSample(file);
+}
+
 // ---- Find ------------------------------------------------------------------------------------------
 
 let finding = null;
@@ -928,7 +961,7 @@ async function filesMenu() {
       const names = recent.list();
       put(sheet, h('h2', {}, 'File'),
         h('div', { class: 'list' }, row('New', 'new'), row('Open', 'open'), row('Save', 'save'), row('Save as', 'saveas'),
-          row('Save some buffers', 'some', session.unsavedIds().length === 0)),
+          row('Save some buffers', 'some', session.unsavedIds().length === 0), row('Sample documents', 'samples')),
         names.length ? h('p', {}, 'Recently opened (long-press an entry to remove it from this list; the file is not deleted)') : null,
         names.length ? h('div', { class: 'list recent' }, names.map((n) => {
           let timer = null;
@@ -950,6 +983,7 @@ async function filesMenu() {
   if (what === undefined) return;
   if (what.recent) await openNamed(what.recent);
   else if (what === 'new') session.newScratch();
+  else if (what === 'samples') await openSamples();
   else if (what === 'open') {
     // Opens where the current file is, or where the last opened or saved file was.
     const name = await browse({ mode: 'open', current: currentBuffer()?.name ?? recent.list()[0] ?? null });
@@ -2366,7 +2400,13 @@ async function startSession() {
   let saved = null;
   try { saved = restoreOn() ? JSON.parse(localStorage.getItem(SESSION_KEY) ?? 'null') : null; } catch (e) { failure(e); }
   const r = saved ? await session.restore(saved) : { opened: 0, skipped: [] };
-  if (r.opened === 0) session.newScratch();
+  if (r.opened === 0) {
+    // The first time the app opens, the examples are offered.
+    let first = false;
+    try { first = localStorage.getItem('serita.samples') === null; localStorage.setItem('serita.samples', 'seen'); } catch { /* storage is unavailable */ }
+    const file = first ? await askSample() : undefined;
+    if (file) await openSample(file); else session.newScratch();
+  }
   restoring = false;
   saveSession();
   message(r.skipped.length ? `Could not reopen ${r.skipped.join(', ')}` : r.opened > 0 ? 'Reopened your files' : 'Welcome to Serita', r.skipped.length > 0);

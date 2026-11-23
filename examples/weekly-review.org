@@ -1,0 +1,18 @@
+#+TITLE: Weekly review
+# CC0 1.0: public domain. Open View, Agenda, Week, and go to the week of 2026-11-23: scheduled work, deadlines and a repeating task show by day.
+#+CATEGORY: review
+
+* TODO Plan the week
+SCHEDULED: <2026-11-23 Mon 09:00>
+* TODO Team meeting
+SCHEDULED: <2026-11-24 Tue 10:00-11:00>
+* TODO Submit the expense report
+DEADLINE: <2026-11-27 Fri>
+* TODO Water the plants
+SCHEDULED: <2026-11-25 Wed 08:00 +1w>
+* TODO Call the bank :phone:
+SCHEDULED: <2026-11-26 Thu>
+* DONE Send the invoice
+CLOSED: [2026-11-20 Fri 16:00]
+* Reflect :review:
+At the end of the week: what went well, what to change.

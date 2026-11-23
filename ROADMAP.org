@@ -57,3 +57,7 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Check against interactive Emacs, since batch Emacs has no window: C-n and C-p by screen line on wrapped lines, C-v and M-v by screen, and C-p on the first line away from column 0.
 - After a search is accepted, which folds stay closed (Emacs keeps some closed, depending on the matches made while typing; ours opens the folds around the match).
 - A command palette (M-x style) so every command is reachable even when its button or row is hidden.
+
+* Later: documentation
+- The Info manual, ~manual/*.org~, one file per chapter, with the examples linked from it, and a test that every key and command in the app is described there.
+- Examples for the chapters not built yet (tables with formulas, Babel in Lisp and JavaScript, an export sample) as each arrives.

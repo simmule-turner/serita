@@ -23,5 +23,12 @@ export async function start() {
   await new Promise((r) => server.listen(0, '127.0.0.1', r));
   const base = `http://127.0.0.1:${server.address().port}`;
   const browser = await chromium.launch({ executablePath: process.env.CHROME, headless: true });
+  // A fresh browser profile would show the sample documents on the first open; tests start past that unless they ask for the first run.
+  const newContext = browser.newContext.bind(browser);
+  browser.newContext = async ({ firstRun = false, ...options } = {}) => {
+    const context = await newContext(options);
+    if (!firstRun) await context.addInitScript(() => { try { localStorage.setItem('serita.samples', 'seen'); } catch { /* unavailable */ } });
+    return context;
+  };
   return { base, browser, close: async () => { await browser.close(); server.close(); } };
 }

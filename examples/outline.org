@@ -1,0 +1,20 @@
+#+TITLE: Outline and folding
+# CC0 1.0: public domain. Open this file, then try TAB on a heading, S-TAB anywhere, and the Outline view (View, Outline).
+
+* Projects
+Headings start with stars; the more stars, the deeper the heading. TAB on a heading folds and unfolds it.
+** Garden
+Move a heading up or down with M-up and M-down; promote and demote with M-left and M-right.
+*** Spring
+- [ ] Order seeds
+- [X] Clear the beds
+*** Summer
+** House
+* Reading
+S-TAB cycles the whole buffer: overview, contents, show all.
+** TODO Finish the book :books:
+** DONE Return the library copy :books:
+* Notes
+- A list item folds like a heading: TAB on it.
+  - A child item
+  - Another child

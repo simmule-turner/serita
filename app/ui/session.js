@@ -83,9 +83,9 @@ export function createSession({ app }) {
       };
     },
 
-    newScratch() {
+    newScratch(name = null) {
       const id = nextId++;
-      const title = scratchTitle(id);
+      const title = name ?? scratchTitle(id);
       buffers = [...buffers, { id, name: null, title, text: '', saved: '', version: null, folds: {}, undo: [], redo: [], group: false, at: 0 }];
       current = id;
       changed();
