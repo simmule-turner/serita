@@ -192,7 +192,14 @@ export function toggleCheckbox(text, line) {
   const m = item && CHECKBOX.exec(lines[line].text);
   if (!m) return null;
   const set = (n, patch) => { lines[n] = { ...lines[n], text: patch(lines[n].text) }; };
-  set(line, (t) => `${m[1]}${m[2] === 'X' ? ' ' : 'X'}${t.slice(m[0].length - 1)}`);
+  const kids = item.children.filter((c) => CHECKBOX.test(lines[c.line].text));
+  if (kids.length) {
+    // C-c C-c on an item with checkboxes below it sets its box from them; a partly checked item cannot be switched
+    if (m[2] === '-') throw new Error('Cannot toggle an item with unfinished sub-items');
+    const done = kids.filter((c) => CHECKBOX.exec(lines[c.line].text)[2] === 'X').length;
+    const open = kids.filter((c) => CHECKBOX.exec(lines[c.line].text)[2] === '-').length;
+    set(line, (t) => t.replace(CHECKBOX, (all, pre) => `${pre}${done === kids.length ? 'X' : done === 0 && open === 0 ? ' ' : '-'}]`));
+  } else set(line, (t) => `${m[1]}${m[2] === 'X' ? ' ' : 'X'}${t.slice(m[0].length - 1)}`);
   const boxes = (list) => list.map((c) => CHECKBOX.exec(lines[c.line].text)).filter(Boolean);
   const count = (list) => { const b = boxes(list); return { done: b.filter((x) => x[2] === 'X').length, open: b.filter((x) => x[2] === '-').length, total: b.length }; };
   for (let p = item.parent; p; p = p.parent) {
@@ -272,3 +279,54 @@ export function indentItem(text, line, delta, withChildren) {
 }
 
 const indentOf = (s) => s.match(/^[ \t]*/)[0].length;
+
+const ANY_COOKIE = /\[(\d*)\/(\d*)\]|\[(\d*)%\]/g;
+const fillCookies = (t, done, total) => t.replace(ANY_COOKIE, (all, a) => (a !== undefined ? `[${done}/${total}]` : `[${total ? Math.floor((100 * done) / total) : 0}%]`));
+
+/**
+ * org-update-checkbox-count with a prefix argument: every statistics cookie of a heading or list item is set from the
+ * checkboxes below it, the direct ones, or with hierarchical false all of those under an item. A cookie before the first heading counts
+ * the lists up to it. Items in blocks do not count.
+ */
+export function updateCheckboxCounts(text, { hierarchical = true } = {}) {
+  const a = analyze(text);
+  const lines = splitLines(text);
+  const box = (it) => CHECKBOX.exec(lines[it.line].text);
+  const below = (it) => { const out = []; const walk = (x) => { for (const c of x.children) { out.push(c); if (!hierarchical) walk(c); } }; walk(it); return out; };
+  const stats = (list) => { const b = list.map(box).filter(Boolean); return { done: b.filter((x) => x[2] === 'X').length, total: b.length }; };
+  const set = (n, done, total) => { if (ANY_COOKIE.test(lines[n].text)) lines[n] = { ...lines[n], text: fillCookies(lines[n].text, done, total) }; ANY_COOKIE.lastIndex = 0; };
+  const first = a.heads[0]?.line ?? lines.length;
+  for (const it of a.items) { const { done, total } = stats(below(it)); set(it.line, done, total); }
+  for (const h of a.heads) { const { done, total } = stats(a.items.filter((x) => !x.parent && x.line > h.line && x.line < h.bodyEnd)); set(h.line, done, total); }
+  const inItem = new Set(a.items.map((x) => x.line));
+  for (let n = 0; n < first; n++) if (!inItem.has(n)) { const { done, total } = stats(a.items.filter((x) => !x.parent && x.line > n && x.line < first)); set(n, done, total); }
+  return join(lines);
+}
+
+/** org-update-statistics-cookies for TODO counts: a heading cookie counts its child headings that have a TODO word (all descendants when hierarchical is false). */
+export function updateTodoCounts(text, { hierarchical = true } = {}) {
+  const a = analyze(text);
+  const lines = splitLines(text);
+  const todo = a.todo ?? headOf(text, a.heads[0]?.line ?? 0).todo;
+  for (const h of a.heads) {
+    if (!COOKIE.test(lines[h.line].text)) continue;
+    const kids = []; const walk = (x) => { for (const c of x.children) { kids.push(c); if (!hierarchical) walk(c); } }; walk(h);
+    const withState = kids.filter((c) => c.todo !== null);
+    if (!withState.length) continue;
+    lines[h.line] = { ...lines[h.line], text: fillCookies(lines[h.line].text, withState.filter((c) => todo.done.includes(c.todo)).length, withState.length) };
+  }
+  return join(lines);
+}
+
+/** C-c C-c on a statistics cookie of a heading or list item: the cookie is set from the checkboxes below; null when the cursor is not on one. */
+export function updateCookieAt(text, line, col) {
+  const lines = splitLines(text);
+  const t = lines[line]?.text ?? '';
+  const hit = [...t.matchAll(ANY_COOKIE)].find((m) => col >= m.index && col <= m.index + m[0].length);
+  if (!hit || !(/^\*+ /.test(t) || CHECKBOX_OR_ITEM.test(t))) return null;
+  const next = splitLines(updateCheckboxCounts(text))[line].text;
+  const mine = [...next.matchAll(ANY_COOKIE)].find((m) => m.index === hit.index);
+  lines[line] = { ...lines[line], text: t.slice(0, hit.index) + (mine?.[0] ?? hit[0]) + t.slice(hit.index + hit[0].length) };
+  return { text: join(lines), line, col: hit.index + (mine?.[0] ?? hit[0]).length };
+}
+const CHECKBOX_OR_ITEM = /^[ \t]*(?:[-+*]|\d+[.)])[ \t]/;

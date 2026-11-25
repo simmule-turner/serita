@@ -78,15 +78,16 @@ export function createSession({ app }) {
         buffers: buffers.map((b) => ({
           id: b.id, name: b.name, text: b.text, version: b.version, folds: b.folds,
           title: b.name === null ? b.title : baseName(b.name),
-          dirty: b.name === null ? b.text !== '' : b.text !== b.saved || b.version === null,
+          dirty: b.name === null ? b.text !== b.saved : b.text !== b.saved || b.version === null,
         })),
       };
     },
 
-    newScratch(name = null) {
+    /** A buffer with no file. Text given here (a sample) counts as unchanged until it is edited. */
+    newScratch(name = null, text = '') {
       const id = nextId++;
       const title = name ?? scratchTitle(id);
-      buffers = [...buffers, { id, name: null, title, text: '', saved: '', version: null, folds: {}, undo: [], redo: [], group: false, at: 0 }];
+      buffers = [...buffers, { id, name: null, title, text, saved: text, version: null, folds: text ? startupFolds(text) : {}, undo: [], redo: [], group: false, at: 0 }];
       current = id;
       changed();
       return id;
@@ -170,7 +171,7 @@ export function createSession({ app }) {
       const b = find(id);
       const dirty = b.text !== b.saved || b.version === null;
       if (dirty && b.name !== null && !force) return false;
-      if (b.name === null && b.text !== '' && !force) return false;
+      if (b.name === null && b.text !== b.saved && !force) return false;
       const i = buffers.findIndex((x) => x.id === id);
       buffers = buffers.filter((x) => x.id !== id);
       if (current === id) current = buffers[Math.min(i, buffers.length - 1)]?.id ?? null;
@@ -180,7 +181,7 @@ export function createSession({ app }) {
 
     /** Buffers that Save some buffers asks about: file buffers with unsaved changes, and scratch buffers with text. */
     unsavedIds() {
-      return buffers.filter((b) => (b.name === null ? b.text !== '' : b.text !== b.saved || b.version === null)).map((b) => b.id);
+      return buffers.filter((b) => (b.name === null ? b.text !== b.saved : b.text !== b.saved || b.version === null)).map((b) => b.id);
     },
 
     /** @returns {Promise<SaveResult>} */
@@ -223,6 +224,22 @@ export function createSession({ app }) {
       if (!r) return;
       replace(b.id, { ...retext(b, r.text), saved: r.text, version: r.version });
       changed();
+    },
+
+    /**
+     * Compares an open file with storage. Without unsaved edits a changed file is reloaded. Returns 'same', 'reloaded',
+     * 'changed' (it changed and the buffer has unsaved edits), 'gone' (it is no longer in storage) or 'new' (not saved yet).
+     */
+    async check(id) {
+      const b = find(id);
+      if (b.name === null || b.version === null) return 'new';
+      const r = await app.storage.read(b.name);
+      if (!r) return 'gone';
+      if (r.version === b.version) return 'same';
+      if (b.text !== b.saved) return 'changed';
+      replace(b.id, { ...retext(b, r.text), saved: r.text, version: r.version });
+      changed();
+      return 'reloaded';
     },
 
     /** Three-way merge of a conflict: { clean, text } or the segments to choose from. */

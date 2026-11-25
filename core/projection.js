@@ -8,18 +8,23 @@ import { splitLines } from './parse.js';
  * @param {string} text
  * @param {Set<number>} hidden   line numbers to leave out
  * @param {Set<number>} dots     line numbers that get "..." after them
- * @param {{ hideStars?: boolean }} [o]  hideStars shows all but the last leading star as a space (same length)
+ * @param {{ hideStars?: boolean, indent?: boolean }} [o]  hideStars shows all but the last leading star as a space (same length);
+ *   indent (org-indent-mode) puts two columns per level before each line, text under a heading lining up with the heading's text, and hides the stars
  */
-export function project(text, hidden, dots, { hideStars = false } = {}) {
+export function project(text, hidden, dots, { hideStars = false, indent = false } = {}) {
   const segs = [];
   let value = '';
   let full = 0;
+  let level = 0;
   splitLines(text).forEach((l, line) => {
+    const star = /^\*+(?= )/.exec(l.text);
+    if (star) level = star[0].length;
     if (!hidden.has(line)) {
-      const shown = hideStars ? l.text.replace(/^\*+(?= )/, (m) => ' '.repeat(m.length - 1) + '*') : l.text;
+      const pre = !indent ? '' : ' '.repeat(star ? star[0].length - 1 : level * 2);
+      const shown = hideStars || indent ? l.text.replace(/^\*+(?= )/, (m) => ' '.repeat(m.length - 1) + '*') : l.text;
       const mark = dots.has(line) ? '...' : '';
-      segs.push({ line, pv: value.length, full, textLen: l.text.length, dots: mark.length });
-      value += shown + mark + l.eol;
+      segs.push({ line, pv: value.length, pre: pre.length, full, textLen: l.text.length, dots: mark.length });
+      value += pre + shown + mark + l.eol;
     }
     full += l.text.length + l.eol.length;
   });
@@ -41,7 +46,8 @@ function segAt(segs, key, p) {
 export function toFull({ segs }, p) {
   const s = segAt(segs, 'pv', p);
   if (!s) return 0;
-  const off = p - s.pv;
+  const off = p - s.pv - s.pre;
+  if (off < 0) return s.full;
   if (off <= s.textLen) return s.full + off;
   if (off <= s.textLen + s.dots) return s.full + s.textLen;
   return s.full + off - s.dots;
@@ -50,7 +56,7 @@ export function toFull({ segs }, p) {
 /** An offset in the real text to the shown text. A place inside folded text becomes the end of the heading above it. */
 export function toShown({ segs }, f) {
   const s = segAt(segs, 'full', f);
-  return s ? s.pv + Math.min(f - s.full, s.textLen) : 0;
+  return s ? s.pv + s.pre + Math.min(f - s.full, s.textLen) : 0;
 }
 
 /** The line number (in the real text) at a place in the shown text. */
@@ -65,7 +71,7 @@ export function lineAt({ segs }, p) {
 export function touchedFold({ segs }, from, to, insert) {
   for (const s of segs) {
     if (s.dots === 0) continue;
-    const a = s.pv + s.textLen;
+    const a = s.pv + s.pre + s.textLen;
     if ((from < a + s.dots + 1 && to > a) || (insert.includes('\n') && from >= a && from <= a + s.dots)) return s.line;
   }
   return null;

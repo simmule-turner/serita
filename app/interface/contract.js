@@ -17,7 +17,7 @@
  *   full names with the size in bytes (null when the storage does not say), sorted by name. With shallow, a storage that can list one folder
  *   at a time (WebDAV) returns only the folder that holds the prefix, with its subfolders as { folder: true }; the others return every file
  * @property {(name: string) => Promise<void>} remove
- * @property {(name: string, cb: (name: string) => void) => () => void} watch  returns unsubscribe
+ * @property {(name: string, cb: (name: string, external?: boolean) => void) => () => void} watch  returns unsubscribe; `external` is true for a change made in another tab
  * @property {() => string[]} providers
  *
  * @typedef {object} AppInterface

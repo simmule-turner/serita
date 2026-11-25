@@ -1,5 +1,20 @@
 #+TITLE: Changelog
 
+* 0.10.2
+Checkbox counts follow Emacs: C-c C-c on a ~[/]~ or ~[%]~ cookie recounts it, a heading counts only the checkboxes of its own list, and C-c C-c on an item with checkboxes below it sets its box from them. A new ~org-refile-use-cache~ setting keeps the refile targets until you clear them (Clear refile cache in the palette); tables gained Sum column and Blank field, and converting text to a table splits at bars too. Verified: against Emacs 30.1 with Org 9.7.11.
+
+* 0.10.1
+Tables in the Outline view can wrap long cells so a row grows taller instead of the grid scrolling sideways. Three settings, named after the org-table-widget package, control it: Wrap table cells, Table width (the share of the screen a table may use) and Stripe table rows. All are off or 100% by default, so tables look as before until you turn them on.
+
+* 0.10.0
+Tables work as they do in Emacs. In the Text view TAB, RET, S-RET, M-RET, the M-arrows, C-c -, C-c RET, C-c ^ (sort), C-c | (make or convert) and C-c ? act on the table at the cursor, and the palette has the ~org-table-~ commands. In the Outline view a table is a grid; tap a cell for its sheet. Failed saves caused by a server error (5xx) now queue like offline saves, Send queued saves in the palette retries them and reopens the list of clashes, and a file changed in another tab of the app is checked at once. Verified: table results against Emacs 30.1 with Org 9.7.11.
+
+* 0.9.2
+Capture now works with Emacs's default Task template, which is a real setting you can see, edit and reset; it failed with an error before. A file you have open is checked against storage when you switch to its tab or return to the app: it reloads if you have no edits, and tells you when it changed under your edits. Sample documents open unmodified until you edit them.
+
+* 0.9.1
+The agenda is much faster to move around in, and its rows line up: two spaces, an eight-character category, a fixed time column, then the text. The calendar marks days with up to three small squares (green birthday, yellow holiday, blue anything else) without changing the layout. Hide leading stars now uses Emacs's ~org-hide-leading-stars~, and ~org-indent-mode~ is new, with ~org-startup-indented~, ~#+STARTUP: indent~ and ~noindent~. Daylight saving and solar times follow your real time zone.
+
 * 0.8.8
 Three new sample documents show how to use the diary, contacts and birthdays: a diary with dates and calendar expressions, a contacts file, and an agenda file that shows each birthday on its day. Find them under File, Sample documents, and the settings example lists local holidays.
 

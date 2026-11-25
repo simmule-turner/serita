@@ -16,7 +16,7 @@ await page.goto(`${base}/`);
 await page.waitForSelector('.tab.current');
 const sheet = page.locator('.sheet');
 const btn = (n) => sheet.getByRole('button', { name: n, exact: true });
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/22 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/26 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
 const at = (text, offset) => page.evaluate(([t, o]) => { const e = document.getElementById('editor'); e.value = t; e.dispatchEvent(new Event('input')); e.focus(); e.setSelectionRange(o, o); }, [text, offset]);
 const pos = () => page.evaluate(() => { const e = document.getElementById('editor'); const b = e.value.slice(0, e.selectionStart).split('\n'); return `${b.length}:${b.at(-1).length}`; });
 const msg = () => page.locator('#message').textContent();
@@ -45,7 +45,7 @@ ok((await msg()) === 'Quit' && (await beeps()) === before + 2, 'C-g says Quit an
 await at('a\nb', 2);
 await page.keyboard.press('Control+n');
 ok((await pos()) === '2:1' && (await msg()) === 'End of buffer', 'C-n on the last line goes to its end, then says End of buffer');
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/22 settings/).click(); await btn(/Beep on errors/).click(); await btn('‹ Settings').click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/26 settings/).click(); await btn(/Beep on errors/).click(); await btn('‹ Settings').click(); await btn('Close').click();
 const quiet = await beeps();
 await page.keyboard.press('Control+g');
 ok((await beeps()) === quiet, 'with Beep on errors off, nothing sounds');

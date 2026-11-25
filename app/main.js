@@ -12,15 +12,15 @@ import { formatName, parseName } from '../core/names.js';
 import { formatSize } from '../core/bytes.js';
 import { VERSION } from './version.js';
 import { h, kept } from './ui/dom.js';
-import { analyze, cycle, cycleGlobal, diff, ellipsisLines, hiddenLines, reveal } from '../core/outline.js';
+import { analyze, cycle, cycleGlobal, diff, ellipsisLines, hiddenLines, reveal, startupIndent } from '../core/outline.js';
 import { backwardChar, backwardWord, forwardChar, forwardWord, lineEnd as endOfLine, lineStart as startOfLine, moveVertical } from '../core/motion.js';
-import { DEFAULT_TAGS_COLUMN, changeLevel, cycleTodo, indentItem, insertHeadingAfter, insertHeadingHere, moveItem, moveSubtree, setPriority, setTags, setTitle, stepPriority, toggleCheckbox } from '../core/outline-edit.js';
+import { DEFAULT_TAGS_COLUMN, changeLevel, cycleTodo, indentItem, insertHeadingAfter, insertHeadingHere, moveItem, moveSubtree, setPriority, setTags, setTitle, stepPriority, toggleCheckbox, updateCookieAt } from '../core/outline-edit.js';
 import { parseStringList, formatStringList } from '../core/lisp-list.js';
 import { clockIn, clockOut, cancelClock, openClock, inClockedEntry } from '../core/clock.js';
 import { parseTemplates, promptsOf, expand, place } from '../core/capture.js';
 import { bodyOf, setBody } from '../core/body.js';
 import { MONTH_NAMES, monthGrid, stepMonth, stepTime } from '../core/calendar.js';
-import { archiveSubtree, ARCHIVE_CONTEXT, newChild, archiveToSibling, listTargets, parseRefileSettings, refile, refileMessage, toggleArchiveTag } from '../core/refile.js';
+import { archiveSubtree, ARCHIVE_CONTEXT, checkTarget, newChild, archiveToSibling, listTargets, parseRefileSettings, RefileCache, refile, refileMessage, toggleArchiveTag } from '../core/refile.js';
 import { isEffort } from '../core/effort.js';
 import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../core/properties.js';
 import { agenda, searchView, tagsView, todoList } from '../core/agenda.js';
@@ -32,6 +32,7 @@ import { completeRepeat, formatStamp, insertStamp, parseDate, setPlanning, shift
 import { createMinibuffer } from './ui/minibuffer.js';
 import { duplicateLine, indentLine, killLine, killWholeLine, lineInfo, lineStart, moveLine } from '../core/lines.js';
 import { createKillRing } from '../core/killring.js';
+import * as table from '../core/table.js';
 import { lineAt, project, toFull, toShown, touchedFold } from '../core/projection.js';
 import { renderOutline } from './ui/outline-view.js';
 import { TEXT_KEYS, chordOf, createKeymap } from './ui/keys.js';
@@ -74,7 +75,15 @@ let pendingSel = null; // where the cursor goes after the next render, in the re
 const setting = (k) => config.settings()[k];
 const viewMode = () => (setting('view.mode') === 'outline' ? 'outline' : 'text');
 const emacsKeys = () => setting('view.emacsKeys') === 'true';
-const hideStars = () => setting('view.hideStars') === 'true';
+const hideStars = () => setting('org-hide-leading-stars') === 't';
+const wrapCells = () => setting('org-table-widget-wrap-columns') === 't';
+const zebraRows = () => setting('org-table-widget-zebra-stripe') === 't';
+/** The share of the screen width a table may use, from 0.3 to 1; 1 unless set. */
+const widthFraction = () => { const f = Number(setting('org-table-widget-max-width-fraction')); return f >= 0.3 && f <= 1 ? f : 1; };
+const indentSetting = () => setting('org-startup-indented') === 't';
+const indentOverride = new Map(); // buffer id to the person's toggle of org-indent-mode, kept until the app closes
+/** org-indent-mode for a buffer: the person's toggle, else what #+STARTUP says, else org-startup-indented. */
+const indentOn = (b) => indentOverride.get(b.id) ?? startupIndent(b.text) ?? indentSetting();
 const setView = (mode) => config.update({ settings: { 'view.mode': mode } });
 const toolRowOn = (mode) => (mode === 'text' ? setting('view.toolRowText') !== 'false' : setting('view.toolRowOutline') === 'true');
 const THEMES = ['system', 'light', 'dark'];
@@ -204,7 +213,7 @@ function renderModeLine() {
 function render() {
   const s = session.state();
   $('tabs').replaceChildren(...s.buffers.map((b) => h('span', { class: `tab${b.id === s.current ? ' current' : ''}` },
-    h('button', { class: 'title', onclick: () => { if (b.id !== shownId) leaveHere(); session.select(b.id); }, title: b.name ?? b.title }, b.title + (b.dirty ? ' *' : '')),
+    h('button', { class: 'title', onclick: () => { if (b.id !== shownId) leaveHere(); session.select(b.id); checkChanged(b.id); }, title: b.name ?? b.title }, b.title + (b.dirty ? ' *' : '')),
     h('button', { 'aria-label': `Close ${b.title}`, onclick: () => closeBuffer(b.id) }, '×'))));
   const shown = s.buffers.find((x) => x.id === s.current);
   const mode = viewMode();
@@ -227,7 +236,7 @@ function render() {
   editor.disabled = !shown;
   if (shown) {
     const a = analyze(shown.text);
-    const proj = project(shown.text, hiddenLines(a.foldables, shown.folds), ellipsisLines(a.foldables, shown.folds), { hideStars: hideStars() });
+    const proj = project(shown.text, hiddenLines(a.foldables, shown.folds), ellipsisLines(a.foldables, shown.folds), { hideStars: hideStars(), indent: indentOn(shown) });
     cur = { id: shown.id, a, proj };
     if (editor.value !== proj.value) {
       editor.value = proj.value;
@@ -235,7 +244,7 @@ function render() {
       if (sel) editor.setSelectionRange(toShown(proj, sel.start), toShown(proj, sel.end));
     }
     pendingSel = null;
-    if (mode === 'outline') renderOutline($('outline'), { text: shown.text, folds: shown.folds, hideStars: hideStars(), on: outlineOn });
+    if (mode === 'outline') renderOutline($('outline'), { text: shown.text, folds: shown.folds, hideStars: hideStars(), indent: indentOn(shown), tables: { wrap: wrapCells(), zebra: zebraRows(), fraction: widthFraction() }, on: outlineOn });
     if (!$('keyrow').hidden) keyRow.layout();
   } else {
     cur = null;
@@ -528,7 +537,7 @@ const SAMPLES = [
   ['weekly-review', 'Weekly review', 'Agenda for a week'], ['outline', 'Outline and folding', 'TAB, S-TAB'], ['dates', 'Dates and repeaters', 'Schedule, deadline'],
   ['clocking', 'Clocking and effort', 'Clock in, out'], ['project', 'A project with clocking', 'Tasks and time'], ['capture', 'Capture', 'Templates and a target'],
   ['refile-archive', 'Refile and archive', 'Move and archive'], ['search-replace', 'Find and replace', 'C-s, M-%'],
-  ['diary', 'Diary entries', 'Dates and sexps'], ['contacts', 'Contacts and birthdays', 'BIRTHDAY property'], ['agenda-birthdays', 'Agenda with birthdays', 'org-contacts-anniversaries'], ['config', 'Settings example', 'Every setting'],
+  ['diary', 'Diary entries', 'Dates and sexps'], ['contacts', 'Contacts and birthdays', 'BIRTHDAY property'], ['agenda-birthdays', 'Agenda with birthdays', 'org-contacts-anniversaries'], ['tables', 'Tables', 'Align, sort, edit'], ['config', 'Settings example', 'Every setting'],
 ];
 
 /** The list of examples. Returns the chosen file, or undefined. */
@@ -546,8 +555,7 @@ async function openSample(file) {
   try {
     const r = await fetch(`examples/${file}.org`);
     if (!r.ok) throw new Error(`Could not load ${file}.org`);
-    const id = session.newScratch(`${file}.org`);
-    session.setText(id, await r.text());
+    session.newScratch(`${file}.org`, await r.text());
   } catch (e) { failure(e); }
 }
 
@@ -771,7 +779,7 @@ async function settings() {
         h('div', { class: 'list' },
           h('button', { class: 'item', onclick: () => close('github') }, h('span', {}, 'GitHub'), h('span', { class: 'meta' }, `${summary('github')} ›`)),
           h('button', { class: 'item', onclick: () => close('webdav') }, h('span', {}, 'WebDAV'), h('span', { class: 'meta' }, `${summary('webdav')} ›`)),
-          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '22 settings ›')),
+          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '26 settings ›')),
           h('button', { class: 'item', onclick: () => close('appearance') }, h('span', {}, 'Appearance'), h('span', { class: 'meta' }, `${theme()[0].toUpperCase()}${theme().slice(1)}, ${fontSize()}px ›`)),
           h('button', { class: 'item', onclick: () => close('restore') }, h('span', {}, 'Restore open files on start'), h('span', { class: 'meta' }, restoreOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('tools-text') }, h('span', {}, 'Tool row in the Text view'), h('span', { class: 'meta' }, toolRowOn('text') ? 'On ›' : 'Off ›')),
@@ -812,7 +820,7 @@ async function emacsSettings() {
           item('archive-context', 'Archive saves', archiveContext().length ? archiveContext().join(' ') : 'Nothing'),
           item('time-grid', 'Agenda time grid', timeGridOn() ? 'On' : 'Off'),
           item('beep', 'Beep on errors', beepOn() ? 'On' : 'Off'),
-          item('capture-templates', 'Capture templates', (() => { const n = captureText() ? parseTemplates(captureText()).length : 0; return `${n} ${n === 1 ? 'template' : 'templates'}`; })()),
+          item('capture-templates', 'Capture templates', (() => { const n = parseTemplates(captureText()).length; return `${n} ${n === 1 ? 'template' : 'templates'}`; })()),
           item('contacts-files', 'Contacts files', contactFiles().length ? `${contactFiles().length} ${contactFiles().length === 1 ? 'file' : 'files'}` : 'None'),
           item('birthday-property', 'Birthday property', contactProperty()),
           item('date-style', 'Date style', { american: 'American', european: 'European', iso: 'ISO' }[dateStyle()]),
@@ -820,6 +828,7 @@ async function emacsSettings() {
           item('diary-on', 'Diary in the agenda', diaryOn() ? 'On' : 'Off'),
           item('emacs', 'Emacs keys', emacsKeys() ? 'On' : 'Off'),
           item('stars', 'Hide leading stars', hideStars() ? 'On' : 'Off'),
+          item('indented', 'Indent files on open', indentSetting() ? 'On' : 'Off'),
           item('holidays', 'Holidays', holidayKinds().length ? holidayKinds().map((k) => HOLIDAY_KINDS.find((x) => x[0] === k)?.[1] ?? k).join(', ') : 'None'),
           item('holidays-agenda', 'Holidays in the agenda', holidaysInAgenda() ? 'On' : 'Off'),
           item('holidays-local', 'Local holidays', localHolidays() ? 'Custom' : 'None'),
@@ -827,6 +836,9 @@ async function emacsSettings() {
           item('log-repeat', 'Log repeats', { time: 'Time', note: 'Note', off: 'Off' }[logRepeatMode()]),
           item('refile', 'Refile targets', refileText() ? 'Custom' : 'Top level'),
           item('refile-new', 'Refile new headings', { nil: 'Not allowed', confirm: 'Ask', t: 'Allowed' }[refileNew()]),
+          item('table-wrap', 'Wrap table cells', wrapCells() ? 'On' : 'Off'),
+          item('table-width', 'Table width', `${Math.round(widthFraction() * 100)}%`),
+          item('table-zebra', 'Stripe table rows', zebraRows() ? 'On' : 'Off'),
           item('tags-column', 'Tag column', String(tagsColumn()))),
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
     });
@@ -853,7 +865,11 @@ async function emacsSettings() {
     else if (what === 'emacs') config.update({ settings: { 'view.emacsKeys': String(!emacsKeys()) } });
     else if (what === 'log-drawer') await logDrawerDialog();
     else if (what === 'log-repeat') await logRepeatDialog();
-    else if (what === 'stars') config.update({ settings: { 'view.hideStars': String(!hideStars()) } });
+    else if (what === 'stars') config.update({ settings: { 'org-hide-leading-stars': hideStars() ? '' : 't' } });
+    else if (what === 'indented') config.update({ settings: { 'org-startup-indented': indentSetting() ? '' : 't' } });
+    else if (what === 'table-wrap') config.update({ settings: { 'org-table-widget-wrap-columns': wrapCells() ? '' : 't' } });
+    else if (what === 'table-zebra') config.update({ settings: { 'org-table-widget-zebra-stripe': zebraRows() ? '' : 't' } });
+    else if (what === 'table-width') await tableWidthDialog();
     else await tagsColumnDialog();
     note = $('message').classList.contains('error') ? '' : $('message').textContent;
   }
@@ -876,6 +892,23 @@ async function tagsColumnDialog() {
   if (value === RESET) { config.update({ settings: { 'org.tagsColumn': '' } }); message(`Tag column is ${DEFAULT_TAGS_COLUMN}`); return; }
   if (!/^-?\d+$/.test(value.trim())) { message('Enter a whole number', true); return; }
   config.update({ settings: { 'org.tagsColumn': String(Number(value)) } });
+}
+
+async function tableWidthDialog() {
+  const value = await panel((sheet, close) => {
+    const input = h('input', { value: String(Math.round(widthFraction() * 100)), inputmode: 'numeric', autocomplete: 'off', 'aria-label': 'Table width in percent' });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); close(input.value); } });
+    put(sheet, h('h2', {}, 'Table width'),
+      h('p', {}, 'The share of the screen width, from 30 to 100 percent, that a table in the Outline view may use before it scrolls sideways or, with Wrap table cells on, wraps. The default is 100.'),
+      input,
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { onclick: () => close(RESET) }, 'Reset'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Set')));
+    input.focus();
+  });
+  if (value === undefined) return;
+  if (value === RESET) { config.update({ settings: { 'org-table-widget-max-width-fraction': '' } }); message('Table width is 100%'); return; }
+  const n = Number(value.trim());
+  if (!/^\d+$/.test(value.trim()) || n < 30 || n > 100) { message('Enter a number from 30 to 100', true); return; }
+  config.update({ settings: { 'org-table-widget-max-width-fraction': String(n / 100) } });
 }
 
 /** The Appearance screen: theme, font, text size and paragraph spacing. Each change shows at once. */
@@ -1045,8 +1078,8 @@ $('btn-menu').addEventListener('click', async () => {
 
 /** org-capture-templates as the text of its init.el form; Emacs's own template when none is set. */
 const DEFAULT_TEMPLATES = '(setq org-capture-templates \'(("t" "Task" entry (file+headline ".notes" "Tasks") "* TODO %?\\n  %u\\n  %a")))';
-const captureText = () => config.settings()['org-capture-templates'] ?? '';
-const captureTemplates = () => parseTemplates(captureText() || DEFAULT_TEMPLATES);
+const captureText = () => config.settings()['org-capture-templates'] || DEFAULT_TEMPLATES;
+const captureTemplates = () => parseTemplates(captureText());
 
 /** The multi-line field of the capture screen, with the caret where %? was. */
 function askCapture(title, target, initial, caret) {
@@ -1066,7 +1099,8 @@ async function fileCapture(tpl, captured) {
   let buffer = session.state().buffers.find((b) => b.name === name);
   if (!buffer) {
     const opened = await session.openFile(name);
-    buffer = opened.ok ? session.state().buffers.find((b) => b.id === opened.id) : session.state().buffers.find((b) => b.id === session.createFile(name, ''));
+    const id = opened.ok ? opened.id : session.createFile(name, '');
+    buffer = session.state().buffers.find((b) => b.id === id);
   }
   const r = place(buffer.text, tpl, captured);
   session.apply(buffer.id, { text: r.text });
@@ -1103,7 +1137,7 @@ async function captureTemplatesDialog() {
   for (;;) {
     const text = await panel((sheet, close) => {
       const input = h('textarea', { rows: '12', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Capture templates', style: 'font-family:monospace' });
-      input.value = captureText() || '(setq org-capture-templates\n  \'())';
+      input.value = captureText();
       put(sheet, h('h2', {}, 'Capture templates'),
         h('p', {}, 'The templates as init.el sets them, with setq or add-to-list.'), input,
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { onclick: () => close(RESET) }, 'Reset'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
@@ -1117,6 +1151,7 @@ async function captureTemplatesDialog() {
 // ---- Refile and archive -------------------------------------------------------------------------
 
 const DEFAULT_REFILE = '(setq org-refile-targets \'((nil :level . 1)))';
+const refileCache = new RefileCache();
 const refileText = () => config.settings()['org-refile-settings'] ?? '';
 /** org-archive-mark-done: null (nil), true (t) or a keyword. org-archive-save-context-info: the names saved. */
 const archiveMarkDone = () => { const v = setting('org-archive-mark-done'); return !v || v === 'nil' ? null : v === 't' ? true : v; };
@@ -1162,7 +1197,7 @@ async function refileHere(copy = false, hd0 = enclosingHead()) {
     for (const t of settings.targets) for (const n of t.files === 'agenda' ? agendaFileNames() : t.files ?? []) names.add(n);
     const files = [];
     for (const n of names) { const x = n === cname ? b : await bufferFor(n); if (x) files.push({ name: n, text: x.text, id: x.id }); }
-    const targets = listTargets(files, settings, { current: cname, agenda: agendaFileNames() });
+    const targets = refileCache.get(settings, cname, () => listTargets(files, settings, { current: cname, agenda: agendaFileNames() }));
     if (!targets.length) { message('No refile targets', true); return; }
     const rows = targets.map((x) => ({ label: x.label, meta: files.length > 1 ? x.file : null, value: x }));
     let t = await choose(copy ? 'Refile (and keep) to' : 'Refile to', [...rows, ...(refileNew() === 'nil' ? [] : [{ group: 'New' }, { label: 'New heading under…', value: 'new' }])]);
@@ -1182,6 +1217,7 @@ async function refileHere(copy = false, hd0 = enclosingHead()) {
       home.text = made.text;
     }
     const same = t.file === cname;
+    if (settings.cache && t !== 'new') checkTarget(t, (files.find((f) => f.name === t.file) ?? b).text);
     const other = same ? null : files.find((f) => f.name === t.file);
     const r = refile(b.text, hd.line, t, { otherText: other?.text ?? null, reverse: settings.reverse, copy, column: tagsColumn() });
     session.apply(b.id, { text: r.text });
@@ -1229,7 +1265,7 @@ async function refileSettingsDialog() {
       const input = h('textarea', { rows: '8', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Refile targets', style: 'font-family:monospace' });
       input.value = refileText() || DEFAULT_REFILE;
       put(sheet, h('h2', {}, 'Refile targets'),
-        h('p', {}, 'org-refile-targets, org-refile-use-outline-path and org-reverse-note-order, as init.el sets them with setq.'), input,
+        h('p', {}, 'org-refile-targets, org-refile-use-outline-path, org-refile-use-cache and org-reverse-note-order, as init.el sets them with setq.'), input,
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { onclick: () => close(RESET) }, 'Reset'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
     });
     if (text === undefined) return;
@@ -1475,8 +1511,9 @@ async function agendaScreen() {
         if (st.marked.has(k)) st.marked.delete(k); else st.marked.add(k);
         ev.currentTarget.classList.toggle('marked', st.marked.has(k)); ev.currentTarget.setAttribute('aria-pressed', String(st.marked.has(k))); count();
       } },
-        h('span', { class: `alabel${e.late > 0 && e.kind !== 'stamp' ? ' late' : ''}` }, [e.clock, e.label].filter(Boolean).join(' ') || e.category),
-        h('span', { class: 'atitle' }, [e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ')),
+        h('span', { class: 'acat' }, e.category.slice(0, 8)),
+        h('span', { class: `atime${e.late > 0 && e.kind !== 'stamp' ? ' late' : ''}` }, e.clock),
+        h('span', { class: 'atitle' }, [e.label, e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ')),
         e.tags.length ? h('span', { class: 'atags' }, `:${e.tags.join(':')}:`) : null);
       const body = st.kind === 'agenda'
         ? view.days.flatMap((d) => [h('div', { class: `aday${d.today ? ' today' : ''}` }, d.head), ...d.rows.map((r) => (r.entry ? row(r.entry) : h('div', { class: `agrid${r.text.includes(' now') ? ' now' : ''}` }, h('span', { class: 'agtime' }, r.text.trim().replace(/\.{6}.*$/, '') + (r.text.includes(' now') ? ' now' : '')), h('span', { class: 'agline' }))))])
@@ -1557,19 +1594,23 @@ async function calendarScreen() {
       const two = (n) => String(n).padStart(2, '0');
       const cell = (c) => {
         const iso = `${c.y}-${two(c.m)}-${two(c.d)}`;
-        return h('button', { class: `day${c.other ? ' other' : ''}${iso === isoOf(t) ? ' today' : ''}${iso === calendarState.day ? ' on' : ''}${byDay.get(iso)?.some((e) => !e.quiet) || hol.has(iso) ? ' has' : ''}`, 'aria-label': iso, onclick: () => close({ day: iso }) }, String(c.d));
+        const here = (byDay.get(iso) ?? []).filter((e) => !e.quiet);
+        const marks = [here.some((e) => e.birthday) ? 'birthday' : null, hol.has(iso) || here.some((e) => e.holiday) ? 'holiday' : null, here.some((e) => !e.birthday && !e.holiday) ? 'other' : null].filter(Boolean);
+        return h('button', { class: `day${c.other ? ' other' : ''}${iso === isoOf(t) ? ' today' : ''}${iso === calendarState.day ? ' on' : ''}`, 'aria-label': iso, onclick: () => close({ day: iso }) },
+          h('span', { class: 'dn' }, String(c.d)), h('span', { class: 'marks' }, ...marks.map((k) => h('i', { class: k }))));
       };
       const picked = byDay.get(calendarState.day) ?? [];
       const row = (e) => h('button', { class: 'arow', onclick: () => close({ jump: e }) },
-        h('span', { class: `alabel${e.late > 0 && e.kind !== 'stamp' ? ' late' : ''}` }, [e.clock, e.label].filter(Boolean).join(' ') || e.category),
-        h('span', { class: 'atitle' }, [e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ')),
+        h('span', { class: 'acat' }, e.category.slice(0, 8)),
+        h('span', { class: `atime${e.late > 0 && e.kind !== 'stamp' ? ' late' : ''}` }, e.clock),
+        h('span', { class: 'atitle' }, [e.label, e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ')),
         e.tags.length ? h('span', { class: 'atags' }, `:${e.tags.join(':')}:`) : null);
       put(sheet,
         h('div', { class: 'abar' }, h('button', { 'aria-label': 'Earlier', onclick: () => close({ move: -1 }) }, h('span', { class: 'chev left' })), h('div', { class: 'atitlebar' }, `${MONTH_NAMES[m - 1]} ${y}`), h('button', { 'aria-label': 'Later', onclick: () => close({ move: 1 }) }, h('span', { class: 'chev right' }))),
         Object.assign(h('div', { class: 'abody' },
           h('div', { class: 'cal' }, ...['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((n) => h('span', { class: 'dow' }, n)), ...monthGrid(y, m).map(cell)),
           h('div', { class: 'aday' }, calendarState.day),
-          ...(hol.get(calendarState.day) ?? []).map((n) => h('div', { class: 'arow holiday' }, h('span', { class: 'alabel' }, 'Holiday'), h('span', { class: 'atitle' }, n))),
+          ...(hol.get(calendarState.day) ?? []).map((n) => h('div', { class: 'arow holiday' }, h('span', { class: 'acat' }, 'Holiday'), h('span', { class: 'atime' }, ''), h('span', { class: 'atitle' }, n))),
           ...(picked.length || hol.has(calendarState.day) ? picked.map(row) : [h('p', { class: 'aempty' }, 'Nothing on this day')])), sidewaysSwipe((dir) => close({ move: dir }))),
         h('div', { class: 'abar' }, h('button', { onclick: () => close({ today: true }) }, 'Today'), h('button', { onclick: () => close({ agenda: true }) }, 'Agenda'), h('button', { onclick: () => close(undefined) }, 'Close')));
     });
@@ -1701,6 +1742,114 @@ const kindAtCursor = () => {
   const line = lineAt(cur.proj, editor.selectionStart);
   return { line, kind: cur.a.heads.some((x) => x.line === line) ? 'heading' : cur.a.items.some((x) => x.line === line) ? 'item' : cur.a.drawers.some((x) => x.line === line) ? 'drawer' : null };
 };
+
+
+/** The table line the cursor is on and its column, or null. Table lines inside blocks are not table lines. */
+const tableHere = () => {
+  const line = lineAt(cur.proj, editor.selectionStart);
+  const t = cur.a.nodes[line]?.type;
+  if (t !== 'table-row' && t !== 'table-rule') return null;
+  return { line, col: cursorOffset() - lineOffset(currentBuffer().text, line) };
+};
+
+/** Runs a table edit `fn(text, line, col)` at a line and column and puts the cursor where it says (in the Text view); an error is shown after the edit. */
+function tableEditAt(line, col, fn, { place = true } = {}) {
+  const text = currentBuffer().text;
+  let r;
+  try { r = fn(text, line, col); } catch (e) { failure(e); return; }
+  if (r.text !== text) session.apply(currentBuffer().id, { text: r.text });
+  lastCycle = null;
+  if (place) placeOffset(lineOffset(r.text, r.line) + r.col);
+  if (r.error) message(r.error, true);
+}
+
+/** The same at the cursor. */
+function tableEdit(fn) {
+  const at = tableHere();
+  if (!at) { message('Not in table', true); return; }
+  tableEditAt(at.line, at.col, fn);
+}
+
+const inTable = () => viewMode() === 'text' && tableHere() !== null;
+
+/** C-c ^: asks how to sort, then sorts the rows of the section at the cursor. */
+async function tableSort() {
+  if (!tableHere()) { message('Not in table', true); return; }
+  const v = await askText({ prompt: 'Sort table: [a]lphabetic, [n]umeric, [t]ime (capital reverses):', title: 'Sort table', help: 'a, n or t for alphabetic, numeric or time order. A capital letter reverses it.', ok: 'Sort' });
+  if (v === undefined) return;
+  const k = v.trim();
+  if (!/^[antANT]$/.test(k)) { message(k === 'c' || k === 'C' ? 'Sorting with a function is not supported' : 'Invalid sorting type', true); return; }
+  tableEdit((t, l, c) => table.sortRows(t, l, c, k));
+}
+
+const columnName = (n) => { let s = ''; for (let k = n + 1; k > 0; k = Math.floor((k - 1) / 26)) s = String.fromCharCode(65 + ((k - 1) % 26)) + s; return s; };
+
+/** What a tap on a cell of a table in the Outline view opens. */
+async function cellSheet(line, j) {
+  for (;;) {
+    const b = currentBuffer();
+    const v = table.tableView(b.text, line);
+    const row = v?.rows.find((r) => r.line === line);
+    if (!row || row.rule) return;
+    const rowNo = v.rows.filter((r) => !r.rule && r.line <= line).length;
+    const value = row.cells[j] ?? '';
+    const at = () => table.cellCol(currentBuffer().text, line, j);
+    const run = (fn) => tableEditAt(line, at(), fn, { place: false });
+    const what = await panel((sheet, close) => {
+      put(sheet, h('h2', {}, `${columnName(j)}${rowNo}${value ? ` · ${value}` : ''}`),
+        h('div', { class: 'list' },
+          h('button', { class: 'item', onclick: () => close('edit') }, h('span', {}, 'Edit cell')),
+          h('button', { class: 'item', onclick: () => close('row') }, h('span', {}, 'Row'), h('span', { class: 'meta' }, '▾')),
+          h('button', { class: 'item', onclick: () => close('column') }, h('span', {}, 'Column'), h('span', { class: 'meta' }, '▾')),
+          h('button', { class: 'item', onclick: () => close('sort') }, h('span', {}, 'Sort'), h('span', { class: 'meta' }, '▾')),
+          h('button', { class: 'item dim', onclick: () => close('recalculate') }, h('span', {}, 'Recalculate')),
+          h('button', { class: 'item dim', onclick: () => close('formulas') }, h('span', {}, 'Formulas'))),
+        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Close')));
+    });
+    if (what === undefined) return;
+    if (what === 'recalculate' || what === 'formulas') { message('Formulas arrive in a later version'); continue; }
+    if (what === 'edit') {
+      const v2 = await askText({ prompt: 'Cell:', title: `Edit ${columnName(j)}${rowNo}`, value, ok: 'Save' });
+      if (v2 !== undefined) run((t, l) => table.setField(t, l, j, v2));
+      continue;
+    }
+    const sub = {
+      row: ['Row', [['Insert above', (t, l, c) => table.insertRow(t, l, c)], ['Insert below', (t, l, c) => table.insertRow(t, l, c, true)], ['Move up', (t, l, c) => table.moveRow(t, l, c, -1)], ['Move down', (t, l, c) => table.moveRow(t, l, c, 1)],
+        ['Add rule below', (t, l, c) => table.insertHline(t, l, c)], ['Delete', table.deleteRow]]],
+      column: ['Column', [['Insert left', table.insertColumn], ['Insert right', (t, l, c) => { const a = table.insertColumn(t, l, c); return table.moveColumn(a.text, l, table.cellCol(a.text, l, j), 1); }],
+        ['Move left', (t, l, c) => table.moveColumn(t, l, c, -1)], ['Move right', (t, l, c) => table.moveColumn(t, l, c, 1)], ['Delete', table.deleteColumn]]],
+      sort: ['Sort', [['Alphabetic', 'a'], ['Alphabetic, reversed', 'A'], ['Numeric', 'n'], ['Numeric, reversed', 'N'], ['Time', 't'], ['Time, reversed', 'T']].map(([l, k]) => [l, (t, ln, c) => table.sortRows(t, ln, c, k)])],
+    }[what];
+    const pick = await choose(sub[0], sub[1].map(([label], i) => ({ label, value: i })));
+    if (pick === undefined) { if (dismissed) return; continue; }
+    run(sub[1][pick][1]);
+    if (what !== 'sort') return;
+  }
+}
+
+/** C-c |: makes a table of the size asked for at the cursor line, or from the selected text. */
+async function tableCreate() {
+  const b = currentBuffer();
+  if (editor.selectionStart !== editor.selectionEnd) {
+    const a = toFull(cur.proj, editor.selectionStart);
+    const z = toFull(cur.proj, editor.selectionEnd);
+    const from = lineAt(cur.proj, editor.selectionStart);
+    const endLine = lineAt(cur.proj, editor.selectionEnd);
+    const to = z > a && b.text[z - 1] === '\n' ? endLine : endLine + 1; // a selection ending at the start of a line leaves that line out
+    const r = table.convertRegion(b.text, from, to);
+    session.apply(b.id, { text: r.text });
+    placeOffset(lineOffset(r.text, r.line) + r.col);
+    return;
+  }
+  const v = await askText({ prompt: 'Table size Columns x Rows [e.g. 5x2] (RET=5x2):', title: 'New table', help: 'Columns x Rows, for example 5x2.', ok: 'Create' });
+  if (v === undefined) return;
+  const m = v.trim() === '' ? [null, '5', '2'] : /^(\d+)\s*x\s*(\d+)$/.exec(v.trim());
+  if (!m || Number(m[1]) < 1 || Number(m[2]) < 1) { message('Invalid size', true); return; }
+  const line = lineAt(cur.proj, editor.selectionStart);
+  const r = table.createTable(b.text, line, Number(m[1]), Number(m[2]), editor.selectionStart - lineOffset(b.text, line));
+  session.apply(b.id, { text: r.text });
+  placeOffset(lineOffset(r.text, r.line) + r.col + 2);
+}
 
 /** Runs the edit for the heading or list item at the cursor, then puts the cursor on the line it ends on. */
 function editHere(onHeading, onItem, atEnd = false) {
@@ -2026,6 +2175,7 @@ const COMMANDS = {
   'capture': () => capture(),
   'refile': () => refileHere(false),
   'refile-copy': () => refileHere(true),
+  'refile-cache-clear': () => { refileCache.clear(); message('Refile cache has been cleared'); },
   'archive-subtree': () => archiveHere(),
   'archive-sibling': () => archiveSibling(),
   'archive-tag': () => archiveTag(),
@@ -2035,21 +2185,23 @@ const COMMANDS = {
   'agenda-file-add': () => agendaFileAdd(),
   'agenda-file-remove': () => agendaFileRemove(),
   'quit': () => message('Quit', true),
-  'cycle': () => { const { line, kind } = kindAtCursor(); if (kind === null) message('Not at a heading or list item'); else cycleHeading(line); },
+  'cycle': () => { if (inTable()) { tableEdit(table.nextField); return; } const { line, kind } = kindAtCursor(); if (kind === null) message('Not at a heading or list item'); else cycleHeading(line); },
+  'indent': () => { const st = session.state(); const b = st.buffers.find((x) => x.id === st.current); if (!b) return; indentOverride.set(b.id, !indentOn(b)); render(); message(indentOn(b) ? 'Indent mode on' : 'Indent mode off'); },
   'cycle-global': () => {
+    if (inTable()) { tableEdit(table.previousField); return; }
     const b = currentBuffer();
     const r = cycleGlobal(cur.a.heads, b.folds);
     session.setFolds(b.id, r.folds);
     message(r.state.toUpperCase());
   },
-  'move-up': () => editHere((t, l) => moveSubtree(t, l, -1), (t, l) => moveItem(t, l, -1)),
-  'move-down': () => editHere((t, l) => moveSubtree(t, l, 1), (t, l) => moveItem(t, l, 1)),
+  'move-up': () => inTable() ? tableEdit((t, l, c) => table.moveRow(t, l, c, -1)) : editHere((t, l) => moveSubtree(t, l, -1), (t, l) => moveItem(t, l, -1)),
+  'move-down': () => inTable() ? tableEdit((t, l, c) => table.moveRow(t, l, c, 1)) : editHere((t, l) => moveSubtree(t, l, 1), (t, l) => moveItem(t, l, 1)),
   // On plain text Emacs's M-left moves a word back.
-  'promote': () => (kindAtCursor().kind === null ? COMMANDS['backward-word']() : editHere((t, l) => changeLevel(t, l, -1, false), (t, l) => indentItem(t, l, -1, false))),
+  'promote': () => inTable() ? tableEdit((t, l, c) => table.moveColumn(t, l, c, -1)) : (kindAtCursor().kind === null ? COMMANDS['backward-word']() : editHere((t, l) => changeLevel(t, l, -1, false), (t, l) => indentItem(t, l, -1, false))),
   // On plain text Emacs's M-right moves a word forward.
-  'demote': () => (kindAtCursor().kind === null ? COMMANDS['forward-word']() : editHere((t, l) => changeLevel(t, l, 1, false), (t, l) => indentItem(t, l, 1, false))),
-  'promote-subtree': () => editHere((t, l) => changeLevel(t, l, -1, true), (t, l) => indentItem(t, l, -1, true)),
-  'demote-subtree': () => editHere((t, l) => changeLevel(t, l, 1, true), (t, l) => indentItem(t, l, 1, true)),
+  'demote': () => inTable() ? tableEdit((t, l, c) => table.moveColumn(t, l, c, 1)) : (kindAtCursor().kind === null ? COMMANDS['forward-word']() : editHere((t, l) => changeLevel(t, l, 1, false), (t, l) => indentItem(t, l, 1, false))),
+  'promote-subtree': () => inTable() ? tableEdit(table.deleteColumn) : editHere((t, l) => changeLevel(t, l, -1, true), (t, l) => indentItem(t, l, -1, true)),
+  'demote-subtree': () => inTable() ? tableEdit(table.insertColumn) : editHere((t, l) => changeLevel(t, l, 1, true), (t, l) => indentItem(t, l, 1, true)),
   // On a heading or in its body: a new sibling heading after the subtree, as C-RET does in Emacs.
   'insert-heading': () => {
     const { line, kind } = kindAtCursor();
@@ -2089,10 +2241,34 @@ const COMMANDS = {
   'sparse-tree-todo': () => sparse('todo'),
   'sparse-tree-todo-keyword': () => sparse('todo-keyword'),
   'toggle-checkbox': () => {
+    if (inTable()) { tableEdit(table.align); return; }
     if (marks.length) { marks = []; paintOverlay(); message('Temporary highlights/overlays removed from current buffer'); return; }
-    if (!runEdit((t) => toggleCheckbox(t, kindAtCursor().line))) message('Nothing to do here');
+    const at = editor.selectionStart;
+    const col = at - lineOffset(currentBuffer().text, lineAt(cur.proj, at));
+    const r = runEdit((t) => updateCookieAt(t, lineAt(cur.proj, at), col) ?? toggleCheckbox(t, kindAtCursor().line));
+    if (!r) message('Nothing to do here'); else if (r.col !== undefined) placeOffset(lineOffset(r.text, r.line) + r.col);
   },
-  'insert-heading-here': () => { const r = runEdit((t) => insertHeadingHere(t, cursorOffset())); if (r) placeOffset(r.pos); },
+  'insert-heading-here': () => { if (inTable()) { tableEdit(table.splitField); return; } const r = runEdit((t) => insertHeadingHere(t, cursorOffset())); if (r) placeOffset(r.pos); },
+  'unsent-saves': () => sendQueued(true),
+  'table-next-row': () => tableEdit(table.nextRow),
+  'table-copy-down': () => tableEdit(table.copyDown),
+  'table-hline': () => tableEdit((t, l, c) => table.insertHline(t, l, c)),
+  'table-hline-and-move': () => tableEdit(table.hlineAndMove),
+  'table-delete-row': () => tableEdit(table.deleteRow),
+  'table-insert-row': () => tableEdit((t, l, c) => table.insertRow(t, l, c)),
+  'table-align': () => tableEdit(table.align),
+  'table-sort': () => tableSort(),
+  'table-blank-field': () => tableEdit(table.blankField),
+  'table-sum': () => {
+    const at = tableHere();
+    const sum = at && table.sumColumn(currentBuffer().text, at.line, at.col);
+    if (sum === null || sum === undefined) { message('Not in table', true); return; }
+    killRing.kill(sum, { append: false });
+    navigator.clipboard.writeText(sum).catch(() => message('Could not copy to the clipboard', true));
+  },
+  'table-create': () => tableCreate(),
+  'table-field-info': () => { const at = tableHere(); const i = at && table.fieldInfo(currentBuffer().text, at.line, at.col); message(i ?? 'Not in table', !i); },
+  'table-transpose': () => tableEdit(table.transpose),
   'undo': () => stepHistory('undo'),
   'redo': () => stepHistory('redo'),
   'select-all': () => { editor.setSelectionRange(0, editor.value.length); renderModeLine(); },
@@ -2441,6 +2617,7 @@ const outlineOn = {
   todo: (line) => runEdit((t) => cycleTodo(t, line, 1, tagsColumn())),
   checkbox: (line) => runEdit((t) => toggleCheckbox(t, line)),
   actions: headingActions,
+  cell: cellSheet,
 };
 
 // ---- The command palette --------------------------------------------------------------------------------
@@ -2448,6 +2625,8 @@ const outlineOn = {
 // Every command has a plain label, its Emacs name and (below) the key it is on. `outline` marks the ones that make sense with no cursor.
 const PALETTE = [
   ['calendar', 'calendar', 'Calendar', true],
+  ['unsent-saves', 'unsent-saves', 'Send queued saves', true],
+  ['indent', 'org-indent-mode', 'Indent mode', true],
   ['cycle', 'org-cycle', 'Fold or unfold'], ['cycle-global', 'org-shifttab', 'Fold or unfold everything', true],
   ['todo', 'org-todo', 'Change TODO state'], ['todo-next', 'org-shiftright', 'Next TODO state'], ['todo-previous', 'org-shiftleft', 'Previous TODO state'],
   ['agenda', 'org-agenda-list', 'Agenda', true], ['agenda-todo', 'org-todo-list', 'TODO list', true], ['agenda-tags', 'org-tags-view', 'Agenda by tags', true], ['agenda-search', 'org-search-view', 'Agenda search', true], ['schedule', 'org-schedule', 'Schedule'], ['deadline', 'org-deadline', 'Set deadline'], ['timestamp', 'org-timestamp', 'Insert timestamp'], ['timestamp-inactive', 'org-timestamp-inactive', 'Insert inactive timestamp'], ['priority', 'org-priority', 'Set priority'], ['priority-up', 'org-priority-up', 'Raise priority'], ['priority-down', 'org-priority-down', 'Lower priority'],
@@ -2455,8 +2634,11 @@ const PALETTE = [
   ['promote', 'org-metaleft', 'Promote'], ['demote', 'org-metaright', 'Demote'], ['promote-subtree', 'org-shiftmetaleft', 'Promote subtree'], ['demote-subtree', 'org-shiftmetaright', 'Demote subtree'],
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
   ['insert-heading', 'org-insert-heading-respect-content', 'Insert heading after subtree'], ['insert-heading-here', 'org-meta-return', 'Insert heading here'],
+  ['table-align', 'org-table-align', 'Align table'], ['table-sort', 'org-table-sort-lines', 'Sort table lines'], ['table-blank-field', 'org-table-blank-field', 'Blank table field'], ['table-sum', 'org-table-sum', 'Sum table column'], ['table-create', 'org-table-create-or-convert-from-region', 'Create table or convert text'],
+  ['table-transpose', 'org-table-transpose-table-at-point', 'Transpose table'], ['table-field-info', 'org-table-field-info', 'Show field coordinates'], ['table-hline', 'org-table-insert-hline', 'Insert horizontal line'],
+  ['table-copy-down', 'org-table-copy-down', 'Copy field down'], ['table-next-row', 'org-table-next-row', 'Next row'],
   ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],
-  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true], ['effort', 'org-set-effort', 'Set effort'], ['capture', 'org-capture', 'Capture', true], ['refile', 'org-refile', 'Refile'], ['refile-copy', 'org-refile-copy', 'Refile and keep'], ['archive-subtree', 'org-archive-subtree', 'Archive'], ['archive-sibling', 'org-archive-to-archive-sibling', 'Archive to sibling'], ['archive-tag', 'org-toggle-archive-tag', 'Toggle archive tag'], ['clock-in', 'org-clock-in', 'Clock in'], ['clock-out', 'org-clock-out', 'Clock out'], ['clock-cancel', 'org-clock-cancel', 'Cancel clock'], ['agenda-file-add', 'org-agenda-file-to-front', 'Add file to agenda files', true], ['agenda-file-remove', 'org-remove-file', 'Remove file from agenda files', true],
+  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true], ['effort', 'org-set-effort', 'Set effort'], ['capture', 'org-capture', 'Capture', true], ['refile', 'org-refile', 'Refile'], ['refile-copy', 'org-refile-copy', 'Refile and keep'], ['refile-cache-clear', 'org-refile-cache-clear', 'Clear refile cache'], ['archive-subtree', 'org-archive-subtree', 'Archive'], ['archive-sibling', 'org-archive-to-archive-sibling', 'Archive to sibling'], ['archive-tag', 'org-toggle-archive-tag', 'Toggle archive tag'], ['clock-in', 'org-clock-in', 'Clock in'], ['clock-out', 'org-clock-out', 'Clock out'], ['clock-cancel', 'org-clock-cancel', 'Cancel clock'], ['agenda-file-add', 'org-agenda-file-to-front', 'Add file to agenda files', true], ['agenda-file-remove', 'org-remove-file', 'Remove file from agenda files', true],
   ['undo', 'undo', 'Undo', true], ['redo', 'undo-redo', 'Redo', true],
   ['select-all', 'mark-whole-buffer', 'Select all'], ['kill-line', 'kill-line', 'Cut to end of line'], ['kill-whole-line', 'kill-whole-line', 'Cut whole line'], ['yank', 'yank', 'Paste'],
   ['next-line', 'next-line', 'Next line'], ['previous-line', 'previous-line', 'Previous line'], ['forward-char', 'forward-char', 'Forward character'], ['backward-char', 'backward-char', 'Backward character'],
@@ -2600,6 +2782,7 @@ function moveCursor(key, extend) {
   renderModeLine();
 }
 
+const TABLE_ONLY = new Set(['RET', 'S-RET', 'M-S-<up>', 'M-S-<down>', 'C-c -', 'C-c RET', 'C-c ?']);
 const HEADING_ONLY = new Set(['S-<up>', 'S-<down>', 'S-<left>', 'S-<right>']);
 const SOFT_KEYS = ['Unidentified', 'Process'];
 const MODIFIER_KEYS = ['Control', 'Alt', 'Meta', 'Shift'];
@@ -2612,6 +2795,9 @@ editor.addEventListener('keydown', (e) => {
   const held = keyRow.sticky();
   const fromRow = held.ctrl || held.meta || held.shift;
   const chord = chordOf({ key: e.key, ctrl: e.ctrlKey || held.ctrl, meta: e.altKey || e.metaKey || held.meta, shift: e.shiftKey || held.shift });
+  if (keymap.pending() === '' && TABLE_ONLY.has(chord) && !inTable()) return; // elsewhere these keys do what they always did
+  if (chord === 'RET' && keymap.pending() === '' && editor.value[editor.selectionStart] === undefined) return;
+  if (chord === 'RET' && keymap.pending() === '' && editor.value[editor.selectionStart] === '\n') return; // at the end of the line RET stays a newline
   if (HEADING_ONLY.has(chord) && kindAtCursor().kind !== 'heading' && !stampAt(currentBuffer().text, cursorOffset())) return; // elsewhere the arrows select, as usual
   if ((chord === 'C-c' || chord === 'C-x' || chord === 'C-v') && !held.ctrl && keymap.pending() === '') return; // a keyboard's own C-c, C-x and C-v stay copy, cut and paste; the prefixes come from the key row
   if (chord) runChord(chord, e, fromRow);
@@ -2703,8 +2889,9 @@ window.addEventListener('beforeunload', (e) => { if (session.unsavedIds().length
 
 // ---- Queued saves and the offline cache ----------------------------------------------------------------
 
-async function sendQueued() {
+async function sendQueued(asked = false) {
   let sent = 0;
+  let serverError = null;
   const found = [];
   for (const p of ['github', 'webdav']) {
     if (!providers[p]) continue;
@@ -2712,14 +2899,17 @@ async function sendQueued() {
       const r = await providers[p].sync();
       sent += r.synced.length;
       for (const clash of r.conflicts) found.push({ p, clash });
+      if (r.error) serverError = r.error;
     } catch (e) { failure(e); return; }
   }
-  if (sent) message(`Sent ${sent} saved ${sent === 1 ? 'file' : 'files'} to the server`);
+  if (serverError) message(`${serverError}. Saves stay queued and are sent when the server answers`, true);
+  else if (!sent && asked && found.length === 0) message('No saves are waiting');
+  else if (sent) message(`Sent ${sent} saved ${sent === 1 ? 'file' : 'files'} to the server`);
   await updatePending();
   if (found.length > 0) await clashList(found);
   await updatePending();
 }
-window.addEventListener('online', sendQueued);
+window.addEventListener('online', () => sendQueued());
 if (navigator.onLine) sendQueued();
 
 // ---- Updates: a new version waits until the user taps Restart ------------------------------------------
@@ -2748,6 +2938,28 @@ if ('serviceWorker' in navigator) {
     window.__serita = { look };
   }).catch(failure);
 }
+
+/** Looks at the open file in storage when you switch to it or come back to the app, and says what it found. A failed check stays quiet; saving reports a failure. */
+async function checkChanged(id) {
+  try {
+    const b = session.state().buffers.find((x) => x.id === id);
+    if (!b) return;
+    const r = await session.check(id);
+    if (r === 'reloaded') message(`${b.title} changed in storage; reloaded`);
+    else if (r === 'changed') message(`${b.title} changed in storage; saving will ask which copy to keep`, true);
+    else if (r === 'gone') message(`${b.title} is no longer in storage`, true);
+  } catch { /* offline or unreachable */ }
+}
+// A file changed by another tab of the app is checked at once; this tab's own saves are not.
+const watching = new Map();
+session.subscribe(() => {
+  const open = new Map(session.state().buffers.filter((b) => b.name).map((b) => [b.id, b.name]));
+  for (const [id, w] of watching) if (open.get(id) !== w.name) { w.off(); watching.delete(id); }
+  for (const [id, name] of open) if (!watching.has(id)) watching.set(id, { name, off: app.storage.watch(name, (_n, external) => { if (external) checkChanged(id); }) });
+});
+const checkCurrent = () => { const c = session.state().current; if (c !== null) checkChanged(c); };
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkCurrent(); });
+window.addEventListener('online', checkCurrent);
 
 // Reopen what was open before the reload, then keep a copy of the open buffers as they change.
 const SESSION_KEY = 'serita.session';

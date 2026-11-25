@@ -64,11 +64,11 @@ function headings(files) {
     const lines = splitLines(f.text);
     // A :CATEGORY: property on the heading or an ancestor wins over the file's #+CATEGORY: line, which wins over its name.
     const fileCategory = /^#\+CATEGORY:[ \t]*(\S.*?)[ \t]*$/im.exec(f.text)?.[1] ?? f.category;
-    const categoryOf = (h) => { for (let x = h; x; x = x.parent) { const p = propertiesOf(f.text, x.line).find(([n]) => n.toUpperCase() === 'CATEGORY'); if (p) return p[1]; } return fileCategory; };
+    const categoryOf = (h) => { for (let x = h; x; x = x.parent) { const p = propertiesOf(f.text, x.line, lines).find(([n]) => n.toUpperCase() === 'CATEGORY'); if (p) return p[1]; } return fileCategory; };
     for (const h of a.heads) {
       const own = [];
       for (let i = h.line + 1; i < h.bodyEnd; i++) own.push(lines[i].text);
-      out.push({ file: fi, category: categoryOf(h), line: h.line, h, a, own, text: f.text, order: out.length });
+      out.push({ file: fi, category: categoryOf(h), line: h.line, h, a, own, text: f.text, lines, order: out.length });
     }
   });
   return out;
@@ -101,7 +101,7 @@ export function entryText(e, withLabel) {
 
 const inheritedTags = (h) => { const out = []; for (let x = h; x; x = x.parent) out.unshift(...x.tags); return [...new Set(out)]; };
 const base = (hd) => ({ file: hd.file, line: hd.line, category: hd.category, todo: hd.h.todo, priority: hd.h.priority, title: hd.h.title, tags: hd.h.tags, done: done(hd),
-  itags: inheritedTags(hd.h), effort: effortMinutes(propertiesOf(hd.text, hd.line).find(([n]) => n.toUpperCase() === 'EFFORT')?.[1]),
+  itags: inheritedTags(hd.h), effort: effortMinutes(propertiesOf(hd.text, hd.line, hd.lines).find(([n]) => n.toUpperCase() === 'EFFORT')?.[1]),
   text: [hd.h.todo, hd.h.priority ? `[#${hd.h.priority}]` : null, hd.h.title].filter(Boolean).join(' ') });
 
 /**
@@ -153,12 +153,18 @@ export function agenda(files, { start, span, today, warn = 14, now = null, timeG
   }
   // Contacts: org-contacts-anniversaries in a diary or in an agenda file (an option: { texts, property, format })
   const book = contacts ? parseContacts(contacts.texts) : [];
-  hooks['org-contacts-anniversaries'] = (args, date) => ({ lines: anniversaries(book, date, { field: args[0] ?? contacts?.property ?? 'BIRTHDAY', ...(contacts?.format ? { format: contacts.format } : {}) }) });
+  const born = new Set(); // the texts the contacts hook produced: those entries are birthdays
+  const isBirthday = (t) => [...born].some((b) => t.includes(b));
+  hooks['org-contacts-anniversaries'] = (args, date) => {
+    const lines = anniversaries(book, date, { field: args[0] ?? contacts?.property ?? 'BIRTHDAY', ...(contacts?.format ? { format: contacts.format } : {}) });
+    lines.forEach((l) => born.add(l));
+    return { lines };
+  };
   // Sexp lines (%%(...)) in the agenda files show on their day with the file's category, with no time or label
   files.forEach((f, i) => {
     if (!f.text.includes('%%(')) return;
     for (const e of diaryEntries(f.text, { y: from.getUTCFullYear(), m: from.getUTCMonth() + 1, d: from.getUTCDate() }, days, { sexpOnly: true })) {
-      for (const l of agendaLines(e.text)) put(utc(e.y, e.m, e.d), { file: i, line: e.line, category: f.category, todo: null, priority: null, title: l.text, tags: [], itags: [], effort: null, text: l.text, done: false, kind: 'sexp', label: '', clock: l.time ? timeLabel(l) : '', late: 0, time: l.time, quiet: e.quiet });
+      for (const l of agendaLines(e.text)) put(utc(e.y, e.m, e.d), { file: i, line: e.line, category: f.category, todo: null, priority: null, title: l.text, tags: [], itags: [], effort: null, text: l.text, done: false, kind: 'sexp', label: '', clock: l.time ? timeLabel(l) : '', late: 0, time: l.time, quiet: e.quiet, birthday: isBirthday(l.text) });
     }
   });
   // Holidays (options like holidaysOf takes) show as Diary lines, as Emacs shows them; a solar time becomes the line's time
@@ -169,14 +175,14 @@ export function agenda(files, { start, span, today, warn = 14, now = null, timeG
         const at = utc(x.y, x.m, x.d);
         if (at < from || at > last) continue;
         const text = x.said ?? x.name;
-        put(at, { file: -1, line: 0, diary: true, category: 'Diary', todo: null, priority: null, title: text, tags: [], itags: [], effort: null, text, done: false, kind: 'diary', label: '', clock: x.time ? timeLabel({ time: x.time }) : '', late: 0, time: x.time ?? null });
+        put(at, { file: -1, line: 0, diary: true, category: 'Diary', todo: null, priority: null, title: text, tags: [], itags: [], effort: null, text, done: false, kind: 'diary', label: '', clock: x.time ? timeLabel({ time: x.time }) : '', late: 0, time: x.time ?? null, holiday: true });
       }
     }
   }
   // The diary: its entries for each day show with the category Diary (org-agenda-include-diary)
   if (diary) {
     for (const e of diaryEntries(diary.text, { y: from.getUTCFullYear(), m: from.getUTCMonth() + 1, d: from.getUTCDate() }, days, { style: diary.style })) {
-      for (const l of agendaLines(e.text)) put(utc(e.y, e.m, e.d), { file: -1, line: e.line, diary: true, category: 'Diary', todo: null, priority: null, title: l.text, tags: [], itags: [], effort: null, text: l.text, done: false, kind: 'diary', label: '', clock: l.time ? timeLabel(l) : '', late: 0, time: l.time, quiet: e.quiet });
+      for (const l of agendaLines(e.text)) put(utc(e.y, e.m, e.d), { file: -1, line: e.line, diary: true, category: 'Diary', todo: null, priority: null, title: l.text, tags: [], itags: [], effort: null, text: l.text, done: false, kind: 'diary', label: '', clock: l.time ? timeLabel(l) : '', late: 0, time: l.time, quiet: e.quiet, birthday: isBirthday(l.text) });
     }
   }
   const lines = [];

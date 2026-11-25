@@ -22,7 +22,7 @@ const block = (text, heading) => {
 };
 
 test('there is an example for each area that is built', () => {
-  for (const f of ['outline', 'dates', 'clocking', 'capture', 'refile-archive', 'weekly-review', 'project', 'search-replace', 'config', 'diary', 'contacts', 'agenda-birthdays']) assert.ok(files.includes(`${f}.org`), `${f}.org`);
+  for (const f of ['outline', 'dates', 'clocking', 'capture', 'refile-archive', 'weekly-review', 'project', 'search-replace', 'config', 'diary', 'contacts', 'agenda-birthdays', 'tables']) assert.ok(files.includes(`${f}.org`), `${f}.org`);
 });
 
 test('every example has a title and a license line and parses', () => {

@@ -56,3 +56,10 @@ test('holidays show as Diary lines, with a solar time as the line time', () => {
   const lines = v.days.flatMap((d) => d.entries.map((e) => `${d.date.toISOString().slice(0, 10)} ${e.category}: ${[e.clock, e.label, e.title].filter(Boolean).join(' ')}`));
   assert.deepEqual(lines, ['2026-12-21 Diary: 15:49...... Winter Solstice (EST)', '2026-12-25 Diary: Christmas']);
 });
+
+test('a large agenda is built quickly', () => {
+  const text = Array.from({ length: 2000 }, (_, i) => `* TODO Task ${i}\nSCHEDULED: <2026-11-${String(1 + (i % 28)).padStart(2, '0')} Sun>\n`).join('');
+  const t0 = Date.now();
+  agenda([{ category: 'big', text }], { start: date('2026-11-23'), span: 'week', today: date('2026-11-23'), now: null });
+  assert.ok(Date.now() - t0 < 3000);
+});

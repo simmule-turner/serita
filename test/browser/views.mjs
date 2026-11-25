@@ -95,7 +95,7 @@ ok((await value()).includes('- [X] one') && (await value()).includes('- [ ] two'
 
 // Emacs keys and the key row
 ok(!(await page.locator('#keyrow').isVisible()), 'the key row is hidden while Emacs keys are off');
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/22 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/26 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click();
 await btn('Close').click();
 ok(await page.locator('#keyrow').isVisible(), 'Emacs keys on shows the key row');
 ok((await page.locator('#keyrow button').allTextContents()).join(',') === 'Meta,Ctrl,Shift,Tab,←,↑,↓,→,⌨,Float', 'the key row has the keys in order, with the keyboard and Float buttons last');
@@ -170,8 +170,17 @@ await page.locator('#keyrow .kbd').click();
 ok((await focused()) === 'editor' && (await mode()) === 'none', 'pressed again, it stops the keyboard and the focus stays, so the arrows still work');
 
 // Hide leading stars
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/22 settings/).click(); await btn(/Hide leading stars/).click(); await btn('‹ Settings').click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/26 settings/).click(); await btn(/Hide leading stars/).click(); await btn('‹ Settings').click(); await btn('Close').click();
 ok((await value()).includes('\n * B') && !(await value()).includes('** B'), 'Hide leading stars shows only the last star of a deeper heading');
+
+// Indent mode: the palette command indents by level and a second use turns it off; #+STARTUP: noindent wins over the setting
+await page.fill('#editor', '* A\nbody\n** B\n');
+await page.evaluate(() => document.getElementById('editor').focus());
+await page.evaluate(() => document.getElementById('editor').dispatchEvent(new Event('input', { bubbles: true })));
+await page.click('#btn-menu'); await btn(/Commands/).click(); await page.keyboard.type('org-indent-mode'); await page.keyboard.press('Enter');
+ok((await value()).includes('\n  body\n'), 'Indent mode indents the text under a heading');
+await page.click('#btn-menu'); await btn(/Commands/).click(); await page.keyboard.type('org-indent-mode'); await page.keyboard.press('Enter');
+ok(!(await value()).includes('\n  body\n'), 'Indent mode toggles off');
 
 // C-RET in a heading's body starts a sibling heading after the subtree (checked against Emacs)
 await page.fill('#editor', '* A\nbody\n* Z\n');
@@ -189,6 +198,26 @@ const labels = await sheet.locator('.palette .item > span:first-child, .item > s
 const listed = labels.slice(-(await sheet.locator('.list .item').count()));
 ok((await sheet.locator('.list .item').count()) > fewer && (await sheet.locator('.list .item.dim').count()) > 0, 'Show all lists more commands, the ones that need the Text view dimmed');
 ok(JSON.stringify(listed) === JSON.stringify([...listed].sort((a, b) => a.localeCompare(b))), 'Show all sorts the commands by label');
+
+// Tables in the Outline view
+await page.keyboard.press('Escape');
+await view('Text');
+await page.fill('#editor', '* T\n| Item | Qty |\n|---+---|\n| Tea | 10 |\n| Cake | 2 |\n');
+await view('Outline');
+ok((await page.locator('.ol-table td button.cell').count()) === 6, 'a table is drawn as a grid of cells');
+await page.locator('.ol-table td button.cell', { hasText: 'Tea' }).click();
+ok((await sheet.locator('h2').textContent()).startsWith('A2'), 'tapping a cell opens its sheet');
+await sheet.locator('.item', { hasText: 'Row' }).click();
+await sheet.locator('.item', { hasText: 'Delete' }).click();
+await view('Text');
+ok((await value()) === '* T\n| Item | Qty |\n|---+---|\n| Cake | 2 |\n', 'Row, Delete removes the row');
+
+// Wrapping long cells in the grid
+await page.fill('#editor', '* T\n| Item | Notes |\n|---+---|\n| Tea | Loose leaf from the market on Saturday morning before it opens |\n');
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/26 settings/).click(); await btn(/Wrap table cells/).click(); await btn('‹ Settings').click(); await btn('Close').click();
+await view('Outline');
+const hgt = await page.locator('.ol-table td button.cell', { hasText: 'Loose' }).evaluate((e) => e.getBoundingClientRect().height);
+ok(hgt > 40 && (await page.locator('.ol-table.wrap').count()) === 1, 'with Wrap table cells on, a long cell grows taller');
 await page.keyboard.press('Escape');
 ok(errors.length === 0, `no page errors${errors.length ? ': ' + errors.join('; ') : ''}`);
 await close();

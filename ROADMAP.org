@@ -3,15 +3,11 @@
 Planned work only. Phase order is in SPEC.md section 12.
 
 * Phase 1: Foundations (in progress)
-- Try the GitHub and WebDAV providers against real servers; the tests use fakes built from the documentation.
-- WebDAV from a browser needs the server to allow cross-origin requests for its methods and headers; check this against your server. The native apps are not limited this way.
-- Server errors (5xx) are reported today, not queued.
+- WebDAV from a browser needs the server to allow cross-origin requests for its methods and headers; check this against your server.
 - GitHub: files over 1 MB, branch names containing a slash, and an empty repository (none are verified against the live service yet).
 - Merge for very large, very different files (it asks the user to pick a side today).
-- Changes made in another tab reaching ~watch~ (it covers the current tab today).
 - Folder access in the browser (needs a stored folder handle; native apps do it fully).
 - Incremental reparse on edit (the document model reparses fully today).
-- Reopen the list of unsent clashes on demand; today it reappears at the next start or reconnect.
 
 - Try Device files on a real Chromebook, including reopening a device file from Recents after a restart (the tests use fake file handles).
 - The app interface's ~files~ picker functions overlap with the device storage; settle which one stays when the native apps are built.
@@ -23,30 +19,30 @@ Planned work only. Phase order is in SPEC.md section 12.
 
 * Later: screen and views
 - Empty folders are not shown when browsing, because storage lists files only.
-- Floating buttons: a back arrow (navigation history) and the extras menu filled from the config's Menu list, once links and capture exist.
-- Keep open buffers across a reload (today the browser asks before you leave with unsaved text).
-- Emacs keys beyond the heading and movement commands: editing keys, the minibuffer, M-x, universal argument, and TAB and the M-arrows on plain text lines and tables, and god-mode for the C-c prefix.
-- How Emacs counts a heading's checkbox cookie (this build counts the checkboxes of its top-level items).
+- The extras menu, a floating button filled from the config's Menu list, once links and capture exist.
+- Emacs keys beyond the heading and movement commands: editing keys, the minibuffer, M-x, universal argument, and TAB and the M-arrows on plain text lines, and god-mode for the C-c prefix.
 - Sparse trees by date (C-c / d, b, a, D), by C-c / p (Emacs found no match for Effort 2h where the heading has it, and every heading for an empty value; compare in an interactive Emacs), and match expressions with {regexp} tags, priority and TODO sequences.
 - Unresolved in Emacs batch results: TAB on an open drawer line (the first TAB changes nothing, the second folds it), and C-c , SPC, which fails in batch; compare in an interactive Emacs.
 - Search: C-s with the context of the view.
 - What Emacs does with the folds a search opened when the search is accepted (this build leaves them open and closes them on cancel).
 - The heading title popup's three buttons, which insert at the cursor: footnote (A with a superscript 1), timer (stopwatch), and timestamp (calendar: C-c ., C-c !, C-u C-c ., S-up and S-down change it). They arrive with their features: timestamps and timers in the dates phase, footnotes in the markup phase.
 
+* Later: tables
+- Formulas: ~#+TBLFM~ with field and range references, Calc and Lisp formulas, recalculation with C-c C-c, and ~#+PLOT:~ (planned for 0.11.0).
+- The C-u forms of the table keys (~C-u C-c ^~, ~C-u C-c -~, ~C-u M-S-down~) and sorting with a function, which need a universal argument and the Lisp interpreter.
+- The Recalculate and Formulas entries of the cell sheet, once formulas exist.
+
 * Later: dates
-- Calendar: the Hebrew, Islamic, Bahá'í and Chinese holiday categories and their diary expressions; solar times and daylight saving lines for zones outside the United States, and their zone names; org-contacts-birthday-format and the anniversary property of org-contacts-anniversaries; the exact order and display of diary entries in the agenda; the wording of diary-remind for counts other than 3.
+- Calendar: the Hebrew, Islamic, Bahá'í and Chinese holiday categories and their diary expressions; org-contacts-birthday-format and the anniversary property of org-contacts-anniversaries; the exact order and display of diary entries in the agenda; the wording of diary-remind for counts other than 3.
 - Agenda files: a file that cannot be read (batch Emacs crashes, so the wording is unknown) and the restricted agenda for one file (Emacs shows only that file).
 - Agenda: agenda files other than the open ones, filters by top headline and by saved views, bulk actions that need a prompt Emacs shows (refile, scatter, function), the order of items of equal priority beyond what was recorded, an effort filter's sign (Emacs ignored it in our results).
 
 * Later: capture, refile and archive
 - Template parts that need the Lisp interpreter or more results: ~:prepare-finalize~, ~file+function~ and other function targets, ~:clock-in~, ~%^T~ and the other ~%^~ prompts, groups of templates, and capture templates typed by key.
-- The built-in Task template files to ~.notes~ here; Emacs uses ~~/.notes~.
 - Refile: ~org-refile-use-cache~ as a setting (the list is built each time here).
 
 * Later: Appearance
 - Customize Light and Dark colors.
-- Size and spacing controls for tables, once tables exist.
-- Floating back arrow and an extras menu.
 
 * Later: Emacs parity to revisit
 - Check against interactive Emacs, since batch Emacs has no window: C-n and C-p by screen line on wrapped lines, C-v and M-v by screen, and C-p on the first line away from column 0.

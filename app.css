@@ -130,9 +130,12 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 .abody { overflow-y: auto; flex: 1; touch-action: pan-y; }
 .aday { padding: 6px 12px; background: var(--bg-neutral); font-weight: 500; font-size: 13px; }
 .aday.today { color: var(--text-accent); }
-.arow { display: flex; gap: 8px; width: 100%; text-align: left; padding: 8px 12px; border: 0; border-bottom: 0.5px solid var(--line); border-radius: 0; background: transparent; align-items: baseline; }
-.alabel { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); min-width: 64px; }
-.alabel.late { color: var(--text-danger); }
+.arow { display: flex; gap: 1ch; width: 100%; text-align: left; padding: 8px 12px 8px calc(12px + 2ch); border: 0; border-bottom: 0.5px solid var(--line); border-radius: 0; background: transparent; align-items: baseline; }
+.acat, .atime { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); white-space: pre; flex: none; }
+.acat { width: 8ch; overflow: hidden; }
+.atime { width: 11ch; }
+.atime.late { color: var(--text-danger); }
+.atitle { min-width: 0; overflow-wrap: anywhere; }
 .atags { margin-left: auto; font-size: 12px; color: var(--text-secondary); }
 .aempty { padding: 12px; color: var(--text-secondary); }
 #layer .sheet.agenda { padding: 0; gap: 0; overflow: hidden; }
@@ -176,5 +179,23 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 .arow.marked { background: var(--bar); box-shadow: inset 3px 0 0 var(--accent, currentColor); }
 .sheet.calendar .cal { padding: 8px 4px; }
 .sheet .cal .day { position: relative; }
-.sheet .cal .day.has::after { content: ''; position: absolute; bottom: 4px; left: 50%; width: 5px; height: 5px; margin-left: -2.5px; border-radius: 50%; background: var(--accent); }
-.sheet .cal .day.on.has::after { background: var(--accent-fg); }
+.sheet .cal .day { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 4px; }
+.sheet .cal .day .dn { line-height: 20px; }
+.sheet .cal .day .marks { display: flex; gap: 2px; height: 5px; margin-top: 2px; align-items: center; justify-content: center; }
+.sheet .cal .day .marks i { display: block; width: 4px; height: 4px; }
+.sheet .cal .day .marks .birthday { background: #3B6D11; }
+.sheet .cal .day .marks .holiday { background: #EF9F27; }
+.sheet .cal .day .marks .other { background: #378ADD; }
+.ol-table { padding: 6px 12px 6px 32px; overflow-x: auto; border-bottom: 1px solid var(--line); }
+.ol-table table { border-collapse: collapse; font: calc(var(--fs, 18px) - 1px)/1.4 var(--ff, ui-monospace, Menlo, Consolas, monospace); }
+.ol-table td { border: 1px solid var(--line); padding: 0; }
+.ol-table td.r { text-align: right; }
+.ol-table td.c { text-align: center; }
+.ol-table tr.rule td { height: 3px; padding: 0; border-left: 0; border-right: 0; border-top: 2px solid var(--muted); }
+.ol-table tr.head td { font-weight: 600; }
+.ol-table tr.cookies { display: none; }
+.ol-table .cell { display: block; width: 100%; min-height: 32px; padding: 4px 8px; border: 0; background: transparent; font: inherit; color: inherit; text-align: inherit; white-space: pre; }
+.ol-table.wrap table { width: 100%; }
+.ol-table.wrap .cell { white-space: normal; overflow-wrap: anywhere; }
+.ol-table.wrap td.r .cell { white-space: nowrap; }
+.ol-table.zebra tr:nth-child(even) td { background: var(--bar); }

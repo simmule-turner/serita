@@ -32,9 +32,8 @@ export function drawerOf(lines, h) {
 const format = (name, value) => `${`:${name}:`.padEnd(10)} ${value}`.trimEnd();
 
 /** The properties in the heading's drawer, as [name, value] pairs. */
-export function propertiesOf(text, line) {
+export function propertiesOf(text, line, lines = splitLines(text)) {
   const { h } = headOf(text, line);
-  const lines = splitLines(text);
   const d = drawerOf(lines, h);
   if (d.begin === null) return [];
   const out = [];

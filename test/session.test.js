@@ -174,3 +174,30 @@ test('restore reopens files and scratch drafts, keeps unsaved edits and the curr
   assert.equal(st.buffers[0].dirty, true);
   assert.equal(st.current, st.buffers[0].id);
 });
+
+test('a sample opened as a scratch buffer is unmodified until it is edited', () => {
+  const { s } = make();
+  const id = s.newScratch('sample.org', '* A\n');
+  assert.equal(s.state().buffers[0].dirty, false);
+  assert.deepEqual(s.unsavedIds(), []);
+  s.setText(id, '* B\n');
+  assert.equal(s.state().buffers[0].dirty, true);
+});
+
+test('check reloads a changed file, keeps unsaved edits, and notices a deleted file', async () => {
+  const { app, s } = make();
+  await app.storage.write('a.org', '* A\n');
+  const r = await s.openFile('a.org');
+  assert.equal(await s.check(r.id), 'same');
+  const bump = async (text) => app.storage.write('a.org', text, { baseVersion: (await app.storage.read('a.org')).version });
+  await bump('* A2\n');
+  assert.equal(await s.check(r.id), 'reloaded');
+  assert.equal(s.state().buffers[0].text, '* A2\n');
+  await bump('* A3\n');
+  s.setText(r.id, '* mine\n');
+  assert.equal(await s.check(r.id), 'changed');
+  assert.equal(s.state().buffers[0].text, '* mine\n');
+  assert.equal(await s.check(s.newScratch()), 'new');
+  await app.storage.remove('a.org');
+  assert.equal(await s.check(r.id), 'gone');
+});

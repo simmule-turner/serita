@@ -71,3 +71,20 @@ test('browser: list with no prefix spans the configured providers only', async (
   await i.storage.write('a.org', '1');
   assert.deepEqual(await i.storage.list(), ['local:a.org']);
 });
+
+test('browser: a watcher hears a change made in another tab, marked external, and not its own as external', async () => {
+  const peers = new Set();
+  class FakeChannel {
+    constructor() { peers.add(this); }
+    postMessage(data) { for (const p of peers) if (p !== this) p.onmessage?.({ data }); }
+  }
+  const tab = () => createBrowserInterface({ providers: { local: local() }, env: { ...fakeEnv(), BroadcastChannel: FakeChannel } });
+  const a = tab();
+  const b = tab();
+  const seen = [];
+  b.storage.watch('x.org', (n, external) => seen.push([n, external]));
+  a.storage.watch('x.org', () => seen.push(['a heard']));
+  await a.storage.write('x.org', '1');
+  await b.storage.write('x.org', '2');
+  assert.deepEqual(seen, [['a heard'], ['local:x.org', true], ['local:x.org', false], ['a heard']]);
+});

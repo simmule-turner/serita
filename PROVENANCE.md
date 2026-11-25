@@ -173,3 +173,6 @@ A separate repository holds questions (case files written by us) and results rec
 
 ### `test/browser/appearance.mjs`
 - Written from: the author's mockup and decisions (Appearance screen, heading swipe, restore of open files). Statement as above.
+
+### `core/table.js`, `test/table.test.js`
+- Written from: the Org manual's description of tables and observed Emacs 30.1 results with Org 9.7.11 for the table keys, alignment, sorting, conversion, import and export (conformance v0.1.34), recorded as fixtures and read as behavior only. Statement as above.

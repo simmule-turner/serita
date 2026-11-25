@@ -55,3 +55,11 @@ test('a tree contact with a deeper field and a second contact after it', () => {
   const book = parseContacts([`${TREE.replace('** 1815-12-10', '*** 1815-12-10')}* Bob\n:PROPERTIES:\n:BIRTHDAY: 1985-12-10\n:END:\n`]);
   assert.deepEqual(anniversaries(book, [12, 10, 2026]), ['Birthday: Ada Lovelace (211th)', 'Birthday: Bob (41st)']);
 });
+
+test('birthday entries are flagged, other entries are not', () => {
+  const d = new Date(Date.UTC(2026, 10, 23));
+  const v = agenda([{ category: 'agenda', text: `${AGENDA}* Other\n%%(diary-float 11 1 4 \"Not a birthday\")\n` }], { start: d, span: 'day', today: d, now: null, timeGrid: false, contacts: { texts: [CONTACTS] } });
+  const e = v.days[0].entries;
+  assert.equal(e.filter((x) => x.birthday).length, 2);
+  assert.ok(e.every((x) => x.birthday || !/Birthday/.test(x.title)));
+});

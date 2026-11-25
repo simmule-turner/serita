@@ -1,0 +1,21 @@
+#+TITLE: Tables
+# CC0 1.0: public domain. In the Text view put the cursor in a table and try TAB, RET, S-RET, M-up, M-down, M-left, M-right and C-c -; in the Outline view tap a cell.
+
+* A table to edit
+Columns line up when you press TAB, and numbers are right-aligned. TAB at the last field adds a row.
+| Item   | Qty | Price |
+|--------+-----+-------|
+| Coffee |   2 |  9.50 |
+| Tea    |  10 |  4.00 |
+| Cake   |   1 | 12.25 |
+
+* Sorting
+Put the cursor in the Item column and press C-c ^ then a to sort a-z; the rows between rules are sorted. Use n for numbers and t for times; a capital letter reverses.
+| Name  | Score |
+|-------+-------|
+| Mia   |    42 |
+| Ben   |     7 |
+| Chloe |   100 |
+
+* Make a table
+C-c | asks for a size such as 3x4 and makes an empty table. With text selected, C-c | turns each line into a row, split at tabs, commas or runs of spaces.

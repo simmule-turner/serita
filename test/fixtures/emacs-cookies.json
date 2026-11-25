@@ -1,0 +1,698 @@
+{
+ "ck-basic": {
+  "input": "* H [/]\n- [ ] a\n- [X] b\n- [ ] c\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [1/3]\n- [ ] a\n- [X] b\n- [ ] c\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-before-child": {
+  "input": "* H [/]\n- [X] a\n- [ ] b\n** Child\n- [X] z\n* Other [/]\n- [ ] q\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [1/2]\n- [X] a\n- [ ] b\n** Child\n- [X] z\n* Other [0/1]\n- [ ] q\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-before-text": {
+  "input": "* H [/] tail\n- [X] a\n- [ ] b\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [1/2] tail\n- [X] a\n- [ ] b\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-bignum": {
+  "input": "* H [3/9]\n- [X] a\n- [ ] b\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [1/2]\n- [X] a\n- [ ] b\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-block": {
+  "input": "* H [/]\n#+begin_example\n- [X] a\n#+end_example\n- [ ] b\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [0/1]\n#+begin_example\n- [X] a\n#+end_example\n- [ ] b\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-checkbox-only": {
+  "input": "* H [/]\n:PROPERTIES:\n:COOKIE_DATA: checkbox\n:END:\n- [X] a\n- [ ] b\n** TODO Child\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [1/2]\n:PROPERTIES:\n:COOKIE_DATA: checkbox\n:END:\n- [X] a\n- [ ] b\n** TODO Child\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-child-both": {
+  "input": "* H [/]\n- [X] a\n** Child [/]\n- [ ] x\n- [X] y\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [1/1]\n- [X] a\n** Child [1/2]\n- [ ] x\n- [X] y\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-child-heading": {
+  "input": "* H [/]\n- [X] a\n** Child\n- [ ] x\n- [ ] y\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [1/1]\n- [X] a\n** Child\n- [ ] x\n- [ ] y\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-drawer": {
+  "input": "* H [/]\n:LOGBOOK:\n- [X] a\n:END:\n- [ ] b\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [1/2]\n:LOGBOOK:\n- [X] a\n:END:\n- [ ] b\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-file-top": {
+  "input": "intro [/]\n- [X] a\n- [ ] b\n* H\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "intro [1/2]\n- [X] a\n- [ ] b\n* H\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-item-deep": {
+  "input": "- [ ] parent [/]\n  - [X] a\n    - [ ] a1\n    - [X] a2\n  - [ ] b\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "- [ ] parent [1/2]\n  - [X] a\n    - [ ] a1\n    - [X] a2\n  - [ ] b\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-item-hier": {
+  "input": "- [ ] parent [/]\n  - [X] a\n    - [ ] a1\n    - [X] a2\n  - [ ] b\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (setq org-checkbox-hierarchical-statistics nil) (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "- [ ] parent [2/4]\n  - [X] a\n    - [ ] a1\n    - [X] a2\n  - [ ] b\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-item-pct": {
+  "input": "- parent [%]\n  - [X] a\n  - [X] b\n  - [ ] c\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "- parent [66%]\n  - [X] a\n  - [X] b\n  - [ ] c\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-item": {
+  "input": "- [ ] parent [/]\n  - [X] a\n  - [ ] b\n  - [ ] c\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "- [ ] parent [1/3]\n  - [X] a\n  - [ ] b\n  - [ ] c\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-key-1": {
+  "input": "* H [/]\n- [ ] parent [/]\n  - [ ] a\n  - [X] b\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c C-c",
+  "eval": null,
+  "text": "* H [1/1]\n- [X] parent [2/2]\n  - [X] a\n  - [X] b\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-key-2": {
+  "input": "* H [/]\n- [ ] parent\n  - [ ] a\n  - [X] b\n",
+  "line": 2,
+  "col": 2,
+  "keys": "C-c C-c",
+  "eval": null,
+  "text": "* H [0/1]\n- [-] parent\n  - [ ] a\n  - [X] b\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-key-3": {
+  "input": "* H [/]\n- [ ] parent [/]\n  - [ ] a\n  - [X] b\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c C-c",
+  "eval": null,
+  "text": "* H [1/1]\n- [X] parent [2/2]\n  - [X] a\n  - [X] b\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-key-4": {
+  "input": "* H [/]\n- [-] parent\n  - [ ] a\n  - [X] b\n",
+  "line": 2,
+  "col": 2,
+  "keys": "C-c C-c",
+  "eval": null,
+  "text": "* H [/]\n- [-] parent\n  - [ ] a\n  - [X] b\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": "user-error",
+  "texts": []
+ },
+ "ck-key-5": {
+  "input": "* H [%]\n- [ ] a\n- [ ] b\n",
+  "line": 2,
+  "col": 2,
+  "keys": "C-c C-c",
+  "eval": null,
+  "text": "* H [50%]\n- [X] a\n- [ ] b\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-key-6": {
+  "input": "* H [/]\n- [ ] a\n- [X] b\n",
+  "line": 1,
+  "col": 2,
+  "keys": "C-c C-c",
+  "eval": null,
+  "text": "* H [/]\n- [ ] a\n- [X] b\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-key-7": {
+  "input": "* H [0/5]\n- [ ] a\n- [X] b\n",
+  "line": 1,
+  "col": 6,
+  "keys": "C-c C-c",
+  "eval": null,
+  "text": "* H [1/2]\n- [ ] a\n- [X] b\n",
+  "pt": [
+   1,
+   9
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-key-8": {
+  "input": "- parent [/]\n  - [ ] a\n  - [X] b\n",
+  "line": 1,
+  "col": 10,
+  "keys": "C-c C-c",
+  "eval": null,
+  "text": "- parent [1/2]\n  - [ ] a\n  - [X] b\n",
+  "pt": [
+   1,
+   14
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-multi-list": {
+  "input": "* H [/]\n- [X] a\n\ntext\n\n- [ ] b\n- [X] c\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [2/3]\n- [X] a\n\ntext\n\n- [ ] b\n- [X] c\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-nested": {
+  "input": "* H [/]\n- [ ] a\n  - [ ] a1\n  - [X] a2\n- [X] b\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [1/2]\n- [ ] a\n  - [ ] a1\n  - [X] a2\n- [X] b\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-no-boxes": {
+  "input": "* H [/]\njust text\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [0/0]\njust text\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-nonitem": {
+  "input": "* H [/]\n[ ] a\n- [X] b\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [1/1]\n[ ] a\n- [X] b\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-ordered": {
+  "input": "* H [/]\n1. [X] a\n2. [ ] b\n3. [X] c\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [2/3]\n1. [X] a\n2. [ ] b\n3. [X] c\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-partial": {
+  "input": "* H [/]\n- [-] a\n  - [X] a1\n  - [ ] a2\n- [X] b\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [1/2]\n- [-] a\n  - [X] a1\n  - [ ] a2\n- [X] b\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-pct-round": {
+  "input": "* H [%]\n- [X] a\n- [ ] b\n- [ ] c\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [33%]\n- [X] a\n- [ ] b\n- [ ] c\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-percent": {
+  "input": "* H [%]\n- [ ] a\n  - [X] a1\n- [X] b\n- [X] c\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [66%]\n- [ ] a\n  - [X] a1\n- [X] b\n- [X] c\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-plain-item": {
+  "input": "- parent [/]\n  - [X] a\n  - [ ] b\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "- parent [1/2]\n  - [X] a\n  - [ ] b\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-recursive": {
+  "input": "* H [/]\n:PROPERTIES:\n:COOKIE_DATA: recursive\n:END:\n- [X] a\n** Child\n- [ ] x\n- [X] y\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [1/1]\n:PROPERTIES:\n:COOKIE_DATA: recursive\n:END:\n- [X] a\n** Child\n- [ ] x\n- [X] y\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-todo-count": {
+  "input": "* H [/]\n** TODO a\n** DONE b\n** TODO c\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-statistics-cookies t) (goto-char (point-min)))",
+  "text": "* H [1/3]\n** TODO a\n** DONE b\n** TODO c\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-todo-hier": {
+  "input": "* H [/]\n** TODO a\n*** DONE a1\n** DONE b\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (setq org-hierarchical-todo-statistics nil) (org-update-statistics-cookies t) (goto-char (point-min)))",
+  "text": "* H [2/3]\n** TODO a\n*** DONE a1\n** DONE b\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-todo-nested": {
+  "input": "* H [/]\n** TODO a\n*** DONE a1\n** DONE b\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-statistics-cookies t) (goto-char (point-min)))",
+  "text": "* H [1/2]\n** TODO a\n*** DONE a1\n** DONE b\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-todo-pct": {
+  "input": "* H [%]\n** TODO a\n** DONE b\n** DONE c\n** DONE d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-statistics-cookies t) (goto-char (point-min)))",
+  "text": "* H [75%]\n** TODO a\n** DONE b\n** DONE c\n** DONE d\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ck-two-cookies": {
+  "input": "* H [/] [%]\n- [X] a\n- [ ] b\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (org-update-checkbox-count t) (goto-char (point-min)))",
+  "text": "* H [1/2] [50%]\n- [X] a\n- [ ] b\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "rc-clear": {
+  "input": "* One\n** Sub\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (setq org-refile-targets '((nil :maxlevel . 2)) org-refile-use-cache t) (message \"T %S\" (mapcar (function car) (org-refile-get-targets))) (goto-char (point-max)) (insert \"* Three\\n\") (org-refile-cache-clear) (message \"T %S\" (mapcar (function car) (org-refile-get-targets))))",
+  "text": "* One\n** Sub\n* Two\n* Three\n",
+  "pt": [
+   5,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done",
+   "T (\"One\" \"Sub\" \"Two\")",
+   "Refile cache has been cleared",
+   "Getting targets...",
+   "Getting targets...done",
+   "T (\"One\" \"Sub\" \"Two\" \"Three\")"
+  ]
+ },
+ "rc-first": {
+  "input": "* One\n** Sub\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (setq org-refile-targets '((nil :maxlevel . 2)) org-refile-use-cache t) (message \"T %S\" (mapcar (function car) (org-refile-get-targets))))",
+  "text": "* One\n** Sub\n* Two\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done",
+   "T (\"One\" \"Sub\" \"Two\")"
+  ]
+ },
+ "rc-off": {
+  "input": "* One\n** Sub\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (setq org-refile-targets '((nil :maxlevel . 2)) org-refile-use-cache nil) (message \"T %S\" (mapcar (function car) (org-refile-get-targets))) (goto-char (point-max)) (insert \"* Three\\n\") (message \"T %S\" (mapcar (function car) (org-refile-get-targets))))",
+  "text": "* One\n** Sub\n* Two\n* Three\n",
+  "pt": [
+   5,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done",
+   "T (\"One\" \"Sub\" \"Two\")",
+   "Getting targets...",
+   "Getting targets...done",
+   "T (\"One\" \"Sub\" \"Two\" \"Three\")"
+  ]
+ },
+ "rc-other-buf": {
+  "input": "* One\n** Sub\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (setq org-refile-targets '((nil :maxlevel . 1)) org-refile-use-cache t) (message \"T %S\" (mapcar (function car) (org-refile-get-targets))) (with-temp-buffer (org-mode) (insert \"* Z\\n\") (setq org-refile-targets '((nil :maxlevel . 1))) (message \"T %S\" (mapcar (function car) (org-refile-get-targets)))))",
+  "text": "* One\n** Sub\n* Two\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done",
+   "T (\"One\" \"Two\")",
+   "Getting targets...",
+   "Getting targets...done",
+   "T (\"Z\")"
+  ]
+ },
+ "rc-pos-moved": {
+  "input": "* One\n** Sub\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (setq org-refile-targets '((nil :maxlevel . 2)) org-refile-use-cache t) (let ((tg (nth 2 (org-refile-get-targets)))) (goto-char (point-min)) (insert \"x\\n\") (condition-case e (progn (org-refile-check-position tg) (message \"OK %S\" (car tg))) (error (message \"ERR %s\" (error-message-string e))))))",
+  "text": "x\n* One\n** Sub\n* Two\n",
+  "pt": [
+   2,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done",
+   "OK \"Two\""
+  ]
+ },
+ "rc-pos-stale": {
+  "input": "* One\n** Sub\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (setq org-refile-targets '((nil :maxlevel . 2)) org-refile-use-cache t) (let ((tg (car (org-refile-get-targets)))) (goto-char (point-min)) (kill-line) (insert \"* Renamed\") (condition-case e (progn (org-refile-check-position tg) (message \"OK\")) (error (message \"ERR %s\" (error-message-string e))))))",
+  "text": "* Renamed\n** Sub\n* Two\n",
+  "pt": [
+   1,
+   9
+  ],
+  "error": false,
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done",
+   "ERR Invalid refile position, please clear the cache with ‘C-0 C-c C-w’ before refiling"
+  ]
+ },
+ "rc-pos": {
+  "input": "* One\n** Sub\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (setq org-refile-targets '((nil :maxlevel . 2)) org-refile-use-cache t) (let ((tg (car (org-refile-get-targets)))) (org-refile-check-position tg) (message \"OK %S\" (car tg))))",
+  "text": "* One\n** Sub\n* Two\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done",
+   "OK \"One\""
+  ]
+ },
+ "rc-settings": {
+  "input": "* One\n** Sub\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (setq org-refile-targets '((nil :maxlevel . 2)) org-refile-use-cache t) (message \"T %S\" (mapcar (function car) (org-refile-get-targets))) (setq org-refile-targets '((nil :maxlevel . 1))) (message \"T %S\" (mapcar (function car) (org-refile-get-targets))))",
+  "text": "* One\n** Sub\n* Two\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done",
+   "T (\"One\" \"Sub\" \"Two\")",
+   "Getting targets...",
+   "Getting targets...done",
+   "T (\"One\" \"Two\")"
+  ]
+ },
+ "rc-stale": {
+  "input": "* One\n** Sub\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": "(progn (setq org-refile-targets '((nil :maxlevel . 2)) org-refile-use-cache t) (message \"T %S\" (mapcar (function car) (org-refile-get-targets))) (goto-char (point-max)) (insert \"* Three\\n\") (message \"T %S\" (mapcar (function car) (org-refile-get-targets))))",
+  "text": "* One\n** Sub\n* Two\n* Three\n",
+  "pt": [
+   5,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done",
+   "T (\"One\" \"Sub\" \"Two\")",
+   "Getting targets...",
+   "Getting targets...done",
+   "T (\"One\" \"Sub\" \"Two\")"
+  ]
+ }
+}

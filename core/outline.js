@@ -36,6 +36,17 @@ export function todoOptions(text) {
  * @param {string} text
  */
 export function analyze(text) {
+  const hit = analyzed.get(text);
+  if (hit) { analyzed.delete(text); analyzed.set(text, hit); return hit; } // the most recently used stay
+  const r = analyzeText(text);
+  analyzed.set(text, r);
+  if (analyzed.size > 8) analyzed.delete(analyzed.keys().next().value);
+  return r;
+}
+/** The last few analyses by text: views ask for the same text again for every heading and every move, and nothing changes the result. */
+const analyzed = new Map();
+
+function analyzeText(text) {
   const todo = todoOptions(text);
   const { root } = parse(text, { todo: { open: todo.open, done: todo.done } });
   /** @type {Head[]} */ const heads = [];
@@ -222,6 +233,15 @@ export function startupFolds(text) {
     }
   }
   return closed;
+}
+
+/** What #+STARTUP says about indentation: true for indent, false for noindent, null when it says nothing (the last one wins). */
+export function startupIndent(text) {
+  let on = null;
+  for (const m of text.matchAll(/^[ \t]*#\+STARTUP:[ \t]*(.*)$/gim)) {
+    for (const w of m[1].toLowerCase().split(/\s+/)) { if (w === 'indent') on = true; else if (w === 'noindent') on = false; }
+  }
+  return on;
 }
 
 const count = (s) => (s.match(/\n/g) ?? []).length;

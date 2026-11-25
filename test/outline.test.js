@@ -202,3 +202,37 @@ test('Emacs M-left and M-right on list items', () => {
   assert.throws(() => indentItem(L, 0, -1, false), /Cannot outdent/);
   assert.throws(() => changeLevel('* A\n** B\n', 0, -1, false), /Cannot promote/);
 });
+
+test('#+STARTUP indent and noindent', async () => {
+  const { startupIndent } = await import('../core/outline.js');
+  assert.equal(startupIndent('#+STARTUP: indent\n* A\n'), true);
+  assert.equal(startupIndent('#+STARTUP: overview noindent\n'), false);
+  assert.equal(startupIndent('* A\n'), null);
+});
+
+import { readFileSync } from 'node:fs';
+import { updateCheckboxCounts, updateTodoCounts } from '../core/outline-edit.js';
+{
+  const C = JSON.parse(readFileSync(new URL('./fixtures/emacs-cookies.json', import.meta.url)));
+  for (const [id, c] of Object.entries(C)) {
+    if (!/^ck-/.test(id) || c.keys) continue;
+    test(`Emacs cookies: ${id}`, () => {
+      const opt = { hierarchical: !/hierarchical-(todo|checkbox)-statistics nil|checkbox-hierarchical-statistics nil/.test(c.eval) };
+      const got = /update-statistics-cookies/.test(c.eval) ? updateTodoCounts(c.input, opt) : updateCheckboxCounts(c.input, opt);
+      assert.equal(got, c.text);
+    });
+  }
+}
+
+{
+  const C = JSON.parse(readFileSync(new URL('./fixtures/emacs-cookies.json', import.meta.url)));
+  for (const id of ['ck-key-1', 'ck-key-2', 'ck-key-3', 'ck-key-4', 'ck-key-5', 'ck-key-7', 'ck-key-8']) {
+    test(`Emacs cookies: ${id}`, async () => {
+      const m = await import('../core/outline-edit.js');
+      const c = C[id];
+      let got;
+      try { got = (m.updateCookieAt(c.input, c.line - 1, c.col) ?? m.toggleCheckbox(c.input, c.line - 1))?.text; } catch { got = c.input; assert.ok(c.error); }
+      assert.equal(got, c.text);
+    });
+  }
+}

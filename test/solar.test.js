@@ -15,3 +15,25 @@ test('solar holidays in India have no daylight saving lines', () => {
   const l = solar(2026, 'Asia/Kolkata').map((x) => x.replace(/\(.*\)/, ''));
   assert.deepEqual(l, ['3/20 Vernal Equinox 8:14pm ', '6/21 Summer Solstice 1:54pm ', '9/23 Autumnal Equinox 5:34am ', '12/22 Winter Solstice 2:19am ']);
 });
+
+test('daylight saving changes come from the zone itself', () => {
+  const dst = (y, zone) => holidaysOf(y, { which: ['solar'], zone }).filter((h) => /Daylight/.test(h.name)).sort((a, b) => a.m - b.m || a.d - b.d).map((h) => `${h.m}/${h.d} ${h.name.replace('Daylight Saving Time ', '')}`);
+  assert.deepEqual(dst(2026, 'Europe/London'), ['3/29 Begins 1:00am (GMT)', '10/25 Ends 2:00am (BST)']);
+  assert.deepEqual(dst(2026, 'Australia/Sydney'), ['4/5 Ends 3:00am (AEDT)', '10/4 Begins 2:00am (AEST)']);
+  assert.deepEqual(dst(2026, 'UTC'), []);
+});
+
+// Emacs 30.1 (conformance v0.1.28) listed the minute of every equinox and solstice from 2000 to 2060 in UTC; the published method is within a minute of it
+import { readFileSync } from 'node:fs';
+test('equinox and solstice minutes, 2000 to 2060, are within a minute of Emacs', () => {
+  const rows = JSON.parse(readFileSync(new URL('./fixtures/emacs-solar-years.json', import.meta.url)));
+  let exact = 0;
+  for (const [y, , , text] of rows) {
+    const mine = holidaysOf(y, { which: ['solar'], zone: 'UTC' }).find((h) => text.startsWith(h.name.split(' ').slice(0, 2).join(' ')));
+    const min = (t) => { const m = /(\d+):(\d\d)(am|pm)/.exec(t); return (Number(m[1]) % 12 + (m[3] === 'pm' ? 12 : 0)) * 60 + Number(m[2]); };
+    const diff = Math.abs(min(mine.name) - min(text));
+    assert.ok(diff <= 1, `${y} ${text} against ${mine.name}`);
+    if (diff === 0) exact++;
+  }
+  assert.ok(exact / rows.length > 0.75, `${exact} of ${rows.length} exact`);
+});

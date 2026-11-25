@@ -41,3 +41,10 @@ test('hiding leading stars keeps every offset', () => {
   assert.equal(q.value, '  * A\n');
   assert.equal(q.value.length, 6);
 });
+
+test('indent puts two columns per level before each line, and positions still map', () => {
+  const p = project('* A\nbody\n** B\n  more\n', new Set(), new Set(), { indent: true });
+  assert.equal(p.value, '* A\n  body\n  * B\n      more\n');
+  for (const f of [0, 2, 4, 6, 9, 14]) assert.equal(toFull(p, toShown(p, f)), f);
+  assert.equal(toFull(p, 5), 4);
+});

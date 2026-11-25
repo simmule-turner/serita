@@ -208,6 +208,27 @@ test('errors that are not network errors are thrown and nothing is queued', asyn
   assert.deepEqual(await p.pending(), []);
 });
 
+test('a server error (5xx) queues the save, and sync reports it and keeps the file queued', async () => {
+  const cache = createMemoryKv();
+  const down = async () => { throw Object.assign(new Error('GitHub 503: unavailable'), { status: 503 }); };
+  const p = createCachedProvider({ remote: { read: down, write: down, list: down, entries: down, remove: down }, cache });
+  const w = await p.write('a.org', 'x');
+  assert.equal(w.ok, true);
+  assert.deepEqual(await p.pending(), [{ path: 'a.org', kind: 'write' }]);
+  const r = await p.sync();
+  assert.equal(r.offline, true);
+  assert.match(r.error, /503/);
+  assert.equal(r.pending, 1);
+});
+
+test('a client error (4xx) is still thrown and nothing is queued', async () => {
+  const cache = createMemoryKv();
+  const bad = async () => { throw Object.assign(new Error('GitHub 403: forbidden'), { status: 403 }); };
+  const p = createCachedProvider({ remote: { read: bad, write: bad, list: bad, remove: bad }, cache });
+  await assert.rejects(p.write('a.org', 'x'), /403/);
+  assert.deepEqual(await p.pending(), []);
+});
+
 test('isOnline false skips the server entirely', async () => {
   const { state, inner } = setup();
   let calls = 0;

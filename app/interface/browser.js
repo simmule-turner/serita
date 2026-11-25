@@ -22,7 +22,11 @@ const REASONS = Object.freeze({
  */
 export function createBrowserInterface({ providers, env = globalThis, now = () => new Date() }) {
   const watchers = new Map();
-  const emit = (name) => { for (const cb of watchers.get(name) ?? []) cb(name); };
+  // A watcher hears the writes and removals of this tab, and those of other tabs of the app (its second argument is true for those).
+  const emit = (name, external = false) => { for (const cb of watchers.get(name) ?? []) cb(name, external); };
+  const channel = typeof env.BroadcastChannel === 'function' ? new env.BroadcastChannel('serita-storage') : null;
+  if (channel) channel.onmessage = (e) => { if (typeof e.data?.name === 'string') emit(e.data.name, true); };
+  const changed = (name) => { emit(name); channel?.postMessage({ name }); };
 
   const provider = (p) => {
     const impl = providers[p];
@@ -60,7 +64,7 @@ export function createBrowserInterface({ providers, env = globalThis, now = () =
       async write(name, text, opts) {
         const { path, impl, full } = resolve(name);
         const r = await impl.write(path, text, opts);
-        if (r.ok) emit(full);
+        if (r.ok) changed(full);
         return r;
       },
       entries,
@@ -70,7 +74,7 @@ export function createBrowserInterface({ providers, env = globalThis, now = () =
       async remove(name) {
         const { path, impl, full } = resolve(name);
         await impl.remove(path);
-        emit(full);
+        changed(full);
       },
       watch(name, cb) {
         const { full } = resolve(name);

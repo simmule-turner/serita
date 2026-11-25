@@ -6,7 +6,6 @@
 - webdav.url, webdav.username :: the WebDAV server.
 - view.mode :: Text or Outline.
 - view.emacsKeys :: Emacs keys in the Text view (on).
-- view.hideStars :: hide leading stars (off).
 - view.lineNumbers, view.wrap :: line numbers and wrapping in the Text view.
 - view.fontSize, view.font, view.theme, view.paragraphSpacing :: appearance.
 - view.toolRowText, view.toolRowOutline :: the tool row in each view.
@@ -41,6 +40,10 @@
 org-log-into-drawer is a drawer name such as LOGBOOK; org-log-repeat is on unless set to nil, or note to ask for a note too.
 ** Archive and refile options
 org-archive-mark-done is nil, t or a done keyword; org-archive-save-context-info lists the properties kept on an archived entry; org-refile-allow-creating-parent-nodes is nil, confirm or t; org-agenda-use-time-grid is on unless set to nil.
+** Stars and indentation
+org-hide-leading-stars is t to show only the last star of a heading, and org-startup-indented is t to open files with org-indent-mode on. A file can decide for itself with #+STARTUP: indent or #+STARTUP: noindent.
+** Tables
+org-table-widget-wrap-columns is t to wrap long cells in the Outline view's table grid, org-table-widget-max-width-fraction is the share of the screen a table may use (0.3 to 1), and org-table-widget-zebra-stripe is t to shade every other row.
 ** Diary
 org-agenda-include-diary is t or nil, diary-file names the diary (any storage name), and calendar-date-style is american, european or iso.
 
@@ -50,7 +53,7 @@ org-contacts-files lists the contacts files (any storage names, separated by spa
 ** Holidays
 calendar-holidays lists general, christian and solar (empty means all, nil means none), diary-show-holidays-flag is t to show holidays in the agenda, and holiday-local-holidays holds your own holiday forms.
 ** Keys of the settings above
-org-agenda-files, org-capture-templates, org-refile-settings, org-archive-location, org-log-into-drawer, org-log-repeat, org-archive-mark-done, org-archive-save-context-info, org-refile-allow-creating-parent-nodes, org-agenda-use-time-grid, org-agenda-include-diary, diary-file, calendar-date-style, calendar-holidays, holiday-local-holidays, diary-show-holidays-flag, org-contacts-files, org-contacts-birthday-property
+org-agenda-files, org-capture-templates, org-refile-settings, org-archive-location, org-log-into-drawer, org-log-repeat, org-archive-mark-done, org-archive-save-context-info, org-refile-allow-creating-parent-nodes, org-agenda-use-time-grid, org-agenda-include-diary, diary-file, calendar-date-style, calendar-holidays, holiday-local-holidays, diary-show-holidays-flag, org-contacts-files, org-contacts-birthday-property, org-hide-leading-stars, org-startup-indented, org-table-widget-wrap-columns, org-table-widget-max-width-fraction, org-table-widget-zebra-stripe
 
 ** Local holidays
 Settings, Emacs, Local holidays takes forms like these:

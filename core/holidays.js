@@ -57,23 +57,42 @@ function local(y, text) {
   return out;
 }
 
+// The zone's short name: en-US names only the U.S. zones, so other English locales are tried before falling back to GMT+n.
+const formats = new Map();
+/** A formatter for the locale, zone and kind of zone name, made once: building one costs far more than using it. */
+const formatter = (loc, zone, name) => {
+  const k = `${loc}|${zone}|${name}`;
+  if (!formats.has(k)) formats.set(k, new Intl.DateTimeFormat(loc, { timeZone: zone, timeZoneName: name, hour: 'numeric' }));
+  return formats.get(k);
+};
+const abbrOf = (date, zone) => {
+  let v = '';
+  for (const loc of ['en-US', 'en-GB', 'en-AU', 'en-IN', 'en-NZ']) {
+    v = formatter(loc, zone, 'short').formatToParts(date).find((x) => x.type === 'timeZoneName').value;
+    if (!/^GMT[+-]/.test(v)) return v;
+  }
+  return v;
+};
 const zoneParts = (date, zone) => {
-  const get = (name) => new Intl.DateTimeFormat('en-US', { timeZone: zone, timeZoneName: name, hour: 'numeric' }).formatToParts(date).find((x) => x.type === 'timeZoneName').value;
-  const off = /GMT([+-])(\d\d):(\d\d)/.exec(get('longOffset'));
-  return { offset: off ? (off[1] === '-' ? -1 : 1) * (Number(off[2]) * 60 + Number(off[3])) : 0, abbr: get('short') };
+  const off = /GMT([+-])(\d\d):(\d\d)/.exec(formatter('en-US', zone, 'longOffset').formatToParts(date).find((x) => x.type === 'timeZoneName').value);
+  return { offset: off ? (off[1] === '-' ? -1 : 1) * (Number(off[2]) * 60 + Number(off[3])) : 0, abbr: abbrOf(date, zone) };
 };
 const clock12 = (h, m) => `${h % 12 || 12}:${String(m).padStart(2, '0')}${h < 12 ? 'am' : 'pm'}`;
 
-/** daylight saving start and end under the U.S. rule (the second Sunday of March, the first Sunday of November, 2:00am), only where the zone does change then. */
+/** The daylight saving changes of the year in the zone, from the zone's own rules: when the clock goes forward (Begins) and back (Ends), as local time before the change. */
 function daylight(y, zone) {
   const out = [];
-  for (const [m, wd, n, word] of [[3, 0, 2, 'Begins'], [11, 0, 1, 'Ends']]) {
-    const d = floatDay(y, m, wd, n);
-    const std = zoneParts(new Date(Date.UTC(y, m - 1, d - 1, 12)), zone); // the offset in force before the change
-    const at = new Date(Date.UTC(y, m - 1, d, 2) - std.offset * 60000);
-    const before = zoneParts(new Date(at.getTime() - 3600000), zone), after = zoneParts(new Date(at.getTime() + 3600000), zone);
-    if (before.offset === after.offset) continue;
-    out.push([m, d, `Daylight Saving Time ${word} 2:00am (${before.abbr})`]);
+  const HOUR = 3600000;
+  let prev = zoneParts(new Date(Date.UTC(y, 0, 1)), zone);
+  for (let t = Date.UTC(y, 0, 1); t < Date.UTC(y + 1, 0, 1); t += 24 * HOUR) {
+    const next = zoneParts(new Date(t + 24 * HOUR), zone);
+    if (next.offset !== prev.offset && t + 24 * HOUR < Date.UTC(y + 1, 0, 1)) {
+      let h = t; // the first hour whose offset is the new one
+      while (zoneParts(new Date(h), zone).offset === prev.offset) h += HOUR;
+      const local = new Date(h + prev.offset * 60000);
+      out.push([local.getUTCMonth() + 1, local.getUTCDate(), `Daylight Saving Time ${next.offset > prev.offset ? 'Begins' : 'Ends'} ${clock12(local.getUTCHours(), local.getUTCMinutes())} (${prev.abbr})`]);
+    }
+    prev = next;
   }
   return out;
 }
@@ -90,7 +109,17 @@ function solar(y, zone) {
 }
 
 /** What holidays to use: `which` lists 'general', 'christian' and 'solar'; `zone` is the time zone for the solar times; `localText` is the text of holiday-local-holidays. */
+const computed = new Map();
 export function holidaysOf(y, { which = ['general', 'christian', 'solar'], localText = '', zone = Intl.DateTimeFormat().resolvedOptions().timeZone } = {}) {
+  const key = `${y}|${which.join()}|${zone}|${localText}`;
+  if (!computed.has(key)) {
+    if (computed.size > 60) computed.clear();
+    computed.set(key, holidaysFor(y, which, localText, zone));
+  }
+  return computed.get(key);
+}
+
+function holidaysFor(y, which, localText, zone) {
   const all = [];
   if (which.includes('general')) all.push(...GENERAL(y));
   if (which.includes('christian')) all.push(...CHRISTIAN(y));

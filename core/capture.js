@@ -3,6 +3,7 @@
 
 import { splitLines } from './parse.js';
 import { analyze } from './outline.js';
+import { alignLines } from './table.js';
 import { readForms, isSym } from './lisp-read.js';
 import { formatStamp } from './timestamp.js';
 
@@ -109,13 +110,6 @@ function insertAt(lines, at, add) {
   lines.splice(at, 0, ...add);
 }
 
-const alignTable = (rows) => {
-  const cells = rows.map((r) => (/^\s*\|[-+]+\|?\s*$/.test(r) ? null : r.trim().replace(/^\||\|$/g, '').split('|').map((c) => c.trim())));
-  const cols = Math.max(...cells.filter(Boolean).map((c) => c.length));
-  const w = Array.from({ length: cols }, (_, j) => Math.max(1, ...cells.filter(Boolean).map((c) => (c[j] ?? '').length)));
-  return cells.map((c) => (c ? `|${w.map((x, j) => ` ${(c[j] ?? '').padEnd(x)} `).join('|')}|` : `|${w.map((x) => '-'.repeat(x + 2)).join('+')}|`));
-};
-
 /**
  * Files captured text into a document, as Emacs does.
  * @param {string} text the target document
@@ -171,12 +165,12 @@ export function place(text, tpl, captured) {
     const row = body.trim();
     if (s < 0) {
       const n = row.replace(/^\||\|$/g, '').split('|').length;
-      const table = alignTable([`|${' |'.repeat(n)}`, `|${'-+'.repeat(n).slice(0, -1)}|`, row]);
+      const table = alignLines([`|${' |'.repeat(n)}`, `|${'-+'.repeat(n).slice(0, -1)}|`, row]);
       at = ownEnd;
       add = table.map((x) => ({ text: x, eol: '\n' }));
     } else {
       const last = rows[rows.length - 1];
-      const table = alignTable([...rows.map((i) => lines[i].text), row]);
+      const table = alignLines([...rows.map((i) => lines[i].text), row]);
       const eol = lines[last].eol || '\n';
       lines.splice(s, rows.length, ...table.slice(0, -1).map((x) => ({ text: x, eol: '\n' })));
       lines[s + rows.length - 1] = { ...lines[s + rows.length - 1], eol };

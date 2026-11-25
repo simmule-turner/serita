@@ -102,3 +102,39 @@ test('a new child heading goes at the end of the target subtree', () => {
   assert.equal(r.line, 4);
   assert.equal(newChild('* A\n** A1\n* B', find(ts, 'A'), 'N').text, '* A\n** A1\n\n** N\n* B');
 });
+
+import { readFileSync } from 'node:fs';
+import { RefileCache, checkTarget, STALE_TARGET } from '../core/refile.js';
+{
+  const C = JSON.parse(readFileSync(new URL('./fixtures/emacs-cookies.json', import.meta.url)));
+  const targets = (text, s) => listTargets([{ name: 'a.org', text }], parseRefileSettings(s), { current: 'a.org' });
+  const labels = (l) => l.map((t) => t.label);
+  const T2 = '(setq org-refile-targets \'((nil :maxlevel . 2)) org-refile-use-cache t)';
+  test('Emacs refile cache: the first listing and a listing after an edit', () => {
+    const c = new RefileCache();
+    const s = parseRefileSettings(T2);
+    const first = c.get(s, 'a.org', () => targets(C['rc-stale'].input, T2));
+    assert.equal(`T ${JSON.stringify(labels(first)).replace(/"/g, '\\"').replace(/^\[/, '(').replace(/\]$/, ')').replace(/,/g, ' ')}`.replace(/\\"/g, '"'), C['rc-stale'].texts[2].replace(/\\"/g, '"'));
+    const again = c.get(s, 'a.org', () => targets(`${C['rc-stale'].input}* Three\n`, T2));
+    assert.deepEqual(labels(again), ['One', 'Sub', 'Two']);
+    c.clear();
+    assert.deepEqual(labels(c.get(s, 'a.org', () => targets(`${C['rc-stale'].input}* Three\n`, T2))), ['One', 'Sub', 'Two', 'Three']);
+  });
+  test('Emacs refile cache: off, other settings and another buffer list afresh', () => {
+    const c = new RefileCache();
+    const off = parseRefileSettings(T2.replace(' t)', ' nil)'));
+    c.get(off, 'a.org', () => targets('* One\n', T2));
+    assert.deepEqual(labels(c.get(off, 'a.org', () => targets('* One\n* Three\n', T2))), ['One', 'Three']);
+    const on = parseRefileSettings(T2);
+    c.get(on, 'a.org', () => targets('* One\n', T2));
+    assert.deepEqual(labels(c.get(parseRefileSettings(T2.replace('2)', '1)')), 'a.org', () => targets('* Q\n', T2))), ['Q']);
+    c.get(on, 'a.org', () => targets('* One\n', T2));
+    assert.deepEqual(labels(c.get(on, 'b.org', () => targets('* Z\n', T2))), ['Z']);
+  });
+  test('Emacs refile cache: a target whose heading changed is stale', () => {
+    const t = targets(C['rc-pos'].input, T2)[0];
+    checkTarget(t, C['rc-pos'].input);
+    assert.throws(() => checkTarget(t, C['rc-pos-stale'].text), { message: STALE_TARGET });
+    assert.equal(C['rc-pos-stale'].texts[2], `ERR ${STALE_TARGET}`);
+  });
+}

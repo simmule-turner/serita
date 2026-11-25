@@ -29,7 +29,7 @@ function plist(list) {
  * A target is { files: null (the current file) | 'agenda' | string[], maxlevel, level, tag, todo, regexp }.
  */
 export function parseRefileSettings(text) {
-  const out = { targets: [{ files: null, level: 1 }], outline: false, reverse: false };
+  const out = { targets: [{ files: null, level: 1 }], outline: false, reverse: false, cache: false };
   for (const form of readForms(text)) {
     if (name(form[0]) !== 'setq') throw new Error('Expected setq');
     for (let i = 1; i < form.length; i += 2) {
@@ -44,6 +44,7 @@ export function parseRefileSettings(text) {
         });
       } else if (v === 'org-refile-use-outline-path') out.outline = val === null ? false : val === true ? true : name(val) === 'file' ? 'file' : (() => { throw new Error('org-refile-use-outline-path is nil, t or file'); })();
       else if (v === 'org-reverse-note-order') out.reverse = val === true;
+      else if (v === 'org-refile-use-cache') out.cache = val === true;
       else throw new Error(`${v ?? 'That'} is not a refile setting`);
     }
   }
@@ -75,11 +76,38 @@ export function listTargets(files, settings, { current, agenda = [] }) {
         if (re && !(re.lastIndex = 0, re.test(lines[h.line].text))) continue;
         const path = []; for (let x = h; x; x = x.parent) path.unshift(x.title);
         const label = settings.outline ? path.join('/') : h.title;
-        out.push({ label: settings.outline === 'file' ? `${f.name}/${label}` : label, file: f.name, line: h.line, level: h.level });
+        out.push({ label: settings.outline === 'file' ? `${f.name}/${label}` : label, file: f.name, line: h.line, level: h.level, title: h.title });
       }
     }
   }
   return out;
+}
+
+// ---- The target cache (org-refile-use-cache) ---------------------------------------------------------------------------------
+
+export const STALE_TARGET = 'Invalid refile position, please clear the cache with ‘C-0 C-c C-w’ before refiling';
+
+/** Remembers the targets of the last listing for as long as the settings and the current file are the same, until cleared. */
+export class RefileCache {
+  #key = null;
+  #targets = null;
+  /** The cached targets, or the result of `build()` (kept when the settings say so). */
+  get(settings, current, build) {
+    const key = JSON.stringify([settings.targets, settings.outline, current]);
+    if (settings.cache && this.#key === key && this.#targets) return this.#targets;
+    const targets = build().map((t) => ({ ...t }));
+    this.#key = settings.cache ? key : null;
+    this.#targets = settings.cache ? targets : null;
+    return targets;
+  }
+  clear() { this.#key = null; this.#targets = null; }
+}
+
+/** org-refile-check-position: the heading a target was listed at must still be there with the same title. Throws otherwise. */
+export function checkTarget(target, text) {
+  if (target.line < 0) return;
+  const h = analyze(text).heads.find((x) => x.line === target.line);
+  if (!h || (target.title !== undefined && h.title !== target.title)) throw new Error(STALE_TARGET);
 }
 
 // ---- Moving subtrees --------------------------------------------------------------------------------------------------------

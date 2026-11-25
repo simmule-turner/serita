@@ -5,15 +5,19 @@
 //     local?: string, token?: string,   an unsynced local edit and the version token handed out for it
 //     deleted?: true,                   a delete waiting to be sent
 //     seq: number }
-// Only NetworkUnavailable means "offline". Any other error is real and is thrown, never queued.
+// NetworkUnavailable and a server error (status 500 or more) mean the server cannot be reached for now: writes and deletes are queued.
+// Any other error is real and is thrown, never queued.
 
 import { NetworkUnavailable } from '../interface/contract.js';
 import { byteLength } from '../../core/bytes.js';
 
 /**
  * @typedef {{ path: string, base: string | null, mine: string | null, theirs: string | null, theirsVersion: string | null }} SyncConflict
- * @typedef {{ synced: string[], conflicts: SyncConflict[], pending: number, offline: boolean }} SyncResult
+ * @typedef {{ synced: string[], conflicts: SyncConflict[], pending: number, offline: boolean, error?: string }} SyncResult
  */
+
+/** The server cannot take the request now: no network, or it answered with a 5xx status. */
+const unreachable = (e) => e instanceof NetworkUnavailable || (typeof e?.status === 'number' && e.status >= 500);
 
 const isDirty = (rec) => rec !== undefined && (rec.local !== undefined || rec.deleted === true);
 
@@ -39,7 +43,7 @@ export function createCachedProvider({ remote, cache, isOnline = () => true }) {
         else if (rec) await drop(path);
         return r;
       } catch (e) {
-        if (e instanceof NetworkUnavailable && rec?.base) return { text: rec.base.text, version: rec.base.version };
+        if (unreachable(e) && rec?.base) return { text: rec.base.text, version: rec.base.version };
         throw e;
       }
     },
@@ -56,7 +60,7 @@ export function createCachedProvider({ remote, cache, isOnline = () => true }) {
         if (r.ok) await put(path, { base: { text, version: r.version }, seq: rec?.seq ?? 0 });
         return r;
       } catch (e) {
-        if (!(e instanceof NetworkUnavailable)) throw e;
+        if (!unreachable(e)) throw e;
         const seq = (rec?.seq ?? 0) + 1;
         const token = `local:${seq}`;
         const base = rec?.base ?? (baseVersion !== undefined ? { text: null, version: baseVersion } : null);
@@ -74,7 +78,7 @@ export function createCachedProvider({ remote, cache, isOnline = () => true }) {
       try {
         found = await attempt(() => remote.entries(prefix, options));
       } catch (e) {
-        if (!(e instanceof NetworkUnavailable)) throw e;
+        if (!unreachable(e)) throw e;
         found = keys.map((path) => ({ path, size: sizeOf(recs.get(path)) }));
       }
       const byPath = new Map(found.map((e) => [e.path, e]));
@@ -95,7 +99,7 @@ export function createCachedProvider({ remote, cache, isOnline = () => true }) {
         await attempt(() => remote.remove(path));
         await drop(path);
       } catch (e) {
-        if (!(e instanceof NetworkUnavailable)) throw e;
+        if (!unreachable(e)) throw e;
         if (rec?.base?.version) await put(path, { base: rec.base, deleted: true, seq: rec.seq ?? 0 });
         else await drop(path);
       }
@@ -133,8 +137,9 @@ export function createCachedProvider({ remote, cache, isOnline = () => true }) {
             else out.conflicts.push({ path, base: rec.base?.text ?? null, mine: rec.local, theirs: r.conflict.theirs, theirsVersion: r.conflict.theirsVersion });
           }
         } catch (e) {
-          if (!(e instanceof NetworkUnavailable)) throw e;
+          if (!unreachable(e)) throw e;
           out.offline = true;
+          if (!(e instanceof NetworkUnavailable)) out.error = e.message;
           break;
         }
       }

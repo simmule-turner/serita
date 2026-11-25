@@ -1,0 +1,4828 @@
+{
+ "tb-bar-a": {
+  "question": "C-c | on a table line",
+  "input": "| a | b |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "C-c |",
+  "eval": false,
+  "text": "|   |   |   |   |   |\n|---+---+---+---+---|\n|   |   |   |   |   |\n|   |   |   |   |   |\na | b |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-blank-2": {
+  "question": "org-table-blank-field in the last column",
+  "input": "| abc | b |\n| c | d |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| abc | b |\n| c |   |\n",
+  "pt": [
+   2,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-blank": {
+  "question": "C-c SPC empties the field",
+  "input": "| a | b |\n| c | d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "C-c SPC",
+  "eval": false,
+  "text": "| a | b |\n| c | d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": [
+   "C-c SPC is undefined"
+  ]
+ },
+ "tb-cc-cc-doc": {
+  "question": "C-c C-c in a table among text",
+  "input": "Intro text\n\n| x | y |\n|---+---|\n| 1 | 2 |\n\nAfter text\n",
+  "line": 5,
+  "col": 2,
+  "keys": "C-c C-c",
+  "eval": false,
+  "text": "Intro text\n\n| x | y |\n|---+---|\n| 1 | 2 |\n\nAfter text\n",
+  "pt": [
+   5,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cc-cc-ragged": {
+  "question": "C-c C-c on unequal rows",
+  "input": "| a | b | c |\n| d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "C-c C-c",
+  "eval": false,
+  "text": "| a | b | c |\n| d |   |   |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cc-cc": {
+  "question": "C-c C-c aligns and keeps the cursor",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 6,
+  "keys": "C-c C-c",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   3,
+   9
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ck-bad": {
+  "question": "a cookie that is not one",
+  "input": "| <x> | <3 |\n| abc | d |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| <x> | <3 |\n| abc |  d |\n",
+  "pt": [
+   1,
+   8
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ck-c": {
+  "question": "<c> centers",
+  "input": "| <c> | x |\n| abcdef | y |\n| d | zz |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|  <c>   | x  |\n| abcdef | y  |\n|   d    | zz |\n",
+  "pt": [
+   2,
+   11
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ck-l": {
+  "question": "<l> keeps left alignment",
+  "input": "| <l> |\n| 1 |\n| 22 |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| <l> |\n| 1   |\n| 22  |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ck-lines": {
+  "question": "the lines of a cookie width table",
+  "input": "| <4> |\n| abcdefgh |\n| xy |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "C-c C-c",
+  "eval": false,
+  "text": "| <4>      |\n| abcdefgh |\n| xy       |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ck-r": {
+  "question": "<r> right aligns text",
+  "input": "| <r> | x |\n| abc | y |\n| d | zz |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| <r> | x  |\n| abc | y  |\n|   d | zz |\n",
+  "pt": [
+   2,
+   8
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ck-row": {
+  "question": "a cookie row below a hline",
+  "input": "| h1 | h2 |\n|---+---|\n| <5> | <r> |\n| abcdefgh | 1 |\n",
+  "line": 4,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| h1       |  h2 |\n|----------+-----|\n| <5>      | <r> |\n| abcdefgh |   1 |\n",
+  "pt": [
+   4,
+   13
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ck-w-short": {
+  "question": "width wider than the contents",
+  "input": "| <10> | x |\n| ab | y |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| <10> | x |\n| ab   | y |\n",
+  "pt": [
+   2,
+   9
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ck-w": {
+  "question": "<6> width truncates display, not text",
+  "input": "| <6> | x |\n| abcdefghij | y |\n| d | zz |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| <6>        | x  |\n| abcdefghij | y  |\n| d          | zz |\n",
+  "pt": [
+   2,
+   15
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ck-wr": {
+  "question": "<r6> width with right alignment",
+  "input": "| <r6> | x |\n| abcdefghij | y |\n| 12 | zz |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|       <r6> | x  |\n| abcdefghij | y  |\n|         12 | zz |\n",
+  "pt": [
+   2,
+   15
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-conv-reg1": {
+  "question": "a region with some indentation",
+  "input": "  a,b\n  c,d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-SPC C-n C-n C-c |",
+  "eval": false,
+  "text": "  a,b\n  c,d\n|   |   |   |   |   |\n|---+---+---+---+---|\n|   |   |   |   |   |\n",
+  "pt": [
+   3,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-conv-region": {
+  "question": "a region of commas",
+  "input": "a,b\nc,d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-SPC C-n C-n C-c |",
+  "eval": false,
+  "text": "a,b\nc,d\n|   |   |   |   |   |\n|---+---+---+---+---|\n|   |   |   |   |   |\n",
+  "pt": [
+   3,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-conv-space": {
+  "question": "a region of words",
+  "input": "a b c\nd e f\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-SPC C-n C-n C-c |",
+  "eval": false,
+  "text": "a b c\nd e f\n|   |   |   |   |   |\n|---+---+---+---+---|\n|   |   |   |   |   |\n",
+  "pt": [
+   3,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-conv-tab": {
+  "question": "a region of tabs",
+  "input": "a\tb\nc\td\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-SPC C-n C-n C-c |",
+  "eval": false,
+  "text": "a\tb\nc\td\n|   |   |   |   |   |\n|---+---+---+---+---|\n|   |   |   |   |   |\n",
+  "pt": [
+   3,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-conv-words2": {
+  "question": "words with extra spaces",
+  "input": "a   b c\n d  e\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-SPC C-n C-n C-c |",
+  "eval": false,
+  "text": "a   b c\n d  e\n|   |   |   |   |   |\n|---+---+---+---+---|\n|   |   |   |   |   |\n",
+  "pt": [
+   3,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-create-csv": {
+  "question": "C-c | on a line of CSV",
+  "input": "a,b,c\n1,2,3\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c |",
+  "eval": false,
+  "text": "|   |   |   |   |   |\n|---+---+---+---+---|\n|   |   |   |   |   |\na,b,c\n1,2,3\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-create-line": {
+  "question": "C-c | on a line of text",
+  "input": "a b c\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c |",
+  "eval": false,
+  "text": "|   |   |   |   |   |\n|---+---+---+---+---|\n|   |   |   |   |   |\na b c\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-create-size": {
+  "question": "C-c | with a size",
+  "input": "\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c | 3 x 2 RET",
+  "eval": false,
+  "text": "|   |   |   |\n|---+---+---|\n|   |   |   |\n\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-create": {
+  "question": "C-c | on an empty line makes a table",
+  "input": "\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c | RET",
+  "eval": false,
+  "text": "|   |   |   |   |   |\n|---+---+---+---+---|\n|   |   |   |   |   |\n\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cv-16": {
+  "question": "convert with C-u C-u (comma)",
+  "input": "a,b\nc,d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a,b |\n| c,d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cv-4": {
+  "question": "convert with C-u (tab)",
+  "input": "a\tb\nc\td\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a\tb |\n| c\td |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cv-64": {
+  "question": "convert with three C-u (a regexp)",
+  "input": "a,b\nc,d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "a,b\nc,d\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": "(end-of-file \"Error reading from stdin\")",
+  "texts": []
+ },
+ "tb-cv-blank": {
+  "question": "convert with blank lines in the region",
+  "input": "a,b\n\nc,d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a,b |\n|     |\n| c,d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cv-empty": {
+  "question": "convert empty fields",
+  "input": "a,,c\n,b,\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a,,c |\n| ,b,  |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cv-n": {
+  "question": "convert with a number",
+  "input": "a  b c\nd  e f\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | b c |\n| d | e f |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cv-nil-mix": {
+  "question": "convert, tabs and commas",
+  "input": "a,b\tc\nd\te,f\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a,b | c   |\n| d   | e,f |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cv-nil-sp": {
+  "question": "convert, spaces",
+  "input": "a b\nc d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | b |\n| c | d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cv-nil-tab": {
+  "question": "convert, tabs",
+  "input": "a\tb\nc\td\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | b |\n| c | d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cv-nil": {
+  "question": "convert, guess the separator",
+  "input": "a,b\nc,d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | b |\n| c | d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cv-pipes": {
+  "question": "convert text that has bars",
+  "input": "a|b,c\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | b,c |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cv-quote": {
+  "question": "convert CSV with quoted fields",
+  "input": "\"a,1\",b\n\"c \"\"x\"\"\",d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| \"a,1\",b     |\n| \"c \"\"x\"\"\",d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cv-ragged": {
+  "question": "convert uneven rows",
+  "input": "a,b,c\nd\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a,b,c |\n| d     |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cv-re": {
+  "question": "convert with a regexp",
+  "input": "a;b,c\nd;e,f\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | b | c |\n| d | e | f |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-cv-table": {
+  "question": "convert a region that is already a table",
+  "input": "| a | b |\n| c | d |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "|   |   | a |   |   | b |   |\n|   |   | c |   |   | d |   |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-dcol-1": {
+  "question": "M-S-left deletes the column",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 7,
+  "keys": "M-S-<left>",
+  "eval": false,
+  "text": "|    a |   c |\n|------+-----|\n|    1 | 333 |\n| 4444 |   6 |\n",
+  "pt": [
+   3,
+   9
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-dcol-2": {
+  "question": "M-S-left in the first column",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "M-S-<left>",
+  "eval": false,
+  "text": "|  b |   c |\n|----+-----|\n| 22 | 333 |\n|  5 |   6 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-dcol-3": {
+  "question": "M-S-left in the last column",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 13,
+  "keys": "M-S-<left>",
+  "eval": false,
+  "text": "|    a |  b |\n|------+----|\n|    1 | 22 |\n| 4444 |  5 |\n",
+  "pt": [
+   3,
+   13
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-dcol-4": {
+  "question": "M-S-left in a one column table",
+  "input": "| a |\n| b |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "M-S-<left>",
+  "eval": false,
+  "text": "||\n||\n",
+  "pt": [
+   1,
+   1
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-down-1": {
+  "question": "M-down moves the row down",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "M-<down>",
+  "eval": false,
+  "text": "| a | b | c |\n|-\n| 4444 | 5 | 6 |\n| 1 | 22 | 333 |\n",
+  "pt": [
+   4,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-down-2": {
+  "question": "M-down on the last row",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 4,
+  "col": 2,
+  "keys": "M-<down>",
+  "eval": false,
+  "text": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "pt": [
+   4,
+   2
+  ],
+  "error": "user-error",
+  "texts": []
+ },
+ "tb-down-3": {
+  "question": "M-down from above a hline",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "M-<down>",
+  "eval": false,
+  "text": "|-\n| a | b | c |\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-down-4": {
+  "question": "M-down on a hline",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "M-<down>",
+  "eval": false,
+  "text": "| a | b | c |\n| 1 | 22 | 333 |\n|-\n| 4444 | 5 | 6 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-down-5": {
+  "question": "M-down in the column of a ragged row",
+  "input": "| a | b |\n| c |\n| e | f |\n",
+  "line": 1,
+  "col": 6,
+  "keys": "M-<down>",
+  "eval": false,
+  "text": "| c |\n| a | b |\n| e | f |\n",
+  "pt": [
+   2,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-drow-1": {
+  "question": "M-S-up deletes the row",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "M-S-<up>",
+  "eval": false,
+  "text": "| a | b | c |\n|-\n| 4444 | 5 | 6 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-drow-2": {
+  "question": "M-S-up on the last row",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 4,
+  "col": 2,
+  "keys": "M-S-<up>",
+  "eval": false,
+  "text": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-drow-3": {
+  "question": "M-S-up on a hline",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "M-S-<up>",
+  "eval": false,
+  "text": "| a | b | c |\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-drow-4": {
+  "question": "M-S-up on the only row",
+  "input": "| a | b |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "M-S-<up>",
+  "eval": false,
+  "text": "",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-drow-5": {
+  "question": "M-S-up on one of two rows",
+  "input": "| a | b |\n| c | d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "M-S-<up>",
+  "eval": false,
+  "text": "| a | b |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ex-csv": {
+  "question": "export as CSV",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "Export done.",
+   "X \"a,b,c\n1,22,333\n4444,5,6\n\""
+  ]
+ },
+ "tb-ex-csvq": {
+  "question": "export CSV with commas and quotes in cells",
+  "input": "| a,b | \"c\" |\n| d | e |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a,b | \"c\" |\n| d   | e   |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "Export done.",
+   "X \"\\\"a,b\\\",\\\"\\\"\\\"c\\\"\\\"\\\"\nd,e\n\""
+  ]
+ },
+ "tb-ex-gen": {
+  "question": "export with the generic exporter",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "Export done.",
+   "X \"abc\n122333\n444456\n\""
+  ]
+ },
+ "tb-ex-orgtbl": {
+  "question": "export as an Org table",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "Export done.",
+   "X \"|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n\""
+  ]
+ },
+ "tb-ex-tsv": {
+  "question": "export as TSV",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "Export done.",
+   "X \"a\tb\tc\n1\t22\t333\n4444\t5\t6\n\""
+  ]
+ },
+ "tb-ex-tsvq": {
+  "question": "export TSV with a tab in a cell",
+  "input": "| a\tb | c |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a\tb | c |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "Export done.",
+   "X \"a\tb\tc\n\""
+  ]
+ },
+ "tb-grp": {
+  "question": "column group marks",
+  "input": "| / | < | > |\n| | 1 | 2 |\n| | 3 | 4 |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| / | < | > |\n|   | 1 | 2 |\n|   | 3 | 4 |\n",
+  "pt": [
+   2,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-grp2": {
+  "question": "column group marks, longer",
+  "input": "| / | <  | >  |\n| # | a | bbb |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| / | < | >   |\n| # | a | bbb |\n",
+  "pt": [
+   2,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-hline-1": {
+  "question": "C-c - adds a hline below",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c -",
+  "eval": false,
+  "text": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n|---+----+-----|\n| 4444 | 5 | 6 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-hline-2": {
+  "question": "C-c - on the last row",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 4,
+  "col": 2,
+  "keys": "C-c -",
+  "eval": false,
+  "text": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n|------+---+---|\n",
+  "pt": [
+   4,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-hline-3": {
+  "question": "C-c - on a row followed by a hline",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "C-c -",
+  "eval": false,
+  "text": "| a | b | c |\n|---+---+---|\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-hline-4": {
+  "question": "C-c RET adds a hline and moves",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c RET",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n|------+----+-----|\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   5,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-hline-5": {
+  "question": "C-c RET on the last row",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 4,
+  "col": 2,
+  "keys": "C-c RET",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n|------+----+-----|\n|      |    |     |\n",
+  "pt": [
+   6,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-hline-6": {
+  "question": "C-c - on a hline row",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "C-c -",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   2,
+   1
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-icol-1": {
+  "question": "M-S-right inserts a column",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 7,
+  "keys": "M-S-<right>",
+  "eval": false,
+  "text": "|    a |   |  b |   c |\n|------+---+----+-----|\n|    1 |   | 22 | 333 |\n| 4444 |   |  5 |   6 |\n",
+  "pt": [
+   3,
+   9
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-icol-2": {
+  "question": "M-S-right in the first column",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "M-S-<right>",
+  "eval": false,
+  "text": "|   |    a |  b |   c |\n|---+------+----+-----|\n|   |    1 | 22 | 333 |\n|   | 4444 |  5 |   6 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-icol-3": {
+  "question": "M-S-right in the last column",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 13,
+  "keys": "M-S-<right>",
+  "eval": false,
+  "text": "|    a |  b |   |   c |\n|------+----+---+-----|\n|    1 | 22 |   | 333 |\n| 4444 |  5 |   |   6 |\n",
+  "pt": [
+   3,
+   14
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-icol-4": {
+  "question": "M-S-right with cookies",
+  "input": "| <5> | x |\n| ab | y |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "M-S-<right>",
+  "eval": false,
+  "text": "|   | <5> | x |\n|   | ab  | y |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-icol-5": {
+  "question": "M-S-right in a ragged row",
+  "input": "| a | b | c |\n| d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "M-S-<right>",
+  "eval": false,
+  "text": "|   | a | b | c |\n|   | d |   |   |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-im-csv": {
+  "question": "import CSV",
+  "input": "",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | b |\n| 1 | 2 |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-im-q": {
+  "question": "import quoted CSV",
+  "input": "",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a,b | c |\n|   1 | 2 |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-im-space": {
+  "question": "import words",
+  "input": "",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| one   | two  |\n| three | four |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-im-tab": {
+  "question": "import tab separated",
+  "input": "",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | b |\n| 1 | 2 |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-info-1": {
+  "question": "C-c ? on a field",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ?",
+  "eval": false,
+  "text": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": [
+   "line @2, col $1, ref @2$1 or A2"
+  ]
+ },
+ "tb-info-2": {
+  "question": "C-c ? on a hline",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "C-c ?",
+  "eval": false,
+  "text": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": [
+   "line @1, col $1, ref @1$1 or A1"
+  ]
+ },
+ "tb-info-3": {
+  "question": "C-c ? with a header and a name row",
+  "input": "| h1 | h2 |\n|---+---|\n| 1 | 2 |\n",
+  "line": 3,
+  "col": 6,
+  "keys": "C-c ?",
+  "eval": false,
+  "text": "| h1 | h2 |\n|---+---|\n| 1 | 2 |\n",
+  "pt": [
+   3,
+   6
+  ],
+  "error": false,
+  "texts": [
+   "line @2, col $2, ref @2$2 or B2"
+  ]
+ },
+ "tb-irow-1": {
+  "question": "M-S-down inserts a row",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "M-S-<down>",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|      |    |     |\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-irow-2": {
+  "question": "M-S-down on the first row",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "M-S-<down>",
+  "eval": false,
+  "text": "|      |    |     |\n|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-irow-3": {
+  "question": "M-S-down on a hline",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "M-S-<down>",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|      |    |     |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ismember": {
+  "question": "org-at-table-p on lines of a document",
+  "input": "Intro text\n\n| x | y |\n|---+---|\n| 1 | 2 |\n\nAfter text\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "Intro text\n\n| x | y |\n|---+---|\n| 1 | 2 |\n\nAfter text\n",
+  "pt": [
+   8,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "P (nil nil t t t nil nil)"
+  ]
+ },
+ "tb-ismember2": {
+  "question": "org-at-table-p with indented and odd lines",
+  "input": "  | a |\n |b|\n|\n| \n||\n#+TBLFM: x\n| c |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "  | a |\n |b|\n|\n| \n||\n#+TBLFM: x\n| c |\n",
+  "pt": [
+   8,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "P (t t t t t nil t)"
+  ]
+ },
+ "tb-ismember3": {
+  "question": "org-at-table-p in blocks",
+  "input": "#+begin_src org\n| a |\n#+end_src\n#+begin_example\n| b |\n#+end_example\n| c |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "#+begin_src org\n| a |\n#+end_src\n#+begin_example\n| b |\n#+end_example\n| c |\n",
+  "pt": [
+   8,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "P (nil nil nil nil nil nil t)"
+  ]
+ },
+ "tb-ismember4": {
+  "question": "org-at-table-hline-p",
+  "input": "| a |\n|---|\n|-\n|-+-|\n| -- |\n|--|x|\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a |\n|---|\n|-\n|-+-|\n| -- |\n|--|x|\n",
+  "pt": [
+   7,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "P (nil t t t nil t)"
+  ]
+ },
+ "tb-left-1": {
+  "question": "M-left moves the column left",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 7,
+  "keys": "M-<left>",
+  "eval": false,
+  "text": "|  b |    a |   c |\n|----+------+-----|\n| 22 |    1 | 333 |\n|  5 | 4444 |   6 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-left-2": {
+  "question": "M-left in the first column",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "M-<left>",
+  "eval": false,
+  "text": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": "user-error",
+  "texts": []
+ },
+ "tb-lisp-1": {
+  "question": "org-table-to-lisp of a table with a hline",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "L ((\"a\" \"b\" \"c\") hline (\"1\" \"22\" \"333\") (\"4444\" \"5\" \"6\"))"
+  ]
+ },
+ "tb-lisp-2": {
+  "question": "org-table-to-lisp with empty cells",
+  "input": "| a | |\n| | d |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | |\n| | d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "L ((\"a\" \"\") (\"\" \"d\"))"
+  ]
+ },
+ "tb-lisp-3": {
+  "question": "org-table-to-lisp with spaces",
+  "input": "|  a  b  |  c |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "|  a  b  |  c |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "L ((\"a  b\" \"c\"))"
+  ]
+ },
+ "tb-lisp-4": {
+  "question": "org-table-to-lisp with two hlines",
+  "input": "| a |\n|---|\n| b |\n|---|\n| c |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a |\n|---|\n| b |\n|---|\n| c |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": [
+   "L ((\"a\") hline (\"b\") hline (\"c\"))"
+  ]
+ },
+ "tb-long": {
+  "question": "a long table row",
+  "input": "| a very long cell that goes on and on and on and on and on and on | b |\n| c | d |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a very long cell that goes on and on and on and on and on and on | b |\n| c                                                                | d |\n",
+  "pt": [
+   1,
+   69
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-mret-2": {
+  "question": "M-RET in the last row",
+  "input": "| a | b |\n| c | d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "M-RET",
+  "eval": false,
+  "text": "| a | b |\n|   | d |\n| c |   |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-mret": {
+  "question": "M-RET inserts a row",
+  "input": "| a | b |\n| c | d |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "M-RET",
+  "eval": false,
+  "text": "|     | b |\n| a c | d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-num-1": {
+  "question": "a column of numbers is right aligned",
+  "input": "| n | x |\n|---+---|\n| 1 | a |\n| 22 | b |\n| 333 | c |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|   n | x |\n|-----+---|\n|   1 | a |\n|  22 | b |\n| 333 | c |\n",
+  "pt": [
+   3,
+   8
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-num-empty": {
+  "question": "empty cells do not count",
+  "input": "| 1 |\n| |\n| 22 |\n| |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|  1 |\n|    |\n| 22 |\n|    |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-num-forms": {
+  "question": "which fields count as numbers",
+  "input": "| -3 |\n| +4 |\n| .5 |\n| 1e5 |\n| 0x1F |\n| 12:30 |\n| 5% |\n| nan |\n| inf |\n| 1,5 |\n| 1.2.3 |\n| a1 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|    -3 |\n|    +4 |\n|    .5 |\n|   1e5 |\n|  0x1F |\n| 12:30 |\n|    5% |\n|   nan |\n|   inf |\n|   1,5 |\n| 1.2.3 |\n|    a1 |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-num-forms2": {
+  "question": "more number forms",
+  "input": "| 3.5 |\n| 10 |\n| 100 |\n| $5 |\n| 7. |\n| 1+2 |\n| 1E3 |\n| 2d3 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| 3.5 |\n|  10 |\n| 100 |\n|  $5 |\n|  7. |\n| 1+2 |\n| 1E3 |\n| 2d3 |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-num-header": {
+  "question": "header row above the hline with numbers",
+  "input": "| name | qty |\n|---+---|\n| a | 1 |\n| b | 20 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| name | qty |\n|------+-----|\n| a    |   1 |\n| b    |  20 |\n",
+  "pt": [
+   3,
+   9
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-num-mix40": {
+  "question": "40 percent numbers stays left",
+  "input": "| 1 |\n| 22 |\n| abc |\n| xyz |\n| zz |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| 1   |\n| 22  |\n| abc |\n| xyz |\n| zz  |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-num-mix50": {
+  "question": "exactly half",
+  "input": "| 1 |\n| 22 |\n| abc |\n| xyz |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|   1 |\n|  22 |\n| abc |\n| xyz |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-num-mix60": {
+  "question": "60 percent numbers right aligns",
+  "input": "| 1 |\n| 22 |\n| abc |\n| 4 |\n| 55 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|   1 |\n|  22 |\n| abc |\n|   4 |\n|  55 |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ret-1": {
+  "question": "RET goes to the same column of the next row",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 7,
+  "keys": "RET",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   4,
+   9
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ret-2": {
+  "question": "RET at the last row",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 4,
+  "col": 3,
+  "keys": "RET",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n|      |    |     |\n",
+  "pt": [
+   5,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ret-3": {
+  "question": "RET before a hline",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 1,
+  "col": 3,
+  "keys": "RET",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|      |    |     |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ret-4": {
+  "question": "RET in the first cell",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "RET",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   4,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ret-5": {
+  "question": "RET on a ragged row",
+  "input": "| a | b | c |\n| d |\n| e | f | g |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "RET",
+  "eval": false,
+  "text": "| a | b | c |\n| d |   |   |\n| e | f | g |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-ret-6": {
+  "question": "RET on the last row of a table before text",
+  "input": "Intro text\n\n| x | y |\n|---+---|\n| 1 | 2 |\n\nAfter text\n",
+  "line": 5,
+  "col": 3,
+  "keys": "RET",
+  "eval": false,
+  "text": "Intro text\n\n| x | y |\n|---+---|\n| 1 | 2 |\n|   |   |\n\nAfter text\n",
+  "pt": [
+   6,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-right-1": {
+  "question": "M-right moves the column right",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "M-<right>",
+  "eval": false,
+  "text": "|  b |    a |   c |\n|----+------+-----|\n| 22 |    1 | 333 |\n|  5 | 4444 |   6 |\n",
+  "pt": [
+   3,
+   7
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-right-2": {
+  "question": "M-right in the last column",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 13,
+  "keys": "M-<right>",
+  "eval": false,
+  "text": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "pt": [
+   3,
+   13
+  ],
+  "error": "user-error",
+  "texts": []
+ },
+ "tb-right-3": {
+  "question": "M-right with a hline",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "M-<right>",
+  "eval": false,
+  "text": "|  b |    a |   c |\n|----+------+-----|\n| 22 |    1 | 333 |\n|  5 | 4444 |   6 |\n",
+  "pt": [
+   1,
+   7
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-right-4": {
+  "question": "M-right in a ragged table",
+  "input": "| a | b | c |\n| d |\n| e | f | g |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "M-<right>",
+  "eval": false,
+  "text": "| b | a | c |\n| d |   |   |\n| f | e | g |\n",
+  "pt": [
+   1,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sort-2hline-b": {
+  "question": "sort the second section",
+  "input": "| h |\n|---|\n| c |\n| a |\n|---|\n| z |\n| y |\n",
+  "line": 6,
+  "col": 2,
+  "keys": "C-c ^ a",
+  "eval": false,
+  "text": "| h |\n|---|\n| c |\n| a |\n|---|\n| y |\n| z |\n",
+  "pt": [
+   6,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sort-2hline": {
+  "question": "sort between hlines",
+  "input": "| h |\n|---|\n| c |\n| a |\n|---|\n| z |\n| y |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ a",
+  "eval": false,
+  "text": "| h |\n|---|\n| a |\n| c |\n|---|\n| z |\n| y |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sort-A": {
+  "question": "C-c ^ A reverse",
+  "input": "| name | n |\n|---+---|\n| pear | 10 |\n| Apple | 9 |\n| fig | 100 |\n| banana | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ A",
+  "eval": false,
+  "text": "| name | n |\n|---+---|\n| pear | 10 |\n| fig | 100 |\n| banana | 2 |\n| Apple | 9 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sort-N": {
+  "question": "C-c ^ N reverse numeric",
+  "input": "| name | n |\n|---+---|\n| pear | 10 |\n| Apple | 9 |\n| fig | 100 |\n| banana | 2 |\n",
+  "line": 3,
+  "col": 10,
+  "keys": "C-c ^ N",
+  "eval": false,
+  "text": "| name | n |\n|---+---|\n| fig | 100 |\n| pear | 10 |\n| Apple | 9 |\n| banana | 2 |\n",
+  "pt": [
+   3,
+   10
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sort-T": {
+  "question": "sort by time, reverse",
+  "input": "| when |\n|---|\n| 12:30 |\n| 9:15 |\n| 23:00 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ T",
+  "eval": false,
+  "text": "| when |\n|---|\n| 23:00 |\n| 12:30 |\n| 9:15 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sort-a": {
+  "question": "C-c ^ a sorts alphabetically",
+  "input": "| name | n |\n|---+---|\n| pear | 10 |\n| Apple | 9 |\n| fig | 100 |\n| banana | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ a",
+  "eval": false,
+  "text": "| name | n |\n|---+---|\n| Apple | 9 |\n| banana | 2 |\n| fig | 100 |\n| pear | 10 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sort-empty": {
+  "question": "sort with empty cells",
+  "input": "| x |\n|---|\n| b |\n| |\n| a |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ a",
+  "eval": false,
+  "text": "| x |\n|---|\n| |\n| a |\n| b |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sort-mixed": {
+  "question": "numeric sort with text",
+  "input": "| x |\n|---|\n| 3 |\n| abc |\n| 1 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ n",
+  "eval": false,
+  "text": "| x |\n|---|\n| abc |\n| 1 |\n| 3 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sort-n": {
+  "question": "C-c ^ n sorts numerically",
+  "input": "| name | n |\n|---+---|\n| pear | 10 |\n| Apple | 9 |\n| fig | 100 |\n| banana | 2 |\n",
+  "line": 3,
+  "col": 10,
+  "keys": "C-c ^ n",
+  "eval": false,
+  "text": "| name | n |\n|---+---|\n| banana | 2 |\n| Apple | 9 |\n| pear | 10 |\n| fig | 100 |\n",
+  "pt": [
+   3,
+   10
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sort-nohline": {
+  "question": "sort a table with no hline",
+  "input": "| b | 2 |\n| a | 1 |\n| c | 3 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "C-c ^ a",
+  "eval": false,
+  "text": "| a | 1 |\n| b | 2 |\n| c | 3 |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sort-q": {
+  "question": "C-c ^ then q quits",
+  "input": "| name | n |\n|---+---|\n| pear | 10 |\n| Apple | 9 |\n| fig | 100 |\n| banana | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ q",
+  "eval": false,
+  "text": "| name | n |\n|---+---|\n| pear | 10 |\n| Apple | 9 |\n| fig | 100 |\n| banana | 2 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": "user-error",
+  "texts": []
+ },
+ "tb-sort-t": {
+  "question": "sort by time",
+  "input": "| when |\n|---|\n| 12:30 |\n| 9:15 |\n| 23:00 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ t",
+  "eval": false,
+  "text": "| when |\n|---|\n| 9:15 |\n| 12:30 |\n| 23:00 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sret-2": {
+  "question": "S-RET twice",
+  "input": "| a1 | b |\n| | d |\n| | |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "S-<return> S-<return>",
+  "eval": false,
+  "text": "| a1 | b |\n| a2 | d |\n| a3 |   |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sret-3": {
+  "question": "S-RET on a non-empty field",
+  "input": "| a | b |\n| c | d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "S-<return>",
+  "eval": false,
+  "text": "| a | b |\n| c | d |\n| c |   |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sret-4": {
+  "question": "S-RET with a number counts up",
+  "input": "| 1 | b |\n| | d |\n| | |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "S-<return> S-<return>",
+  "eval": false,
+  "text": "| 1 | b |\n| 2 | d |\n| 3 |   |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sret-5": {
+  "question": "S-RET with a name that ends in a number",
+  "input": "| x1 | b |\n| | d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "S-<return>",
+  "eval": false,
+  "text": "| x1 | b |\n| x2 | d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sret": {
+  "question": "S-RET copies the field above",
+  "input": "| a | b |\n| c | d |\n| | |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "S-<return>",
+  "eval": false,
+  "text": "| a | b |\n| c | d |\n| c |   |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-stab-1": {
+  "question": "S-TAB goes to the previous cell",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 9,
+  "keys": "<backtab>",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-stab-2": {
+  "question": "S-TAB from the first cell of a row",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "<backtab>",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   1,
+   14
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-stab-3": {
+  "question": "S-TAB from the first cell of the first row",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "<backtab>",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": "user-error",
+  "texts": []
+ },
+ "tb-stab-4": {
+  "question": "S-TAB under a hline",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "<backtab> <backtab>",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   1,
+   9
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sum-1": {
+  "question": "C-c + sums the column above",
+  "input": "| 1 |\n| 2 |\n| 3 |\n| |\n",
+  "line": 4,
+  "col": 2,
+  "keys": "C-c +",
+  "eval": false,
+  "text": "| 1 |\n| 2 |\n| 3 |\n| |\n",
+  "pt": [
+   4,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sum-2": {
+  "question": "C-c + with text in the column",
+  "input": "| 1 |\n| a |\n| 3 |\n| |\n",
+  "line": 4,
+  "col": 2,
+  "keys": "C-c +",
+  "eval": false,
+  "text": "| 1 |\n| a |\n| 3 |\n| |\n",
+  "pt": [
+   4,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sum-3": {
+  "question": "C-c + stops at a hline",
+  "input": "| 9 |\n|---|\n| 2 |\n| 3 |\n| |\n",
+  "line": 5,
+  "col": 2,
+  "keys": "C-c +",
+  "eval": false,
+  "text": "| 9 |\n|---|\n| 2 |\n| 3 |\n| |\n",
+  "pt": [
+   5,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sum-4": {
+  "question": "C-c + with decimals",
+  "input": "| 1.5 |\n| 2.25 |\n| |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c +",
+  "eval": false,
+  "text": "| 1.5 |\n| 2.25 |\n| |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-sum-5": {
+  "question": "C-c + with no numbers",
+  "input": "| a |\n| b |\n| |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c +",
+  "eval": false,
+  "text": "| a |\n| b |\n| |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-1": {
+  "question": "TAB in the first cell aligns and moves to the next",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   1,
+   9
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-2": {
+  "question": "TAB from the last cell of a row goes to the first of the next row",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 15,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   4,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-doc-end": {
+  "question": "TAB at the end of the last row with text after",
+  "input": "Intro text\n\n| x | y |\n|---+---|\n| 1 | 2 |\n\nAfter text\n",
+  "line": 5,
+  "col": 8,
+  "keys": "TAB",
+  "eval": false,
+  "text": "Intro text\n\n| x | y |\n|---+---|\n| 1 | 2 |\n|   |   |\n\nAfter text\n",
+  "pt": [
+   6,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-doc": {
+  "question": "align leaves the text around the table",
+  "input": "Intro text\n\n| x | y |\n|---+---|\n| 1 | 2 |\n\nAfter text\n",
+  "line": 3,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "Intro text\n\n| x | y |\n|---+---|\n| 1 | 2 |\n\nAfter text\n",
+  "pt": [
+   3,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-empty-2": {
+  "question": "empty cells in the last column",
+  "input": "| | b |\n| c | |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "TAB TAB",
+  "eval": false,
+  "text": "|   | b |\n| c |   |\n|   |   |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-empty": {
+  "question": "empty cells",
+  "input": "| | b |\n| c | |\n",
+  "line": 1,
+  "col": 1,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|   | b |\n| c |   |\n",
+  "pt": [
+   1,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-hline-plus": {
+  "question": "a hline with plus signs",
+  "input": "| a | b |\n|---+---|\n| longer cell | x |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a           | b |\n|-------------+---|\n| longer cell | x |\n",
+  "pt": [
+   3,
+   16
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-hline-short": {
+  "question": "a hline with fewer columns",
+  "input": "| a | b | c |\n|---|\n| 1 | 2 | 3 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 3 |\n",
+  "pt": [
+   1,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-hline-wide": {
+  "question": "a hline row is widened",
+  "input": "| a | b |\n|-\n| longer cell | x |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a           | b |\n|-------------+---|\n| longer cell | x |\n",
+  "pt": [
+   1,
+   16
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-hline": {
+  "question": "TAB from the row before a hline skips it",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 1,
+  "col": 12,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-indent": {
+  "question": "a table indented in a list item",
+  "input": "- item\n  | a | b |\n  | cc | d |\n",
+  "line": 2,
+  "col": 4,
+  "keys": "TAB",
+  "eval": false,
+  "text": "- item\n  | a  | b |\n  | cc | d |\n",
+  "pt": [
+   2,
+   9
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-indent2": {
+  "question": "an indented table under a heading",
+  "input": "* H\n  | a | b |\n  |---+---|\n  | cc | d |\n",
+  "line": 2,
+  "col": 4,
+  "keys": "TAB",
+  "eval": false,
+  "text": "* H\n  | a  | b |\n  |----+---|\n  | cc | d |\n",
+  "pt": [
+   2,
+   9
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-lastrow-2": {
+  "question": "TAB twice at the end",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 4,
+  "col": 15,
+  "keys": "TAB TAB",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n|      |    |     |\n",
+  "pt": [
+   5,
+   9
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-lastrow": {
+  "question": "TAB in the last cell of the last row adds a row",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 4,
+  "col": 15,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|    a |  b |   c |\n|------+----+-----|\n|    1 | 22 | 333 |\n| 4444 |  5 |   6 |\n|      |    |     |\n",
+  "pt": [
+   5,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-nobar": {
+  "question": "a row with no closing bar",
+  "input": "| a | b\n| c | d |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a | b |\n| c | d |\n",
+  "pt": [
+   1,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-nospace": {
+  "question": "rows without spaces",
+  "input": "|a|bb|\n|-+-|\n|ccc|d|\n",
+  "line": 1,
+  "col": 1,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a   | bb |\n|-----+----|\n| ccc | d  |\n",
+  "pt": [
+   1,
+   8
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-point-bar": {
+  "question": "the cursor on a bar",
+  "input": "| abc | def |\n| g | h |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| abc | def |\n| g   | h   |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-point-bar2": {
+  "question": "the cursor on a middle bar",
+  "input": "| abc | def |\n| g | h |\n",
+  "line": 1,
+  "col": 6,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| abc | def |\n| g   | h   |\n",
+  "pt": [
+   1,
+   8
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-point-end": {
+  "question": "the cursor at the end of a cell",
+  "input": "| abc | def |\n| g | h |\n",
+  "line": 1,
+  "col": 5,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| abc | def |\n| g   | h   |\n",
+  "pt": [
+   1,
+   8
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-point-mid": {
+  "question": "the cursor in the middle of a cell",
+  "input": "| abc | def |\n| g | h |\n",
+  "line": 1,
+  "col": 4,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| abc | def |\n| g   | h   |\n",
+  "pt": [
+   1,
+   8
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-ragged-2": {
+  "question": "TAB in a short row",
+  "input": "| a | b | c |\n| d |\n| e | f |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a | b | c |\n| d |   |   |\n| e | f |   |\n",
+  "pt": [
+   2,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-ragged": {
+  "question": "TAB in a table with unequal rows",
+  "input": "| a | b | c |\n| d |\n| e | f |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a | b | c |\n| d |   |   |\n| e | f |   |\n",
+  "pt": [
+   1,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-region": {
+  "question": "TAB after typing a cell in the middle",
+  "input": "|a|b|\n|cc|dd|\n",
+  "line": 2,
+  "col": 1,
+  "keys": "x TAB",
+  "eval": false,
+  "text": "| a   | b  |\n| xcc | dd |\n",
+  "pt": [
+   2,
+   8
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-spaces": {
+  "question": "extra spaces inside cells",
+  "input": "|   a   |  b |\n|  c|d   |\n",
+  "line": 1,
+  "col": 3,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a | b |\n| c | d |\n",
+  "pt": [
+   1,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-tblfm": {
+  "question": "a #+TBLFM line below is left alone",
+  "input": "| a | b |\n| 1 | 22 |\n#+TBLFM: $2=$1\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a |  b |\n| 1 | 22 |\n#+TBLFM: $2=$1\n",
+  "pt": [
+   1,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-vert": {
+  "question": "a \\vert in a cell",
+  "input": "| a\\vert b | c |\n| d | e |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a\\vert b | c |\n| d        | e |\n",
+  "pt": [
+   1,
+   13
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-wide": {
+  "question": "double-width characters",
+  "input": "| 日本 | a |\n| x | bb |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| 日本 | a  |\n| x    | bb |\n",
+  "pt": [
+   1,
+   7
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-wide2": {
+  "question": "accents and emoji",
+  "input": "| é | a |\n| xyz | 😀 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| é   | a  |\n| xyz | 😀 |\n",
+  "pt": [
+   1,
+   8
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-tab-ws": {
+  "question": "a cell of only spaces",
+  "input": "| abc |     |\n| g | h |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB TAB",
+  "eval": false,
+  "text": "| abc |   |\n| g   | h |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-transpose-r": {
+  "question": "transpose a ragged table",
+  "input": "| a | b | c |\n| d |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | d |\n| b |   |\n| c |   |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-transpose": {
+  "question": "transpose a table",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a |   1 | 4444 |\n| b |  22 |    5 |\n| c | 333 |    6 |\n\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-type-1": {
+  "question": "typing in a cell then TAB",
+  "input": "| a | b |\n| c | d |\n",
+  "line": 1,
+  "col": 3,
+  "keys": "x y z TAB",
+  "eval": false,
+  "text": "| axyz | b |\n| c    | d |\n",
+  "pt": [
+   1,
+   9
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-type-2": {
+  "question": "typing at the end of a row",
+  "input": "| a | b |\n| c | d |\n",
+  "line": 1,
+  "col": 9,
+  "keys": "RET",
+  "eval": false,
+  "text": "| a | b |\n\n| c | d |\n",
+  "pt": [
+   2,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-type-3": {
+  "question": "a bar typed in a cell",
+  "input": "| a | b |\n| c | d |\n",
+  "line": 1,
+  "col": 3,
+  "keys": "| TAB",
+  "eval": false,
+  "text": "| a |   | b |\n| c | d |   |\n",
+  "pt": [
+   1,
+   10
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-up-1": {
+  "question": "M-up moves the row up",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 4,
+  "col": 2,
+  "keys": "M-<up>",
+  "eval": false,
+  "text": "| a | b | c |\n|-\n| 4444 | 5 | 6 |\n| 1 | 22 | 333 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-up-2": {
+  "question": "M-up past a hline",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "M-<up>",
+  "eval": false,
+  "text": "| a | b | c |\n| 1 | 22 | 333 |\n|-\n| 4444 | 5 | 6 |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-up-3": {
+  "question": "M-up on the first row",
+  "input": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "M-<up>",
+  "eval": false,
+  "text": "| a | b | c |\n|-\n| 1 | 22 | 333 |\n| 4444 | 5 | 6 |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": "user-error",
+  "texts": []
+ },
+ "tb-blank-1": {
+  "question": "org-table-blank-field",
+  "input": "| abc | b |\n| c | d |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "|     | b |\n| c | d |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tb-blank-3": {
+  "question": "org-table-blank-field on a rule",
+  "input": "| a |\n|---|\n| c |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a |\n|---|\n| c |\n",
+  "pt": [
+   2,
+   1
+  ],
+  "error": "(user-error \"Not in table data field\")",
+  "texts": []
+ },
+ "tn-cc-bar": {
+  "question": "C-c C-c with the cursor on a bar",
+  "input": "| abc | d |\n| e | f |\n",
+  "line": 1,
+  "col": 6,
+  "keys": "C-c C-c",
+  "eval": false,
+  "text": "| abc | d |\n| e   | f |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-cc-end": {
+  "question": "C-c C-c at the end of a long field",
+  "input": "| abcdef | d |\n| e | f |\n",
+  "line": 1,
+  "col": 6,
+  "keys": "C-c C-c",
+  "eval": false,
+  "text": "| abcdef | d |\n| e      | f |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-cc-eol": {
+  "question": "C-c C-c with the cursor at the end of the line",
+  "input": "| abc | d |\n| e | f |\n",
+  "line": 1,
+  "col": 11,
+  "keys": "C-c C-c",
+  "eval": false,
+  "text": "| abc | d |\n| e   | f |\n",
+  "pt": [
+   1,
+   11
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-cc-pad": {
+  "question": "C-c C-c with the cursor in padding",
+  "input": "|    abc | d |\n| e | f |\n",
+  "line": 1,
+  "col": 3,
+  "keys": "C-c C-c",
+  "eval": false,
+  "text": "| abc | d |\n| e   | f |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-cc-rule": {
+  "question": "C-c C-c on a rule",
+  "input": "| a | b |\n|---+---|\n| c | d |\n",
+  "line": 2,
+  "col": 3,
+  "keys": "C-c C-c",
+  "eval": false,
+  "text": "| a | b |\n|---+---|\n| c | d |\n",
+  "pt": [
+   2,
+   1
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-cookie-1": {
+  "question": "a width cookie in a column of one number and a word",
+  "input": "| <5> |\n| 1 |\n| abc |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| <5> |\n| 1   |\n| abc |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-cookie-2": {
+  "question": "a width cookie and one number",
+  "input": "| <5> |\n| 1 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| <5> |\n|   1 |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-cookie-3": {
+  "question": "a cookie that is not a cookie among numbers",
+  "input": "| <x> |\n| 1 |\n| 2 |\n| abc |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| <x> |\n|   1 |\n|   2 |\n| abc |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-cookie-4": {
+  "question": "two cookies in a column",
+  "input": "| <r> |\n| <l> |\n| abc |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| <r> |\n| <l> |\n| abc |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-cookie-5": {
+  "question": "a cookie below the first row",
+  "input": "| abc |\n| <r> |\n| d |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| abc |\n| <r> |\n|   d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-cookie-6": {
+  "question": "width and alignment, uppercase",
+  "input": "| <R> |\n| abc |\n| d |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| <R> |\n| abc |\n| d   |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-create-1": {
+  "question": "C-c | with 1x1",
+  "input": "\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c | 1 x 1 RET",
+  "eval": false,
+  "text": "|   |\n\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-create-big": {
+  "question": "C-c | with 2x4",
+  "input": "\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c | 2 x 4 RET",
+  "eval": false,
+  "text": "|   |   |\n|---+---|\n|   |   |\n|   |   |\n|   |   |\n\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-create-eof": {
+  "question": "C-c | at the end of the buffer",
+  "input": "abc",
+  "line": 1,
+  "col": 3,
+  "keys": "C-c | RET",
+  "eval": false,
+  "text": "abc\n|---+---+---+---+---|\n|   |   |   |   |   |\n|   |   |   |   |   |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-create-indent": {
+  "question": "C-c | on an indented empty line",
+  "input": "  \n",
+  "line": 1,
+  "col": 2,
+  "keys": "C-c | RET",
+  "eval": false,
+  "text": "  |   |   |   |   |   |\n  |---+---+---+---+---|\n  |   |   |   |   |   |\n  \n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-create-mid": {
+  "question": "C-c | with the cursor in the middle of a line",
+  "input": "abc def\n",
+  "line": 1,
+  "col": 3,
+  "keys": "C-c | RET",
+  "eval": false,
+  "text": "abc\n|---+---+---+---+---|\n|   |   |   |   |   |\n|   |   |   |   |   |\n def\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-dcol-all": {
+  "question": "delete the only column of a table with a rule",
+  "input": "| a |\n|---|\n| b |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "M-S-<left>",
+  "eval": false,
+  "text": "||\n||\n||\n",
+  "pt": [
+   1,
+   1
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-dcol-hline": {
+  "question": "M-S-left with a rule",
+  "input": "| a | b |\n|---+---|\n| c | d |\n",
+  "line": 1,
+  "col": 6,
+  "keys": "M-S-<left>",
+  "eval": false,
+  "text": "| a |\n|---|\n| c |\n",
+  "pt": [
+   1,
+   5
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-dcol-two": {
+  "question": "delete a column to leave one",
+  "input": "| a | b |\n|---+---|\n| c | d |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "M-S-<left>",
+  "eval": false,
+  "text": "| b |\n|---|\n| d |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-empty-1": {
+  "question": "one number and three empty fields",
+  "input": "| 1 |\n| |\n| |\n| |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| 1 |\n|   |\n|   |\n|   |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-empty-2": {
+  "question": "one number, one word, two empty",
+  "input": "| 1 |\n| abc |\n| |\n| |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|   1 |\n| abc |\n|     |\n|     |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-0": {
+  "question": "is \"-3\" a number",
+  "input": "| -3 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|         -3 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-1": {
+  "question": "is \"+4\" a number",
+  "input": "| +4 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|         +4 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-10": {
+  "question": "is \"-inf\" a number",
+  "input": "| -inf |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|       -inf |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-11": {
+  "question": "is \"+inf\" a number",
+  "input": "| +inf |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|       +inf |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-12": {
+  "question": "is \"1,5\" a number",
+  "input": "| 1,5 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| 1,5        |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-13": {
+  "question": "is \"1.2.3\" a number",
+  "input": "| 1.2.3 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|      1.2.3 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-14": {
+  "question": "is \"a1\" a number",
+  "input": "| a1 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a1         |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-15": {
+  "question": "is \"3.5\" a number",
+  "input": "| 3.5 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|        3.5 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-16": {
+  "question": "is \"$5\" a number",
+  "input": "| $5 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| $5         |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-17": {
+  "question": "is \"7.\" a number",
+  "input": "| 7. |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|         7. |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-18": {
+  "question": "is \"1+2\" a number",
+  "input": "| 1+2 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|        1+2 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-19": {
+  "question": "is \"1E3\" a number",
+  "input": "| 1E3 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|        1E3 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-2": {
+  "question": "is \".5\" a number",
+  "input": "| .5 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|         .5 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-20": {
+  "question": "is \"2d3\" a number",
+  "input": "| 2d3 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|        2d3 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-21": {
+  "question": "is \"2D3\" a number",
+  "input": "| 2D3 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|        2D3 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-22": {
+  "question": "is \"<3\" a number",
+  "input": "| <3 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|         <3 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-23": {
+  "question": "is \">5\" a number",
+  "input": "| >5 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|         >5 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-24": {
+  "question": "is \"^3\" a number",
+  "input": "| ^3 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|         ^3 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-25": {
+  "question": "is \"(3)\" a number",
+  "input": "| (3) |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| (3)        |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-26": {
+  "question": "is \"1-2\" a number",
+  "input": "| 1-2 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|        1-2 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-27": {
+  "question": "is \"1x2\" a number",
+  "input": "| 1x2 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|        1x2 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-28": {
+  "question": "is \"1/2\" a number",
+  "input": "| 1/2 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| 1/2        |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-29": {
+  "question": "is \"1 2\" a number",
+  "input": "| 1 2 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| 1 2        |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-3": {
+  "question": "is \"1e5\" a number",
+  "input": "| 1e5 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|        1e5 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-30": {
+  "question": "is \"--5\" a number",
+  "input": "| --5 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|        --5 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-31": {
+  "question": "is \"3-\" a number",
+  "input": "| 3- |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|         3- |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-32": {
+  "question": "is \"e5\" a number",
+  "input": "| e5 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| e5         |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-33": {
+  "question": "is \"1e\" a number",
+  "input": "| 1e |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|         1e |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-34": {
+  "question": "is \".\" a number",
+  "input": "| . |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| .          |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-35": {
+  "question": "is \"-\" a number",
+  "input": "| - |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| -          |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-36": {
+  "question": "is \"0\" a number",
+  "input": "| 0 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|          0 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-37": {
+  "question": "is \"007\" a number",
+  "input": "| 007 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|        007 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-38": {
+  "question": "is \"NaN\" a number",
+  "input": "| NaN |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|        NaN |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-39": {
+  "question": "is \"INF\" a number",
+  "input": "| INF |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|        INF |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-4": {
+  "question": "is \"0x1F\" a number",
+  "input": "| 0x1F |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|       0x1F |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-5": {
+  "question": "is \"0xZZ\" a number",
+  "input": "| 0xZZ |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| 0xZZ       |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-6": {
+  "question": "is \"12:30\" a number",
+  "input": "| 12:30 |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|      12:30 |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-7": {
+  "question": "is \"5%\" a number",
+  "input": "| 5% |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|         5% |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-8": {
+  "question": "is \"nan\" a number",
+  "input": "| nan |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|        nan |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-form-9": {
+  "question": "is \"inf\" a number",
+  "input": "| inf |\n| abcdefghij |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "|        inf |\n| abcdefghij |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-hbar-col": {
+  "question": "M-left with the cursor before the first bar",
+  "input": "| a | b |\n| c | d |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "M-<left>",
+  "eval": false,
+  "text": "| a | b |\n| c | d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": "user-error",
+  "texts": []
+ },
+ "tn-header-1": {
+  "question": "a header above a rule is counted",
+  "input": "| abc |\n|---|\n| 1 |\n| xyz |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| abc |\n|-----|\n| 1   |\n| xyz |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-header-2": {
+  "question": "a header above a rule, more numbers",
+  "input": "| abc |\n|---|\n| 1 |\n| 2 |\n| xyz |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| abc |\n|-----|\n|   1 |\n|   2 |\n| xyz |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-hline-above": {
+  "question": "C-u C-c - puts the rule above",
+  "input": "| a | b |\n| c | d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "C-u C-c -",
+  "eval": false,
+  "text": "| a | b |\n|---+---|\n| c | d |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-hline-end": {
+  "question": "C-c - on the last line of the buffer with no newline",
+  "input": "| a | b |\n| c | d |",
+  "line": 2,
+  "col": 2,
+  "keys": "C-c -",
+  "eval": false,
+  "text": "| a | b |\n| c | d ||---+---|\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-hline-raw": {
+  "question": "C-c - under a row with extra spaces",
+  "input": "|  a   | b |\n| c | d |\n",
+  "line": 1,
+  "col": 3,
+  "keys": "C-c -",
+  "eval": false,
+  "text": "|  a   | b |\n|------+---|\n| c | d |\n",
+  "pt": [
+   1,
+   3
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-icol-hline": {
+  "question": "M-S-right with a rule",
+  "input": "| a | b |\n|---+---|\n| c | d |\n",
+  "line": 1,
+  "col": 6,
+  "keys": "M-S-<right>",
+  "eval": false,
+  "text": "| a |   | b |\n|---+---+---|\n| c |   | d |\n",
+  "pt": [
+   1,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-indent-mix": {
+  "question": "rows with different indentation",
+  "input": "  | a | b |\n| c | d |\n    | e | f |\n",
+  "line": 1,
+  "col": 4,
+  "keys": "TAB",
+  "eval": false,
+  "text": "  | a | b |\n  | c | d |\n  | e | f |\n",
+  "pt": [
+   1,
+   8
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-indent-tab": {
+  "question": "a tab in the indentation",
+  "input": "\t| a | b |\n\t| c | d |\n",
+  "line": 1,
+  "col": 3,
+  "keys": "TAB",
+  "eval": false,
+  "text": "\t| a | b |\n\t| c | d |\n",
+  "pt": [
+   1,
+   7
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-irow-below": {
+  "question": "C-u M-S-down inserts below",
+  "input": "| a | b |\n| c | d |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "C-u M-S-<down>",
+  "eval": false,
+  "text": "| a | b |\n|   |   |\n| c | d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-irow-col2": {
+  "question": "M-S-down in the second column",
+  "input": "| a | b |\n| c | d |\n",
+  "line": 2,
+  "col": 6,
+  "keys": "M-S-<down>",
+  "eval": false,
+  "text": "| a | b |\n|   |   |\n| c | d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-left-hline": {
+  "question": "M-left with a rule",
+  "input": "| a | b |\n|---+---|\n| c | d |\n",
+  "line": 3,
+  "col": 6,
+  "keys": "M-<left>",
+  "eval": false,
+  "text": "| b | a |\n|---+---|\n| d | c |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-mark": {
+  "question": "a column of mark characters",
+  "input": "| ! | a |\n| _ | 1 |\n| ^ | 22 |\n| $ | 3 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| ! |  a |\n| _ |  1 |\n| ^ | 22 |\n| $ |  3 |\n",
+  "pt": [
+   1,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-mret-col2": {
+  "question": "M-RET in the second column",
+  "input": "| a | bcd |\n| x | y |\n",
+  "line": 1,
+  "col": 7,
+  "keys": "M-RET",
+  "eval": false,
+  "text": "| a | b    |\n| x | cd y |\n",
+  "pt": [
+   2,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-mret-empty": {
+  "question": "M-RET in an empty field",
+  "input": "| | b |\n| x | y |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "M-RET",
+  "eval": false,
+  "text": "|   | b |\n| x | y |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-mret-end": {
+  "question": "M-RET at the end of the text of a field",
+  "input": "| abc | b |\n| x | y |\n",
+  "line": 1,
+  "col": 5,
+  "keys": "M-RET",
+  "eval": false,
+  "text": "| abc | b |\n| x   | y |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-mret-hline": {
+  "question": "M-RET before a rule",
+  "input": "| abcdef | b |\n|---+---|\n| x | y |\n",
+  "line": 1,
+  "col": 5,
+  "keys": "M-RET",
+  "eval": false,
+  "text": "| abc | b |\n| def |   |\n|-----+---|\n| x   | y |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-mret-mid": {
+  "question": "M-RET in the middle of a field",
+  "input": "| abcdef | b |\n| x | y |\n",
+  "line": 1,
+  "col": 5,
+  "keys": "M-RET",
+  "eval": false,
+  "text": "| abc   | b |\n| def x | y |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-nl-2": {
+  "question": "TAB adds a row at the end of a file with no newline",
+  "input": "| a | b |\n| c | d |",
+  "line": 2,
+  "col": 6,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a | b |\n| c | d |\n|   |   |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-nl": {
+  "question": "a table at the end of a file with no newline",
+  "input": "| a | b |\n| c | d |",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a | b |\n| c | d |",
+  "pt": [
+   1,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-ocol-rule": {
+  "question": "M-S-right with the cursor on the rule",
+  "input": "| a | b |\n|---+---|\n| c | d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "M-S-<right>",
+  "eval": false,
+  "text": "|   | a | b |\n|---+---+---|\n|   | c | d |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-ret-eolbar": {
+  "question": "RET just before the last bar",
+  "input": "| abc | b |\n| c | d |\n",
+  "line": 1,
+  "col": 8,
+  "keys": "RET",
+  "eval": false,
+  "text": "| abc | b |\n| c   | d |\n",
+  "pt": [
+   2,
+   8
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-ret-mid": {
+  "question": "RET in the middle of a field",
+  "input": "| abc | b |\n| c | d |\n",
+  "line": 1,
+  "col": 4,
+  "keys": "RET",
+  "eval": false,
+  "text": "| abc | b |\n| c   | d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-ret-rule": {
+  "question": "RET on a rule",
+  "input": "| a | b |\n|---+---|\n| c | d |\n",
+  "line": 2,
+  "col": 3,
+  "keys": "RET",
+  "eval": false,
+  "text": "| a | b |\n|---+---|\n| c | d |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-slash": {
+  "question": "a slash column of marks",
+  "input": "| / | a |\n| # | 1 |\n| # | 22 |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| / |  a |\n| # |  1 |\n| # | 22 |\n",
+  "pt": [
+   1,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sort-C": {
+  "question": "C-c ^ C",
+  "input": "| x |\n|---|\n| b |\n| B |\n| a |\n| A |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ C",
+  "eval": false,
+  "text": "| x |\n|---|\n| b |\n| B |\n| a |\n| A |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": "user-error",
+  "texts": []
+ },
+ "tn-sort-alpha-num": {
+  "question": "alphabetic sort of numbers",
+  "input": "| n |\n|---|\n| 10 |\n| 9 |\n| 100 |\n| 1 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ a",
+  "eval": false,
+  "text": "| n |\n|---|\n| 1 |\n| 10 |\n| 100 |\n| 9 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sort-c": {
+  "question": "C-c ^ c",
+  "input": "| x |\n|---|\n| b |\n| B |\n| a |\n| A |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ c",
+  "eval": false,
+  "text": "| x |\n|---|\n| b |\n| B |\n| a |\n| A |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": "user-error",
+  "texts": []
+ },
+ "tn-sort-case": {
+  "question": "C-c ^ a with mixed case",
+  "input": "| x |\n|---|\n| b |\n| B |\n| a |\n| A |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ a",
+  "eval": false,
+  "text": "| x |\n|---|\n| a |\n| A |\n| b |\n| B |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sort-casec": {
+  "question": "C-u C-c ^ a is case-sensitive",
+  "input": "| x |\n|---|\n| b |\n| B |\n| a |\n| A |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-u C-c ^ a",
+  "eval": false,
+  "text": "| x |\n|---|\n| a |\n| A |\n| b |\n| B |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sort-col2": {
+  "question": "sort by the second column",
+  "input": "| a | 3 |\n| b | 1 |\n| c | 2 |\n",
+  "line": 1,
+  "col": 6,
+  "keys": "C-c ^ n",
+  "eval": false,
+  "text": "| b | 1 |\n| c | 2 |\n| a | 3 |\n",
+  "pt": [
+   1,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sort-head": {
+  "question": "point in the section above the first rule",
+  "input": "| c |\n| a |\n|---|\n| z |\n| y |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "C-c ^ a",
+  "eval": false,
+  "text": "| a |\n| c |\n|---|\n| z |\n| y |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sort-numforms": {
+  "question": "numeric sort of odd numbers",
+  "input": "| x |\n|---|\n| 12abc |\n| 1e2 |\n| 0x1F |\n| 1,5 |\n| 7 |\n| -3 |\n| +4 |\n| .5 |\n| abc |\n| 2.5 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ n",
+  "eval": false,
+  "text": "| x |\n|---|\n| -3 |\n| 0x1F |\n| abc |\n| .5 |\n| 1,5 |\n| 2.5 |\n| +4 |\n| 7 |\n| 12abc |\n| 1e2 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sort-rule": {
+  "question": "point on a rule",
+  "input": "| c |\n| a |\n|---|\n| z |\n| y |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ a",
+  "eval": false,
+  "text": "| c |\n| a |\n|---|\n| z |\n| y |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": "user-error",
+  "texts": []
+ },
+ "tn-sort-short": {
+  "question": "sort when a row has no such field",
+  "input": "| a | 3 |\n| b |\n| c | 2 |\n",
+  "line": 1,
+  "col": 6,
+  "keys": "C-c ^ n",
+  "eval": false,
+  "text": "| b |\n| c | 2 |\n| a | 3 |\n",
+  "pt": [
+   1,
+   5
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sort-stable": {
+  "question": "sort keeps equal keys in order",
+  "input": "| x | n |\n|---+---|\n| a | 1 |\n| b | 1 |\n| c | 1 |\n| d | 0 |\n",
+  "line": 3,
+  "col": 6,
+  "keys": "C-c ^ n",
+  "eval": false,
+  "text": "| x | n |\n|---+---|\n| d | 0 |\n| a | 1 |\n| b | 1 |\n| c | 1 |\n",
+  "pt": [
+   3,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sort-time": {
+  "question": "sort by time with other forms",
+  "input": "| t |\n|---|\n| 1:30 |\n| 12:00:30 |\n| 0:45 |\n| 1:30pm |\n| abc |\n| 2026-11-23 |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ t",
+  "eval": false,
+  "text": "| t |\n|---|\n| 1:30pm |\n| abc |\n| 2026-11-23 |\n| 0:45 |\n| 1:30 |\n| 12:00:30 |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sort-unicode": {
+  "question": "alphabetic sort with accents",
+  "input": "| n |\n|---|\n| zebra |\n| école |\n| apple |\n| Émile |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "C-c ^ a",
+  "eval": false,
+  "text": "| n |\n|---|\n| apple |\n| école |\n| Émile |\n| zebra |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sret-empty-top": {
+  "question": "S-RET in an empty field with nothing above",
+  "input": "| | b |\n| c | d |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "S-<return>",
+  "eval": false,
+  "text": "| | b |\n| c | d |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": "user-error",
+  "texts": []
+ },
+ "tn-sret-hline": {
+  "question": "S-RET above a rule",
+  "input": "| a | b |\n|---+---|\n| c | d |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "S-<return>",
+  "eval": false,
+  "text": "| a | b |\n| a |   |\n|---+---|\n| c | d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sret-inc-1": {
+  "question": "S-RET on a00 style numbers",
+  "input": "| a09 | b |\n|     | d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "S-<return>",
+  "eval": false,
+  "text": "| a09 | b |\n| a10 | d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sret-inc-2": {
+  "question": "S-RET on zero padded numbers",
+  "input": "| 009 | b |\n|     | d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "S-<return>",
+  "eval": false,
+  "text": "| 009 | b |\n|  10 | d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sret-inc-3": {
+  "question": "S-RET on a negative number",
+  "input": "| -1 | b |\n|    | d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "S-<return>",
+  "eval": false,
+  "text": "| -1 | b |\n|  0 | d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sret-inc-4": {
+  "question": "S-RET on a decimal",
+  "input": "| 1.5 | b |\n|     | d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "S-<return>",
+  "eval": false,
+  "text": "| 1.5 | b |\n| 2.5 | d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sret-inc-5": {
+  "question": "S-RET on two numbers",
+  "input": "| x1y2 | b |\n|      | d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "S-<return>",
+  "eval": false,
+  "text": "| x1y2 | b |\n| x1y3 | d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sret-inc-6": {
+  "question": "S-RET on a date",
+  "input": "| 2026-11-23 | b |\n|            | d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "S-<return>",
+  "eval": false,
+  "text": "| 2026-11-23 | b |\n| 2027-11-23 | d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sret-inc-7": {
+  "question": "S-RET on a time",
+  "input": "| 9:30 | b |\n|      | d |\n",
+  "line": 2,
+  "col": 2,
+  "keys": "S-<return>",
+  "eval": false,
+  "text": "|  9:30 | b |\n| 10:30 | d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sret-next": {
+  "question": "S-RET with a non-empty field under it",
+  "input": "| a | b |\n| c | d |\n",
+  "line": 1,
+  "col": 2,
+  "keys": "S-<return>",
+  "eval": false,
+  "text": "| a | b |\n| a | d |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sret-rule": {
+  "question": "S-RET with a rule between",
+  "input": "| a | b |\n|---+---|\n| | f |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "S-<return>",
+  "eval": false,
+  "text": "| a | b |\n|---+---|\n| a | f |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-sret-skip": {
+  "question": "S-RET skipping an empty field above",
+  "input": "| a | b |\n| | d |\n| | f |\n",
+  "line": 3,
+  "col": 2,
+  "keys": "S-<return>",
+  "eval": false,
+  "text": "| a | b |\n|   | d |\n| a | f |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-tab-rule": {
+  "question": "TAB on a rule",
+  "input": "| a | b |\n|---+---|\n| c | d |\n",
+  "line": 2,
+  "col": 3,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a | b |\n|---+---|\n| c | d |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-trail": {
+  "question": "trailing spaces after the last bar",
+  "input": "| a | b |   \n| c | d |\t\n",
+  "line": 1,
+  "col": 2,
+  "keys": "TAB",
+  "eval": false,
+  "text": "| a | b |\n| c | d |\n",
+  "pt": [
+   1,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tn-up-col": {
+  "question": "M-up in the second column",
+  "input": "| a | b |\n| c | d |\n| e | f |\n",
+  "line": 3,
+  "col": 6,
+  "keys": "M-<up>",
+  "eval": false,
+  "text": "| a | b |\n| e | f |\n| c | d |\n",
+  "pt": [
+   2,
+   6
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-comma-tab": {
+  "question": "tab and comma in different lines",
+  "input": "a,b\nc\td\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a,b |   |\n| c   | d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-conv-16": {
+  "question": "org-table-convert-region with (16) on tabs",
+  "input": "a\tb\nc\td\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | b |\n| c | d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-conv-4": {
+  "question": "org-table-convert-region with (4) on commas",
+  "input": "a,b\nc,d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | b |\n| c | d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-conv-nilq": {
+  "question": "org-table-convert-region with nil on quoted CSV",
+  "input": "\"a,1\",b\n\"c \"\"x\"\"\",d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a,1   | b |\n| c \"x\" | d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-conv-q4": {
+  "question": "org-table-convert-region with (4) on quoted CSV",
+  "input": "\"a,1\",b\n\"c \"\"x\"\"\",d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a,1   | b |\n| c \"x\" | d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-csv-16": {
+  "question": "convert quoted CSV, argument '(16)",
+  "input": "\"a,1\",b\n\"c \"\"x\"\"\",d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| \"a,1\",b     |\n| \"c \"\"x\"\"\",d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-csv-4": {
+  "question": "convert quoted CSV, argument '(4)",
+  "input": "\"a,1\",b\n\"c \"\"x\"\"\",d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a,1   | b |\n| c \"x\" | d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-csv-nil": {
+  "question": "convert quoted CSV, argument nil",
+  "input": "\"a,1\",b\n\"c \"\"x\"\"\",d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a,1   | b |\n| c \"x\" | d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-empty-lines": {
+  "question": "convert with blank lines",
+  "input": "a,b\n\nc,d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | b |\n|   |   |\n| c | d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-indent": {
+  "question": "convert indented lines",
+  "input": "  a,b\n  c,d\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | b |\n| c | d |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-mix-0": {
+  "question": "convert a region with every separator, argument 0",
+  "input": "a b,c\td|e\n1 2,3\t4|5\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "a b,c\td|e\n1 2,3\t4|5\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": "(user-error \"Number of spaces in separator must be >= 1\")",
+  "texts": []
+ },
+ "tr-mix-1": {
+  "question": "convert a region with every separator, argument 1",
+  "input": "a b,c\td|e\n1 2,3\t4|5\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | b,c | d | e |\n| 1 | 2,3 | 4 | 5 |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-mix-16": {
+  "question": "convert a region with every separator, argument '(16)",
+  "input": "a b,c\td|e\n1 2,3\t4|5\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a b,c | d | e |\n| 1 2,3 | 4 | 5 |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-mix-3": {
+  "question": "convert a region with every separator, argument 3",
+  "input": "a b,c\td|e\n1 2,3\t4|5\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a b,c | d | e |\n| 1 2,3 | 4 | 5 |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-mix-4": {
+  "question": "convert a region with every separator, argument '(4)",
+  "input": "a b,c\td|e\n1 2,3\t4|5\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a b | c\td | e |\n| 1 2 | 3\t4 | 5 |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-mix-nil": {
+  "question": "convert a region with every separator, argument nil",
+  "input": "a b,c\td|e\n1 2,3\t4|5\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a b,c | d | e |\n| 1 2,3 | 4 | 5 |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-one": {
+  "question": "one line of words",
+  "input": "one two three\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| one | two | three |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-spaces-nil": {
+  "question": "convert words with runs of spaces",
+  "input": "a   b c\n d  e\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a | b | c |\n| d | e |   |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "tr-table": {
+  "question": "convert a region that is a table",
+  "input": "| a | b |\n| c | d |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "|   |   | a |   |   | b |   |\n|   |   | c |   |   | d |   |\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false,
+  "texts": []
+ },
+ "ts-1": {
+  "question": "org-table-sum on a column",
+  "input": "| 1 |\n| 2 |\n| 3 |\n| |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| 1 |\n| 2 |\n| 3 |\n| |\n",
+  "pt": [
+   4,
+   2
+  ],
+  "error": false,
+  "texts": [
+   "K \"6\""
+  ]
+ },
+ "ts-2": {
+  "question": "org-table-sum with text",
+  "input": "| 1 |\n| a |\n| 3 |\n| |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| 1 |\n| a |\n| 3 |\n| |\n",
+  "pt": [
+   4,
+   2
+  ],
+  "error": false,
+  "texts": [
+   "K \"4\""
+  ]
+ },
+ "ts-3": {
+  "question": "org-table-sum stops at a rule",
+  "input": "| 9 |\n|---|\n| 2 |\n| 3 |\n| |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| 9 |\n|---|\n| 2 |\n| 3 |\n| |\n",
+  "pt": [
+   5,
+   2
+  ],
+  "error": false,
+  "texts": [
+   "K \"14\""
+  ]
+ },
+ "ts-4": {
+  "question": "org-table-sum with decimals",
+  "input": "| 1.5 |\n| 2.25 |\n| |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| 1.5 |\n| 2.25 |\n| |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": [
+   "K \"3.75\""
+  ]
+ },
+ "ts-5": {
+  "question": "org-table-sum with no numbers",
+  "input": "| a |\n| b |\n| |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| a |\n| b |\n| |\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false,
+  "texts": [
+   "K \"0\""
+  ]
+ },
+ "ts-6": {
+  "question": "org-table-sum from the middle",
+  "input": "| 1 |\n| 2 |\n| 3 |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| 1 |\n| 2 |\n| 3 |\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false,
+  "texts": [
+   "K \"6\""
+  ]
+ },
+ "ts-7": {
+  "question": "org-table-sum on the first row",
+  "input": "| 1 |\n| 2 |\n",
+  "line": 1,
+  "col": 0,
+  "keys": "",
+  "eval": true,
+  "text": "| 1 |\n| 2 |\n",
+  "pt": [
+   1,
+   2
+  ],
+  "error": false,
+  "texts": [
+   "K \"3\""
+  ]
+ }
+}
