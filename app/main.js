@@ -37,6 +37,7 @@ import { renderOutline } from './ui/outline-view.js';
 import { TEXT_KEYS, chordOf, createKeymap } from './ui/keys.js';
 import { createHistory } from './ui/history.js';
 import { createKeyRow } from './ui/keyrow.js';
+import { followViewport } from './ui/viewport.js';
 import { askVersion, watchUpdates } from './ui/update.js';
 import { exportSettings, importSettings, inspectSettingsFile, settingsFileName, SettingsFileError } from '../core/settings-file.js';
 
@@ -527,6 +528,7 @@ const SAMPLES = [
   ['weekly-review', 'Weekly review', 'Agenda for a week'], ['outline', 'Outline and folding', 'TAB, S-TAB'], ['dates', 'Dates and repeaters', 'Schedule, deadline'],
   ['clocking', 'Clocking and effort', 'Clock in, out'], ['project', 'A project with clocking', 'Tasks and time'], ['capture', 'Capture', 'Templates and a target'],
   ['refile-archive', 'Refile and archive', 'Move and archive'], ['search-replace', 'Find and replace', 'C-s, M-%'],
+  ['diary', 'Diary entries', 'Dates and sexps'], ['contacts', 'Contacts and birthdays', 'BIRTHDAY property'], ['agenda-birthdays', 'Agenda with birthdays', 'org-contacts-anniversaries'], ['config', 'Settings example', 'Every setting'],
 ];
 
 /** The list of examples. Returns the chosen file, or undefined. */
@@ -2670,6 +2672,7 @@ editor.addEventListener('beforeinput', (e) => {
 let softKeyboard = false;
 const focusEditor = () => { if (document.activeElement !== editor) editor.focus({ preventScroll: true }); };
 
+followViewport();
 const keyRow = createKeyRow({
   root: $('keyrow'),
   store: localStorage,

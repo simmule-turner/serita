@@ -1,0 +1,5 @@
+#+TITLE: Agenda with birthdays
+# CC0 1.0: public domain. Add this file to Agenda files and name the contacts example in Contacts files; the line below shows each birthday on its day.
+
+* Birthdays
+%%(org-contacts-anniversaries)

@@ -135,7 +135,7 @@ A target is a file (~nil~ is this one, ~org-agenda-files~ is the agenda files) w
 C-c C-x C-a (or C-c $) archives the subtree into the file named in Settings, Emacs, Archive location, ~%s_archive::~ unless you change it; ~::* Archived~ keeps it in the same file under a heading. The entry records when and where it came from in ARCHIVE_TIME, ARCHIVE_FILE, ARCHIVE_OLPATH and ARCHIVE_CATEGORY properties. C-c C-x A moves it under an Archive heading among its siblings, and C-c C-x a toggles the ARCHIVE tag.
 
 ** Examples
-The ~examples~ folder holds a file for each area: outline, dates, clocking, capture, refile and archive, a weekly review, a project with clocking, find and replace, and ~config.org~, which lists every setting with an example. The first time the app opens it offers them as sample documents, and File, Sample documents lists them later. One opens as a new tab and is saved only if you save it; follow the line at its top.
+The ~examples~ folder holds a file for each area: outline, dates, clocking, capture, refile and archive, a weekly review, a project with clocking, find and replace, a diary, contacts with birthdays, and ~config.org~, which lists every setting with an example. The first time the app opens it offers them as sample documents, and File, Sample documents lists them later. One opens as a new tab and is saved only if you save it; follow the line at its top.
 
 ** Log settings
 Settings, Emacs, Log into drawer names the drawer (such as LOGBOOK) that holds the log line of a repeating task; empty leaves the line in the text. Log repeats is Time, Note or Off: Time adds the log line, Note asks for a note under it too (Skip adds the line alone and the cross leaves it out), Off records nothing when a repeating task is done.

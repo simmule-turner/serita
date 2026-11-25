@@ -22,7 +22,7 @@ const block = (text, heading) => {
 };
 
 test('there is an example for each area that is built', () => {
-  for (const f of ['outline', 'dates', 'clocking', 'capture', 'refile-archive', 'weekly-review', 'project', 'search-replace', 'config']) assert.ok(files.includes(`${f}.org`), `${f}.org`);
+  for (const f of ['outline', 'dates', 'clocking', 'capture', 'refile-archive', 'weekly-review', 'project', 'search-replace', 'config', 'diary', 'contacts', 'agenda-birthdays']) assert.ok(files.includes(`${f}.org`), `${f}.org`);
 });
 
 test('every example has a title and a license line and parses', () => {
@@ -88,4 +88,15 @@ test('the refile and archive example offers targets and archives a subtree', () 
   const line = text.split('\n').findIndex((l) => l === '** Call the plumber' || l.endsWith('Call the plumber'));
   const r = archiveSubtree(text, line, { fileName: 'refile-archive.org', category: 'refile-archive', location: '%s_archive::', now: new Date(Date.UTC(2026, 10, 23, 9, 0)), archiveText: null });
   assert.ok(r.archive.text.includes('* Call the plumber') && !r.text.includes('Call the plumber'));
+});
+
+test('the birthday examples work together', () => {
+  const v = agenda([{ category: 'agenda', text: read('agenda-birthdays.org') }], { start: date('2026-11-23'), span: 'day', today: date('2026-11-23'), timeGrid: false, contacts: { texts: [read('contacts.org')] } });
+  assert.deepEqual(v.days[0].entries.map((e) => e.title), ['Birthday: Jane Doe (36th)', 'Birthday: John Smith (0th)']);
+});
+
+test('every example is offered under Sample documents and cached for offline use', () => {
+  const main = readFileSync(new URL('../app/main.js', import.meta.url), 'utf8');
+  const sw = readFileSync(new URL('../sw.js', import.meta.url), 'utf8');
+  for (const f of files) { const id = f.replace(/\.org$/, ''); assert.ok(main.includes(`['${id}',`), `${id} is in the sample list`); assert.ok(sw.includes(`'examples/${f}'`), `${id} is cached`); }
 });

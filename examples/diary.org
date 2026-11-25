@@ -1,0 +1,17 @@
+#+TITLE: Diary entries
+# CC0 1.0: public domain. Set Diary file to this file's storage name and turn on Diary in the agenda; View, Calendar then shows these. An entry starts at the left edge with a date or a %%(sexp).
+
+* Dates
+Nov 5, 2026 Dentist
+11/10/2026 A date with slashes
+Nov 12 Every year on November 12
+*/15 The 15th of every month
+Monday Standup
+* Calendar expressions
+%%(diary-anniversary 11 20 1990) Anna's birthday (%t)
+%%(diary-block 11 24 2026 11 26 2026) Conference
+%%(diary-float t 4 4) Thanksgiving
+%%(diary-cyclic 7 11 2 2026) Every seven days
+%%(diary-remind '(diary-date 12 25 2026) 3) Christmas
+* Birthdays from your contacts
+%%(org-contacts-anniversaries)

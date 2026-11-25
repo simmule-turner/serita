@@ -51,3 +51,7 @@ org-contacts-files lists the contacts files (any storage names, separated by spa
 calendar-holidays lists general, christian and solar (empty means all, nil means none), diary-show-holidays-flag is t to show holidays in the agenda, and holiday-local-holidays holds your own holiday forms.
 ** Keys of the settings above
 org-agenda-files, org-capture-templates, org-refile-settings, org-archive-location, org-log-into-drawer, org-log-repeat, org-archive-mark-done, org-archive-save-context-info, org-refile-allow-creating-parent-nodes, org-agenda-use-time-grid, org-agenda-include-diary, diary-file, calendar-date-style, calendar-holidays, holiday-local-holidays, diary-show-holidays-flag, org-contacts-files, org-contacts-birthday-property
+
+** Local holidays
+Settings, Emacs, Local holidays takes forms like these:
+: (holiday-fixed 3 14 "Pi Day") (holiday-float 11 4 4 "Fourth Thursday") (holiday-float 5 1 -1 "Last Monday of May")

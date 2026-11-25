@@ -26,6 +26,7 @@ jobs:
       - run: PLAYWRIGHT="$(npm root -g)/playwright" CHROME="$(which google-chrome)" node test/browser/app.mjs
       - run: PLAYWRIGHT="$(npm root -g)/playwright" CHROME="$(which google-chrome)" node test/browser/update.mjs
       - run: PLAYWRIGHT="$(npm root -g)/playwright" CHROME="$(which google-chrome)" node test/browser/views.mjs
+      - run: PLAYWRIGHT="$(npm root -g)/playwright" CHROME="$(which google-chrome)" node test/browser/keyboard.mjs
       - run: PLAYWRIGHT="$(npm root -g)/playwright" CHROME="$(which google-chrome)" node test/browser/tools.mjs
       - run: PLAYWRIGHT="$(npm root -g)/playwright" CHROME="$(which google-chrome)" node test/browser/appearance.mjs
       - run: PLAYWRIGHT="$(npm root -g)/playwright" CHROME="$(which google-chrome)" node test/browser/motion.mjs

@@ -159,6 +159,9 @@ A separate repository holds questions (case files written by us) and results rec
 ### `core/holidays.js`, `test/holidays.test.js`
 - Written from: observed Emacs 30.1 holiday lists for the general and Christian categories and the local forms (conformance v0.1.26), recorded as fixtures and read as behavior only, and the published Gauss/Meeus rule for the date of Easter. Statement as above.
 
+### `app/ui/viewport.js`, `test/browser/keyboard.mjs`
+- Written from: the standard Visual Viewport API (resize and scroll events, height and offsetTop). Statement as above.
+
 ### `core/contacts.js`, `test/contacts.test.js`
 - Written from: observed Emacs 30.1 results with org-contacts 1.3 for which dates and properties it accepts (conformance v0.1.30 to v0.1.32), and the author's example contacts and agenda with the lines Emacs showed, read as behavior only. Statement as above.
 

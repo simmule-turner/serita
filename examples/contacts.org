@@ -1,0 +1,14 @@
+#+TITLE: Contacts and birthdays
+# CC0 1.0: public domain. Settings, Emacs, Contacts files names this file (for example github:contacts.org); the diary example and the agenda-birthdays example then show these birthdays.
+
+A birthday is a date such as 1990-11-23, an Org timestamp such as <1990-11-23 Fri>, or 11-23 without a year.
+* Jane Doe
+:PROPERTIES:
+:EMAIL: jane.doe@example.com
+:BIRTHDAY: 1990-11-23
+:END:
+* John Smith
+:PROPERTIES:
+:EMAIL: john.smith@example.com
+:BIRTHDAY: 11-23
+:END:
