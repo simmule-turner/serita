@@ -49,17 +49,23 @@ export function parseDiary(text, style = 'american') {
     const raw = lines[i];
     if (raw === '' || /^\s/.test(raw)) continue;
     let tail = '';
-    for (let j = i + 1; j < lines.length && /^[ \t]/.test(lines[j]); j++) tail += `\n${lines[j]}`;
+    let last = i;
+    for (let j = i + 1; j < lines.length && /^[ \t]/.test(lines[j]); j++) { tail += `\n${lines[j]}`; last = j; }
+    const quiet = raw.startsWith('&');
     const line = raw.replace(/^&/, '');
     if (line.startsWith('%%(')) {
+      // The sexp may run over the indented lines that follow; what comes after its closing parenthesis is the entry's text.
+      const src = `${line}${tail}`;
       let depth = 0; let end = -1; let str = false;
-      for (let k = 2; k < line.length; k++) {
-        const c = line[k];
+      for (let k = 2; k < src.length; k++) {
+        const c = src[k];
         if (str) { if (c === '\\') k++; else if (c === '"') str = false; continue; }
         if (c === '"') str = true; else if (c === '(') depth++; else if (c === ')' && --depth === 0) { end = k; break; }
       }
       if (end < 0) continue;
-      out.push({ line: i, sexp: line.slice(2, end + 1), form: -1, text: line.slice(end + 1).replace(/^\s+/, '') + tail });
+      const after = src.slice(end + 1);
+      out.push({ line: i, quiet, sexp: src.slice(2, end + 1), form: -1, text: after.replace(/^[ \t]+/, '') });
+      i = last;
       continue;
     }
     forms.forEach(([re, fields], form) => {
@@ -72,7 +78,7 @@ export function parseDiary(text, style = 'american') {
       const yy = 'y' in spec ? yearOf(spec.y) : '*';
       const ww = 'w' in spec ? dowOf(spec.w) : null;
       const test = ({ y, m: mo, d }) => (ww !== null ? dowOfDate(y, mo, d) === ww : (mm === '*' || mm === mo) && (dd === '*' || dd === d) && (yy === '*' || yy === y));
-      out.push({ line: i, sexp: null, form, test, text: line.slice(m[0].length + 1).replace(/^\s+/, '') + tail });
+      out.push({ line: i, quiet, sexp: null, form, test, text: line.slice(m[0].length + 1).replace(/^[ \t]+/, '') + tail });
     });
   }
   return out;
@@ -162,11 +168,33 @@ export function ev(form, date) {
   }
 }
 
-/** The "%d", "%s" and "%t" of an anniversary's text: the years, a plural s, and an ordinal ending. */
+/** The "%d" and "%s" of an anniversary's text: the years and a plural s. Any other % escape is an error, as in Emacs (the entry is not shown). */
 function anniversaryText(text, years) {
-  const ord = years % 100 >= 11 && years % 100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[years % 10] ?? 'th');
-  return text.replace(/%d/g, String(years)).replace(/%s/g, years === 1 ? '' : 's').replace(/%t/g, ord);
+  if (/%[^ds%]/.test(text)) throw new Error('Invalid format operation');
+  return text.replace(/%d/g, String(years)).replace(/%s/g, years === 1 ? '' : 's');
 }
+
+/**
+ * The agenda lines of one diary entry's text, as Org makes them. When the entry's first line is blank (a date alone with its events indented
+ * beneath it) every indented line is an entry of its own; otherwise the lines are joined with "; ". A time in the text (10:00am, 14:30, 2pm-3:30pm)
+ * becomes the line's time and leaves the text.
+ * @returns {{ text: string, time: string|null, until: string|null }[]}
+ */
+export function agendaLines(text) {
+  const lines = text.split('\n').map((l) => l.trim());
+  const parts = lines[0] === '' ? lines.filter(Boolean) : [lines.filter(Boolean).join('; ')];
+  return parts.map(timeOf);
+}
+
+const hm = (h, m, ap) => { let hh = Number(h); if (ap === 'pm' && hh < 12) hh += 12; if (ap === 'am' && hh === 12) hh = 0; return `${String(hh).padStart(2, '0')}:${m ?? '00'}`; };
+function timeOf(text) {
+  let m = /\b(\d{1,2})(?::(\d\d))?\s*(am|pm)?\s*-\s*(\d{1,2})(?::(\d\d))?\s*(am|pm)\b/i.exec(text);
+  if (m && (m[2] || m[3] || m[1])) return { text: tidy(text, m), time: hm(m[1], m[2], (m[3] ?? m[6]).toLowerCase()), until: hm(m[4], m[5], m[6].toLowerCase()) };
+  m = /\b(\d{1,2}):(\d\d)\s*(am|pm)?\b/i.exec(text) ?? /\b(\d{1,2})()\s*(am|pm)\b/i.exec(text);
+  if (m) return { text: tidy(text, m), time: hm(m[1], m[2] || '00', m[3]?.toLowerCase()), until: null };
+  return { text, time: null, until: null };
+}
+const tidy = (text, m) => `${text.slice(0, m.index)}${text.slice(m.index + m[0].length)}`.replace(/\s+/g, ' ').trim();
 
 /**
  * The entries that fall on the `days` days from `start` ({ y, m, d }). On a day the sexps come first, then the date entries in the order of the
@@ -182,21 +210,23 @@ export function diaryEntries(text, start, days, { style = 'american', sexpOnly =
     const date = [dt.m, dt.d, dt.y];
     const here = [];
     for (const e of entries.filter((x) => x.sexp !== null)) {
-      let r;
-      try { r = ev(readForms(e.sexp)[0], date); } catch { continue; }
-      if (!truthy(r)) continue;
-      if (r && typeof r === 'object' && Array.isArray(r.lines)) { for (const l of r.lines) here.push({ ...dt, text: l, line: e.line }); continue; }
-      let said = e.text;
-      if (typeof r === 'string') said = r;
-      else if (r && typeof r === 'object' && 'anniversary' in r) said = anniversaryText(e.text, r.anniversary);
-      else if (r && typeof r === 'object' && 'remind' in r) {
-        const inner = r.inner && typeof r.inner === 'object' && 'anniversary' in r.inner ? anniversaryText(e.text, r.inner.anniversary) : e.text;
-        said = r.remind === 0 ? inner : `Reminder: Only ${r.remind} days until ${inner}`;
-      }
-      here.push({ ...dt, text: said, line: e.line });
+      try {
+        const r = ev(readForms(e.sexp)[0], date);
+        if (!truthy(r)) continue;
+        if (r && typeof r === 'object' && Array.isArray(r.lines)) { for (const l of r.lines) here.push({ ...dt, text: l, line: e.line, quiet: e.quiet }); continue; }
+        let said = e.text;
+        if (typeof r === 'string') said = r;
+        else if (r && typeof r === 'object' && 'anniversary' in r) said = anniversaryText(e.text, r.anniversary);
+        else if (r && typeof r === 'object' && 'remind' in r) {
+          const inner = r.inner && typeof r.inner === 'object' && 'anniversary' in r.inner ? anniversaryText(e.text, r.inner.anniversary) : e.text;
+          said = r.remind === 0 ? inner : `Reminder: Only ${r.remind} days until ${inner}`;
+        }
+        here.push({ ...dt, text: said, line: e.line, quiet: e.quiet });
+
+      } catch { continue; }
     }
     const forms = entries.filter((x) => x.sexp === null && x.test(dt)).sort((a, b) => a.form - b.form || a.line - b.line);
-    for (const e of forms) here.push({ ...dt, text: e.text, line: e.line });
+    for (const e of forms) here.push({ ...dt, text: e.text, line: e.line, quiet: e.quiet });
     out.push(...here);
   }
   return out;

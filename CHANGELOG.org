@@ -3,6 +3,9 @@
 * 0.8.8
 Three new sample documents show how to use the diary, contacts and birthdays: a diary with dates and calendar expressions, a contacts file, and an agenda file that shows each birthday on its day. Find them under File, Sample documents, and the settings example lists local holidays.
 
+* 0.9.0
+The diary now follows Emacs more closely. Indented lines continue an entry, a date alone with events beneath it gives a line for each, and a time in the text becomes the agenda time. An ~&~ entry shows in the agenda without marking its day in the calendar, and a sexp can run over several lines. Birthdays also read org-vcard's tree layout, so contacts imported from a vCard appear in the agenda.
+
 * 0.8.9
 On iPhone and iPad the on-screen keyboard no longer pushes the key row out of sight or scrolls the whole screen. The app now fits the visible area, as it does on Android: the tabs, the row below them, the minibuffer and the key row stay fixed, with the key row on top of the keyboard, and only the text scrolls. Every example, including the settings example, is now listed under Sample documents.
 

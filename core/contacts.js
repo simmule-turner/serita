@@ -1,15 +1,19 @@
 // The contacts file for org-contacts-anniversaries: headings with a BIRTHDAY (or other) property, shown on their day each year.
 // Written from the behavior Emacs 30.1 with org-contacts 1.3 showed (conformance v0.1.30 to v0.1.32) and the author's example agenda.
 
-/** The contacts in the files' text: { name, props } with the property names in capitals. */
+/**
+ * The contacts in the files' text: { name, props } with the property names in capitals. Two layouts are read. In the flat layout a heading is a
+ * contact and its properties hold the fields. In org-vcard's tree layout the contact heading has FIELDTYPE name and each field is a heading below it
+ * with its own FIELDTYPE (birthday, anniversary and so on) whose title is the value; those fields are read as properties of the contact.
+ */
 export function parseContacts(texts) {
   const out = [];
   for (const text of texts) {
     const lines = text.split('\n');
+    const heads = [];
     for (let i = 0; i < lines.length; i++) {
-      const m = /^\*+\s+(.*?)\s*$/.exec(lines[i]);
+      const m = /^(\*+)\s+(.*?)\s*$/.exec(lines[i]);
       if (!m) continue;
-      const name = m[1].replace(/\s+:[\w@#%:]+:$/, '');
       const props = {};
       if (/^\s*:PROPERTIES:\s*$/i.test(lines[i + 1] ?? '')) {
         for (let j = i + 2; j < lines.length && !/^\s*:END:\s*$/i.test(lines[j]); j++) {
@@ -17,8 +21,20 @@ export function parseContacts(texts) {
           if (p) props[p[1].toUpperCase()] = p[2];
         }
       }
-      out.push({ name, props });
+      heads.push({ level: m[1].length, title: m[2].replace(/\s+:[\w@#%:]+:$/, ''), props });
     }
+    heads.forEach((h, k) => {
+      const kind = h.props.FIELDTYPE?.toLowerCase();
+      if (kind && kind !== 'name') return; // a field heading of the tree layout, not a contact
+      const props = { ...h.props };
+      if (kind === 'name') {
+        for (let n = k + 1; n < heads.length && heads[n].level > h.level; n++) {
+          const f = heads[n].props.FIELDTYPE?.toUpperCase();
+          if (f && !(f in props)) props[f] = heads[n].title;
+        }
+      }
+      out.push({ name: h.title, props });
+    });
   }
   return out;
 }

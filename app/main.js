@@ -1557,7 +1557,7 @@ async function calendarScreen() {
       const two = (n) => String(n).padStart(2, '0');
       const cell = (c) => {
         const iso = `${c.y}-${two(c.m)}-${two(c.d)}`;
-        return h('button', { class: `day${c.other ? ' other' : ''}${iso === isoOf(t) ? ' today' : ''}${iso === calendarState.day ? ' on' : ''}${byDay.get(iso)?.length || hol.has(iso) ? ' has' : ''}`, 'aria-label': iso, onclick: () => close({ day: iso }) }, String(c.d));
+        return h('button', { class: `day${c.other ? ' other' : ''}${iso === isoOf(t) ? ' today' : ''}${iso === calendarState.day ? ' on' : ''}${byDay.get(iso)?.some((e) => !e.quiet) || hol.has(iso) ? ' has' : ''}`, 'aria-label': iso, onclick: () => close({ day: iso }) }, String(c.d));
       };
       const picked = byDay.get(calendarState.day) ?? [];
       const row = (e) => h('button', { class: 'arow', onclick: () => close({ jump: e }) },

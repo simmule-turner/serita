@@ -2,6 +2,7 @@
 # CC0 1.0: public domain. Settings, Emacs, Contacts files names this file (for example github:contacts.org); the diary example and the agenda-birthdays example then show these birthdays.
 
 A birthday is a date such as 1990-11-23, an Org timestamp such as <1990-11-23 Fri>, or 11-23 without a year.
+Jane and John use the flat layout of org-vcard; Ada uses its tree layout, where a heading with FIELDTYPE birthday holds the date.
 * Jane Doe
 :PROPERTIES:
 :EMAIL: jane.doe@example.com
@@ -11,4 +12,17 @@ A birthday is a date such as 1990-11-23, an Org timestamp such as <1990-11-23 Fr
 :PROPERTIES:
 :EMAIL: john.smith@example.com
 :BIRTHDAY: 11-23
+:END:
+* Ada Lovelace
+:PROPERTIES:
+:KIND: individual
+:FIELDTYPE: name
+:END:
+** 1815-12-10
+:PROPERTIES:
+:FIELDTYPE: birthday
+:END:
+** ada@analytical-labs.example.org
+:PROPERTIES:
+:FIELDTYPE: email-work
 :END:

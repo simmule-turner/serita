@@ -37,3 +37,21 @@ test('without contacts the sexp shows nothing, and a diary sexp shows the same l
   const d = agenda([], { start: new Date(Date.UTC(2026, 10, 23)), span: 'day', today: new Date(Date.UTC(2026, 10, 23)), now: null, timeGrid: false, diary: { text: AGENDA, style: 'american' }, contacts: { texts: [CONTACTS] } });
   assert.deepEqual(d.days[0].entries.map((e) => e.title), ['Birthday: Jane Doe (36th)', 'Birthday: John Smith (0th)']);
 });
+
+// org-vcard's two layouts for the same contact (the author's example, a vCard with BDAY:1815-12-10)
+const FLAT = '* Ada Lovelace\n:PROPERTIES:\n:VERSION: 4.0\n:N: Lovelace;Ada;Augusta;;\n:EMAIL_WORK: ada@analytical-labs.example.org\n:CELL: +44 7700 900077\n:BIRTHDAY: 1815-12-10\n:NOTE: Early computing pioneer.\n:END:\n';
+const TREE = '* Ada Lovelace\n:PROPERTIES:\n:KIND: individual\n:FIELDTYPE: name\n:END:\n** 1815-12-10\n:PROPERTIES:\n:FIELDTYPE: birthday\n:END:\n** ada@analytical-labs.example.org\n:PROPERTIES:\n:FIELDTYPE: email-work\n:END:\n** Lovelace;Ada;Augusta;;\n:PROPERTIES:\n:FIELDTYPE: n\n:END:\n** Early computing pioneer.\n:PROPERTIES:\n:FIELDTYPE: note\n:END:\n** +44 7700 900077\n:PROPERTIES:\n:FIELDTYPE: cell\n:END:\n';
+
+test('birthdays read from the flat and the tree layouts of org-vcard', () => {
+  for (const text of [FLAT, TREE]) {
+    const book = parseContacts([text]);
+    assert.equal(book.length, 1, 'the field headings are not contacts');
+    assert.deepEqual(anniversaries(book, [12, 10, 2026]), ['Birthday: Ada Lovelace (211th)']);
+    assert.deepEqual(anniversaries(book, [12, 11, 2026]), []);
+  }
+});
+
+test('a tree contact with a deeper field and a second contact after it', () => {
+  const book = parseContacts([`${TREE.replace('** 1815-12-10', '*** 1815-12-10')}* Bob\n:PROPERTIES:\n:BIRTHDAY: 1985-12-10\n:END:\n`]);
+  assert.deepEqual(anniversaries(book, [12, 10, 2026]), ['Birthday: Ada Lovelace (211th)', 'Birthday: Bob (41st)']);
+});

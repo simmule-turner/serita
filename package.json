@@ -1,6 +1,6 @@
 {
   "name": "serita",
-  "version": "0.8.9",
+  "version": "0.9.0",
   "private": true,
   "description": "Serita: reads and writes Org files",
   "license": "MIT",

@@ -9,7 +9,7 @@ import { propertiesOf } from './properties.js';
 import { matcher } from './sparse.js';
 import { effortMinutes } from './effort.js';
 import { keeps } from './agenda-filter.js';
-import { diaryEntries, hooks } from './diary.js';
+import { agendaLines, diaryEntries, hooks } from './diary.js';
 import { anniversaries, parseContacts } from './contacts.js';
 import { holidaysOf } from './holidays.js';
 
@@ -158,8 +158,7 @@ export function agenda(files, { start, span, today, warn = 14, now = null, timeG
   files.forEach((f, i) => {
     if (!f.text.includes('%%(')) return;
     for (const e of diaryEntries(f.text, { y: from.getUTCFullYear(), m: from.getUTCMonth() + 1, d: from.getUTCDate() }, days, { sexpOnly: true })) {
-      const text = e.text.split('\n')[0];
-      put(utc(e.y, e.m, e.d), { file: i, line: e.line, category: f.category, todo: null, priority: null, title: text, tags: [], itags: [], effort: null, text, done: false, kind: 'sexp', label: '', clock: '', late: 0, time: null });
+      for (const l of agendaLines(e.text)) put(utc(e.y, e.m, e.d), { file: i, line: e.line, category: f.category, todo: null, priority: null, title: l.text, tags: [], itags: [], effort: null, text: l.text, done: false, kind: 'sexp', label: '', clock: l.time ? timeLabel(l) : '', late: 0, time: l.time, quiet: e.quiet });
     }
   });
   // Holidays (options like holidaysOf takes) show as Diary lines, as Emacs shows them; a solar time becomes the line's time
@@ -170,15 +169,14 @@ export function agenda(files, { start, span, today, warn = 14, now = null, timeG
         const at = utc(x.y, x.m, x.d);
         if (at < from || at > last) continue;
         const text = x.said ?? x.name;
-        put(at, { file: -1, line: 0, diary: true, category: 'Diary', todo: null, priority: null, title: text, tags: [], itags: [], effort: null, text, done: false, kind: 'diary', label: x.time ? `${x.time}......` : '', clock: '', late: 0, time: null });
+        put(at, { file: -1, line: 0, diary: true, category: 'Diary', todo: null, priority: null, title: text, tags: [], itags: [], effort: null, text, done: false, kind: 'diary', label: '', clock: x.time ? timeLabel({ time: x.time }) : '', late: 0, time: x.time ?? null });
       }
     }
   }
   // The diary: its entries for each day show with the category Diary (org-agenda-include-diary)
   if (diary) {
     for (const e of diaryEntries(diary.text, { y: from.getUTCFullYear(), m: from.getUTCMonth() + 1, d: from.getUTCDate() }, days, { style: diary.style })) {
-      const first = e.text.split('\n')[0];
-      put(utc(e.y, e.m, e.d), { file: -1, line: e.line, diary: true, category: 'Diary', todo: null, priority: null, title: first, tags: [], itags: [], effort: null, text: first, done: false, kind: 'diary', label: '', clock: '', late: 0, time: null });
+      for (const l of agendaLines(e.text)) put(utc(e.y, e.m, e.d), { file: -1, line: e.line, diary: true, category: 'Diary', todo: null, priority: null, title: l.text, tags: [], itags: [], effort: null, text: l.text, done: false, kind: 'diary', label: '', clock: l.time ? timeLabel(l) : '', late: 0, time: l.time, quiet: e.quiet });
     }
   }
   const lines = [];

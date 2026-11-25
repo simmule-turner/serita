@@ -162,8 +162,8 @@ A separate repository holds questions (case files written by us) and results rec
 ### `app/ui/viewport.js`, `test/browser/keyboard.mjs`
 - Written from: the standard Visual Viewport API (resize and scroll events, height and offsetTop). Statement as above.
 
-### `core/contacts.js`, `test/contacts.test.js`
-- Written from: observed Emacs 30.1 results with org-contacts 1.3 for which dates and properties it accepts (conformance v0.1.30 to v0.1.32), and the author's example contacts and agenda with the lines Emacs showed, read as behavior only. Statement as above.
+### `core/contacts.js`, `test/contacts.test.js`, `test/diary-display.test.js`
+- Written from the lists Emacs 30.1 showed for diary continuation, non-marking and time lines (conformance v0.1.33), and: observed Emacs 30.1 results with org-contacts 1.3 for which dates and properties it accepts (conformance v0.1.30 to v0.1.32), and the author's example contacts and agenda with the lines Emacs showed, read as behavior only. Statement as above.
 
 ### `core/solar.js`, `test/solar.test.js`
 - Written from: the published equinox and solstice algorithm in Jean Meeus, Astronomical Algorithms, chapter 27, and the times Emacs 30.1 listed for 2026 to 2028 (conformance v0.1.26), read as behavior only. Statement as above.
