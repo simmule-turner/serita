@@ -131,6 +131,13 @@ Units are names. ~usimplify~ merges them: the third column below reads 1.2 km.
 | 1 km | 200 m |   |
 #+TBLFM: $3=usimplify($1+$2)
 
+Converting: ~uconv~ gives the value in the unit you name, ~utemp~ converts a temperature reading.
+
+| Distance | In feet | Weight | In pounds | Boiling | In degF |
+|----------+---------+--------+-----------+---------+---------|
+| 2.5 km   |         | 10 kg  |           | 100 degC |        |
+#+TBLFM: @2$2=uconv($1, ft)::@2$4=uconv($3, lb)::@2$6=utemp($5, degF)
+
 * Heat map and surface plots
 C-c " g on a table under ~#+PLOT: type:grid~ draws its numbers as colored cells; ~type:3d~ draws a surface you can drag to turn.
 

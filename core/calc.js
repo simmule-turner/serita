@@ -5,7 +5,7 @@
 //         { k: 'f', m, e }       the decimal m x 10^e, m rounded to `prec` digits
 //         { k: 'v', items }      a vector
 //         { k: 's', text }       an expression Calc leaves as it is (1/0, foo(1))
-import { UNITS, sameDim } from './units.js';
+import { UNITS, sameDim, inexact } from './units.js';
 
 export const DEFAULTS = { prec: 12, mode: 'float', digits: 8 };
 
@@ -473,7 +473,7 @@ function unitForm(t, prec) {
   }
 }
 const dimOf = (u) => UNITS[u].dim;
-const ratio = (u, v) => frac(BigInt(UNITS[u].n) * BigInt(UNITS[v].d), BigInt(UNITS[u].d) * BigInt(UNITS[v].n));
+const ratio = (u, v) => frac(UNITS[u].n * UNITS[v].d, UNITS[u].d * UNITS[v].n);
 /** Merges units of one dimension into the first of them; zero exponents drop out. */
 function norm(a, prec) {
   if (!a) return null;
@@ -507,6 +507,38 @@ function unitTree(a, prec) {
   let r = top ? sMul(N(c), top, prec) : N(c);
   if (bottom) r = { t: 'div', a: r, b: bottom };
   return r;
+}
+const BASES = [['m', [1, 0, 0, 0]], ['kg', [0, 1, 0, 0]], ['s', [0, 0, 1, 0]], ['K', [0, 0, 0, 1]]];
+const dimOfForm = (a) => a.f.reduce((d, [u, e]) => d.map((x, i) => x + e * UNITS[u].dim[i]), [0, 0, 0, 0]);
+const sizeOf = (a, prec) => a.f.reduce((c, [u, e]) => {
+  const { n, d } = UNITS[u];
+  const k = BigInt(Math.abs(e));
+  return mul(c, e >= 0 ? frac(n ** k, d ** k) : frac(d ** k, n ** k), prec);
+}, int(1));
+/** uconv (the function Org's own documentation defines with defmath): the value in the target units; units that do not match, or are not known, give base units. */
+function uconv(v, target, pure, prec) {
+  if (numeric(v) || (v.k !== 's' && v.k !== 'x')) return v;
+  const src = unitForm(toTree(v), prec);
+  if (!src) return v;
+  let tgt = target && (target.k === 's' || target.k === 'x') ? unitForm(toTree(target), prec) : null;
+  if (tgt && (tgt.f.length === 0 || !(tgt.c.k === 'q' && tgt.c.n === 1n && tgt.c.d === 1n))) tgt = null;
+  const dim = dimOfForm(src);
+  const same = tgt && sameDim(dim, dimOfForm(tgt));
+  let c = mul(src.c, sizeOf(src, prec), prec);
+  let units;
+  if (same) { c = div(c, sizeOf(tgt, prec), prec); units = tgt.f; } else units = BASES.filter(([, d]) => dim.some((x, i) => x !== 0 && d[i] === 1)).map(([u]) => [u, dim[BASES.findIndex(([n]) => n === u)]]);
+  if ([...src.f, ...(same ? tgt.f : [])].some(([u]) => inexact(u)) && c.k === 'q') c = toFloat(c, prec);
+  if (pure) return c.k === 'q' && c.d !== 1n ? toFloat(c, prec) : c;
+  return fromTree(unitTree({ c, f: units }, prec));
+}
+/** utemp: what Calc's u t gives, an absolute temperature in another scale; anything else is an error. */
+function utemp(v, target, prec) {
+  const one = (x) => { const f = x && (x.k === 's' || x.k === 'x' ? unitForm(toTree(x), prec) : null); return f && f.f.length === 1 && f.f[0][1] === 1 && ['K', 'degC', 'degF'].includes(f.f[0][0]) ? f : null; };
+  const a = one(v), t = target && target.k === 's' && ['K', 'degC', 'degF'].includes(target.text) ? target.text : null;
+  if (!a || !t) throw new Error('syntax');
+  const k = ({ K: (x) => x, degC: (x) => add(x, frac(27315n, 100n), prec), degF: (x) => mul(add(x, frac(45967n, 100n), prec), frac(5n, 9n), prec) })[a.f[0][0]](a.c);
+  const out = ({ K: (x) => x, degC: (x) => sub(x, frac(27315n, 100n), prec), degF: (x) => sub(mul(x, frac(9n, 5n), prec), frac(45967n, 100n), prec) })[t](k);
+  return fromTree(sMul(N(toFloat(out, prec)), { t: 's', name: t }, prec));
 }
 const SYM = { '+': sAdd, '-': sSub, '*': sMul, '/': sDiv, '^': sPow };
 
@@ -643,6 +675,8 @@ export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fract
       if (name === 'sqrt' && a.t === 'mul' && isN(a.a) && numeric(a.a.v)) { const r = FUNCS.sqrt(a.a.v, prec); if (r.k === 'q') return fromTree(sMul(N(r), { t: 'fn', name, args: [a.b] }, prec)); }
       return fromTree({ t: 'fn', name, args: [a] });
     }
+    if (name === 'uconv' && (args.length === 2 || args.length === 3)) return uconv(args[0], args[1], args[2] && !(numeric(args[2]) && isZero(args[2])), prec);
+    if (name === 'utemp' && args.length === 2) return utemp(args[0], args[1], prec);
     if (name === 'usimplify' && args.length === 1) {
       if (numeric(args[0])) return args[0];
       if (args[0].k === 's' || args[0].k === 'x') { const u = norm(unitForm(toTree(args[0]), prec), prec); if (u) return fromTree(unitTree(u, prec)); }

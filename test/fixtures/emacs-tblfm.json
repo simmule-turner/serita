@@ -5110,14 +5110,6 @@
 "error": false
 },
 {
-"id": "un-23",
-"question": "conversion attempt: uconv(5 km, m)",
-"input": "| 1 |  |\n#+TBLFM: $2=uconv(5 km, m)\n",
-"line": 1,
-"text": "| 1 | uconv(5 km, m) |\n#+TBLFM: $2=uconv(5 km, m)\n",
-"error": false
-},
-{
 "id": "un-24",
 "question": "conversion attempt: lu(5 km)",
 "input": "| 1 |  |\n#+TBLFM: $2=lu(5 km)\n",
@@ -5667,6 +5659,174 @@
 "input": "| 1 |  |\n#+TBLFM: $2=convert(1 hr+30 min, min)\n",
 "line": 1,
 "text": "| 1 | convert(hr + 30 min, min) |\n#+TBLFM: $2=convert(1 hr+30 min, min)\n",
+"error": false
+},
+{
+"id": "cu-80",
+"input": "| 2.5 km |   |\n#+TBLFM: $2=uconv($1, ft)\n",
+"line": 1,
+"text": "| 2.5 km | 8202.0997 ft |\n#+TBLFM: $2=uconv($1, ft)\n",
+"error": false
+},
+{
+"id": "cu-81",
+"input": "| 2.5 km |   |\n#+TBLFM: $2=uconv($1, ft, t)\n",
+"line": 1,
+"text": "| 2.5 km | 8202.0997 |\n#+TBLFM: $2=uconv($1, ft, t)\n",
+"error": false
+},
+{
+"id": "cu-82",
+"input": "| 2.5 km |   |\n#+TBLFM: $2=uconv($1, ft);%.2f\n",
+"line": 1,
+"text": "| 2.5 km | 8202.10 |\n#+TBLFM: $2=uconv($1, ft);%.2f\n",
+"error": false
+},
+{
+"id": "cu-83",
+"input": "| 2.5 km |   |\n#+TBLFM: $2=uconv($1, ft);N\n",
+"line": 1,
+"text": "| 2.5 km | 2.5 |\n#+TBLFM: $2=uconv($1, ft);N\n",
+"error": false
+},
+{
+"id": "cu-84",
+"input": "| 2.5 km |   |\n#+TBLFM: $2=uconv($1, ft);f2\n",
+"line": 1,
+"text": "| 2.5 km | 8202.10 ft |\n#+TBLFM: $2=uconv($1, ft);f2\n",
+"error": false
+},
+{
+"id": "cu-85",
+"input": "| 2.5 |   |\n#+TBLFM: $2=uconv($1, ft)\n",
+"line": 1,
+"text": "| 2.5 | 2.5 |\n#+TBLFM: $2=uconv($1, ft)\n",
+"error": false
+},
+{
+"id": "cu-86",
+"input": "| 2.5 km | ft |   |\n#+TBLFM: $3=uconv($1, $2)\n",
+"line": 1,
+"text": "| 2.5 km | ft | 8202.0997 ft |\n#+TBLFM: $3=uconv($1, $2)\n",
+"error": false
+},
+{
+"id": "cu-87",
+"input": "| 2.5 km | ft |   |\n#+TBLFM: $3=uconv($1, $2);%.2f\n",
+"line": 1,
+"text": "| 2.5 km | ft | 8202.10 |\n#+TBLFM: $3=uconv($1, $2);%.2f\n",
+"error": false
+},
+{
+"id": "cu-88",
+"input": "| 100 degC |   |\n#+TBLFM: $2=uconv($1, degF)\n",
+"line": 1,
+"text": "| 100 degC | 180. degF |\n#+TBLFM: $2=uconv($1, degF)\n",
+"error": false
+},
+{
+"id": "cu-89",
+"input": "| 212 degF |   |\n#+TBLFM: $2=uconv($1, degC)\n",
+"line": 1,
+"text": "| 212 degF | 117.77778 degC |\n#+TBLFM: $2=uconv($1, degC)\n",
+"error": false
+},
+{
+"id": "cu-8a",
+"input": "| 2.5 km |   |\n#+TBLFM: $2=uconv($1, kg)\n",
+"line": 1,
+"text": "| 2.5 km | 2500. m |\n#+TBLFM: $2=uconv($1, kg)\n",
+"error": false
+},
+{
+"id": "cu-8b",
+"input": "| 3 km | 2.5 hr |   |\n#+TBLFM: $3=uconv($1/$2, m/s)\n",
+"line": 1,
+"text": "| 3 km | 2.5 hr | 0.33333333 m / s |\n#+TBLFM: $3=uconv($1/$2, m/s)\n",
+"error": false
+},
+{
+"id": "cu-8c",
+"input": "| 1 km |   |\n| 2 mi |   |\n| 3 m  |   |\n#+TBLFM: $2=uconv($1, ft)\n",
+"line": 3,
+"text": "| 1 km | 3280.8399 ft |\n| 2 mi | 10560. ft    |\n| 3 m  | 9.8425197 ft |\n#+TBLFM: $2=uconv($1, ft)\n",
+"error": false
+},
+{
+"id": "cu-8d",
+"input": "| 1 km | 200 m |   |\n#+TBLFM: $3=uconv($1+$2, mi)\n",
+"line": 1,
+"text": "| 1 km | 200 m | 0.74564543 mi |\n#+TBLFM: $3=uconv($1+$2, mi)\n",
+"error": false
+},
+{
+"id": "ut-10",
+"input": "| 0 degC |   |\n#+TBLFM: $2=uconv($1, K)\n",
+"line": 1,
+"text": "| 0 degC | 0 |\n#+TBLFM: $2=uconv($1, K)\n",
+"error": false
+},
+{
+"id": "ut-11",
+"input": "| 300 K |   |\n#+TBLFM: $2=uconv($1, degC)\n",
+"line": 1,
+"text": "| 300 K | 300 degC |\n#+TBLFM: $2=uconv($1, degC)\n",
+"error": false
+},
+{
+"id": "ut-12",
+"input": "| 2.5 km |   |\n#+TBLFM: $2=uconv($1, ft, t);%.1f\n",
+"line": 1,
+"text": "| 2.5 km | 8202.1 |\n#+TBLFM: $2=uconv($1, ft, t);%.1f\n",
+"error": false
+},
+{
+"id": "ut-13",
+"input": "| 5 |   |\n#+TBLFM: $2=uconv($1 m, ft)\n",
+"line": 1,
+"text": "| 5 | 16.404199 ft |\n#+TBLFM: $2=uconv($1 m, ft)\n",
+"error": false
+},
+{
+"id": "ut-14",
+"input": "|   |\n#+TBLFM: $1=uconv(2.5 km, ft)\n",
+"line": 1,
+"text": "| 8202.0997 ft |\n#+TBLFM: $1=uconv(2.5 km, ft)\n",
+"error": false
+},
+{
+"id": "ut-15",
+"input": "| 1 in |   |\n#+TBLFM: $2=uconv($1, cm)\n",
+"line": 1,
+"text": "| 1 in | 2.54 cm |\n#+TBLFM: $2=uconv($1, cm)\n",
+"error": false
+},
+{
+"id": "ut-16",
+"input": "| 2.5 km |   |\n#+TBLFM: $2=uconv($1, zzz)\n",
+"line": 1,
+"text": "| 2.5 km | 2500. m |\n#+TBLFM: $2=uconv($1, zzz)\n",
+"error": false
+},
+{
+"id": "ut-17",
+"input": "| 2.5 zzz |   |\n#+TBLFM: $2=uconv($1, ft)\n",
+"line": 1,
+"text": "| 2.5 zzz | 2.5 zzz |\n#+TBLFM: $2=uconv($1, ft)\n",
+"error": false
+},
+{
+"id": "ut-18",
+"input": "| 1 km |   |\n| 2 mi |   |\n| 3 m |   |\n#+TBLFM: $2=uconv($1, ft);%.1f\n",
+"line": 3,
+"text": "| 1 km |  3280.8 |\n| 2 mi | 10560.0 |\n| 3 m  |     9.8 |\n#+TBLFM: $2=uconv($1, ft);%.1f\n",
+"error": false
+},
+{
+"id": "ut-1a",
+"input": "| 1 km | 2 mi |   |\n#+TBLFM: $3=uconv(vsum($1..$2), km)\n",
+"line": 1,
+"text": "| 1 km | 2 mi | 4.218688 km |\n#+TBLFM: $3=uconv(vsum($1..$2), km)\n",
 "error": false
 }
 ]

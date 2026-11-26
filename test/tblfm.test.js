@@ -48,3 +48,14 @@ test('now() gives the current time as an Org timestamp, and now()+1 the next day
   const day = (m) => Date.UTC(+m[1], +m[2] - 1, +m[3]) / 864e5;
   assert.ok(day(b) - day(a) <= 1 && day(b) - day(a) >= 0);
 });
+
+test('utemp gives what Calc\'s u t gives, an absolute temperature, where uconv (like u c) converts a difference', () => {
+  const run = (cell, f) => recalc(`| ${cell} |   |\n#+TBLFM: $2=${f}\n`, 1).text.split('\n')[0];
+  assert.equal(run('100 degC', 'utemp($1, degF)'), '| 100 degC | 212. degF |');
+  assert.equal(run('212 degF', 'utemp($1, degC)'), '| 212 degF | 100. degC |');
+  assert.equal(run('-40 degC', 'utemp($1, degF)'), '| -40 degC | -40. degF |');
+  assert.equal(run('32 degF', 'utemp($1, K)'), '| 32 degF | 273.15 K |');
+  assert.equal(run('100 degC', 'uconv($1, degF)'), '| 100 degC | 180. degF |');
+  assert.equal(run('2.5 km', 'utemp($1, degF)'), '| 2.5 km | #ERROR |');
+  assert.equal(run('100 degC', 'utemp($1, ft)'), '| 100 degC | #ERROR |');
+});

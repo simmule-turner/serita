@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.1
+Unit conversion in formulas: uconv(2.5 km, ft) converts (8202.0997 ft), as Org's own uconv recipe does but with no setup in your config, and utemp(100 degC, degF) gives the absolute temperature (212 degF), since uconv, like Calc's u c, treats temperatures as differences. About 90 units are known with Calc's names and sizes (distance, weight, volume, speed, pressure, energy, power, time), and a name Calc does not know stays plain text, as in Emacs.
+
 * 0.11.0
 #+PLOT: gains type:grid, a heat map of the table's numbers, and type:3d, a surface you drag to turn; Save image keeps the view you chose. Formulas understand units as Emacs does: 5 m + 3 m is 8 m, products and quotients keep their units, and usimplify(1 km + 200 m) gives 1.2 km, with the symbolic simplifier now matching Emacs on 92 more cases. Reloading a GitHub or WebDAV file asks the server whether it changed and skips the download when it has not.
 
