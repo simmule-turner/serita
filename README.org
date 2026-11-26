@@ -74,7 +74,17 @@ Swipe a heading in the Outline view from right to left to fold or unfold it, lik
 ** Minibuffer
 In the Text view, questions are asked on the line at the bottom, as in Emacs: the prompt sits in the field, RET accepts and C-g or Esc cancels. The buttons ✓ and ✕ do the same by touch. Completions appear above the key row.
 
-In the Outline view, the same questions are touch dialogs. Menu, then Commands, lists the commands that work without a cursor, with their Emacs names and keys; type to narrow the list, or tap Show all for every command in alphabetical order.
+In the Outline view, the same questions are touch dialogs. Menu, then Commands, lists the commands that work without a cursor, with their Emacs names and keys; type to narrow the list. The row at the bottom gives the next command a universal argument (see below).
+
+** Universal argument
+C-u multiplies the argument of the next command by four, and C-0 to C-9 or C-- give it a number. In the Outline view, Menu, then Commands, has a C-u button that counts up (C-u, C-u C-u, C-u C-u C-u, then off) and a row of digits beside it; the line above says which prefix the next command will use.
+
+- C-u C-c C-w :: only visits the target; C-u C-u goes to where the last refile put its subtree; C-3 keeps the entry; C-0 or C-u C-u C-u clears the refile cache.
+- C-u TAB :: cycles the whole buffer; C-u C-u TAB shows the startup visibility, C-u C-u C-u TAB everything. C-2 S-TAB shows the headings down to level 2.
+- C-3 C-c C-t :: sets the third TODO keyword; C-u C-u C-c C-t switches to the next keyword set.
+- C-u M-RET :: inserts the heading after the subtree; C-u C-u M-RET at the end of the tree above.
+- C-u C-c - and C-u M-S-down :: insert the rule above and the row below. C-c ^ f sorts with a function: upcase, downcase, capitalize, identity, length, string-to-number or string-trim to extract the key, and string<, string>, <, >, <= or >= to compare.
+- C-u C-c , :: shows the priority as a number.
 
 ** Find
 Type to search. The prompt shows ~I-search:~, ~Wrapped I-search:~ or ~Failing I-search:~. The match is highlighted; ▲ and ▼ go to the previous and next match. Past the last match the search fails; one more press wraps. C-s on an empty field recalls the last search. A lowercase query ignores case; an uppercase letter makes it exact. Return keeps the cursor on the match, and × returns to where you started.

@@ -385,11 +385,38 @@ const toNumber = (s) => { const m = /^[ \t]*[-+]?(\d+\.?\d*|\.\d+)([eE][-+]?\d+)
 /** HH:MM or HH:MM:SS as seconds. */
 const toSeconds = (s) => { const m = /^(\d+):(\d+)(?::(\d+))?$/.exec(s.trim()); return m ? Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3] ?? 0) : 0; };
 
+/** The key functions C-c ^ f accepts by name: what each does to the text of a field. */
+const SORT_KEYS = {
+  upcase: (x) => x.toUpperCase(), downcase: (x) => x.toLowerCase(), identity: (x) => x, length: (x) => [...x].length, 'string-to-number': toNumber,
+  capitalize: (x) => x.toLowerCase().replace(/(^|[^\p{L}\p{N}])(\p{L})/gu, (_, a, b) => a + b.toUpperCase()), 'string-trim': (x) => x.trim(),
+};
+const codepoints = (a, b) => (a < b ? -1 : a > b ? 1 : 0);
+/** The compare functions: true when the first key goes before the second. */
+const SORT_COMPARE = {
+  'string<': (a, b) => codepoints(a, b) < 0, 'string-lessp': (a, b) => codepoints(a, b) < 0, 'string>': (a, b) => codepoints(a, b) > 0, 'string-greaterp': (a, b) => codepoints(a, b) > 0,
+  '<': (a, b) => a < b, '>': (a, b) => a > b, '<=': (a, b) => a <= b, '>=': (a, b) => a >= b,
+};
+
+/**
+ * The functions C-c ^ f asks for, by name (the key function, then the compare function; an empty compare name is the default of sort-subr: numbers by <, strings by string<).
+ * A name that is not one of the built-in ones fails as Emacs does with a void function.
+ * @returns {{ key: (s: string) => string|number, compare: ((a: any, b: any) => boolean) | null }}
+ */
+export function sortFunctions(keyName, compareName) {
+  const void_ = (n) => new Error(`Symbol’s function definition is void: ${n}`);
+  const k = keyName.trim();
+  if (k === '') throw new Error('No function given');
+  if (!Object.hasOwn(SORT_KEYS, k)) throw void_(k);
+  const c = compareName.trim();
+  if (c !== '' && !Object.hasOwn(SORT_COMPARE, c)) throw void_(c);
+  return { key: SORT_KEYS[k], compare: c === '' ? null : SORT_COMPARE[c] };
+}
+
 /**
  * C-c ^: sorts the rows between horizontal lines around the cursor by its column.
  * `kind` is a (alphabetic), n (numeric) or t (time); a capital reverses. C-u changes nothing in Org 9.7.11's results, so there is no case-sensitive variant.
  */
-export function sortRows(text, line, col, kind) {
+export function sortRows(text, line, col, kind, fn = null) {
   const t = load(text, line);
   if (!t) return { ...here(text, line, col), ...NOT_IN_TABLE };
   if (t.rows[line - t.start].rule) return { ...here(text, line, col), error: 'Not in a sorting section' };
@@ -399,11 +426,18 @@ export function sortRows(text, line, col, kind) {
   while (from - 1 >= t.start && !t.rows[from - 1 - t.start].rule) from--;
   while (to + 1 < t.end && !t.rows[to + 1 - t.start].rule) to++;
   const lower = kind.toLowerCase();
-  const key = (i) => { const c = t.rows[i - t.start].cells[idx] ?? ''; return lower === 'n' ? toNumber(c) : lower === 't' ? toSeconds(c) : c; };
+  const key = (i) => { const c = t.rows[i - t.start].cells[idx] ?? ''; return lower === 'f' ? fn.key(c) : lower === 'n' ? toNumber(c) : lower === 't' ? toSeconds(c) : c; };
   const cmp = lower === 'a' ? COLLATE.compare : (a, b) => (a < b ? -1 : a > b ? 1 : 0);
   const order = Array.from({ length: to - from + 1 }, (_, k) => from + k).map((i) => ({ i, k: key(i) }));
-  order.sort((a, b) => cmp(a.k, b.k) || a.i - b.i);
-  if (kind !== lower) order.reverse();
+  if (lower === 'f') {
+    // sort-subr with the function: a goes before b when it says so; F asks the other way round, so equal keys keep their order
+    const before = fn.compare ?? ((a, b) => (typeof a === 'number' && typeof b === 'number' ? a < b : codepoints(String(a), String(b)) < 0));
+    const flip = kind === 'F';
+    order.sort((a, b) => (before(flip ? b.k : a.k, flip ? a.k : b.k) ? -1 : before(flip ? a.k : b.k, flip ? b.k : a.k) ? 1 : 0) || a.i - b.i);
+  } else {
+    order.sort((a, b) => cmp(a.k, b.k) || a.i - b.i);
+    if (kind !== lower) order.reverse();
+  }
   const lines = t.lines.slice(t.start, t.end);
   order.forEach((o, k) => { lines[from - t.start + k] = t.lines[o.i]; });
   return here(splice(text, t.start, t.end, lines), line, Math.min(col, lines[line - t.start].length));

@@ -61,13 +61,14 @@ export function moveSubtree(text, line, dir) {
 }
 
 /** Adds an empty sibling heading after the subtree of the one at `line`. The new heading's line is returned. */
-export function insertHeadingAfter(text, line, title = '') {
+export function insertHeadingAfter(text, line, title = '', atParentEnd = false) {
   const { h } = headOf(text, line);
+  const end = atParentEnd && h.parent ? h.parent.end : h.end;
   const lines = splitLines(text);
   const stars = '*'.repeat(h.level);
-  if (h.end > 0 && lines[h.end - 1].eol === '') lines[h.end - 1] = { ...lines[h.end - 1], eol: '\n' };
-  lines.splice(h.end, 0, { text: `${stars} ${oneLine(title)}`, eol: lines.length > h.end ? '\n' : '' });
-  return { text: join(lines), line: h.end, remap: (n) => (n >= h.end ? n + 1 : n) };
+  if (end > 0 && lines[end - 1].eol === '') lines[end - 1] = { ...lines[end - 1], eol: '\n' };
+  lines.splice(end, 0, { text: `${stars} ${oneLine(title)}`, eol: lines.length > end ? '\n' : '' });
+  return { text: join(lines), line: end, remap: (n) => (n >= end ? n + 1 : n) };
 }
 
 /**
@@ -94,15 +95,15 @@ export function insertHeadingHere(text, pos) {
 
 /**
  * Changes the TODO state in the sequence the heading is in: none, the first word, ..., the last, none (dir 1);
- * dir -1 goes the other way; tags are aligned again at `column`. The statistics cookie of the parent heading, [done/total] or [percent%], counts its child
+ * dir -1 goes the other way; `to` (a keyword, or null for none) names the state to set instead; tags are aligned again at `column`. The statistics cookie of the parent heading, [done/total] or [percent%], counts its child
  * headings that have a TODO word and is brought up to date.
  */
-export function cycleTodo(text, line, dir = 1, column = DEFAULT_TAGS_COLUMN) {
+export function cycleTodo(text, line, dir = 1, column = DEFAULT_TAGS_COLUMN, to = undefined) {
   const { h, todo } = headOf(text, line);
   const seq = todo.sequences.find((s) => [...s.open, ...s.done].includes(h.todo)) ?? todo.sequences[0];
   const states = [null, ...seq.open, ...seq.done];
   const at = states.indexOf(h.todo);
-  const next = states[(at + dir + states.length) % states.length];
+  const next = to !== undefined ? to : states[(at + dir + states.length) % states.length];
   const lines = splitLines(text);
   const t = lines[line].text;
   const m = /^(\*+ +)(?:(\S+)(?: +|$))?/.exec(t);
@@ -115,6 +116,14 @@ export function cycleTodo(text, line, dir = 1, column = DEFAULT_TAGS_COLUMN) {
     lines[h.parent.line] = { ...lines[h.parent.line], text: withCookie(lines[h.parent.line].text, done, states2.length) };
   }
   return { text: join(lines), line, remap: same, state: next };
+}
+
+/** The state C-N and C-u C-u ask for: the Nth keyword of the sequence (none past its end), or the first of the next sequence; undefined for any other argument. */
+export function todoTarget(a, todo, from) {
+  const seq = todo.sequences.find((x) => [...x.open, ...x.done].includes(from)) ?? todo.sequences[0];
+  if (a?.num > 0) { const all = [...seq.open, ...seq.done]; return a.num <= all.length ? all[a.num - 1] : null; }
+  if (a?.list === 16) return todo.sequences[(todo.sequences.indexOf(seq) + 1) % todo.sequences.length].open[0] ?? null;
+  return undefined;
 }
 
 const PRIORITY_DEFAULT = 'B';

@@ -20,7 +20,7 @@ Planned work only. Phase order is in SPEC.md section 12.
 * Later: screen and views
 - Empty folders are not shown when browsing, because storage lists files only.
 - The extras menu, a floating button filled from the config's Menu list, once links and capture exist.
-- Emacs keys beyond the heading and movement commands: editing keys, the minibuffer, M-x, universal argument, and TAB and the M-arrows on plain text lines, and god-mode for the C-c prefix.
+- Emacs keys beyond the heading and movement commands: editing keys, the minibuffer, M-x, and TAB and the M-arrows on plain text lines, and god-mode for the C-c prefix.
 - Sparse trees by date (C-c / d, b, a, D), by C-c / p (Emacs found no match for Effort 2h where the heading has it, and every heading for an empty value; compare in an interactive Emacs), and match expressions with {regexp} tags, priority and TODO sequences.
 - Unresolved in Emacs batch results: TAB on an open drawer line (the first TAB changes nothing, the second folds it), and C-c , SPC, which fails in batch; compare in an interactive Emacs.
 - Search: C-s with the context of the view.
@@ -29,7 +29,8 @@ Planned work only. Phase order is in SPEC.md section 12.
 
 * Later: tables
 - Formulas: ~#+TBLFM~ with field and range references, Calc and Lisp formulas, recalculation with C-c C-c, and ~#+PLOT:~ (planned for 0.11.0).
-- The C-u forms of the table keys (~C-u C-c ^~, ~C-u C-c -~, ~C-u M-S-down~) and sorting with a function, which need a universal argument and the Lisp interpreter.
+- Sorting a table with a function of your own (lambda or any Lisp function), which needs the Lisp interpreter; the built-in names work.
+- The rest of the universal argument: C-u C-c C-t (a state-change note), a number with TAB (go up to that level), C-2 and C-4 with C-c C-w, and C-u C-c C-x C-a (archive the finished trees).
 - The Recalculate and Formulas entries of the cell sheet, once formulas exist.
 
 * Later: dates

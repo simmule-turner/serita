@@ -40,6 +40,10 @@ export function createKeymap(bindings) {
 
 /** The keys the Text view answers to, and what each does (the commands are in app/main.js). */
 export const TEXT_KEYS = Object.freeze({
+  'C-u': 'universal-argument',
+  'C--': 'negative-argument',
+  'C-0': 'argument-0', 'C-1': 'argument-1', 'C-2': 'argument-2', 'C-3': 'argument-3', 'C-4': 'argument-4',
+  'C-5': 'argument-5', 'C-6': 'argument-6', 'C-7': 'argument-7', 'C-8': 'argument-8', 'C-9': 'argument-9',
   'TAB': 'cycle',
   '<backtab>': 'cycle-global',
   'M-<up>': 'move-up',

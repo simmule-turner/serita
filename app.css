@@ -40,6 +40,13 @@ main { flex: 1; min-height: 0; display: flex; position: relative; background: va
 .sheet .item { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: 100%; min-height: 52px; padding: 0 14px; border: 0; border-bottom: 1px solid var(--line); border-radius: 0; background: transparent; font-size: 16px; text-align: left; }
 .sheet .item:last-child { border-bottom: 0; }
 .sheet .item.dim { color: var(--muted); }
+.sheet p.argsaid { flex: none; font-size: 12px; }
+.sheet .row.prefix { align-items: stretch; }
+.sheet .row.prefix > button.cu { flex: 0 0 80px; }
+.sheet .row.prefix > .digits { flex: 1 1 0; min-width: 0; display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.sheet .row.prefix > .digits::-webkit-scrollbar { display: none; }
+.sheet .row.prefix > .digits > button { flex: none; min-width: 44px; }
+.sheet .row.prefix button.on { border-color: var(--accent); color: var(--accent); background: var(--bar); }
 .sheet button.cancel { border-color: var(--accent); }
 .sheet .item .meta { color: var(--muted); font-size: 14px; text-align: right; }
 .sheet .list { display: flex; flex-direction: column; gap: 0; }

@@ -1,0 +1,2449 @@
+{
+ "ua-ar-sib-cu": {
+  "keys": "C-u C-c C-x A",
+  "input": "* Keep\n** Child\n* Other\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Other\n* Archive                                                           :ARCHIVE:\n** Keep\n:PROPERTIES:\n:ARCHIVE_TIME: 2026-11-25 Wed 21:33\n:END:\n*** Child\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "Cut: Subtree(s) with 16 characters"
+  ],
+  "lines": [
+   true,
+   true,
+   false,
+   false,
+   false,
+   false,
+   false
+  ]
+ },
+ "ua-ar-tag-cu": {
+  "keys": "C-u C-c C-x a",
+  "input": "* Keep\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Keep\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 6
+  },
+  "texts": [
+   "0 trees archived"
+  ],
+  "lines": [
+   true
+  ]
+ },
+ "ua-ar-tag": {
+  "keys": "C-c C-x a",
+  "input": "* Keep\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Keep                                                              :ARCHIVE:\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "Subtree archived"
+  ],
+  "lines": [
+   true
+  ]
+ },
+ "ua-cy-C-0_TAB": {
+  "keys": "C-0 TAB",
+  "input": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "error": "error",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-cy-C-1_TAB": {
+  "keys": "C-1 TAB",
+  "input": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "error": "error",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-cy-C-1_backtab": {
+  "keys": "C-1 <backtab>",
+  "input": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "Content view to level: 1"
+  ],
+  "lines": [
+   true,
+   false,
+   false,
+   false,
+   false,
+   true,
+   false,
+   true,
+   false
+  ]
+ },
+ "ua-cy-C-2_TAB": {
+  "keys": "C-2 TAB",
+  "input": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "error": "error",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-cy-C-2_backtab": {
+  "keys": "C-2 <backtab>",
+  "input": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "Content view to level: 2"
+  ],
+  "lines": [
+   true,
+   true,
+   false,
+   false,
+   true,
+   true,
+   true,
+   true,
+   false
+  ]
+ },
+ "ua-cy-C-3_backtab": {
+  "keys": "C-3 <backtab>",
+  "input": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "Content view to level: 3"
+  ],
+  "lines": [
+   true,
+   true,
+   false,
+   true,
+   true,
+   true,
+   true,
+   true,
+   false
+  ]
+ },
+ "ua-cy-C-u_C-u_C-u_TAB": {
+  "keys": "C-u C-u C-u TAB",
+  "input": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "Entire buffer visible, including drawers"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-cy-C-u_C-u_TAB": {
+  "keys": "C-u C-u TAB",
+  "input": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "Startup visibility, plus VISIBILITY properties"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-cy-C-u_C-u_backtab": {
+  "keys": "C-u C-u <backtab>",
+  "input": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "OVERVIEW"
+  ],
+  "lines": [
+   true,
+   false,
+   false,
+   false,
+   false,
+   true,
+   false,
+   true,
+   false
+  ]
+ },
+ "ua-cy-C-u_TAB": {
+  "keys": "C-u TAB",
+  "input": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "OVERVIEW"
+  ],
+  "lines": [
+   true,
+   false,
+   false,
+   false,
+   false,
+   true,
+   false,
+   true,
+   false
+  ]
+ },
+ "ua-cy-C-u_backtab": {
+  "keys": "C-u <backtab>",
+  "input": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "Startup visibility, plus VISIBILITY properties."
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-cy-backtab": {
+  "keys": "<backtab>",
+  "input": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "OVERVIEW"
+  ],
+  "lines": [
+   true,
+   false,
+   false,
+   false,
+   false,
+   true,
+   false,
+   true,
+   false
+  ]
+ },
+ "ua-cy-backtab_backtab": {
+  "keys": "<backtab> <backtab>",
+  "input": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "OVERVIEW",
+   "CONTENTS...",
+   "CONTENTS...done"
+  ],
+  "lines": [
+   true,
+   true,
+   false,
+   true,
+   true,
+   true,
+   true,
+   true,
+   false
+  ]
+ },
+ "ua-cy-backtab_backtab_backtab": {
+  "keys": "<backtab> <backtab> <backtab>",
+  "input": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "OVERVIEW",
+   "CONTENTS...",
+   "CONTENTS...done",
+   "SHOW ALL"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-cy-body": {
+  "keys": "C-u TAB",
+  "input": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "line": 3,
+  "col": 0,
+  "text": "* One\n** One A\nbody\n*** One A1\n** One B\n* Two\n** Two A\n* Three\nbody\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "texts": [
+   "OVERVIEW"
+  ],
+  "lines": [
+   true,
+   false,
+   false,
+   false,
+   false,
+   true,
+   false,
+   true,
+   false
+  ]
+ },
+ "ua-ih-C-1_M-RET-mid": {
+  "keys": "C-1 M-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 3,
+  "col": 3,
+  "text": "* One\nbody\n** \n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 4,
+   "col": 8
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-1_M-RET-top": {
+  "keys": "C-1 M-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "text": "* \n* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-2_M-RET-mid": {
+  "keys": "C-2 M-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 3,
+  "col": 3,
+  "text": "* One\nbody\n** \n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 4,
+   "col": 8
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-2_M-RET-top": {
+  "keys": "C-2 M-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "text": "* \n* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-RET-mid": {
+  "keys": "C-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 3,
+  "col": 3,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 3
+  },
+  "texts": [
+   "C-RET is undefined"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-RET-top": {
+  "keys": "C-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "C-RET is undefined"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-S-RET-mid": {
+  "keys": "C-S-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 3,
+  "col": 3,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 3
+  },
+  "texts": [
+   "C-RET is undefined"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-S-RET-top": {
+  "keys": "C-S-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "C-RET is undefined"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-u_C-RET-mid": {
+  "keys": "C-u C-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 3,
+  "col": 3,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 3
+  },
+  "texts": [
+   "C-RET is undefined"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-u_C-RET-top": {
+  "keys": "C-u C-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "C-RET is undefined"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-u_C-S-RET-mid": {
+  "keys": "C-u C-S-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 3,
+  "col": 3,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 3
+  },
+  "texts": [
+   "C-RET is undefined"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-u_C-S-RET-top": {
+  "keys": "C-u C-S-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "C-RET is undefined"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-u_C-u_C-RET-mid": {
+  "keys": "C-u C-u C-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 3,
+  "col": 3,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 3
+  },
+  "texts": [
+   "C-RET is undefined"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-u_C-u_C-RET-top": {
+  "keys": "C-u C-u C-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "C-RET is undefined"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-u_C-u_M-RET-mid": {
+  "keys": "C-u C-u M-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 3,
+  "col": 3,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n** \n* Two\n",
+  "error": false,
+  "point": {
+   "line": 7,
+   "col": 3
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-u_C-u_M-RET-top": {
+  "keys": "C-u C-u M-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* \n* Two\n",
+  "error": false,
+  "point": {
+   "line": 7,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-u_M-RET-mid": {
+  "keys": "C-u M-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 3,
+  "col": 3,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** \n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 6,
+   "col": 3
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-u_M-RET-top": {
+  "keys": "C-u M-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* \n* Two\n",
+  "error": false,
+  "point": {
+   "line": 7,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-u_M-S-RET-mid": {
+  "keys": "C-u M-S-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 3,
+  "col": 3,
+  "text": "* One\nbody\n** \n** TODO One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 4,
+   "col": 8
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-C-u_M-S-RET-top": {
+  "keys": "C-u M-S-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "text": "* TODO \n* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 7
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-M-RET-mid": {
+  "keys": "M-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 3,
+  "col": 3,
+  "text": "* One\nbody\n** \n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 4,
+   "col": 8
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-M-RET-top": {
+  "keys": "M-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "text": "* \n* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-M-S-RET-mid": {
+  "keys": "M-S-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 3,
+  "col": 3,
+  "text": "* One\nbody\n** \n** TODO One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 4,
+   "col": 8
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-M-S-RET-top": {
+  "keys": "M-S-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 1,
+  "col": 0,
+  "text": "* TODO \n* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 7
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-body-cu": {
+  "keys": "C-u M-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 2,
+  "col": 2,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* \n* Two\n",
+  "error": false,
+  "point": {
+   "line": 7,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-body-cuu": {
+  "keys": "C-u C-u M-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 2,
+  "col": 2,
+  "text": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* \n* Two\n",
+  "error": false,
+  "point": {
+   "line": 7,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-ih-body": {
+  "keys": "M-RET",
+  "input": "* One\nbody\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "line": 2,
+  "col": 2,
+  "text": "* One\nbo\n* dy\n** One A\n*** One A1\ntext\n** One B\n* Two\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-pr-C-c_,_A": {
+  "keys": "C-c , A",
+  "input": "* TODO [#B] Task :a:\n* Plain\n",
+  "line": 1,
+  "col": 0,
+  "text": "* TODO [#B] Task :a:\n* Plain\n",
+  "error": "error",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "Priority A-C, SPC to remove: "
+  ],
+  "lines": [
+   true,
+   true
+  ]
+ },
+ "ua-pr-C-c_,_RET": {
+  "keys": "C-c , RET",
+  "input": "* TODO [#B] Task :a:\n* Plain\n",
+  "line": 1,
+  "col": 0,
+  "text": "* TODO [#B] Task :a:\n* Plain\n",
+  "error": "user-error",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "Priority A-C, SPC to remove: "
+  ],
+  "lines": [
+   true,
+   true
+  ]
+ },
+ "ua-pr-C-c_,_SPC": {
+  "keys": "C-c , SPC",
+  "input": "* TODO [#B] Task :a:\n* Plain\n",
+  "line": 1,
+  "col": 0,
+  "text": "* TODO [#B] Task :a:\n* Plain\n",
+  "error": "error",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "Priority A-C, SPC to remove: "
+  ],
+  "lines": [
+   true,
+   true
+  ]
+ },
+ "ua-pr-C-u_C-c_,": {
+  "keys": "C-u C-c ,",
+  "input": "* TODO [#B] Task :a:\n* Plain\n",
+  "line": 1,
+  "col": 0,
+  "text": "* TODO [#B] Task :a:\n* Plain\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "Priority is 1000"
+  ],
+  "lines": [
+   true,
+   true
+  ]
+ },
+ "ua-pr-C-u_C-c_,_A": {
+  "keys": "C-u C-c , A",
+  "input": "* TODO [#B] Task :a:\n* Plain\n",
+  "line": 1,
+  "col": 0,
+  "text": "A* TODO [#B] Task :a:\n* Plain\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 1
+  },
+  "texts": [
+   "Priority is 1000"
+  ],
+  "lines": [
+   true,
+   true
+  ]
+ },
+ "ua-rf-c0-cache": {
+  "keys": "C-0 C-c C-w",
+  "input": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "error": false,
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "texts": [
+   "Refile cache has been cleared"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-rf-c0": {
+  "keys": "C-0 C-c C-w",
+  "input": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "error": false,
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "texts": [
+   "Refile cache has been cleared"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-rf-c2": {
+  "keys": "C-2 C-c C-w Gamma RET",
+  "input": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "error": false,
+  "point": {
+   "line": 6,
+   "col": 0
+  },
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-rf-c3-after": {
+  "keys": "C-c C-w Gamma RET C-3 C-c C-w",
+  "input": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Beta\nbody b\n* Gamma\nbody g\n** Alpha\nbody a\n*** Child\n** Beta\nbody b\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done",
+   "Copied: Subtree(s) with 24 characters",
+   "Refile to \"Gamma\" in file /tmp/oracleFqIFW9.org: done",
+   "Getting targets...",
+   "Getting targets...done",
+   "Copied: Subtree(s) with 14 characters",
+   "Refile (and keep) to \"Gamma\" in file /tmp/oracleFqIFW9.org: done"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-rf-c3": {
+  "keys": "C-3 C-c C-w",
+  "input": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "error": "user-error",
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-rf-c4": {
+  "keys": "C-4 C-c C-w Gamma RET",
+  "input": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "error": false,
+  "point": {
+   "line": 6,
+   "col": 0
+  },
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-rf-copy-cu": {
+  "keys": "C-u C-c M-w Gamma RET",
+  "input": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n** Beta\nbody b\n",
+  "error": false,
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done",
+   "Copied: Subtree(s) with 14 characters",
+   "Copy to \"Gamma\" in file /tmp/oraclednUvc0.org: done"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-rf-copy": {
+  "keys": "C-c M-w Gamma RET",
+  "input": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n** Beta\nbody b\n",
+  "error": false,
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done",
+   "Copied: Subtree(s) with 14 characters",
+   "Copy to \"Gamma\" in file /tmp/oracleyIis1C.org: done"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-rf-cu-empty": {
+  "keys": "C-u C-c C-w RET",
+  "input": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "error": "user-error",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-rf-cu": {
+  "keys": "C-u C-c C-w Gamma RET",
+  "input": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "error": false,
+  "point": {
+   "line": 6,
+   "col": 0
+  },
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-rf-cuu-after": {
+  "keys": "C-c C-w Gamma RET C-u C-u C-c C-w",
+  "input": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Alpha\nbody a\n** Child\n* Gamma\nbody g\n** Beta\nbody b\n",
+  "error": false,
+  "point": {
+   "line": 6,
+   "col": 0
+  },
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done",
+   "Copied: Subtree(s) with 14 characters",
+   "Refile to \"Gamma\" in file /tmp/oracle1aLm8m.org: done",
+   "This is the location of the last refile"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-rf-cuu-goto": {
+  "keys": "C-u C-c C-w Gamma RET C-u C-u C-c C-w",
+  "input": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "error": "error",
+  "point": {
+   "line": 6,
+   "col": 0
+  },
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-rf-cuu-none": {
+  "keys": "C-u C-u C-c C-w",
+  "input": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "error": "error",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-rf-cuuu": {
+  "keys": "C-u C-u C-u C-c C-w",
+  "input": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "error": false,
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "texts": [
+   "Refile cache has been cleared"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-rf-plain": {
+  "keys": "C-c C-w Gamma RET",
+  "input": "* Alpha\nbody a\n** Child\n* Beta\nbody b\n* Gamma\nbody g\n",
+  "line": 1,
+  "col": 0,
+  "text": "* Alpha\nbody a\n** Child\n* Gamma\nbody g\n** Beta\nbody b\n",
+  "error": false,
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "texts": [
+   "Getting targets...",
+   "Getting targets...done",
+   "Copied: Subtree(s) with 14 characters",
+   "Refile to \"Gamma\" in file /tmp/oraclexApFfd.org: done"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sort-00": {
+  "keys": "C-c ^ A",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| fig | 1 |\n| Apple | 12 |\n| apple | 2 |\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sort-01": {
+  "keys": "C-c ^ F upcase RET string< RET",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| fig | 1 |\n| Apple | 12 |\n| apple | 2 |\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sort-02": {
+  "keys": "C-c ^ N",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sort-03": {
+  "keys": "C-c ^ RET",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "error": "user-error",
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sort-04": {
+  "keys": "C-c ^ T",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sort-05": {
+  "keys": "C-c ^ f string-to-number RET > RET",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sort-06": {
+  "keys": "C-c ^ f upcase RET string< RET",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| Apple | 12 |\n| apple | 2 |\n| fig | 1 |\n| pear | 3 |\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sort-07": {
+  "keys": "C-c ^ f RET RET",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "error": "user-error",
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sort-08": {
+  "keys": "C-c ^ f nosuchfn RET string< RET",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "error": "void-function",
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sort-09": {
+  "keys": "C-c ^ f upcase RET nosuch RET",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "error": "void-function",
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sort-10": {
+  "keys": "C-c ^ f length RET < RET",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| fig | 1 |\n| pear | 3 |\n| Apple | 12 |\n| apple | 2 |\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sort-11": {
+  "keys": "C-c ^ x",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "error": "user-error",
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sortp-C-0_C-c_^_a": {
+  "keys": "C-0 C-c ^ a",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| apple | 2 |\n| Apple | 12 |\n| fig | 1 |\n| pear | 3 |\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sortp-C-1_C-c_^_a": {
+  "keys": "C-1 C-c ^ a",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| apple | 2 |\n| Apple | 12 |\n| fig | 1 |\n| pear | 3 |\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sortp-C-u_C-c_^_A": {
+  "keys": "C-u C-c ^ A",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| fig | 1 |\n| Apple | 12 |\n| apple | 2 |\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sortp-C-u_C-c_^_f_upcase_RET_string<_RET": {
+  "keys": "C-u C-c ^ f upcase RET string< RET",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| Apple | 12 |\n| apple | 2 |\n| fig | 1 |\n| pear | 3 |\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sortp-C-u_C-c_^_n": {
+  "keys": "C-u C-c ^ n",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-sortp-C-u_C-u_C-c_^_a": {
+  "keys": "C-u C-u C-c ^ a",
+  "input": "| Name | Qty |\n|------+-----|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n",
+  "line": 3,
+  "col": 2,
+  "text": "| Name | Qty |\n|------+-----|\n| apple | 2 |\n| Apple | 12 |\n| fig | 1 |\n| pear | 3 |\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 2
+  },
+  "texts": [],
+  "lines": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-0_C-c_C-t-plain": {
+  "keys": "C-0 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 3,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* TODO Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to TODO"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-0_C-c_C-t-todo": {
+  "keys": "C-0 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 2,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* NEXT Task\n* Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to NEXT"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-1_C-c_C-t-plain": {
+  "keys": "C-1 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 3,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* TODO Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to TODO"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-1_C-c_C-t-todo": {
+  "keys": "C-1 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 2,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "texts": [
+   "TODO state was already TODO"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-2_C-c_C-t-plain": {
+  "keys": "C-2 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 3,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* NEXT Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to NEXT"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-2_C-c_C-t-todo": {
+  "keys": "C-2 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 2,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* NEXT Task\n* Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to NEXT"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-3_C-c_C-t-plain": {
+  "keys": "C-3 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 3,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* WAIT Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to WAIT"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-3_C-c_C-t-todo": {
+  "keys": "C-3 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 2,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* WAIT Task\n* Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to WAIT"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-4_C-c_C-t-plain": {
+  "keys": "C-4 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 3,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* DONE Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to DONE"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-4_C-c_C-t-todo": {
+  "keys": "C-4 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 2,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* DONE Task\n* Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to DONE"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-5_C-c_C-t-plain": {
+  "keys": "C-5 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 3,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* CANC Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to CANC"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-5_C-c_C-t-todo": {
+  "keys": "C-5 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 2,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* CANC Task\n* Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to CANC"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-6_C-c_C-t-plain": {
+  "keys": "C-6 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 3,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to "
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-6_C-c_C-t-todo": {
+  "keys": "C-6 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 2,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* Task\n* Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to "
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-9_C-c_C-t-plain": {
+  "keys": "C-9 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 3,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to "
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-9_C-c_C-t-todo": {
+  "keys": "C-9 C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 2,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* Task\n* Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to "
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-c_C-t-plain": {
+  "keys": "C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 3,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* TODO Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to TODO"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-c_C-t-todo": {
+  "keys": "C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 2,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* NEXT Task\n* Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to NEXT"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-u_C-c_C-t-plain": {
+  "keys": "C-u C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 3,
+  "col": 0,
+  "text": "# Insert note for state change from \"\" to \"TODO\".\n# Finish with C-c C-c, or cancel with C-c C-k.\n\n",
+  "error": false,
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to TODO"
+  ],
+  "lines": [
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-u_C-c_C-t-todo": {
+  "keys": "C-u C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 2,
+  "col": 0,
+  "text": "# Insert note for state change from \"TODO\" to \"NEXT\".\n# Finish with C-c C-c, or cancel with C-c C-k.\n\n",
+  "error": false,
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to NEXT"
+  ],
+  "lines": [
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-u_C-u_C-c_C-t-plain": {
+  "keys": "C-u C-u C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 3,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* TODO Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to TODO",
+   "Keyword-Set 1/1: TODO NEXT WAIT DONE CANC"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-u_C-u_C-c_C-t-todo": {
+  "keys": "C-u C-u C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 2,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "texts": [
+   "TODO state was already TODO",
+   "Keyword-Set 1/1: TODO NEXT WAIT DONE CANC"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-u_C-u_C-u_C-c_C-t-plain": {
+  "keys": "C-u C-u C-u C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 3,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* TODO Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to TODO"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ },
+ "ua-td-C-u_C-u_C-u_C-c_C-t-todo": {
+  "keys": "C-u C-u C-u C-c C-t",
+  "input": "#+TODO: TODO NEXT WAIT | DONE CANC\n* TODO Task\n* Plain\n* DONE Finished\n",
+  "line": 2,
+  "col": 0,
+  "text": "#+TODO: TODO NEXT WAIT | DONE CANC\n* NEXT Task\n* Plain\n* DONE Finished\n",
+  "error": false,
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "texts": [
+   "TODO state changed to NEXT"
+  ],
+  "lines": [
+   true,
+   true,
+   true,
+   true
+  ]
+ }
+}

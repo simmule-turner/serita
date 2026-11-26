@@ -189,15 +189,27 @@ await caretAt('body');
 await page.keyboard.press('Control+Enter');
 ok((await value()) === '* A\nbody\n* \n* Z\n', 'C-RET on a body line adds a heading after the subtree');
 
-// Commands in the Outline view: Show all lists every command sorted, the ones needing the Text view dimmed
+// C-u from a keyboard: C-u TAB cycles the whole buffer, C-2 S-TAB shows two levels
+await page.fill('#editor', '* A\n** B\n*** C\ntext\n* D\n');
+await page.evaluate(() => document.getElementById('editor').focus());
+await page.keyboard.press('Control+u'); await page.keyboard.press('Tab');
+ok((await page.locator('#message').textContent()).includes('OVERVIEW'), 'C-u TAB cycles the whole buffer');
+await page.keyboard.press('Control+2'); await page.keyboard.press('Shift+Tab');
+ok((await page.locator('#message').textContent()).includes('Content view to level: 2'), 'C-2 S-TAB shows the headings down to level 2');
+
+// Commands in the Outline view: a C-u key that counts up and digits beside it give the next command a universal argument
 await view('Outline');
 await page.click('#btn-menu'); await btn(/Commands/).click();
-const fewer = await sheet.locator('.item').count();
-await btn('Show all').click();
-const labels = await sheet.locator('.palette .item > span:first-child, .item > span:first-child').allTextContents();
-const listed = labels.slice(-(await sheet.locator('.list .item').count()));
-ok((await sheet.locator('.list .item').count()) > fewer && (await sheet.locator('.list .item.dim').count()) > 0, 'Show all lists more commands, the ones that need the Text view dimmed');
-ok(JSON.stringify(listed) === JSON.stringify([...listed].sort((a, b) => a.localeCompare(b))), 'Show all sorts the commands by label');
+ok((await sheet.getByRole('button', { name: 'Show all' }).count()) === 0, 'the palette has no Show all');
+ok((await sheet.locator('.argsaid').textContent()) === 'No prefix.', 'the palette says there is no prefix');
+await sheet.locator('.row.prefix button.cu').click(); await sheet.locator('.row.prefix button.cu').click();
+ok((await sheet.locator('.argsaid').textContent()) === 'Next command runs with C-u C-u.' && (await sheet.locator('.row.prefix button.cu').textContent()) === 'C-u ×2', 'C-u counts up and the palette says which prefix is armed');
+await sheet.locator('.row.prefix button.cu').click(); await sheet.locator('.row.prefix button.cu').click();
+ok((await sheet.locator('.argsaid').textContent()) === 'No prefix.', 'a fourth tap clears the C-u count');
+await sheet.locator('.row.prefix .digits button', { hasText: /^0$/ }).click();
+ok((await sheet.locator('.argsaid').textContent()) === 'Next command runs with C-0.', 'a digit arms a numeric prefix');
+await sheet.locator('.item', { hasText: 'org-refile ' }).first().click();
+ok((await page.locator('#message').textContent()).includes('Refile cache has been cleared'), 'C-0 with Refile clears the refile cache');
 
 // Tables in the Outline view
 await page.keyboard.press('Escape');

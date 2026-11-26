@@ -12,9 +12,9 @@ import { formatName, parseName } from '../core/names.js';
 import { formatSize } from '../core/bytes.js';
 import { VERSION } from './version.js';
 import { h, kept } from './ui/dom.js';
-import { analyze, cycle, cycleGlobal, diff, ellipsisLines, hiddenLines, reveal, startupIndent } from '../core/outline.js';
+import { analyze, contents, cycle, cycleGlobal, diff, ellipsisLines, hiddenLines, reveal, startupFolds, startupIndent } from '../core/outline.js';
 import { backwardChar, backwardWord, forwardChar, forwardWord, lineEnd as endOfLine, lineStart as startOfLine, moveVertical } from '../core/motion.js';
-import { DEFAULT_TAGS_COLUMN, changeLevel, cycleTodo, indentItem, insertHeadingAfter, insertHeadingHere, moveItem, moveSubtree, setPriority, setTags, setTitle, stepPriority, toggleCheckbox, updateCookieAt } from '../core/outline-edit.js';
+import { DEFAULT_TAGS_COLUMN, changeLevel, cycleTodo, todoTarget, indentItem, insertHeadingAfter, insertHeadingHere, moveItem, moveSubtree, setPriority, setTags, setTitle, stepPriority, toggleCheckbox, updateCookieAt } from '../core/outline-edit.js';
 import { parseStringList, formatStringList } from '../core/lisp-list.js';
 import { clockIn, clockOut, cancelClock, openClock, inClockedEntry } from '../core/clock.js';
 import { parseTemplates, promptsOf, expand, place } from '../core/capture.js';
@@ -24,6 +24,7 @@ import { archiveSubtree, ARCHIVE_CONTEXT, checkTarget, newChild, archiveToSiblin
 import { isEffort } from '../core/effort.js';
 import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../core/properties.js';
 import { DEFAULT_FORMATS, parseAgendaSettings, phoneCells, phoneColumns } from '../core/prefix.js';
+import { NONE as NO_ARG, argLabel, argValue, pressDigit, pressU } from '../core/universal.js';
 import { agenda, searchView, tagsView, todoList } from '../core/agenda.js';
 import { filterActive, filterLabel, noFilter, parseEffort, parseSigned } from '../core/agenda-filter.js';
 import { holidayList } from '../core/holidays.js';
@@ -1201,9 +1202,32 @@ async function bufferFor(name) {
 }
 
 /** C-c C-w (C-c M-w keeps the original): choose where the heading and its subtree go. */
-async function refileHere(copy = false, hd0 = enclosingHead()) {
+let lastRefile = null;
+
+/** Takes the buffer shown to the line of a heading, as visiting it does. */
+async function visitLine(name, line) {
+  const x = await bufferFor(name);
+  if (!x) { failure(new Error(`${name} does not exist`)); return; }
+  leaveHere();
+  session.select(x.id);
+  setView('text');
+  placeCursor(Math.max(0, line));
+}
+
+async function refileHere(copy0 = false, hd0 = enclosingHead()) {
+  const a = arg;
+  // C-0 and C-u C-u C-u clear the cache; C-u C-u goes to where the last refile put its subtree; C-u only visits the target; 3 keeps the entry
+  if (!copy0 && (a?.num === 0 || a?.list === 64)) { refileCache.clear(); message('Refile cache has been cleared'); return; }
+  if (!copy0 && a?.list === 16) {
+    if (!lastRefile) { message('No refile location stored', true); return; }
+    await visitLine(lastRefile.file, lastRefile.line);
+    message('This is the location of the last refile');
+    return;
+  }
+  const goto = !copy0 && a?.list === 4;
+  const copy = copy0 || a?.num === 3;
   let hd = hd0;
-  if (!hd) { message('Not at a heading'); return; }
+  if (!hd && !goto) { message('Not at a heading'); return; }
   try {
     const settings = parseRefileSettings(refileText() || DEFAULT_REFILE);
     let b = currentBuffer();
@@ -1215,8 +1239,9 @@ async function refileHere(copy = false, hd0 = enclosingHead()) {
     const targets = refileCache.get(settings, cname, () => listTargets(files, settings, { current: cname, agenda: agendaFileNames() }));
     if (!targets.length) { message('No refile targets', true); return; }
     const rows = targets.map((x) => ({ label: x.label, meta: files.length > 1 ? x.file : null, value: x }));
-    let t = await choose(copy ? 'Refile (and keep) to' : 'Refile to', [...rows, ...(refileNew() === 'nil' ? [] : [{ group: 'New' }, { label: 'New heading under…', value: 'new' }])]);
+    let t = await choose(goto ? 'Goto' : copy ? 'Refile (and keep) to' : 'Refile to', goto ? rows : [...rows, ...(refileNew() === 'nil' ? [] : [{ group: 'New' }, { label: 'New heading under…', value: 'new' }])]);
     if (!t) return;
+    if (goto) { await visitLine(t.file, t.line); return; }
     if (t === 'new') {
       // org-refile-allow-creating-parent-nodes: the new heading is made first, at the end of the parent's subtree
       const parent = await choose('New heading under', rows.filter((x) => x.value.line >= 0));
@@ -1237,6 +1262,7 @@ async function refileHere(copy = false, hd0 = enclosingHead()) {
     const r = refile(b.text, hd.line, t, { otherText: other?.text ?? null, reverse: settings.reverse, copy, column: tagsColumn() });
     session.apply(b.id, { text: r.text });
     if (other) session.apply(other.id, { text: r.otherText });
+    lastRefile = { file: t.file, line: r.placed };
     message(refileMessage(t, t.file, copy));
   } catch (e) { failure(e); }
 }
@@ -1808,13 +1834,20 @@ const inTable = () => viewMode() === 'text' && tableHere() !== null;
 /** C-c ^: asks how to sort, then sorts the rows of the section at the cursor. */
 async function tableSort() {
   if (!tableHere()) { message('Not in table', true); return; }
-  const kinds = [['a', 'Alphabetic'], ['n', 'Numeric'], ['t', 'Time'], ['A', 'Alphabetic, reversed'], ['N', 'Numeric, reversed'], ['T', 'Time, reversed']];
-  const v = await askText({ prompt: 'Sort table:', title: 'Sort table', help: 'a, n or t for alphabetic, numeric or time order. A capital letter reverses it.', ok: 'Sort', key: /^[antcANTC]$/,
+  const kinds = [['a', 'Alphabetic'], ['n', 'Numeric'], ['t', 'Time'], ['f', 'With a function'], ['A', 'Alphabetic, reversed'], ['N', 'Numeric, reversed'], ['T', 'Time, reversed'], ['F', 'With a function, reversed']];
+  const v = await askText({ prompt: 'Sort table:', title: 'Sort table', help: 'a, n, t or f for alphabetic, numeric, time or function order. A capital letter reverses it.', ok: 'Sort', key: /^[antfANTF]$/,
     complete: (t) => kinds.filter(([k]) => t === '' || k === t).map(([k, label]) => ({ label, value: k, hint: k })) });
   if (v === undefined) return;
   const k = v.trim();
-  if (!/^[antANT]$/.test(k)) { message(k === 'c' || k === 'C' ? 'Sorting with a function is not supported' : 'Invalid sorting type', true); return; }
-  tableEdit((t, l, c) => table.sortRows(t, l, c, k));
+  if (!/^[antfANTF]$/.test(k)) { message('Invalid sorting type', true); return; }
+  if (k.toLowerCase() !== 'f') { tableEdit((t, l, c) => table.sortRows(t, l, c, k)); return; }
+  const keyName = await askText({ prompt: 'Function for extracting keys:', title: 'Sort with a function', help: 'upcase, downcase, capitalize, identity, length, string-to-number or string-trim.', ok: 'Next' });
+  if (keyName === undefined) return;
+  const compareName = await askText({ prompt: "Function for comparing keys (empty for default `sort-subr' predicate):", title: 'Sort with a function', help: 'string<, string>, <, >, <= or >=. Empty compares numbers with < and text with string<.', ok: 'Sort' });
+  if (compareName === undefined) return;
+  let fn;
+  try { fn = table.sortFunctions(keyName, compareName); } catch (e) { message(e.message, true); return; }
+  tableEdit((t, l, c) => table.sortRows(t, l, c, k, fn));
 }
 
 const columnName = (n) => { let s = ''; for (let k = n + 1; k > 0; k = Math.floor((k - 1) / 26)) s = String.fromCharCode(65 + ((k - 1) % 26)) + s; return s; };
@@ -1942,7 +1975,10 @@ function askNote(from, to) {
 
 /** Changes the TODO state of the enclosing heading and says the new state. */
 async function todoStep(dir) {
+  const a = arg;
+  if (a?.list === 4) { message('Logging a state-change note is not supported', true); return; }
   const said = [];
+  let same = false;
   // org-log-repeat note: when finishing a repeating task, the note is asked for first
   let note;
   if (logRepeatMode() === 'note') {
@@ -1959,7 +1995,9 @@ async function todoStep(dir) {
   const r = onEnclosingHeading((t, l) => {
     const before = analyze(t);
     const from = before.heads.find((x) => x.line === l)?.todo ?? null;
-    const c = cycleTodo(t, l, dir, tagsColumn());
+    const to = todoTarget(a, before.todo, from);
+    const c = cycleTodo(t, l, dir, tagsColumn(), to);
+    if (to !== undefined && c.state === from) { same = true; return c; }
     if (!c.state || !before.todo.done.includes(c.state)) return c;
     // Finishing a repeating task: the date moves on and the task is open again
     const rep = completeRepeat({ text: c.text, line: l, from: from ?? '', to: c.state, reopen: before.todo.open[0], now: localNow(), drawer: logDrawer(), log: logRepeatOn(), note });
@@ -1968,7 +2006,13 @@ async function todoStep(dir) {
     return { ...c, text: rep.text, state: null };
   });
   if (said.length) message(said.at(-1));
-  else if (r?.state) message(`TODO state changed to ${r.state}`);
+  else if (same) message(`TODO state was already ${r?.state ?? ''}`);
+  else if (r && (r.state || a)) message(`TODO state changed to ${r.state ?? ''}`);
+  if (a?.list === 16) {
+    const seqs = analyze(currentBuffer().text).todo.sequences;
+    const at = Math.max(0, seqs.findIndex((x) => [...x.open, ...x.done].includes(r?.state ?? null)));
+    message(`Keyword-Set ${at + 1}/${seqs.length}: ${[...seqs[at].open, ...seqs[at].done].join(' ')}`);
+  }
 }
 
 /** Today as the date the prompts offer: the calendar date here, kept as a UTC date. */
@@ -2192,7 +2236,44 @@ function withHeading(fn) {
   return fn(hd.line);
 }
 
+/** A heading after the subtree at the cursor (C-RET), or at the end of the tree above it. */
+function insertHeadingAfterSubtree(atParentEnd) {
+  const { line, kind } = kindAtCursor();
+  if (kind === 'item') { message('Not at a heading'); return; }
+  const head = [...cur.a.heads].reverse().find((x) => x.line <= line);
+  if (!head) { message('Not at a heading'); return; }
+  const r = runEdit((t) => insertHeadingAfter(t, head.line, '', atParentEnd));
+  if (r) placeCursor(r.line, true);
+}
+
+/** The universal argument typed or tapped so far, and the one the running command sees (a command reads it before it first waits). */
+let argState = NO_ARG;
+let arg = null;
+const ARG_KEYS = /^(universal-argument|negative-argument|argument-\d)$/;
+function invoke(name) {
+  if (ARG_KEYS.test(name)) return COMMANDS[name]();
+  arg = argValue(argState);
+  argState = NO_ARG;
+  try { return COMMANDS[name](); } finally { arg = null; }
+}
+const echoArg = () => message(`${argLabel(argState)}-`);
+
+/** Whole-buffer visibility with an argument: S-TAB with a number shows the headings down to that level and C-u goes back to the startup visibility; TAB's C-u cycles, C-u C-u is the startup visibility and C-u C-u C-u shows everything. */
+function globalVisibility(a, fromTab) {
+  const b = currentBuffer();
+  const set = (folds, text) => { session.setFolds(b.id, folds); message(text); };
+  if (!fromTab && a?.num > 0) { set(contents(cur.a.heads, a.num), `Content view to level: ${a.num}`); return; }
+  if (!fromTab && a?.list === 4) { set(startupFolds(b.text), 'Startup visibility, plus VISIBILITY properties.'); return; }
+  if (fromTab && a?.list === 16) { set(startupFolds(b.text), 'Startup visibility, plus VISIBILITY properties'); return; }
+  if (fromTab && a?.list >= 64) { set({}, 'Entire buffer visible, including drawers'); return; }
+  const r = cycleGlobal(cur.a.heads, b.folds);
+  set(r.folds, r.state.toUpperCase());
+}
+
 const COMMANDS = {
+  'universal-argument': () => { argState = pressU(argState); echoArg(); },
+  'negative-argument': () => { argState = pressDigit(argState, '-'); echoArg(); },
+  ...Object.fromEntries([...'0123456789'].map((d) => [`argument-${d}`, () => { argState = pressDigit(argState, d); echoArg(); }])),
   'next-line': () => vertical(1),
   'previous-line': () => vertical(-1),
   'scroll-up': () => page(1),
@@ -2220,15 +2301,15 @@ const COMMANDS = {
   'agenda-file-add': () => agendaFileAdd(),
   'agenda-file-remove': () => agendaFileRemove(),
   'quit': () => message('Quit', true),
-  'cycle': () => { if (inTable()) { tableEdit(table.nextField); return; } const { line, kind } = kindAtCursor(); if (kind === null) message('Not at a heading or list item'); else cycleHeading(line); },
-  'indent': () => { const st = session.state(); const b = st.buffers.find((x) => x.id === st.current); if (!b) return; indentOverride.set(b.id, !indentOn(b)); render(); message(indentOn(b) ? 'Indent mode on' : 'Indent mode off'); },
-  'cycle-global': () => {
-    if (inTable()) { tableEdit(table.previousField); return; }
-    const b = currentBuffer();
-    const r = cycleGlobal(cur.a.heads, b.folds);
-    session.setFolds(b.id, r.folds);
-    message(r.state.toUpperCase());
+  'cycle': () => {
+    const a = arg;
+    if (a?.num !== undefined) { message('Cycling with a numeric argument is not supported', true); return; }
+    // C-u TAB cycles the whole buffer; C-u C-u TAB goes back to the startup visibility and C-u C-u C-u TAB shows everything
+    if (a) { globalVisibility(a, true); return; }
+    if (inTable()) { tableEdit(table.nextField); return; } const { line, kind } = kindAtCursor(); if (kind === null) message('Not at a heading or list item'); else cycleHeading(line);
   },
+  'indent': () => { const st = session.state(); const b = st.buffers.find((x) => x.id === st.current); if (!b) return; indentOverride.set(b.id, !indentOn(b)); render(); message(indentOn(b) ? 'Indent mode on' : 'Indent mode off'); },
+  'cycle-global': () => { const a = arg; if (inTable() && !a) { tableEdit(table.previousField); return; } globalVisibility(a, false); },
   'move-up': () => inTable() ? tableEdit((t, l, c) => table.moveRow(t, l, c, -1)) : editHere((t, l) => moveSubtree(t, l, -1), (t, l) => moveItem(t, l, -1)),
   'move-down': () => inTable() ? tableEdit((t, l, c) => table.moveRow(t, l, c, 1)) : editHere((t, l) => moveSubtree(t, l, 1), (t, l) => moveItem(t, l, 1)),
   // On plain text Emacs's M-left moves a word back.
@@ -2238,14 +2319,7 @@ const COMMANDS = {
   'promote-subtree': () => inTable() ? tableEdit(table.deleteColumn) : editHere((t, l) => changeLevel(t, l, -1, true), (t, l) => indentItem(t, l, -1, true)),
   'demote-subtree': () => inTable() ? tableEdit(table.insertColumn) : editHere((t, l) => changeLevel(t, l, 1, true), (t, l) => indentItem(t, l, 1, true)),
   // On a heading or in its body: a new sibling heading after the subtree, as C-RET does in Emacs.
-  'insert-heading': () => {
-    const { line, kind } = kindAtCursor();
-    if (kind === 'item') { message('Not at a heading'); return; }
-    const head = [...cur.a.heads].reverse().find((x) => x.line <= line);
-    if (!head) { message('Not at a heading'); return; }
-    const r = runEdit((t) => insertHeadingAfter(t, head.line));
-    if (r) placeCursor(r.line, true);
-  },
+  'insert-heading': () => insertHeadingAfterSubtree(false),
   'todo': () => todoStep(1),
   'todo-next': () => shiftDayOrTodo(1),
   'todo-previous': () => shiftDayOrTodo(-1),
@@ -2255,7 +2329,11 @@ const COMMANDS = {
   deadline: () => planHere('DEADLINE', 'DEADLINE', 'Deadline on'),
   'timestamp': () => insertTimestamp(true),
   'timestamp-inactive': () => insertTimestamp(false),
-  'priority': () => withHeading(priorityDialog),
+  'priority': () => {
+    // C-u shows the priority as Org's number (A 2000, B 1000, C 0; the default B when there is none) and changes nothing
+    if (arg?.list === 4) { withHeading((line) => { const p = cur.a.heads.find((x) => x.line === line).priority; message(`Priority is ${{ A: 2000, B: 1000, C: 0 }[p ?? 'B']}`); }); return; }
+    withHeading(priorityDialog);
+  },
   'set-property': () => withHeading(setPropertyDialog),
   'delete-property': () => withHeading(deletePropertyDialog),
   'set-tags': () => withHeading(setTagsDialog),
@@ -2283,14 +2361,17 @@ const COMMANDS = {
     const r = runEdit((t) => updateCookieAt(t, lineAt(cur.proj, at), col) ?? toggleCheckbox(t, kindAtCursor().line));
     if (!r) message('Nothing to do here'); else if (r.col !== undefined) placeOffset(lineOffset(r.text, r.line) + r.col);
   },
-  'insert-heading-here': () => { if (inTable()) { tableEdit(table.splitField); return; } const r = runEdit((t) => insertHeadingHere(t, cursorOffset())); if (r) placeOffset(r.pos); },
+  'insert-heading-here': () => {
+    // C-u puts the heading after the subtree at point, C-u C-u at the end of the tree above it
+    if (arg?.list) { insertHeadingAfterSubtree(arg.list >= 16); return; }
+    if (inTable()) { tableEdit(table.splitField); return; } const r = runEdit((t) => insertHeadingHere(t, cursorOffset())); if (r) placeOffset(r.pos); },
   'unsent-saves': () => sendQueued(true),
   'table-next-row': () => tableEdit(table.nextRow),
   'table-copy-down': () => tableEdit(table.copyDown),
-  'table-hline': () => tableEdit((t, l, c) => table.insertHline(t, l, c)),
+  'table-hline': () => { const above = !!arg; tableEdit((t, l, c) => table.insertHline(t, l, c, above)); },
   'table-hline-and-move': () => tableEdit(table.hlineAndMove),
   'table-delete-row': () => tableEdit(table.deleteRow),
-  'table-insert-row': () => tableEdit((t, l, c) => table.insertRow(t, l, c)),
+  'table-insert-row': () => { const below = !!arg; tableEdit((t, l, c) => table.insertRow(t, l, c, below)); },
   'table-align': () => tableEdit(table.align),
   'table-sort': () => tableSort(),
   'table-blank-field': () => tableEdit(table.blankField),
@@ -2698,21 +2779,28 @@ async function commandPalette() {
       sheet.classList.add('full', 'palette');
       const input = h('input', { placeholder: 'Search commands', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Search commands' });
       const list = h('div', { class: 'list' });
-      let all = false; // Show all lists every command, sorted; those that need the Text view are dimmed
-      const shown = (t) => (all ? PALETTE.filter((e) => matchWords(t, e.label, e.name)).sort((a, b) => a.label.localeCompare(b.label)) : found(t));
-      const fill = () => list.replaceChildren(...shown(input.value).map((e) => h('button', { class: `item${e.outline ? '' : ' dim'}`,
-        onclick: () => (e.outline ? close(e) : message('Needs the Text view')) },
+      const fill = () => list.replaceChildren(...found(input.value).map((e) => h('button', { class: 'item', onclick: () => close(e) },
         h('span', {}, e.label), h('span', { class: 'meta' }, `${e.name}${e.key ? `  ${e.key}` : ''}`))));
       input.addEventListener('input', fill);
       fill();
-      const more = h('div', { class: 'row' }, h('button', { class: 'showall', onclick: () => { all = true; more.style.display = 'none'; fill(); } }, 'Show all'));
-      put(sheet, h('h2', {}, 'Commands'), input, list, more);
+      // The universal argument for the next command: C-u counts up (a fourth tap clears it) and the digits scroll beside it
+      const said = h('p', { class: 'argsaid' }, '');
+      const cu = h('button', { class: 'cu', onclick: () => { argState = pressU(argState, true); redraw(); } }, 'C-u');
+      const digits = Object.fromEntries([...'0123456789-'].map((c) => [c, h('button', { class: 'dg', 'aria-label': c === '-' ? 'minus' : `digit ${c}`, onclick: () => { argState = pressDigit(argState, c, true); redraw(); } }, c)]));
+      const redraw = () => {
+        const n = argState.u;
+        cu.classList.toggle('on', n > 0); cu.textContent = n > 1 ? `C-u ×${n}` : 'C-u';
+        for (const [c, b] of Object.entries(digits)) b.classList.toggle('on', argState.digits !== '' && argState.digits.includes(c));
+        said.textContent = argLabel(argState) ? `Next command runs with ${argLabel(argState)}.` : 'No prefix.';
+      };
+      redraw();
+      put(sheet, h('h2', {}, 'Commands'), input, list, said, h('div', { class: 'row prefix' }, cu, h('div', { class: 'digits' }, ...Object.values(digits))));
       input.focus();
     });
     if (!entry) return;
   }
   goal = null;
-  await COMMANDS[entry.command]();
+  await invoke(entry.command);
 }
 
 // Emacs keys in the Text view: a key press becomes a chord, and a chord a command. A key held by the key row
@@ -2790,7 +2878,7 @@ function runChord(chord, event, fromRow) {
     event.preventDefault();
     message('');
     if (!VERTICAL.has(r.command)) goal = null;
-    COMMANDS[r.command]();
+    invoke(r.command);
     if ($('message').classList.contains('error')) beep();
   } else if (r.kind === 'prefix') { event.preventDefault(); message(r.echo); }
   else if (r.echo) { event.preventDefault(); message(r.echo, true); beep(); }
@@ -2909,7 +2997,7 @@ const keyRow = createKeyRow({
     if (plainArrow && !mods.shift) {
       const command = { ArrowUp: 'previous-line', ArrowDown: 'next-line', ArrowLeft: 'backward-char', ArrowRight: 'forward-char' }[key];
       if (!VERTICAL.has(command)) goal = null;
-      COMMANDS[command]();
+      invoke(command);
       if ($('message').classList.contains('error')) beep();
       return;
     }

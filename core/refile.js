@@ -139,7 +139,7 @@ function insert(text, target, sub, reverse) {
   }
   if (at > 0 && at <= lines.length && lines[at - 1].eol === '') lines[at - 1] = { ...lines[at - 1], eol: '\n' };
   lines.splice(at, 0, ...sub);
-  return join(lines);
+  return { text: join(lines), at };
 }
 
 /**
@@ -152,10 +152,11 @@ export function refile(text, line, target, { otherText = null, reverse = false, 
   const level = target.line < 0 ? 1 : (otherText === null ? a : analyze(otherText)).heads.find((x) => x.line === target.line)?.level + 1;
   if (otherText === null && target.line >= head.line && target.line < head.end) throw new Error('Cannot refile to position inside the tree or region');
   const { sub, rest } = cut(text, line, level, column);
-  if (otherText !== null) return { text: copy ? text : rest, otherText: insert(otherText, target, sub, reverse) };
-  if (copy) return { text: insert(text, target, sub, reverse), otherText: null };
+  if (otherText !== null) { const i = insert(otherText, target, sub, reverse); return { text: copy ? text : rest, otherText: i.text, placed: i.at }; }
+  if (copy) { const i = insert(text, target, sub, reverse); return { text: i.text, otherText: null, placed: i.at }; }
   const gone = head.end - head.line;
-  return { text: insert(rest, target.line > head.line ? { ...target, line: target.line - gone } : target, sub, reverse), otherText: null };
+  const i = insert(rest, target.line > head.line ? { ...target, line: target.line - gone } : target, sub, reverse);
+  return { text: i.text, otherText: null, placed: i.at };
 }
 
 /**
