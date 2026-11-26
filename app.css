@@ -131,10 +131,10 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 .aday { padding: 6px 12px; background: var(--bg-neutral); font-weight: 500; font-size: 13px; }
 .aday.today { color: var(--text-accent); }
 .arow { display: flex; justify-content: flex-start; gap: 1ch; width: 100%; text-align: left; padding: 8px 12px 8px calc(12px + 2ch); border: 0; border-bottom: 0.5px solid var(--line); border-radius: 0; background: transparent; align-items: baseline; }
-.acat, .atime { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); white-space: pre; flex: none; }
+.acol, .acat, .atime { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); white-space: pre; flex: none; }
 .acat { width: 8ch; overflow: hidden; }
 .atime { width: 11ch; }
-.atime.late { color: var(--text-danger); }
+.acol.late, .atime.late { color: var(--text-danger); }
 .atitle { min-width: 0; overflow-wrap: anywhere; }
 .atags { margin-left: auto; font-size: 12px; color: var(--text-secondary); }
 .aempty { padding: 12px; color: var(--text-secondary); }
@@ -142,6 +142,9 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 #layer .sheet.agenda::before { display: none; }
 #findbar.stack { flex-wrap: wrap; }
 #findbar.stack .field { flex: 1 1 100%; }
+#findbar.longprompt .field { flex-wrap: wrap; height: auto; padding: 6px 10px; }
+#findbar.longprompt .prompt { flex: 1 1 100%; white-space: normal; }
+#findbar.longprompt input { flex: 1 1 100%; height: 28px; }
 #findbar.stack button { flex: 1; width: auto; }
 .keylogtext { margin: 0; max-height: 45vh; overflow: auto; padding: 8px; border: 1px solid var(--line); border-radius: 8px; font: 11px/1.3 monospace; white-space: pre-wrap; word-break: break-all; user-select: text; }
 

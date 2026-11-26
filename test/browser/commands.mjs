@@ -12,7 +12,7 @@ await page.goto(`${base}/`);
 await page.waitForSelector('.tab.current');
 const sheet = page.locator('.sheet');
 const btn = (n) => sheet.getByRole('button', { name: n, exact: true });
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/26 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/27 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
 const at = async (text, line) => {
   await page.fill('#editor', text);
   await page.evaluate((l) => { const e = document.getElementById('editor'); const o = e.value.split('\n').slice(0, l - 1).reduce((n, s) => n + s.length + 1, 0); e.focus(); e.setSelectionRange(o, o); }, line);
@@ -247,7 +247,7 @@ await page.locator('.sheet.agenda .abar button', { hasText: 'Close' }).click();
 await page.evaluate(() => document.getElementById('editor').focus());
 await page.keyboard.press('Alt+x'); await page.keyboard.type('org-agenda-file-to-front'); await page.keyboard.press('Enter');
 ok((await page.locator('#message').textContent()).includes('File added to front of agenda file list'), 'C-c [ lists the current file');
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/26 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/27 settings/).click();
 ok((await btn(/Agenda files/).textContent()).includes('1 file'), 'Settings shows how many agenda files there are');
 await btn(/Agenda files/).click();
 ok((await sheet.textContent()).includes('agenda-test.org (App storage)'), 'the Agenda files screen lists the file with its storage');
@@ -284,7 +284,7 @@ await page.click('#btn-view'); await btn(/^Calendar/).click();
 const monthName = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][nowDate.getMonth()];
 ok((await page.locator('.sheet.calendar .atitlebar').textContent()) === `${monthName} ${nowDate.getFullYear()}`, 'View, Calendar shows this month');
 ok(await page.locator('.sheet.calendar .day.today .marks i').count() >= 1, 'today has a marker because an agenda entry is dated today');
-ok((await page.locator('.sheet.calendar .arow').first().textContent()).includes('Timed'), 'the entries of the selected day are listed under the month');
+ok((await page.locator('.sheet.calendar .arow', { hasText: 'Timed' }).count()) >= 1, 'the entries of the selected day are listed under the month');
 { const cells = await page.locator('.sheet.calendar .day').evaluateAll((els) => els.map((e) => e.getBoundingClientRect().height));
   ok(new Set(cells.map((c) => Math.round(c))).size === 1, 'every calendar cell has the same height, with or without markers');
   const r = await page.locator('.sheet.calendar .arow').first().evaluate((el) => [...el.children].map((c) => Math.round(c.getBoundingClientRect().left)));
@@ -292,7 +292,7 @@ ok((await page.locator('.sheet.calendar .arow').first().textContent()).includes(
 await page.getByLabel('Later').click();
 ok((await page.locator('.sheet.calendar .atitlebar').textContent()) !== `${monthName} ${nowDate.getFullYear()}`, 'the arrow moves to the next month');
 await page.locator('.sheet.calendar .abar button', { hasText: 'Today' }).click();
-await page.locator('.sheet.calendar .arow').first().click();
+await page.locator('.sheet.calendar .arow', { hasText: 'Timed' }).first().click();
 ok((await page.locator('#editor').inputValue()).includes('Timed'), 'tapping an entry opens its heading');
 await page.click('#back');
 ok(await page.locator('.sheet.calendar').count() === 1, 'Back returns to the calendar');
@@ -378,7 +378,7 @@ ok((await prompt()) === 'Foo value:', 'the value prompt names the property');
 await page.keyboard.press('Escape');
 
 // Capture: templates are set as init.el writes them; Capture asks the template's questions, shows the text, and files it
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/26 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/27 settings/).click();
 ok((await btn(/Capture templates/).textContent()).includes('1 template'), 'Emacs\'s default Task template is a real setting');
 await btn('‹ Settings').click(); await btn('Close').click();
 await page.click('#btn-menu'); await btn('Capture').click(); await btn(/Task/).click();
@@ -386,7 +386,7 @@ ok((await sheet.locator('textarea').inputValue()).startsWith('* TODO '), 'the de
 await btn('Save').click();
 await page.waitForFunction(() => /^Captured|does not exist|Heading|Cannot/.test(document.getElementById('message').textContent));
 ok((await page.locator('#message').textContent()) === 'Captured to .notes', 'the default Task template files to .notes');
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/26 settings/).click(); await btn(/Capture templates/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/27 settings/).click(); await btn(/Capture templates/).click();
 await sheet.locator('textarea').fill(`(setq org-capture-templates '(("t" "Todo" entry (file+headline "agenda-test.org" "Inbox") "* TODO %^{What}\\n")))`);
 await btn('Save').click();
 ok((await page.locator('#message').textContent()) === '1 capture template', 'saving the templates counts them');
@@ -411,7 +411,7 @@ ok((await sheet.locator('.item', { hasText: 'GitHub' }).locator('.meta').textCon
 await sheet.getByLabel('Dismiss').click();
 
 // Refile and archive: Refile lists the targets; Archive tags and archives from the command list
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/26 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/27 settings/).click();
 ok((await sheet.textContent()).includes('Refile targets') && (await sheet.textContent()).includes('Archive location'), 'Settings, Emacs lists Refile targets and Archive location');
 const emacsText = await sheet.textContent();
 ok(['Archive marks done', 'Archive saves', 'Refile new headings', 'Log repeats'].every((n) => emacsText.includes(n)), 'Settings, Emacs lists the archive, refile and log options');
@@ -442,7 +442,7 @@ await page.keyboard.press('Escape');
 await at('*/*/* Every day\n', 0);
 await page.click('#btn-files'); await btn('Save as').click(); await sheet.getByLabel('File name').fill('diary-test.org'); await btn('Save').click();
 await page.waitForFunction(() => document.getElementById('message').textContent.startsWith('Wrote'));
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/26 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/27 settings/).click();
 await btn(/Diary file/).click(); await sheet.getByLabel('Diary file').fill('diary-test.org'); await btn('Set').click();
 await btn(/Diary in the agenda/).click();
 ok((await btn(/Diary in the agenda/).textContent()).includes('On') && (await btn(/Diary file/).textContent()).includes('diary-test.org'), 'Settings, Emacs sets the diary file and turns the diary on');
@@ -452,7 +452,7 @@ await page.locator('.sheet.calendar .arow', { hasText: 'Every day' }).waitFor({ 
 ok((await page.locator('.sheet.calendar .arow').allTextContents()).some((t) => t.includes('Diary') && t.includes('Every day')), 'the calendar lists the diary entry of the day with the category Diary');
 await page.locator('.sheet.calendar .abar button', { hasText: 'Close' }).click();
 // Settings: the holiday categories and whether holidays show in the agenda
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/26 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/27 settings/).click();
 ok((await btn(/^Holidays General/).textContent()).includes('General, Christian, Solar'), 'all three holiday categories are on by default');
 await btn(/Holidays in the agenda/).click();
 ok((await btn(/Holidays in the agenda/).textContent()).includes('On'), 'Holidays in the agenda turns on');
@@ -478,6 +478,14 @@ await at2('| a | b |\n| cc | d |\n', 1, 2); await page.keyboard.press('Alt+Arrow
 ok((await text()) === '| cc | d |\n| a | b |\n', 'M-down in a table moves the row');
 await at2('| a | b |\n| cc | d |\n', 1, 2); await ctrl('c'); await page.keyboard.press('-');
 ok((await text()) === '| a | b |\n|---+---|\n| cc | d |\n', 'C-c - adds a horizontal line');
+await at2('| b | 2 |\n| a | 1 |\n', 1, 2); await ctrl('c'); await page.keyboard.press('^');
+await page.keyboard.type('a');
+ok((await text()) === '| a | 1 |\n| b | 2 |\n', 'C-c ^ then a sorts the column at once, without RET');
+await at('\n', 1); await ctrl('c'); await page.keyboard.press('|');
+const room = await page.evaluate(() => Math.round(document.querySelector('#findbar input').getBoundingClientRect().width));
+ok(room >= 120, `the size question leaves room to type (${room}px)`);
+await page.keyboard.type('3x2'); await page.keyboard.press('Enter');
+ok((await text()).startsWith('|   |   |   |\n|---+---+---|\n|   |   |   |'), 'C-c | takes a typed size');
 ok(errors.length === 0, `no page errors ${errors.join('; ')}`);
 await close();
 process.exit(failed ? 1 : 0);

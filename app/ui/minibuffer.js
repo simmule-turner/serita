@@ -18,7 +18,7 @@ export function createMinibuffer({ root, list, bell, restoreFocus = () => {} }) 
    * `complete(text)` gives [{ label, value, hint? }]; the list follows the text.
    * @returns {{ input: HTMLInputElement, setPrompt: (text: string, failing?: boolean) => void, close: () => void, setValue: (v: string) => void }}
    */
-  function open({ prompt, stack = false, value = '', buttons = [], onInput = () => {}, onKey = () => false, complete = null, onPick = null, inputMode = 'text', historyKey = null, label: name = prompt.replace(/:\s*$/, '') }) {
+  function open({ prompt, stack = false, longPrompt = false, value = '', buttons = [], onInput = () => {}, onKey = () => false, complete = null, onPick = null, inputMode = 'text', historyKey = null, label: name = prompt.replace(/:\s*$/, '') }) {
     active?.close();
     const label = h('span', { class: 'prompt' }, prompt);
     const input = h('input', { autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', inputmode: inputMode, 'aria-label': name });
@@ -46,7 +46,7 @@ export function createMinibuffer({ root, list, bell, restoreFocus = () => {} }) 
         if (active !== self) return;
         active = null;
         root.hidden = true;
-        root.classList.remove('stack');
+        root.classList.remove('stack', 'longprompt');
         root.replaceChildren();
         list.hidden = true;
         list.replaceChildren();
@@ -70,6 +70,7 @@ export function createMinibuffer({ root, list, bell, restoreFocus = () => {} }) 
       }
     });
     root.classList.toggle('stack', stack);
+    root.classList.toggle('longprompt', longPrompt);
     root.replaceChildren(field, ...buttons.map((b) => h('button', { 'aria-label': b.aria, onclick: b.onclick }, b.label)));
     root.hidden = false;
     active = self;
@@ -84,7 +85,8 @@ export function createMinibuffer({ root, list, bell, restoreFocus = () => {} }) 
    * With completions, RET takes the highlighted one when the text is not one of them yet and `require` is set.
    * @returns {Promise<string | undefined>}
    */
-  function ask({ prompt, value = '', complete = null, require = false, historyKey = null, inputMode = 'text' }) {
+  /** `key` is a regexp: an answer it matches is taken at once, like a question Emacs reads one key for. */
+  function ask({ prompt, value = '', complete = null, require = false, historyKey = null, inputMode = 'text', key = null }) {
     return new Promise((resolve) => {
       let mb;
       const done = (v) => { mb.remember(v ?? ''); mb.close(); resolve(v); };
@@ -95,7 +97,8 @@ export function createMinibuffer({ root, list, bell, restoreFocus = () => {} }) 
         done(require && pick && !complete(text).some((c) => c.value === text) ? pick.value : text);
       };
       mb = open({
-        prompt, value, complete, historyKey, inputMode,
+        prompt, value, complete, historyKey, inputMode, longPrompt: prompt.length > 24,
+        onInput: (t) => { if (key?.test(t)) done(t); },
         buttons: [{ label: '✓', aria: 'Accept', onclick: accept }, { label: '✕', aria: 'Cancel', onclick: cancel }],
         onPick: complete ? (it) => done(it.value) : null,
         onKey(e) {

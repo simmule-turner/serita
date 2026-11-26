@@ -52,8 +52,12 @@ org-contacts-files lists the contacts files (any storage names, separated by spa
 
 ** Holidays
 calendar-holidays lists general, christian and solar (empty means all, nil means none), diary-show-holidays-flag is t to show holidays in the agenda, and holiday-local-holidays holds your own holiday forms.
+** Agenda line format
+Settings, Emacs, Agenda line format takes org-agenda-prefix-format and org-agenda-category-icon-alist, as init.el sets them:
+: (setq org-agenda-prefix-format '((agenda . " %i %-12:c%?-12t% s") (todo . " %i %-12:c")))
+The phone rows show the same fields, each as wide as its longest value on screen.
 ** Keys of the settings above
-org-agenda-files, org-capture-templates, org-refile-settings, org-archive-location, org-log-into-drawer, org-log-repeat, org-archive-mark-done, org-archive-save-context-info, org-refile-allow-creating-parent-nodes, org-agenda-use-time-grid, org-agenda-include-diary, diary-file, calendar-date-style, calendar-holidays, holiday-local-holidays, diary-show-holidays-flag, org-contacts-files, org-contacts-birthday-property, org-hide-leading-stars, org-startup-indented, org-table-widget-wrap-columns, org-table-widget-max-width-fraction, org-table-widget-zebra-stripe
+org-agenda-files, org-capture-templates, org-refile-settings, org-agenda-prefix-settings, org-archive-location, org-log-into-drawer, org-log-repeat, org-archive-mark-done, org-archive-save-context-info, org-refile-allow-creating-parent-nodes, org-agenda-use-time-grid, org-agenda-include-diary, diary-file, calendar-date-style, calendar-holidays, holiday-local-holidays, diary-show-holidays-flag, org-contacts-files, org-contacts-birthday-property, org-hide-leading-stars, org-startup-indented, org-table-widget-wrap-columns, org-table-widget-max-width-fraction, org-table-widget-zebra-stripe
 
 ** Local holidays
 Settings, Emacs, Local holidays takes forms like these:

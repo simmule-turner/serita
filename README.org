@@ -159,6 +159,10 @@ When you switch to a tab or return to the app, an open file is compared with sto
 ** Updates
 When a new version is ready, the message line says so. Menu, then Restart to update, switches to it; until you do, the version you have keeps running. Settings shows the installed version and, when one is waiting, the new one.
 
+** Agenda line format
+Settings, Emacs, Agenda line format takes ~org-agenda-prefix-format~ and ~org-agenda-category-icon-alist~ as ~init.el~ writes them. The fields are ~%c~ category, ~%i~ icon, ~%t~ time, ~%s~ scheduling label, ~%l~ level, ~%e~ effort, ~%b~ breadcrumbs and ~%T~ last tag.
+: (setq org-agenda-prefix-format '((agenda . " %i %-12:c%?-12t% s")))
+
 * Run the checks and tests
 Needs Node 22 or later and no packages.
 

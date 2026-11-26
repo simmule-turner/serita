@@ -1,0 +1,293 @@
+{
+ "pf-ag-T-8": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%-8T\") (todo . \"%-8T\") (tags . \"%-8T\") (search . \"%-8T\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n        ----------------\n        TODO Task under long\nwork    TODO [#A] Quarterly review                                       :work:\n        ----------------\n        ----------------\n        ----------------\nhome    Aldi list                                                       :home::\n        ----------------\n        ----------------\n        ----------------\n        now - - - - - - - - - - - - - - - - - - - - - - - - -\nhome    TODO Buy milk                                                    :home:\n        NEXT Call Bob\n        Plain note\n",
+  "error": false
+ },
+ "pf-ag-T": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%T\") (todo . \"%T\") (tags . \"%T\") (search . \"%T\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n----------------\nTODO Task under long\nworkTODO [#A] Quarterly review                                           :work:\n----------------\n----------------\n----------------\nhomeAldi list                                                           :home::\n----------------\n----------------\n----------------\nnow - - - - - - - - - - - - - - - - - - - - - - - - -\nhomeTODO Buy milk                                                        :home:\nNEXT Call Bob\nPlain note\n",
+  "error": false
+ },
+ "pf-ag-b": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%b\") (todo . \"%b\") (tags . \"%b\") (search . \"%b\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n----------------\nLong->TODO Task under long\nProjects->TODO [#A] Quarterly review                                     :work:\n----------------\n----------------\n----------------\nErrands->Buy milk->Aldi list                                            :home::\n----------------\n----------------\n----------------\nnow - - - - - - - - - - - - - - - - - - - - - - - - -\nErrands->TODO Buy milk                                                   :home:\nProjects->NEXT Call Bob\nPlain note\n",
+  "error": false
+ },
+ "pf-ag-c-12": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%-12c\") (todo . \"%-12c\") (tags . \"%-12c\") (search . \"%-12c\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n            ----------------\nVeryLongCategoryNameTODO Task under long\nWork        TODO [#A] Quarterly review                                   :work:\n            ----------------\n            ----------------\n            ----------------\nHome        Aldi list                                                   :home::\n            ----------------\n            ----------------\n            ----------------\n            now - - - - - - - - - - - - - - - - - - - - - - - - -\nHome        TODO Buy milk                                                :home:\nWork        NEXT Call Bob\nWork        Plain note\n",
+  "error": false
+ },
+ "pf-ag-c": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%c\") (todo . \"%c\") (tags . \"%c\") (search . \"%c\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n----------------\nVeryLongCategoryNameTODO Task under long\nWorkTODO [#A] Quarterly review                                           :work:\n----------------\n----------------\n----------------\nHomeAldi list                                                           :home::\n----------------\n----------------\n----------------\nnow - - - - - - - - - - - - - - - - - - - - - - - - -\nHomeTODO Buy milk                                                        :home:\nWorkNEXT Call Bob\nWorkPlain note\n",
+  "error": false
+ },
+ "pf-ag-c12": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%12c\") (todo . \"%12c\") (tags . \"%12c\") (search . \"%12c\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n            ----------------\nVeryLongCategoryNameTODO Task under long\n        WorkTODO [#A] Quarterly review                                   :work:\n            ----------------\n            ----------------\n            ----------------\n        HomeAldi list                                                   :home::\n            ----------------\n            ----------------\n            ----------------\n            now - - - - - - - - - - - - - - - - - - - - - - - - -\n        HomeTODO Buy milk                                                :home:\n        WorkNEXT Call Bob\n        WorkPlain note\n",
+  "error": false
+ },
+ "pf-ag-c6": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%-6c\") (todo . \"%-6c\") (tags . \"%-6c\") (search . \"%-6c\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n      ----------------\nVeryLongCategoryNameTODO Task under long\nWork  TODO [#A] Quarterly review                                         :work:\n      ----------------\n      ----------------\n      ----------------\nHome  Aldi list                                                         :home::\n      ----------------\n      ----------------\n      ----------------\n      now - - - - - - - - - - - - - - - - - - - - - - - - -\nHome  TODO Buy milk                                                      :home:\nWork  NEXT Call Bob\nWork  Plain note\n",
+  "error": false
+ },
+ "pf-ag-cc12": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%-12:c\") (todo . \"%-12:c\") (tags . \"%-12:c\") (search . \"%-12:c\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n            ----------------\nVeryLongCategoryName:TODO Task under long\nWork:       TODO [#A] Quarterly review                                   :work:\n            ----------------\n            ----------------\n            ----------------\nHome:       Aldi list                                                   :home::\n            ----------------\n            ----------------\n            ----------------\n            now - - - - - - - - - - - - - - - - - - - - - - - - -\nHome:       TODO Buy milk                                                :home:\nWork:       NEXT Call Bob\nWork:       Plain note\n",
+  "error": false
+ },
+ "pf-ag-cc6": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%-6:c\") (todo . \"%-6:c\") (tags . \"%-6:c\") (search . \"%-6:c\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n      ----------------\nVeryLongCategoryName:TODO Task under long\nWork: TODO [#A] Quarterly review                                         :work:\n      ----------------\n      ----------------\n      ----------------\nHome: Aldi list                                                         :home::\n      ----------------\n      ----------------\n      ----------------\n      now - - - - - - - - - - - - - - - - - - - - - - - - -\nHome: TODO Buy milk                                                      :home:\nWork: NEXT Call Bob\nWork: Plain note\n",
+  "error": false
+ },
+ "pf-ag-e": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%e\") (todo . \"%e\") (tags . \"%e\") (search . \"%e\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n----------------\nTODO Task under long\n1:30TODO [#A] Quarterly review                                           :work:\n----------------\n----------------\n----------------\nAldi list                                                               :home::\n----------------\n----------------\n----------------\nnow - - - - - - - - - - - - - - - - - - - - - - - - -\nTODO Buy milk                                                            :home:\nNEXT Call Bob\nPlain note\n",
+  "error": false
+ },
+ "pf-ag-e8": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%-8e\") (todo . \"%-8e\") (tags . \"%-8e\") (search . \"%-8e\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n        ----------------\n        TODO Task under long\n1:30    TODO [#A] Quarterly review                                       :work:\n        ----------------\n        ----------------\n        ----------------\n        Aldi list                                                       :home::\n        ----------------\n        ----------------\n        ----------------\n        now - - - - - - - - - - - - - - - - - - - - - - - - -\n        TODO Buy milk                                                    :home:\n        NEXT Call Bob\n        Plain note\n",
+  "error": false
+ },
+ "pf-ag-empty": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"\") (todo . \"\") (tags . \"\") (search . \"\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n----------------\nTODO Task under long\nTODO [#A] Quarterly review                                               :work:\n----------------\n----------------\n----------------\nAldi list                                                               :home::\n----------------\n----------------\n----------------\nnow - - - - - - - - - - - - - - - - - - - - - - - - -\nTODO Buy milk                                                            :home:\nNEXT Call Bob\nPlain note\n",
+  "error": false
+ },
+ "pf-ag-eq": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%e%?-6t\") (todo . \"%e%?-6t\") (tags . \"%e%?-6t\") (search . \"%e%?-6t\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n 8:00......----------------\n 9:00......TODO Task under long\n1:3010:00-11:00TODO [#A] Quarterly review                                :work:\n10:00......----------------\n12:00......----------------\n14:00......----------------\n14:30......Aldi list                                                    :home::\n16:00......----------------\n18:00......----------------\n20:00......----------------\n21:10......now - - - - - - - - - - - - - - - - - - - - - - - - -\nTODO Buy milk                                                            :home:\nNEXT Call Bob\nPlain note\n",
+  "error": false
+ },
+ "pf-ag-l": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%l\") (todo . \"%l\") (tags . \"%l\") (search . \"%l\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n----------------\n  TODO Task under long\n  TODO [#A] Quarterly review                                             :work:\n----------------\n----------------\n----------------\n   Aldi list                                                            :home::\n----------------\n----------------\n----------------\nnow - - - - - - - - - - - - - - - - - - - - - - - - -\n  TODO Buy milk                                                          :home:\n  NEXT Call Bob\n Plain note\n",
+  "error": false
+ },
+ "pf-ag-lit": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \">> %c <<\") (todo . \">> %c <<\") (tags . \">> %c <<\") (search . \">> %c <<\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n>>  <<----------------\n>> VeryLongCategoryName <<TODO Task under long\n>> Work <<TODO [#A] Quarterly review                                     :work:\n>>  <<----------------\n>>  <<----------------\n>>  <<----------------\n>> Home <<Aldi list                                                     :home::\n>>  <<----------------\n>>  <<----------------\n>>  <<----------------\n>>  <<now - - - - - - - - - - - - - - - - - - - - - - - - -\n>> Home <<TODO Buy milk                                                  :home:\n>> Work <<NEXT Call Bob\n>> Work <<Plain note\n",
+  "error": false
+ },
+ "pf-ag-mix": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \" %-8:c %t %s %b\") (todo . \" %-8:c %t %s %b\") (tags . \" %-8:c %t %s %b\") (search . \" %-8:c %t %s %b\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n           8:00......  ----------------\n VeryLongCategoryName:  9:00...... Scheduled:  Long->TODO Task under long\n Work:    10:00-11:00 Scheduled:  Projects->TODO [#A] Quarterly review   :work:\n          10:00......  ----------------\n          12:00......  ----------------\n          14:00......  ----------------\n Home:    14:30......  Errands->Buy milk->Aldi list                     :home::\n          16:00......  ----------------\n          18:00......  ----------------\n          20:00......  ----------------\n          21:10......  now - - - - - - - - - - - - - - - - - - - - - - - - -\n Home:     Scheduled:  Errands->TODO Buy milk                            :home:\n Work:     Deadline:   Projects->NEXT Call Bob\n Work:      Plain note\n",
+  "error": false
+ },
+ "pf-ag-mix2": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%i %-10:c%?-10t%s\") (todo . \"%i %-10:c%?-10t%s\") (tags . \"%i %-10:c%?-10t%s\") (search . \"%i %-10:c%?-10t%s\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n            8:00......----------------\n VeryLongCategoryName: 9:00......Scheduled: TODO Task under long\n Work:     10:00-11:00Scheduled: TODO [#A] Quarterly review              :work:\n           10:00......----------------\n           12:00......----------------\n           14:00......----------------\n Home:     14:30......Aldi list                                         :home::\n           16:00......----------------\n           18:00......----------------\n           20:00......----------------\n           21:10......now - - - - - - - - - - - - - - - - - - - - - - - - -\n Home:     Scheduled: TODO Buy milk                                      :home:\n Work:     Deadline:  NEXT Call Bob\n Work:     Plain note\n",
+  "error": false
+ },
+ "pf-ag-pct": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%% %c\") (todo . \"%% %c\") (tags . \"%% %c\") (search . \"%% %c\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n% ----------------\n% VeryLongCategoryNameTODO Task under long\n% WorkTODO [#A] Quarterly review                                         :work:\n% ----------------\n% ----------------\n% ----------------\n% HomeAldi list                                                         :home::\n% ----------------\n% ----------------\n% ----------------\n% now - - - - - - - - - - - - - - - - - - - - - - - - -\n% HomeTODO Buy milk                                                      :home:\n% WorkNEXT Call Bob\n% WorkPlain note\n",
+  "error": false
+ },
+ "pf-ag-s-12": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%-12s\") (todo . \"%-12s\") (tags . \"%-12s\") (search . \"%-12s\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n            ----------------\nScheduled:  TODO Task under long\nScheduled:  TODO [#A] Quarterly review                                   :work:\n            ----------------\n            ----------------\n            ----------------\n            Aldi list                                                   :home::\n            ----------------\n            ----------------\n            ----------------\n            now - - - - - - - - - - - - - - - - - - - - - - - - -\nScheduled:  TODO Buy milk                                                :home:\nDeadline:   NEXT Call Bob\n            Plain note\n",
+  "error": false
+ },
+ "pf-ag-s": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%s\") (todo . \"%s\") (tags . \"%s\") (search . \"%s\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n----------------\nScheduled: TODO Task under long\nScheduled: TODO [#A] Quarterly review                                    :work:\n----------------\n----------------\n----------------\nAldi list                                                               :home::\n----------------\n----------------\n----------------\nnow - - - - - - - - - - - - - - - - - - - - - - - - -\nScheduled: TODO Buy milk                                                 :home:\nDeadline:  NEXT Call Bob\nPlain note\n",
+  "error": false
+ },
+ "pf-ag-sq": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"% s\") (todo . \"% s\") (tags . \"% s\") (search . \"% s\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n----------------\nScheduled:  TODO Task under long\nScheduled:  TODO [#A] Quarterly review                                   :work:\n----------------\n----------------\n----------------\nAldi list                                                               :home::\n----------------\n----------------\n----------------\nnow - - - - - - - - - - - - - - - - - - - - - - - - -\nScheduled:  TODO Buy milk                                                :home:\nDeadline:   NEXT Call Bob\nPlain note\n",
+  "error": false
+ },
+ "pf-ag-t-12": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%-12t\") (todo . \"%-12t\") (tags . \"%-12t\") (search . \"%-12t\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n 8:00...... ----------------\n 9:00...... TODO Task under long\n10:00-11:00 TODO [#A] Quarterly review                                   :work:\n10:00...... ----------------\n12:00...... ----------------\n14:00...... ----------------\n14:30...... Aldi list                                                   :home::\n16:00...... ----------------\n18:00...... ----------------\n20:00...... ----------------\n21:10...... now - - - - - - - - - - - - - - - - - - - - - - - - -\n            TODO Buy milk                                                :home:\n            NEXT Call Bob\n            Plain note\n",
+  "error": false
+ },
+ "pf-ag-t": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%t\") (todo . \"%t\") (tags . \"%t\") (search . \"%t\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n 8:00......----------------\n 9:00......TODO Task under long\n10:00-11:00TODO [#A] Quarterly review                                    :work:\n10:00......----------------\n12:00......----------------\n14:00......----------------\n14:30......Aldi list                                                    :home::\n16:00......----------------\n18:00......----------------\n20:00......----------------\n21:10......now - - - - - - - - - - - - - - - - - - - - - - - - -\nTODO Buy milk                                                            :home:\nNEXT Call Bob\nPlain note\n",
+  "error": false
+ },
+ "pf-ag-tq": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%?-12t\") (todo . \"%?-12t\") (tags . \"%?-12t\") (search . \"%?-12t\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n 8:00...... ----------------\n 9:00...... TODO Task under long\n10:00-11:00 TODO [#A] Quarterly review                                   :work:\n10:00...... ----------------\n12:00...... ----------------\n14:00...... ----------------\n14:30...... Aldi list                                                   :home::\n16:00...... ----------------\n18:00...... ----------------\n20:00...... ----------------\n21:10...... now - - - - - - - - - - - - - - - - - - - - - - - - -\nTODO Buy milk                                                            :home:\nNEXT Call Bob\nPlain note\n",
+  "error": false
+ },
+ "pf-default-agenda": {
+  "eval": "(progn (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n               8:00...... ----------------\n  VeryLongCategoryName: 9:00...... Scheduled:  TODO Task under long\n  Work:       10:00-11:00 Scheduled:  TODO [#A] Quarterly review         :work:\n              10:00...... ----------------\n              12:00...... ----------------\n              14:00...... ----------------\n  Home:       14:30...... Aldi list                                     :home::\n              16:00...... ----------------\n              18:00...... ----------------\n              20:00...... ----------------\n              21:10...... now - - - - - - - - - - - - - - - - - - - - - - - - -\n  Home:       Scheduled:  TODO Buy milk                                  :home:\n  Work:       Deadline:   NEXT Call Bob\n  Work:       Plain note\n",
+  "error": false
+ },
+ "pf-default-search": {
+  "eval": "(progn (org-search-view nil \"e\"))",
+  "text": "Search words: e\nPress ‘[’, ‘]’ to add/sub word, ‘{’, ‘}’ to add/sub regexp, ‘C-u r’ for a fresh search\n  Work:       Projects\n  Work:       TODO [#A] Quarterly review                                 :work:\n  Work:       NEXT Call Bob\n  Home:       Errands\n  Home:       TODO Buy milk                                              :home:\n  Work:       Plain note\n  VeryLongCategoryName:Long\n  VeryLongCategoryName:TODO Task under long\n",
+  "error": false
+ },
+ "pf-default-tags": {
+  "eval": "(progn (org-tags-view nil \"home|work\"))",
+  "text": "Headlines with TAGS match: home|work\nPress ‘C-u r’ to search again\n  Work:       TODO [#A] Quarterly review                                 :work:\n  Home:       TODO Buy milk                                              :home:\n  Home:       Aldi list                                                 :home::\n",
+  "error": false
+ },
+ "pf-default-todo": {
+  "eval": "(progn (org-todo-list))",
+  "text": "Global list of TODO items of type: ALL\nPress ‘N r’ (e.g. ‘0 r’) to search again: (0)[ALL] (1)DONE (2)NEXT (3)TODO\n  Work:       TODO [#A] Quarterly review                                 :work:\n  Work:       NEXT Call Bob\n  Home:       TODO Buy milk                                              :home:\n  VeryLongCategoryName:TODO Task under long\n",
+  "error": false
+ },
+ "pf-icon-catchall": {
+  "eval": "(progn (setq org-agenda-category-icon-alist '((\"Work\" (\"[W]\")) (\".*\" (\"   \")))) (setq org-agenda-prefix-format '((agenda . \" %i %-12:c%?-12t% s\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n                8:00...... ----------------\n   VeryLongCategoryName: 9:00...... Scheduled:  TODO Task under long\n   Work:       10:00-11:00 Scheduled:  TODO [#A] Quarterly review        :work:\n               10:00...... ----------------\n               12:00...... ----------------\n               14:00...... ----------------\n   Home:       14:30...... Aldi list                                    :home::\n               16:00...... ----------------\n               18:00...... ----------------\n               20:00...... ----------------\n               21:10...... now - - - - - - - - - - - - - - - - - - - - - - - - -\n   Home:       Scheduled:  TODO Buy milk                                 :home:\n   Work:       Deadline:   NEXT Call Bob\n   Work:       Plain note\n",
+  "error": false
+ },
+ "pf-icon-default": {
+  "eval": "(progn (setq org-agenda-category-icon-alist '((\"Work\" (\"[W]\")) (\"Home\" (\"🏠\")))) (setq org-agenda-prefix-format '((agenda . \" %i %-12:c%?-12t% s\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n               8:00...... ----------------\n  VeryLongCategoryName: 9:00...... Scheduled:  TODO Task under long\n   Work:       10:00-11:00 Scheduled:  TODO [#A] Quarterly review        :work:\n              10:00...... ----------------\n              12:00...... ----------------\n              14:00...... ----------------\n   Home:       14:30...... Aldi list                                    :home::\n              16:00...... ----------------\n              18:00...... ----------------\n              20:00...... ----------------\n              21:10...... now - - - - - - - - - - - - - - - - - - - - - - - - -\n   Home:       Scheduled:  TODO Buy milk                                 :home:\n   Work:       Deadline:   NEXT Call Bob\n   Work:       Plain note\n",
+  "error": false
+ },
+ "pf-icon-file": {
+  "eval": "(progn (setq org-agenda-category-icon-alist '((\"Work\" \"/tmp/none.png\"))) (setq org-agenda-prefix-format '((agenda . \" %i %-12:c%?-12t% s\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n               8:00...... ----------------\n  VeryLongCategoryName: 9:00...... Scheduled:  TODO Task under long\n   Work:       10:00-11:00 Scheduled:  TODO [#A] Quarterly review        :work:\n              10:00...... ----------------\n              12:00...... ----------------\n              14:00...... ----------------\n  Home:       14:30...... Aldi list                                     :home::\n              16:00...... ----------------\n              18:00...... ----------------\n              20:00...... ----------------\n              21:10...... now - - - - - - - - - - - - - - - - - - - - - - - - -\n  Home:       Scheduled:  TODO Buy milk                                  :home:\n   Work:       Deadline:   NEXT Call Bob\n   Work:       Plain note\n",
+  "error": false
+ },
+ "pf-icon-none": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \" %i %-12:c%?-12t% s\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n               8:00...... ----------------\n  VeryLongCategoryName: 9:00...... Scheduled:  TODO Task under long\n  Work:       10:00-11:00 Scheduled:  TODO [#A] Quarterly review         :work:\n              10:00...... ----------------\n              12:00...... ----------------\n              14:00...... ----------------\n  Home:       14:30...... Aldi list                                     :home::\n              16:00...... ----------------\n              18:00...... ----------------\n              20:00...... ----------------\n              21:10...... now - - - - - - - - - - - - - - - - - - - - - - - - -\n  Home:       Scheduled:  TODO Buy milk                                  :home:\n  Work:       Deadline:   NEXT Call Bob\n  Work:       Plain note\n",
+  "error": false
+ },
+ "pf-icon-regexp": {
+  "eval": "(progn (setq org-agenda-category-icon-alist '((\"^Ho\" (\"[h]\")))) (setq org-agenda-prefix-format '((agenda . \" %i %-12:c%?-12t% s\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n               8:00...... ----------------\n  VeryLongCategoryName: 9:00...... Scheduled:  TODO Task under long\n  Work:       10:00-11:00 Scheduled:  TODO [#A] Quarterly review         :work:\n              10:00...... ----------------\n              12:00...... ----------------\n              14:00...... ----------------\n   Home:       14:30...... Aldi list                                    :home::\n              16:00...... ----------------\n              18:00...... ----------------\n              20:00...... ----------------\n              21:10...... now - - - - - - - - - - - - - - - - - - - - - - - - -\n   Home:       Scheduled:  TODO Buy milk                                 :home:\n  Work:       Deadline:   NEXT Call Bob\n  Work:       Plain note\n",
+  "error": false
+ },
+ "pf-icon-todo": {
+  "eval": "(progn (setq org-agenda-category-icon-alist '((\"Work\" (\"[W]\")) (\"Home\" (\"🏠\")))) (setq org-agenda-prefix-format '((todo . \" %i %-12:c\"))) (org-todo-list))",
+  "text": "Global list of TODO items of type: ALL\nPress ‘N r’ (e.g. ‘0 r’) to search again: (0)[ALL] (1)DONE (2)NEXT (3)TODO\n   Work:       TODO [#A] Quarterly review                                :work:\n   Work:       NEXT Call Bob\n   Home:       TODO Buy milk                                             :home:\n  VeryLongCategoryName:TODO Task under long\n",
+  "error": false
+ },
+ "pf-icon-two": {
+  "eval": "(progn (setq org-agenda-category-icon-alist '((\"Work\" (\"[1]\")) (\"Work\" (\"[2]\")))) (setq org-agenda-prefix-format '((agenda . \" %i %-12:c%?-12t% s\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n               8:00...... ----------------\n  VeryLongCategoryName: 9:00...... Scheduled:  TODO Task under long\n   Work:       10:00-11:00 Scheduled:  TODO [#A] Quarterly review        :work:\n              10:00...... ----------------\n              12:00...... ----------------\n              14:00...... ----------------\n  Home:       14:30...... Aldi list                                     :home::\n              16:00...... ----------------\n              18:00...... ----------------\n              20:00...... ----------------\n              21:10...... now - - - - - - - - - - - - - - - - - - - - - - - - -\n  Home:       Scheduled:  TODO Buy milk                                  :home:\n   Work:       Deadline:   NEXT Call Bob\n   Work:       Plain note\n",
+  "error": false
+ },
+ "pf-icon-wide": {
+  "eval": "(progn (setq org-agenda-category-icon-alist '((\"Work\" (\"<<work>>\")))) (setq org-agenda-prefix-format '((agenda . \"%i%-12:c %s\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n             ----------------\nVeryLongCategoryName: Scheduled: TODO Task under long\n Work:        Scheduled: TODO [#A] Quarterly review                      :work:\n             ----------------\n             ----------------\n             ----------------\nHome:        Aldi list                                                  :home::\n             ----------------\n             ----------------\n             ----------------\n             now - - - - - - - - - - - - - - - - - - - - - - - - -\nHome:        Scheduled: TODO Buy milk                                    :home:\n Work:        Deadline:  NEXT Call Bob\n Work:        Plain note\n",
+  "error": false
+ },
+ "pf-nil": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n----------------\nTODO Task under long\nTODO [#A] Quarterly review                                               :work:\n----------------\n----------------\n----------------\nAldi list                                                               :home::\n----------------\n----------------\n----------------\nnow - - - - - - - - - - - - - - - - - - - - - - - - -\nTODO Buy milk                                                            :home:\nNEXT Call Bob\nPlain note\n",
+  "error": false
+ },
+ "pf-nolevel": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%b|%c\") (todo . \"%b|%c\") (tags . \"%b|%c\") (search . \"%b|%c\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n|----------------\nLong->|VeryLongCategoryNameTODO Task under long\nProjects->|WorkTODO [#A] Quarterly review                                :work:\n|----------------\n|----------------\n|----------------\nErrands->Buy milk->|HomeAldi list                                       :home::\n|----------------\n|----------------\n|----------------\n|now - - - - - - - - - - - - - - - - - - - - - - - - -\nErrands->|HomeTODO Buy milk                                              :home:\nProjects->|WorkNEXT Call Bob\n|WorkPlain note\n",
+  "error": false
+ },
+ "pf-nomatch": {
+  "eval": "(progn (setq org-agenda-prefix-format '((todo . \"T %c\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n               8:00...... ----------------\n  VeryLongCategoryName: 9:00...... Scheduled:  TODO Task under long\n  Work:       10:00-11:00 Scheduled:  TODO [#A] Quarterly review         :work:\n              10:00...... ----------------\n              12:00...... ----------------\n              14:00...... ----------------\n  Home:       14:30...... Aldi list                                     :home::\n              16:00...... ----------------\n              18:00...... ----------------\n              20:00...... ----------------\n              21:10...... now - - - - - - - - - - - - - - - - - - - - - - - - -\n  Home:       Scheduled:  TODO Buy milk                                  :home:\n  Work:       Deadline:   NEXT Call Bob\n  Work:       Plain note\n",
+  "error": false
+ },
+ "pf-q-cat": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%?c-%s\") (todo . \"%?c-%s\") (tags . \"%?c-%s\") (search . \"%?c-%s\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n-----------------\nVeryLongCategoryName-Scheduled: TODO Task under long\nWork-Scheduled: TODO [#A] Quarterly review                               :work:\n-----------------\n-----------------\n-----------------\nHome-Aldi list                                                          :home::\n-----------------\n-----------------\n-----------------\n-now - - - - - - - - - - - - - - - - - - - - - - - - -\nHome-Scheduled: TODO Buy milk                                            :home:\nWork-Deadline:  NEXT Call Bob\nWork-Plain note\n",
+  "error": false
+ },
+ "pf-search-b": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%b\") (todo . \"%b\") (tags . \"%b\") (search . \"%b\"))) (org-search-view nil \"e\"))",
+  "text": "Search words: e\nPress ‘[’, ‘]’ to add/sub word, ‘{’, ‘}’ to add/sub regexp, ‘C-u r’ for a fresh search\nProjects\nProjects->TODO [#A] Quarterly review                                     :work:\nProjects->NEXT Call Bob\nErrands\nErrands->TODO Buy milk                                                   :home:\nPlain note\nLong\nLong->TODO Task under long\n",
+  "error": false
+ },
+ "pf-search-cc12": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%-12:c\") (todo . \"%-12:c\") (tags . \"%-12:c\") (search . \"%-12:c\"))) (org-search-view nil \"e\"))",
+  "text": "Search words: e\nPress ‘[’, ‘]’ to add/sub word, ‘{’, ‘}’ to add/sub regexp, ‘C-u r’ for a fresh search\nWork:       Projects\nWork:       TODO [#A] Quarterly review                                   :work:\nWork:       NEXT Call Bob\nHome:       Errands\nHome:       TODO Buy milk                                                :home:\nWork:       Plain note\nVeryLongCategoryName:Long\nVeryLongCategoryName:TODO Task under long\n",
+  "error": false
+ },
+ "pf-search-e": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%e\") (todo . \"%e\") (tags . \"%e\") (search . \"%e\"))) (org-search-view nil \"e\"))",
+  "text": "Search words: e\nPress ‘[’, ‘]’ to add/sub word, ‘{’, ‘}’ to add/sub regexp, ‘C-u r’ for a fresh search\nProjects\nTODO [#A] Quarterly review                                               :work:\nNEXT Call Bob\nErrands\nTODO Buy milk                                                            :home:\nPlain note\nLong\nTODO Task under long\n",
+  "error": false
+ },
+ "pf-search-l": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%l\") (todo . \"%l\") (tags . \"%l\") (search . \"%l\"))) (org-search-view nil \"e\"))",
+  "text": "Search words: e\nPress ‘[’, ‘]’ to add/sub word, ‘{’, ‘}’ to add/sub regexp, ‘C-u r’ for a fresh search\n Projects\n  TODO [#A] Quarterly review                                             :work:\n  NEXT Call Bob\n Errands\n  TODO Buy milk                                                          :home:\n Plain note\n Long\n  TODO Task under long\n",
+  "error": false
+ },
+ "pf-search-mix": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \" %-8:c %t %s %b\") (todo . \" %-8:c %t %s %b\") (tags . \" %-8:c %t %s %b\") (search . \" %-8:c %t %s %b\"))) (org-search-view nil \"e\"))",
+  "text": "Search words: e\nPress ‘[’, ‘]’ to add/sub word, ‘{’, ‘}’ to add/sub regexp, ‘C-u r’ for a fresh search\n Work:      Projects\n Work:      Projects->TODO [#A] Quarterly review                         :work:\n Work:      Projects->NEXT Call Bob\n Home:      Errands\n Home:      Errands->TODO Buy milk                                       :home:\n Work:      Plain note\n VeryLongCategoryName:   Long\n VeryLongCategoryName:   Long->TODO Task under long\n",
+  "error": false
+ },
+ "pf-tags-b": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%b\") (todo . \"%b\") (tags . \"%b\") (search . \"%b\"))) (org-tags-view nil \"home|work\"))",
+  "text": "Headlines with TAGS match: home|work\nPress ‘C-u r’ to search again\nProjects->TODO [#A] Quarterly review                                     :work:\nErrands->TODO Buy milk                                                   :home:\nErrands->Buy milk->Aldi list                                            :home::\n",
+  "error": false
+ },
+ "pf-tags-cc12": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%-12:c\") (todo . \"%-12:c\") (tags . \"%-12:c\") (search . \"%-12:c\"))) (org-tags-view nil \"home|work\"))",
+  "text": "Headlines with TAGS match: home|work\nPress ‘C-u r’ to search again\nWork:       TODO [#A] Quarterly review                                   :work:\nHome:       TODO Buy milk                                                :home:\nHome:       Aldi list                                                   :home::\n",
+  "error": false
+ },
+ "pf-tags-e": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%e\") (todo . \"%e\") (tags . \"%e\") (search . \"%e\"))) (org-tags-view nil \"home|work\"))",
+  "text": "Headlines with TAGS match: home|work\nPress ‘C-u r’ to search again\n1:30TODO [#A] Quarterly review                                           :work:\nTODO Buy milk                                                            :home:\nAldi list                                                               :home::\n",
+  "error": false
+ },
+ "pf-tags-l": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%l\") (todo . \"%l\") (tags . \"%l\") (search . \"%l\"))) (org-tags-view nil \"home|work\"))",
+  "text": "Headlines with TAGS match: home|work\nPress ‘C-u r’ to search again\n  TODO [#A] Quarterly review                                             :work:\n  TODO Buy milk                                                          :home:\n   Aldi list                                                            :home::\n",
+  "error": false
+ },
+ "pf-tags-mix": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \" %-8:c %t %s %b\") (todo . \" %-8:c %t %s %b\") (tags . \" %-8:c %t %s %b\") (search . \" %-8:c %t %s %b\"))) (org-tags-view nil \"home|work\"))",
+  "text": "Headlines with TAGS match: home|work\nPress ‘C-u r’ to search again\n Work:      Projects->TODO [#A] Quarterly review                         :work:\n Home:      Errands->TODO Buy milk                                       :home:\n Home:      Errands->Buy milk->Aldi list                                :home::\n",
+  "error": false
+ },
+ "pf-time-empty": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%-8:c%?-12t|%s\") (todo . \"%-8:c%?-12t|%s\") (tags . \"%-8:c%?-12t|%s\") (search . \"%-8:c%?-12t|%s\"))) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n         8:00...... |----------------\nVeryLongCategoryName: 9:00...... |Scheduled: TODO Task under long\nWork:   10:00-11:00 |Scheduled: TODO [#A] Quarterly review               :work:\n        10:00...... |----------------\n        12:00...... |----------------\n        14:00...... |----------------\nHome:   14:30...... |Aldi list                                          :home::\n        16:00...... |----------------\n        18:00...... |----------------\n        20:00...... |----------------\n        21:10...... |now - - - - - - - - - - - - - - - - - - - - - - - - -\nHome:   |Scheduled: TODO Buy milk                                        :home:\nWork:   |Deadline:  NEXT Call Bob\nWork:   |Plain note\n",
+  "error": false
+ },
+ "pf-time-grid": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%-6c %t %s\") (todo . \"%-6c %t %s\") (tags . \"%-6c %t %s\") (search . \"%-6c %t %s\"))) (setq org-agenda-use-time-grid t) (org-agenda-list nil \"2026-11-30\" 1))",
+  "text": "Day-agenda (W49):\nMonday     30 November 2026 W49\n        8:00...... ----------------\nVeryLongCategoryName  9:00...... Scheduled: TODO Task under long\nWork   10:00-11:00 Scheduled: TODO [#A] Quarterly review                 :work:\n       10:00...... ----------------\n       12:00...... ----------------\n       14:00...... ----------------\nHome   14:30...... Aldi list                                            :home::\n       16:00...... ----------------\n       18:00...... ----------------\n       20:00...... ----------------\n       21:10...... now - - - - - - - - - - - - - - - - - - - - - - - - -\nHome    Scheduled: TODO Buy milk                                         :home:\nWork    Deadline:  NEXT Call Bob\nWork    Plain note\n",
+  "error": false
+ },
+ "pf-todo-b": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%b\") (todo . \"%b\") (tags . \"%b\") (search . \"%b\"))) (org-todo-list))",
+  "text": "Global list of TODO items of type: ALL\nPress ‘N r’ (e.g. ‘0 r’) to search again: (0)[ALL] (1)DONE (2)NEXT (3)TODO\nProjects->TODO [#A] Quarterly review                                     :work:\nProjects->NEXT Call Bob\nErrands->TODO Buy milk                                                   :home:\nLong->TODO Task under long\n",
+  "error": false
+ },
+ "pf-todo-cc12": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%-12:c\") (todo . \"%-12:c\") (tags . \"%-12:c\") (search . \"%-12:c\"))) (org-todo-list))",
+  "text": "Global list of TODO items of type: ALL\nPress ‘N r’ (e.g. ‘0 r’) to search again: (0)[ALL] (1)DONE (2)NEXT (3)TODO\nWork:       TODO [#A] Quarterly review                                   :work:\nWork:       NEXT Call Bob\nHome:       TODO Buy milk                                                :home:\nVeryLongCategoryName:TODO Task under long\n",
+  "error": false
+ },
+ "pf-todo-e": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%e\") (todo . \"%e\") (tags . \"%e\") (search . \"%e\"))) (org-todo-list))",
+  "text": "Global list of TODO items of type: ALL\nPress ‘N r’ (e.g. ‘0 r’) to search again: (0)[ALL] (1)DONE (2)NEXT (3)TODO\n1:30TODO [#A] Quarterly review                                           :work:\nNEXT Call Bob\nTODO Buy milk                                                            :home:\nTODO Task under long\n",
+  "error": false
+ },
+ "pf-todo-l": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \"%l\") (todo . \"%l\") (tags . \"%l\") (search . \"%l\"))) (org-todo-list))",
+  "text": "Global list of TODO items of type: ALL\nPress ‘N r’ (e.g. ‘0 r’) to search again: (0)[ALL] (1)DONE (2)NEXT (3)TODO\n  TODO [#A] Quarterly review                                             :work:\n  NEXT Call Bob\n  TODO Buy milk                                                          :home:\n  TODO Task under long\n",
+  "error": false
+ },
+ "pf-todo-mix": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \" %-8:c %t %s %b\") (todo . \" %-8:c %t %s %b\") (tags . \" %-8:c %t %s %b\") (search . \" %-8:c %t %s %b\"))) (org-todo-list))",
+  "text": "Global list of TODO items of type: ALL\nPress ‘N r’ (e.g. ‘0 r’) to search again: (0)[ALL] (1)DONE (2)NEXT (3)TODO\n Work:      Projects->TODO [#A] Quarterly review                         :work:\n Work:      Projects->NEXT Call Bob\n Home:      Errands->TODO Buy milk                                       :home:\n VeryLongCategoryName:   Long->TODO Task under long\n",
+  "error": false
+ },
+ "pf-week": {
+  "eval": "(progn (setq org-agenda-prefix-format '((agenda . \" %-10:c %t %s\") (todo . \" %-10:c %t %s\") (tags . \" %-10:c %t %s\") (search . \" %-10:c %t %s\"))) (org-agenda-list nil \"2026-11-30\" 7))",
+  "text": "Week-agenda (W49):\nMonday     30 November 2026 W49\n             8:00...... ----------------\n VeryLongCategoryName:  9:00...... Scheduled: TODO Task under long\n Work:      10:00-11:00 Scheduled: TODO [#A] Quarterly review            :work:\n            10:00...... ----------------\n            12:00...... ----------------\n            14:00...... ----------------\n Home:      14:30...... Aldi list                                       :home::\n            16:00...... ----------------\n            18:00...... ----------------\n            20:00...... ----------------\n            21:10...... now - - - - - - - - - - - - - - - - - - - - - - - - -\n Home:       Scheduled: TODO Buy milk                                    :home:\n Work:       Deadline:  NEXT Call Bob\n Work:       Plain note\nTuesday     1 December 2026\nWednesday   2 December 2026\nThursday    3 December 2026\nFriday      4 December 2026\nSaturday    5 December 2026\nSunday      6 December 2026\n",
+  "error": false
+ },
+ "_input": "#+CATEGORY: Work\n#+TODO: TODO NEXT | DONE\n* Projects\n** TODO [#A] Quarterly review :work:\nSCHEDULED: <2026-11-30 Mon 10:00-11:00>\n:PROPERTIES:\n:Effort: 1:30\n:END:\n** NEXT Call Bob\nDEADLINE: <2026-11-30 Mon>\n* Errands\n:PROPERTIES:\n:CATEGORY: Home\n:END:\n** TODO Buy milk :home:\nSCHEDULED: <2026-11-30 Mon>\n*** Aldi list\n<2026-11-30 Mon 14:30>\n* Plain note\n<2026-11-30 Mon>\n* Long\n:PROPERTIES:\n:CATEGORY: VeryLongCategoryName\n:END:\n** TODO Task under long\nSCHEDULED: <2026-11-30 Mon 09:00>\n"
+}

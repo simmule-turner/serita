@@ -23,6 +23,7 @@ import { MONTH_NAMES, monthGrid, stepMonth, stepTime } from '../core/calendar.js
 import { archiveSubtree, ARCHIVE_CONTEXT, checkTarget, newChild, archiveToSibling, listTargets, parseRefileSettings, RefileCache, refile, refileMessage, toggleArchiveTag } from '../core/refile.js';
 import { isEffort } from '../core/effort.js';
 import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../core/properties.js';
+import { DEFAULT_FORMATS, parseAgendaSettings, phoneCells, phoneColumns } from '../core/prefix.js';
 import { agenda, searchView, tagsView, todoList } from '../core/agenda.js';
 import { filterActive, filterLabel, noFilter, parseEffort, parseSigned } from '../core/agenda-filter.js';
 import { holidayList } from '../core/holidays.js';
@@ -788,7 +789,7 @@ async function settings() {
         h('div', { class: 'list' },
           h('button', { class: 'item', onclick: () => close('github') }, h('span', {}, 'GitHub'), h('span', { class: 'meta' }, `${summary('github')} ›`)),
           h('button', { class: 'item', onclick: () => close('webdav') }, h('span', {}, 'WebDAV'), h('span', { class: 'meta' }, `${summary('webdav')} ›`)),
-          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '26 settings ›')),
+          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '27 settings ›')),
           h('button', { class: 'item', onclick: () => close('appearance') }, h('span', {}, 'Appearance'), h('span', { class: 'meta' }, `${theme()[0].toUpperCase()}${theme().slice(1)}, ${fontSize()}px ›`)),
           h('button', { class: 'item', onclick: () => close('restore') }, h('span', {}, 'Restore open files on start'), h('span', { class: 'meta' }, restoreOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('tools-text') }, h('span', {}, 'Tool row in the Text view'), h('span', { class: 'meta' }, toolRowOn('text') ? 'On ›' : 'Off ›')),
@@ -843,6 +844,7 @@ async function emacsSettings() {
           item('holidays-local', 'Local holidays', localHolidays() ? 'Custom' : 'None'),
           item('log-drawer', 'Log into drawer', logDrawer() ?? 'Off'),
           item('log-repeat', 'Log repeats', { time: 'Time', note: 'Note', off: 'Off' }[logRepeatMode()]),
+          item('agenda-prefix', 'Agenda line format', prefixText() ? 'Custom' : 'Default'),
           item('refile', 'Refile targets', refileText() ? 'Custom' : 'Top level'),
           item('refile-new', 'Refile new headings', { nil: 'Not allowed', confirm: 'Ask', t: 'Allowed' }[refileNew()]),
           item('table-wrap', 'Wrap table cells', wrapCells() ? 'On' : 'Off'),
@@ -868,6 +870,7 @@ async function emacsSettings() {
     else if (what === 'archive-done') await archiveDoneDialog();
     else if (what === 'archive-context') await archiveContextDialog();
     else if (what === 'refile-new') await refileNewDialog();
+    else if (what === 'agenda-prefix') await prefixSettingsDialog();
     else if (what === 'refile') await refileSettingsDialog();
     else if (what === 'beep') config.update({ settings: { 'view.beep': String(!beepOn()) } });
     else if (what === 'capture-templates') await captureTemplatesDialog();
@@ -1161,6 +1164,9 @@ async function captureTemplatesDialog() {
 
 const DEFAULT_REFILE = '(setq org-refile-targets \'((nil :level . 1)))';
 const refileCache = new RefileCache();
+const prefixText = () => config.settings()['org-agenda-prefix-settings'] ?? '';
+const DEFAULT_PREFIX = `(setq org-agenda-prefix-format\n      '((agenda . "${DEFAULT_FORMATS.agenda}")\n        (todo . "${DEFAULT_FORMATS.todo}")\n        (tags . "${DEFAULT_FORMATS.tags}")\n        (search . "${DEFAULT_FORMATS.search}")))\n(setq org-agenda-category-icon-alist nil)`;
+const prefixOpts = () => { try { return parseAgendaSettings(prefixText() || DEFAULT_PREFIX); } catch { return parseAgendaSettings(DEFAULT_PREFIX); } };
 const refileText = () => config.settings()['org-refile-settings'] ?? '';
 /** org-archive-mark-done: null (nil), true (t) or a keyword. org-archive-save-context-info: the names saved. */
 const archiveMarkDone = () => { const v = setting('org-archive-mark-done'); return !v || v === 'nil' ? null : v === 't' ? true : v; };
@@ -1268,6 +1274,21 @@ function archiveTag(hd = enclosingHead()) {
 }
 
 /** Settings, Emacs, Refile targets and Archive location: the init.el forms, as text. */
+async function prefixSettingsDialog() {
+  for (;;) {
+    const text = await panel((sheet, close) => {
+      const input = h('textarea', { rows: '9', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Agenda line format', style: 'font-family:monospace' });
+      input.value = prefixText() || DEFAULT_PREFIX;
+      put(sheet, h('h2', {}, 'Agenda line format'),
+        h('p', {}, 'org-agenda-prefix-format and org-agenda-category-icon-alist, as init.el sets them with setq.'), input,
+        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { onclick: () => close(RESET) }, 'Reset'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
+    });
+    if (text === undefined) return;
+    if (text === RESET) { config.update({ settings: { 'org-agenda-prefix-settings': '' } }); message('Agenda line format reset'); return; }
+    try { parseAgendaSettings(text); config.update({ settings: { 'org-agenda-prefix-settings': text.trim() === DEFAULT_PREFIX ? '' : text.trim() } }); message('Agenda line format set'); return; } catch (e) { message(e.message, true); }
+  }
+}
+
 async function refileSettingsDialog() {
   for (;;) {
     const text = await panel((sheet, close) => {
@@ -1497,8 +1518,8 @@ async function agendaScreen(loaded = null) {
     const st = agendaState;
     let view;
     try {
-      view = st.kind === 'todo' ? todoList(files, { keyword: st.keyword, filter: st.filter }) : st.kind === 'tags' ? tagsView(files, { match: st.match, filter: st.filter }) : st.kind === 'search' ? searchView(files, { words: st.words, filter: st.filter })
-        : agenda(files, { start: weekly(st.span) ? mondayOf(st.anchor) : st.anchor, span: st.span, today: todayDate(), now: localClock(), timeGrid: timeGridOn(), filter: st.filter, diary, holidays: holidaysInAgenda() ? holidayOpts() : null, contacts: contactOpts() });
+      view = st.kind === 'todo' ? todoList(files, { keyword: st.keyword, filter: st.filter, prefix: prefixOpts() }) : st.kind === 'tags' ? tagsView(files, { match: st.match, filter: st.filter, prefix: prefixOpts() }) : st.kind === 'search' ? searchView(files, { words: st.words, filter: st.filter, prefix: prefixOpts() })
+        : agenda(files, { start: weekly(st.span) ? mondayOf(st.anchor) : st.anchor, span: st.span, today: todayDate(), now: localClock(), timeGrid: timeGridOn(), filter: st.filter, prefix: prefixOpts(), diary, holidays: holidaysInAgenda() ? holidayOpts() : null, contacts: contactOpts() });
     } catch (e) { failure(e); st.kind = 'agenda'; return; }
     let onMoveKey = null;
     const act = await panel((sheet, close) => {
@@ -1514,15 +1535,17 @@ async function agendaScreen(loaded = null) {
       }
       const counter = h('button', { class: 'primary', onclick: () => close({ act: true }) }, '');
       const count = () => { counter.textContent = `Act on ${st.marked.size}`; counter.disabled = st.marked.size === 0; };
+      const all = view.days ? view.days.flatMap((d) => d.entries) : view.entries;
+      const cols = phoneColumns(prefixOpts().formats[st.kind], all, prefixOpts().icons);
+      const phoneRow = (c, e) => phoneCells(c, e, prefixOpts().icons).map((t, i) => h('span', { class: `acol${c[i].spec === 't' && e.late > 0 && e.kind !== 'stamp' ? ' late' : ''}`, style: `width:${c[i].width}ch` }, t));
       const row = (e) => h('button', { class: `arow${st.marking && st.marked.has(entryKey(e)) ? ' marked' : ''}`, 'aria-pressed': st.marking ? String(st.marked.has(entryKey(e))) : null, onclick: (ev) => {
         if (!st.marking) { close({ jump: e }); return; }
         const k = entryKey(e);
         if (st.marked.has(k)) st.marked.delete(k); else st.marked.add(k);
         ev.currentTarget.classList.toggle('marked', st.marked.has(k)); ev.currentTarget.setAttribute('aria-pressed', String(st.marked.has(k))); count();
       } },
-        h('span', { class: 'acat' }, e.category.slice(0, 8)),
-        h('span', { class: `atime${e.late > 0 && e.kind !== 'stamp' ? ' late' : ''}` }, e.clock),
-        h('span', { class: 'atitle' }, [e.label, e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ')),
+        ...phoneRow(cols, e),
+        h('span', { class: 'atitle' }, [e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ')),
         e.tags.length ? h('span', { class: 'atags' }, `:${e.tags.join(':')}:`) : null);
       const body = st.kind === 'agenda'
         ? view.days.flatMap((d) => [h('div', { class: `aday${d.today ? ' today' : ''}` }, d.head), ...d.rows.map((r) => (r.entry ? row(r.entry) : h('div', { class: `agrid${r.text.includes(' now') ? ' now' : ''}` }, h('span', { class: 'agtime' }, r.text.trim().replace(/\.{6}.*$/, '') + (r.text.includes(' now') ? ' now' : '')), h('span', { class: 'agline' }))))])
@@ -1609,10 +1632,11 @@ async function calendarScreen() {
           h('span', { class: 'dn' }, String(c.d)), h('span', { class: 'marks' }, ...marks.map((k) => h('i', { class: k }))));
       };
       const picked = byDay.get(calendarState.day) ?? [];
+      const cols = phoneColumns(prefixOpts().formats.agenda, picked, prefixOpts().icons);
+      const phoneRow = (c, e) => phoneCells(c, e, prefixOpts().icons).map((t, i) => h('span', { class: `acol${c[i].spec === 't' && e.late > 0 && e.kind !== 'stamp' ? ' late' : ''}`, style: `width:${c[i].width}ch` }, t));
       const row = (e) => h('button', { class: 'arow', onclick: () => close({ jump: e }) },
-        h('span', { class: 'acat' }, e.category.slice(0, 8)),
-        h('span', { class: `atime${e.late > 0 && e.kind !== 'stamp' ? ' late' : ''}` }, e.clock),
-        h('span', { class: 'atitle' }, [e.label, e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ')),
+        ...phoneRow(cols, e),
+        h('span', { class: 'atitle' }, [e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ')),
         e.tags.length ? h('span', { class: 'atags' }, `:${e.tags.join(':')}:`) : null);
       put(sheet,
         h('div', { class: 'abar' }, h('button', { 'aria-label': 'Earlier', onclick: () => close({ move: -1 }) }, h('span', { class: 'chev left' })), h('div', { class: 'atitlebar' }, `${MONTH_NAMES[m - 1]} ${y}`), h('button', { 'aria-label': 'Later', onclick: () => close({ move: 1 }) }, h('span', { class: 'chev right' }))),
@@ -1784,7 +1808,9 @@ const inTable = () => viewMode() === 'text' && tableHere() !== null;
 /** C-c ^: asks how to sort, then sorts the rows of the section at the cursor. */
 async function tableSort() {
   if (!tableHere()) { message('Not in table', true); return; }
-  const v = await askText({ prompt: 'Sort table: [a]lphabetic, [n]umeric, [t]ime (capital reverses):', title: 'Sort table', help: 'a, n or t for alphabetic, numeric or time order. A capital letter reverses it.', ok: 'Sort' });
+  const kinds = [['a', 'Alphabetic'], ['n', 'Numeric'], ['t', 'Time'], ['A', 'Alphabetic, reversed'], ['N', 'Numeric, reversed'], ['T', 'Time, reversed']];
+  const v = await askText({ prompt: 'Sort table:', title: 'Sort table', help: 'a, n or t for alphabetic, numeric or time order. A capital letter reverses it.', ok: 'Sort', key: /^[antcANTC]$/,
+    complete: (t) => kinds.filter(([k]) => t === '' || k === t).map(([k, label]) => ({ label, value: k, hint: k })) });
   if (v === undefined) return;
   const k = v.trim();
   if (!/^[antANT]$/.test(k)) { message(k === 'c' || k === 'C' ? 'Sorting with a function is not supported' : 'Invalid sorting type', true); return; }
@@ -2360,8 +2386,8 @@ function killWith(fn, { append = false }) {
  * One line of input. In the Text view the minibuffer asks, as Emacs does; in the Outline view a touch dialog does.
  * Resolves with the text, or undefined when cancelled.
  */
-function askText({ prompt, title, help = null, value = '', complete = null, inputMode = 'text', ok = 'OK' }) {
-  if (viewMode() === 'text') return mini.ask({ prompt, value, complete, inputMode });
+function askText({ prompt, title, help = null, value = '', complete = null, inputMode = 'text', ok = 'OK', key = null }) {
+  if (viewMode() === 'text') return mini.ask({ prompt, value, complete, inputMode, key });
   return panel((sheet, close) => {
     const input = h('input', { inputmode: inputMode, autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': title });
     input.value = value;
