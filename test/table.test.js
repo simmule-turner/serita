@@ -112,17 +112,13 @@ test('Emacs table: import splits quoted CSV, tabs and words', () => {
   assert.equal(imp('one two\nthree four\n'), F['tb-im-space'].text);
 });
 
-test('Emacs table: transpose, lisp, export', () => {
+test('Emacs table: transpose, lisp', () => {
   assert.equal(T.transpose(F['tb-transpose'].input, 0).text, F['tb-transpose'].text);
   assert.equal(T.transpose(F['tb-transpose-r'].input, 0).text, F['tb-transpose-r'].text);
   const lisp = (id) => JSON.stringify(T.toLisp(F[id].input, 0)).replace(/"hline"/g, 'hline');
   assert.equal(lisp('tb-lisp-1'), '[["a","b","c"],hline,["1","22","333"],["4444","5","6"]]');
   assert.deepEqual(T.toLisp(F['tb-lisp-2'].input, 0), [['a', ''], ['', 'd']]);
   assert.deepEqual(T.toLisp(F['tb-lisp-3'].input, 0), [['a  b', 'c']]);
-  assert.equal(T.exportTable(F['tb-ex-csv'].input, 0, 'csv'), 'a,b,c\n1,22,333\n4444,5,6\n');
-  assert.equal(T.exportTable(F['tb-ex-tsv'].input, 0, 'tsv'), 'a\tb\tc\n1\t22\t333\n4444\t5\t6\n');
-  assert.equal(T.exportTable(F['tb-ex-csvq'].input, 0, 'csv'), '"a,b","""c"""\nd,e\n');
-  assert.equal(T.exportTable(F['tb-ex-orgtbl'].input, 0, 'org'), F['tb-ex-orgtbl'].texts[1].replace(/^X "|"$/g, '').replace(/\\n/g, '\n'));
 });
 
 test('Emacs table: which lines are table lines, and which are rules', () => {

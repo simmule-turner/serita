@@ -492,7 +492,8 @@ export function splitDelimited(lines, sep = 'guess') {
     return out;
   };
   let how = sep;
-  if (sep === 'guess') how = lines.some((l) => l.includes('\t')) ? 'tab' : lines.some((l) => l.includes(',')) ? 'comma' : 1;
+  const every = (ch) => lines.every((l) => l === '' || l.includes(ch));
+  if (sep === 'guess') how = every('\t') ? 'tab' : every(',') ? 'comma' : 1; // Org 9.7.11 observed: tab or comma when every line has one
   // Org 9.7.11 observed: a bar is a separator in every mode
   const bars = (f) => f.flatMap((c) => c.split('|')).map((c) => c.trim());
   return lines.map((l) => {
@@ -513,21 +514,22 @@ export function convertRegion(text, from, to, sep = 'guess') {
   return here(splice(text, from, to, lines), from, 0);
 }
 
+/**
+ * org-table-import: the text goes in at the cursor and the lines it fills become a table.
+ * @param {string} imported the file's text @param {number} offset where the cursor is @param {string | number} [sep] as for convertRegion
+ */
+export function importText(text, offset, imported, sep = 'guess') {
+  if (imported === '') throw new Error('Nothing to import');
+  const t = text.slice(0, offset) + imported + text.slice(offset);
+  const from = text.slice(0, offset).split('\n').length - 1;
+  const to = from + imported.replace(/\n$/, '').split('\n').length;
+  return convertRegion(t, from, to, sep);
+}
+
 /** The table as rows of strings, with 'hline' for each rule (org-table-to-lisp). */
 export function toLisp(text, line) {
   const t = load(text, line);
   return t ? t.rows.map((r) => (r.rule ? 'hline' : r.cells)) : null;
-}
-
-/** The table as text in a format: 'csv', 'tsv' or 'org'. */
-export function exportTable(text, line, format) {
-  const t = load(text, line);
-  if (!t) return null;
-  const data = t.rows.filter((r) => !r.rule);
-  if (format === 'org') return `${layout(t.rows, t.indent).lines.join('\n')}\n`;
-  if (format === 'tsv') return data.map((r) => r.cells.join('\t')).join('\n') + '\n';
-  const q = (c) => (/[",]/.test(c) ? `"${c.replace(/"/g, '""')}"` : c);
-  return data.map((r) => r.cells.map(q).join(',')).join('\n') + '\n';
 }
 
 /** Rows become columns and columns rows; rules go. */
@@ -558,6 +560,15 @@ export function tableView(text, line) {
   });
   const rows = t.rows.map((r, i) => ({ line: t.start + i, rule: r.rule, cells: Array.from({ length: r.rule ? 0 : n }, (_, j) => r.cells[j] ?? ''), cookies: !r.rule && r.cells.some((c) => COOKIE.test(c)) && r.cells.every((c) => c === '' || COOKIE.test(c)) }));
   return { start: t.start, end: t.end, n, align, limit, rows };
+}
+
+/** The 0-based field the column of the line is in, and the number of the row among the table's data rows (1-based), or null outside a table. */
+export function fieldIndex(text, line, col) {
+  const t = load(text, line);
+  if (!t) return null;
+  let row = 0;
+  for (let i = t.start; i <= line; i++) if (!t.rows[i - t.start].rule) row++;
+  return { field: Math.max(fieldAt(t.lines[line], col), 0), row, rule: t.rows[line - t.start].rule };
 }
 
 /** The column within its line where field `j` of the row at `line` starts, so the row commands can be aimed at a tapped cell. */

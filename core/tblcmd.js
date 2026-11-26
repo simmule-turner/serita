@@ -1,7 +1,7 @@
 // The commands on a table's formulas: recalculating it and reading or changing its #+TBLFM: lines.
 // The calculation itself is core/tblfm.js; this module finds the lines and keeps the messages Org gives.
 
-import { tableAt } from './table.js';
+import { tableAt, editTable, fieldIndex, toLisp } from './table.js';
 import { recalc, splitFormulas } from './tblfm.js';
 
 const TBLFM = /^[ \t]*#\+TBLFM:/i;
@@ -198,4 +198,76 @@ export function installFormulas(text, line, edited) {
 /** The formula debugger's substitution history of one field, as Org prints it. */
 export function historyText(r) {
   return `Substitution history of formula\nOrig:   ${r.orig}\n$xyz->  ${r.xyz}\n@r$c->  ${r.rc}\n$1->    ${r.subst}\nResult: ${r.result}\nFormat: ${r.format}\nFinal:  ${r.final}\n`;
+}
+
+// ---- Rectangles and marks ---------------------------------------------------------------------------------------------------
+
+/** The text of a table's cells in a rectangle: from the field at one corner to the field at the other, data rows only. Cells keep their spaces. */
+function rectOf(text, a, b) {
+  const p = fieldIndex(text, a.line, a.col); const q = fieldIndex(text, b.line, b.col);
+  if (!p || !q) return null;
+  return { rows: [Math.min(p.row, q.row), Math.max(p.row, q.row)], cols: [Math.min(p.field, q.field), Math.max(p.field, q.field)] };
+}
+
+/**
+ * org-table-copy-region and, with `cut`, org-table-cut-region: the cells in the rectangle between two positions.
+ * @returns {{ clip: string[][], text: string } | null} the cells as text (null outside a table); `text` is the table with the cells emptied when cut
+ */
+export function copyRectangle(text, a, b, cut = false) {
+  const r = rectOf(text, a, b);
+  if (!r) return null;
+  const clip = [];
+  const t = editTable(text, a.line, (rows) => {
+    let row = 0;
+    return rows.map((cells) => {
+      if (cells === null) return null;
+      row++;
+      if (row < r.rows[0] || row > r.rows[1]) return cells;
+      const raw = [];
+      for (let j = r.cols[0]; j <= r.cols[1]; j++) raw.push(` ${cells[j] ?? ''} `);
+      clip.push(raw);
+      return cut ? cells.map((c, j) => (j >= r.cols[0] && j <= r.cols[1] ? '' : c)) : cells;
+    });
+  });
+  return { clip, text: cut ? t.text : text };
+}
+
+/** org-table-paste-rectangle: the cells go in from the field at the cursor; rows and columns are added when they run past the table. */
+export function pasteRectangle(text, line, col, clip) {
+  if (!clip || !clip.length) return { text, error: 'First cut/copy a region to paste!' };
+  const at = fieldIndex(text, line, col);
+  if (!at) return { text, error: 'Not in table' };
+  const t = editTable(text, line, (rows) => {
+    const out = rows.map((r) => (r === null ? null : [...r]));
+    const dataAt = out.map((r, i) => (r === null ? -1 : i)).filter((i) => i >= 0);
+    const width = Math.max(...dataAt.map((i) => out[i].length));
+    clip.forEach((cells, k) => {
+      let i = dataAt[at.row - 1 + k];
+      if (i === undefined) { out.push(Array.from({ length: width }, () => '')); i = out.length - 1; }
+      cells.forEach((c, j) => { while (out[i].length <= at.field + j) out[i].push(''); out[i][at.field + j] = c.trim(); });
+    });
+    return out;
+  });
+  return { text: t.text, line: t.start + at.row - 1 };
+}
+
+const MARK_CYCLE = { '': '#', '#': '*', '*': '' };
+
+/** org-table-rotate-recalc-marks: the mark in the first column of the row goes ' ' to '#' to '*' and back; a table with no marks column gets one. */
+export function rotateMark(text, line) {
+  const at = fieldIndex(text, line, 0);
+  if (!at) return { text, error: 'Not in table' };
+  if (at.rule) return { text, error: 'Not in table data field' };
+  const marked = toLisp(text, line).some((r) => r !== 'hline' && ['#', '*', '!', '^', '_', '$', '/'].includes(r[0]));
+  const r = editTable(text, line, (rows) => {
+    let row = 0;
+    return rows.map((cells) => {
+      if (cells === null) return null;
+      row++;
+      const own = marked ? [...cells] : ['', ...cells];
+      if (row === at.row) own[0] = MARK_CYCLE[own[0].trim()] ?? own[0];
+      return own;
+    });
+  });
+  return { text: r.text, line };
 }

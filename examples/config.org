@@ -13,6 +13,7 @@
 - view.keyLog :: the key event log (off).
 - org.tagsColumn :: the column tags align to (-77).
 - session.restore :: reopen the files that were open (on).
+- serita-init-file :: the init file run at startup, a storage name such as github:org/init.el (none).
 
 * Emacs settings, as init.el writes them
 ** Agenda files
@@ -70,6 +71,15 @@ calendar-holidays lists general, christian and solar (empty means all, nil means
 Settings, Emacs, Agenda line format takes org-agenda-prefix-format and org-agenda-category-icon-alist, as init.el sets them:
 : (setq org-agenda-prefix-format '((agenda . " %i %-12:c%?-12t% s") (todo . " %i %-12:c")))
 The phone rows show the same fields, each as wide as its longest value on screen.
+** Init file
+Settings, Emacs, Init file names a Lisp file that is run at startup and by Reload init file in the Commands palette. It sets the Emacs settings above with setq, adds capture templates with add-to-list (the newest goes first, as in Emacs), defines functions with defun, and loads other files with load; a name without a storage prefix is beside the file that loads it. What the file sets wins: that row in Settings, Emacs says Init file and cannot be changed there. A file runs only after you have read it and said Run; a changed file asks again. A form that fails is listed with its file and line and the rest still runs; a setting Serita does not use yet is kept and listed.
+#+begin_src emacs-lisp
+; github:org/init.el
+(setq org-agenda-files '("github:home.org" "github:journal.org")
+      org-tags-column 0)
+(load "github:org/templates.el")
+#+end_src
+
 ** Keys of the settings above
 org-agenda-files, org-capture-templates, org-refile-settings, org-agenda-prefix-settings, org-archive-location, org-log-into-drawer, org-log-repeat, org-archive-mark-done, org-archive-save-context-info, org-refile-allow-creating-parent-nodes, org-agenda-use-time-grid, org-agenda-include-diary, diary-file, calendar-date-style, calendar-holidays, holiday-local-holidays, diary-show-holidays-flag, org-contacts-files, org-contacts-birthday-property, org-hide-leading-stars, org-startup-indented, org-table-widget-wrap-columns, org-table-widget-max-width-fraction, org-table-widget-zebra-stripe
 

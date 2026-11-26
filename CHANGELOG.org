@@ -1,5 +1,11 @@
 #+TITLE: Changelog
 
+* 0.11.4
+An init file. Settings, Emacs, Init file names a Lisp file such as github:org/init.el that runs at startup and on Reload init file; it sets Serita's Emacs settings with setq, adds capture templates with add-to-list, defines functions with defun and loads other files with load. What it sets wins over the Settings screens. A file runs only after you read it and choose Run, and asks again when it changes; a failing form is listed with its file and line and the rest still runs. add-to-list now puts the newest capture template first, as Emacs does.
+
+* 0.11.3
+Tables move in and out. Export shows a table as csv, tsv, orgtbl, generic, LaTeX, HTML, Texinfo or Unicode text to copy or save; Import turns pasted text or a chosen file into a table at the cursor; C-c C-x M-w, C-w and C-y copy, cut and paste cells as a rectangle; C-# rotates a row's recalculation mark. Converting text to a table now guesses tab or comma only when every line has one, as Emacs does.
+
 * 0.11.2
 Capture runs your own templates.el: a ~file+function~ target or ~:prepare-finalize~ names a ~defun~ that finds or makes the heading or tidies the text, run by a small built-in Emacs Lisp. ~%^T~ and the other date prompts ask for a date. Items get a bullet and numbered lists renumber, a table-line capture reruns the table's formulas, moved entries align their tags, and formulas take Calc's ~=>~ to show the working (~1+2 => 3~).
 

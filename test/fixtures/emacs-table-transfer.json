@@ -1,0 +1,521 @@
+{
+ "export": [
+  {
+   "id": "xa-csv",
+   "input": "| <r> | <l> | <c> | <6> |\n| a | b | c | d |\n|---+---+---+---|\n| 1 | 2 | 3 | 4 |\n| long text | x | y | z |\n",
+   "format": "orgtbl-to-csv",
+   "options": {},
+   "want": "a,b,c,d\n1,2,3,4\nlong text,x,y,z"
+  },
+  {
+   "id": "xa-html",
+   "input": "| <r> | <l> | <c> | <6> |\n| a | b | c | d |\n|---+---+---+---|\n| 1 | 2 | 3 | 4 |\n| long text | x | y | z |\n",
+   "format": "orgtbl-to-html",
+   "options": {},
+   "want": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\n\n\n<colgroup>\n<col  class=\"org-right\" />\n\n<col  class=\"org-left\" />\n\n<col  class=\"org-center\" />\n\n<col  class=\"org-left\" />\n</colgroup>\n<thead>\n<tr>\n<th scope=\"col\" class=\"org-right\">a</th>\n<th scope=\"col\" class=\"org-left\">b</th>\n<th scope=\"col\" class=\"org-center\">c</th>\n<th scope=\"col\" class=\"org-left\">d</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td class=\"org-right\">1</td>\n<td class=\"org-left\">2</td>\n<td class=\"org-center\">3</td>\n<td class=\"org-left\">4</td>\n</tr>\n\n<tr>\n<td class=\"org-right\">long text</td>\n<td class=\"org-left\">x</td>\n<td class=\"org-center\">y</td>\n<td class=\"org-left\">z</td>\n</tr>\n</tbody>\n</table>"
+  },
+  {
+   "id": "xa-latex",
+   "input": "| <r> | <l> | <c> | <6> |\n| a | b | c | d |\n|---+---+---+---|\n| 1 | 2 | 3 | 4 |\n| long text | x | y | z |\n",
+   "format": "orgtbl-to-latex",
+   "options": {},
+   "want": "\\begin{tabular}{rlcl}\na & b & c & d\\\\\n\\hline\n1 & 2 & 3 & 4\\\\\nlong text & x & y & z\\\\\n\\end{tabular}"
+  },
+  {
+   "id": "xa-orgtbl",
+   "input": "| <r> | <l> | <c> | <6> |\n| a | b | c | d |\n|---+---+---+---|\n| 1 | 2 | 3 | 4 |\n| long text | x | y | z |\n",
+   "format": "orgtbl-to-orgtbl",
+   "options": {},
+   "want": "| a         | b | c | d |\n|-----------+---+---+---|\n| 1         | 2 | 3 | 4 |\n| long text | x | y | z |"
+  },
+  {
+   "id": "xa-texinfo",
+   "input": "| <r> | <l> | <c> | <6> |\n| a | b | c | d |\n|---+---+---+---|\n| 1 | 2 | 3 | 4 |\n| long text | x | y | z |\n",
+   "format": "orgtbl-to-texinfo",
+   "options": {},
+   "want": "@multitable {aaaaaaaaa} {a} {a} {a}\n@headitem a\n@tab b\n@tab c\n@tab d\n@item 1\n@tab 2\n@tab 3\n@tab 4\n@item long text\n@tab x\n@tab y\n@tab z\n@end multitable"
+  },
+  {
+   "id": "xa-unicode",
+   "input": "| <r> | <l> | <c> | <6> |\n| a | b | c | d |\n|---+---+---+---|\n| 1 | 2 | 3 | 4 |\n| long text | x | y | z |\n",
+   "format": "orgtbl-to-unicode",
+   "options": {},
+   "want": "━━━━━━━━━━━━━━━━━━━━━━━━━\n         a  b  c  d      \n─────────────────────────\n         1  2  3  4      \n long text  x  y  z      \n━━━━━━━━━━━━━━━━━━━━━━━━━"
+  },
+  {
+   "id": "xh-csv",
+   "input": "|---+---|\n| a | b |\n|---+---|\n|---+---|\n| 1 | 2 |\n|---+---|\n",
+   "format": "orgtbl-to-csv",
+   "options": {},
+   "want": "a,b\n1,2"
+  },
+  {
+   "id": "xh-generic",
+   "input": "|---+---|\n| a | b |\n|---+---|\n|---+---|\n| 1 | 2 |\n|---+---|\n",
+   "format": "orgtbl-to-generic",
+   "options": {
+    "sep": ",",
+    "hline": "-"
+   },
+   "want": "-\na,b\n-\n-\n1,2\n-"
+  },
+  {
+   "id": "xh-html",
+   "input": "|---+---|\n| a | b |\n|---+---|\n|---+---|\n| 1 | 2 |\n|---+---|\n",
+   "format": "orgtbl-to-html",
+   "options": {},
+   "want": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\n\n\n<colgroup>\n<col  class=\"org-right\" />\n\n<col  class=\"org-right\" />\n</colgroup>\n<thead>\n<tr>\n<th scope=\"col\" class=\"org-right\">a</th>\n<th scope=\"col\" class=\"org-right\">b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td class=\"org-right\">1</td>\n<td class=\"org-right\">2</td>\n</tr>\n</tbody>\n</table>"
+  },
+  {
+   "id": "xh-latex",
+   "input": "|---+---|\n| a | b |\n|---+---|\n|---+---|\n| 1 | 2 |\n|---+---|\n",
+   "format": "orgtbl-to-latex",
+   "options": {},
+   "want": "\\begin{tabular}{rr}\n\\hline\na & b\\\\\n\\hline\n\\hline\n1 & 2\\\\\n\\hline\n\\end{tabular}"
+  },
+  {
+   "id": "xh-orgtbl",
+   "input": "|---+---|\n| a | b |\n|---+---|\n|---+---|\n| 1 | 2 |\n|---+---|\n",
+   "format": "orgtbl-to-orgtbl",
+   "options": {},
+   "want": "|---+---|\n| a | b |\n|---+---|\n|---+---|\n| 1 | 2 |\n|---+---|"
+  },
+  {
+   "id": "xh-unicode",
+   "input": "|---+---|\n| a | b |\n|---+---|\n|---+---|\n| 1 | 2 |\n|---+---|\n",
+   "format": "orgtbl-to-unicode",
+   "options": {},
+   "want": "━━━━━━\n a  b \n──────\n 1  2 \n━━━━━━"
+  },
+  {
+   "id": "xl-csv-sep",
+   "input": "| a | b c |\n| 1 | 2;3 |\n",
+   "format": "orgtbl-to-csv",
+   "options": {
+    "separator": ";"
+   },
+   "want": "a,b c\n1,2;3"
+  },
+  {
+   "id": "xl-html-opts",
+   "input": "| a | b |\n|---+---|\n| 1 | 2 |\n",
+   "format": "orgtbl-to-html",
+   "options": {
+    "attributes": {
+     "border": "0",
+     "class": "x"
+    }
+   },
+   "want": "<table border=\"0\" class=\"x\">\n\n\n<colgroup>\n<col  class=\"org-right\" />\n\n<col  class=\"org-right\" />\n</colgroup>\n<thead>\n<tr>\n<th scope=\"col\" class=\"org-right\">a</th>\n<th scope=\"col\" class=\"org-right\">b</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td class=\"org-right\">1</td>\n<td class=\"org-right\">2</td>\n</tr>\n</tbody>\n</table>"
+  },
+  {
+   "id": "xl-latex-opts",
+   "input": "| a | b |\n|---+---|\n| 1 | 2 |\n",
+   "format": "orgtbl-to-latex",
+   "options": {
+    "environment": "longtable",
+    "booktabs": true,
+    "fmt": "\\textbf{%s}"
+   },
+   "want": "\\begin{longtable}{rr}\n\\toprule\n\\textbf{a} & \\textbf{b}\\\\\n\\midrule\n\\endfirsthead\n\\multicolumn{2}{l}{Continued from previous page} \\\\\n\\toprule\n\n\\textbf{a} & \\textbf{b} \\\\\n\n\\midrule\n\\endhead\n\\midrule\\multicolumn{2}{r}{Continued on next page} \\\\\n\\endfoot\n\\endlastfoot\n\\textbf{1} & \\textbf{2}\\\\\n\\bottomrule\n\\end{longtable}"
+  },
+  {
+   "id": "xn-html",
+   "input": "| a | b | c |\n|---+---+---|\n| 1 | x | 1 |\n| 2 | y | z |\n| 3 | z | z |\n",
+   "format": "orgtbl-to-html",
+   "options": {},
+   "want": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\n\n\n<colgroup>\n<col  class=\"org-right\" />\n\n<col  class=\"org-left\" />\n\n<col  class=\"org-left\" />\n</colgroup>\n<thead>\n<tr>\n<th scope=\"col\" class=\"org-right\">a</th>\n<th scope=\"col\" class=\"org-left\">b</th>\n<th scope=\"col\" class=\"org-left\">c</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td class=\"org-right\">1</td>\n<td class=\"org-left\">x</td>\n<td class=\"org-left\">1</td>\n</tr>\n\n<tr>\n<td class=\"org-right\">2</td>\n<td class=\"org-left\">y</td>\n<td class=\"org-left\">z</td>\n</tr>\n\n<tr>\n<td class=\"org-right\">3</td>\n<td class=\"org-left\">z</td>\n<td class=\"org-left\">z</td>\n</tr>\n</tbody>\n</table>"
+  },
+  {
+   "id": "xn-latex",
+   "input": "| a | b | c |\n|---+---+---|\n| 1 | x | 1 |\n| 2 | y | z |\n| 3 | z | z |\n",
+   "format": "orgtbl-to-latex",
+   "options": {},
+   "want": "\\begin{tabular}{rll}\na & b & c\\\\\n\\hline\n1 & x & 1\\\\\n2 & y & z\\\\\n3 & z & z\\\\\n\\end{tabular}"
+  },
+  {
+   "id": "xo-html",
+   "input": "| a | b |\n| 1 | 2 |\n| 3 | 4 |\n",
+   "format": "orgtbl-to-html",
+   "options": {},
+   "want": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\n\n\n<colgroup>\n<col  class=\"org-right\" />\n\n<col  class=\"org-right\" />\n</colgroup>\n<tbody>\n<tr>\n<td class=\"org-right\">a</td>\n<td class=\"org-right\">b</td>\n</tr>\n\n<tr>\n<td class=\"org-right\">1</td>\n<td class=\"org-right\">2</td>\n</tr>\n\n<tr>\n<td class=\"org-right\">3</td>\n<td class=\"org-right\">4</td>\n</tr>\n</tbody>\n</table>"
+  },
+  {
+   "id": "xo-latex",
+   "input": "| a | b |\n| 1 | 2 |\n| 3 | 4 |\n",
+   "format": "orgtbl-to-latex",
+   "options": {},
+   "want": "\\begin{tabular}{rr}\na & b\\\\\n1 & 2\\\\\n3 & 4\\\\\n\\end{tabular}"
+  },
+  {
+   "id": "xo-orgtbl",
+   "input": "| a | b |\n| 1 | 2 |\n| 3 | 4 |\n",
+   "format": "orgtbl-to-orgtbl",
+   "options": {},
+   "want": "| a | b |\n| 1 | 2 |\n| 3 | 4 |"
+  },
+  {
+   "id": "xo-texinfo",
+   "input": "| a | b |\n| 1 | 2 |\n| 3 | 4 |\n",
+   "format": "orgtbl-to-texinfo",
+   "options": {},
+   "want": "@multitable {a} {a}\n@item a\n@tab b\n@item 1\n@tab 2\n@item 3\n@tab 4\n@end multitable"
+  },
+  {
+   "id": "xo-unicode",
+   "input": "| a | b |\n| 1 | 2 |\n| 3 | 4 |\n",
+   "format": "orgtbl-to-unicode",
+   "options": {},
+   "want": "━━━━━━\n a  b \n 1  2 \n 3  4 \n━━━━━━"
+  },
+  {
+   "id": "ex-00",
+   "input": "| name | qty | note |\n|------+-----+------|\n| a,b  | 1   | say \"hi\" |\n| c    |     | x\\vert{}y |\n|------+-----+------|\n| d    | 3   |      |\n",
+   "format": "orgtbl-to-csv",
+   "options": {},
+   "want": "name,qty,note\n\"a,b\",1,\"say \"\"hi\"\"\"\nc,,x\\vert{}y\nd,3,"
+  },
+  {
+   "id": "ex-01",
+   "input": "| name | qty | note |\n|------+-----+------|\n| a,b  | 1   | say \"hi\" |\n| c    |     | x\\vert{}y |\n|------+-----+------|\n| d    | 3   |      |\n",
+   "format": "orgtbl-to-tsv",
+   "options": {},
+   "want": "name\tqty\tnote\na,b\t1\tsay \"hi\"\nc\t\tx\\vert{}y\nd\t3\t"
+  },
+  {
+   "id": "ex-02",
+   "input": "| name | qty | note |\n|------+-----+------|\n| a,b  | 1   | say \"hi\" |\n| c    |     | x\\vert{}y |\n|------+-----+------|\n| d    | 3   |      |\n",
+   "format": "orgtbl-to-latex",
+   "options": {},
+   "want": "\\begin{tabular}{lrl}\nname & qty & note\\\\\n\\hline\na,b & 1 & say \"hi\"\\\\\nc &  & x\\(\\vert{}\\)y\\\\\n\\hline\nd & 3 & \\\\\n\\end{tabular}"
+  },
+  {
+   "id": "ex-03",
+   "input": "| name | qty | note |\n|------+-----+------|\n| a,b  | 1   | say \"hi\" |\n| c    |     | x\\vert{}y |\n|------+-----+------|\n| d    | 3   |      |\n",
+   "format": "orgtbl-to-html",
+   "options": {},
+   "want": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\n\n\n<colgroup>\n<col  class=\"org-left\" />\n\n<col  class=\"org-right\" />\n\n<col  class=\"org-left\" />\n</colgroup>\n<thead>\n<tr>\n<th scope=\"col\" class=\"org-left\">name</th>\n<th scope=\"col\" class=\"org-right\">qty</th>\n<th scope=\"col\" class=\"org-left\">note</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td class=\"org-left\">a,b</td>\n<td class=\"org-right\">1</td>\n<td class=\"org-left\">say \"hi\"</td>\n</tr>\n\n<tr>\n<td class=\"org-left\">c</td>\n<td class=\"org-right\">&#xa0;</td>\n<td class=\"org-left\">x&vert;y</td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td class=\"org-left\">d</td>\n<td class=\"org-right\">3</td>\n<td class=\"org-left\">&#xa0;</td>\n</tr>\n</tbody>\n</table>"
+  },
+  {
+   "id": "ex-04",
+   "input": "| name | qty | note |\n|------+-----+------|\n| a,b  | 1   | say \"hi\" |\n| c    |     | x\\vert{}y |\n|------+-----+------|\n| d    | 3   |      |\n",
+   "format": "orgtbl-to-orgtbl",
+   "options": {},
+   "want": "| name | qty | note      |\n|------+-----+-----------|\n| a,b  |   1 | say \"hi\"  |\n| c    |     | x\\vert{}y |\n|------+-----+-----------|\n| d    |   3 |           |"
+  },
+  {
+   "id": "ex-05",
+   "input": "| name | qty | note |\n|------+-----+------|\n| a,b  | 1   | say \"hi\" |\n| c    |     | x\\vert{}y |\n|------+-----+------|\n| d    | 3   |      |\n",
+   "format": "orgtbl-to-texinfo",
+   "options": {},
+   "want": "@multitable {aaaa} {aaa} {aaaaaaaaa}\n@headitem name\n@tab qty\n@tab note\n@item a,b\n@tab 1\n@tab say \"hi\"\n@item c\n@tab \n@tab x|y\n@item d\n@tab 3\n@tab \n@end multitable"
+  },
+  {
+   "id": "ex-06",
+   "input": "| name | qty | note |\n|------+-----+------|\n| a,b  | 1   | say \"hi\" |\n| c    |     | x\\vert{}y |\n|------+-----+------|\n| d    | 3   |      |\n",
+   "format": "orgtbl-to-generic",
+   "options": {
+    "sep": " & ",
+    "lend": " \\\\",
+    "hline": "\\hline"
+   },
+   "want": "name & qty & note \\\\\n\\hline\na,b & 1 & say \"hi\" \\\\\nc &  & x\\vert{}y \\\\\n\\hline\nd & 3 &  \\\\"
+  },
+  {
+   "id": "ex-07",
+   "input": "| name | qty | note |\n|------+-----+------|\n| a,b  | 1   | say \"hi\" |\n| c    |     | x\\vert{}y |\n|------+-----+------|\n| d    | 3   |      |\n",
+   "format": "orgtbl-to-unicode",
+   "options": {},
+   "want": "━━━━━━━━━━━━━━━━━━━━━\n name  qty  note     \n─────────────────────\n a,b     1  say \"hi\" \n c          x|y      \n─────────────────────\n d       3           \n━━━━━━━━━━━━━━━━━━━━━"
+  },
+  {
+   "id": "ex-10",
+   "input": "| name | qty | note |\n|------+-----+------|\n| a,b  | 1   | say \"hi\" |\n| c    |     | x\\vert{}y |\n|------+-----+------|\n| d    | 3   |      |\n",
+   "format": "orgtbl-to-csv",
+   "options": {
+    "hlines": true
+   },
+   "want": "name,qty,note\n\"a,b\",1,\"say \"\"hi\"\"\"\nc,,x\\vert{}y\nd,3,"
+  },
+  {
+   "id": "ex-11",
+   "input": "| name | qty | note |\n|------+-----+------|\n| a,b  | 1   | say \"hi\" |\n| c    |     | x\\vert{}y |\n|------+-----+------|\n| d    | 3   |      |\n",
+   "format": "orgtbl-to-latex",
+   "options": {
+    "splice": true
+   },
+   "want": "name & qty & note\\\\\n\\hline\na,b & 1 & say \"hi\"\\\\\nc &  & x\\(\\vert{}\\)y\\\\\n\\hline\nd & 3 & \\\\"
+  },
+  {
+   "id": "ex-12",
+   "input": "| name | qty | note |\n|------+-----+------|\n| a,b  | 1   | say \"hi\" |\n| c    |     | x\\vert{}y |\n|------+-----+------|\n| d    | 3   |      |\n",
+   "format": "orgtbl-to-html",
+   "options": {
+    "attributes": {
+     "border": "1"
+    }
+   },
+   "want": "<table border=\"1\">\n\n\n<colgroup>\n<col  class=\"org-left\" />\n\n<col  class=\"org-right\" />\n\n<col  class=\"org-left\" />\n</colgroup>\n<thead>\n<tr>\n<th scope=\"col\" class=\"org-left\">name</th>\n<th scope=\"col\" class=\"org-right\">qty</th>\n<th scope=\"col\" class=\"org-left\">note</th>\n</tr>\n</thead>\n<tbody>\n<tr>\n<td class=\"org-left\">a,b</td>\n<td class=\"org-right\">1</td>\n<td class=\"org-left\">say \"hi\"</td>\n</tr>\n\n<tr>\n<td class=\"org-left\">c</td>\n<td class=\"org-right\">&#xa0;</td>\n<td class=\"org-left\">x&vert;y</td>\n</tr>\n</tbody>\n<tbody>\n<tr>\n<td class=\"org-left\">d</td>\n<td class=\"org-right\">3</td>\n<td class=\"org-left\">&#xa0;</td>\n</tr>\n</tbody>\n</table>"
+  },
+  {
+   "id": "ex-13",
+   "input": "| 1 |  | 3 |\n| \"q\" | a b | |\n",
+   "format": "orgtbl-to-csv",
+   "options": {},
+   "want": "1,,3\n\"\"\"q\"\"\",a b,"
+  }
+ ],
+ "import": [
+  {
+   "id": "im-00",
+   "input": "intro\n",
+   "imported": "a,b,c\n1,2,3\n\"x, y\",5,6\n",
+   "sep": "guess",
+   "want": "intro\n| a    | b | c |\n| 1    | 2 | 3 |\n| x, y | 5 | 6 |\n",
+   "error": false
+  },
+  {
+   "id": "im-01",
+   "input": "intro\n",
+   "imported": "a\tb\tc\n1\t2\t3\n",
+   "sep": "guess",
+   "want": "intro\n| a | b | c |\n| 1 | 2 | 3 |\n",
+   "error": false
+  },
+  {
+   "id": "im-02",
+   "input": "intro\n",
+   "imported": "a b c\n1 2 3\n",
+   "sep": "guess",
+   "want": "intro\n| a | b | c |\n| 1 | 2 | 3 |\n",
+   "error": false
+  },
+  {
+   "id": "im-03",
+   "input": "intro\n",
+   "imported": "a,b\n1,2\n",
+   "sep": "guess",
+   "want": "intro\n| a | b |\n| 1 | 2 |\n",
+   "error": false
+  },
+  {
+   "id": "im-04",
+   "input": "intro\n",
+   "imported": "a,,c\n,\"q\"\"r\",\n",
+   "sep": "guess",
+   "want": "intro\n| a |     | c |\n|   | q\"r |   |\n",
+   "error": false
+  },
+  {
+   "id": "im-05",
+   "input": "intro\n",
+   "imported": "a\tb\n1\t2\n",
+   "sep": "comma",
+   "want": "intro\n| a\tb |\n| 1\t2 |\n",
+   "error": false
+  },
+  {
+   "id": "im-06",
+   "input": "intro\n",
+   "imported": "",
+   "sep": "guess",
+   "want": "intro\n",
+   "error": true
+  },
+  {
+   "id": "im-07",
+   "input": "intro\n",
+   "imported": "x\ny\nz\n",
+   "sep": "guess",
+   "want": "intro\n| x |\n| y |\n| z |\n",
+   "error": false
+  },
+  {
+   "id": "im-08",
+   "input": "intro\n",
+   "imported": "1,2,3\n4,5\n6\n",
+   "sep": "guess",
+   "want": "intro\n| 1,2,3 |\n| 4,5   |\n| 6     |\n",
+   "error": false
+  },
+  {
+   "id": "im-09",
+   "input": "intro\n",
+   "imported": "a,b\n\n1,2\n",
+   "sep": "guess",
+   "want": "intro\n| a | b |\n|   |   |\n| 1 | 2 |\n",
+   "error": false
+  }
+ ],
+ "convert": [
+  {
+   "id": "cr-csv-16",
+   "input": "a,b,c\n1,2,3\n",
+   "from": 0,
+   "to": 2,
+   "sep": "tab",
+   "want": "| a,b,c |\n| 1,2,3 |\n"
+  },
+  {
+   "id": "cr-csv-3",
+   "input": "a,b,c\n1,2,3\n",
+   "from": 0,
+   "to": 2,
+   "sep": 3,
+   "want": "| a,b,c |\n| 1,2,3 |\n"
+  },
+  {
+   "id": "cr-csv-4",
+   "input": "a,b,c\n1,2,3\n",
+   "from": 0,
+   "to": 2,
+   "sep": "comma",
+   "want": "| a | b | c |\n| 1 | 2 | 3 |\n"
+  },
+  {
+   "id": "cr-csv-none",
+   "input": "a,b,c\n1,2,3\n",
+   "from": 0,
+   "to": 2,
+   "sep": "guess",
+   "want": "| a | b | c |\n| 1 | 2 | 3 |\n"
+  },
+  {
+   "id": "cr-partial",
+   "input": "head\na,b\n1,2\ntail\n",
+   "from": 0,
+   "to": 4,
+   "sep": "guess",
+   "want": "| head |\n| a,b  |\n| 1,2  |\n| tail |\n"
+  },
+  {
+   "id": "cr-partial2",
+   "input": "head\na,b\n1,2\ntail\n",
+   "from": 1,
+   "to": 3,
+   "sep": "guess",
+   "want": "head\n| a | b |\n| 1 | 2 |\ntail\n"
+  },
+  {
+   "id": "cr-quote",
+   "input": "\"a b\",c\n\"x, y\",z\n",
+   "from": 0,
+   "to": 2,
+   "sep": "guess",
+   "want": "| a b  | c |\n| x, y | z |\n"
+  },
+  {
+   "id": "cr-sp-16",
+   "input": "a  b   c\n1  2   3\n",
+   "from": 0,
+   "to": 2,
+   "sep": "tab",
+   "want": "| a  b   c |\n| 1  2   3 |\n"
+  },
+  {
+   "id": "cr-sp-3",
+   "input": "a  b   c\n1  2   3\n",
+   "from": 0,
+   "to": 2,
+   "sep": 3,
+   "want": "| a  b | c |\n| 1  2 | 3 |\n"
+  },
+  {
+   "id": "cr-sp-4",
+   "input": "a  b   c\n1  2   3\n",
+   "from": 0,
+   "to": 2,
+   "sep": "comma",
+   "want": "| a  b   c |\n| 1  2   3 |\n"
+  },
+  {
+   "id": "cr-sp-none",
+   "input": "a  b   c\n1  2   3\n",
+   "from": 0,
+   "to": 2,
+   "sep": "guess",
+   "want": "| a | b | c |\n| 1 | 2 | 3 |\n"
+  },
+  {
+   "id": "cr-tab-16",
+   "input": "a\tb\tc\n1\t2\t3\n",
+   "from": 0,
+   "to": 2,
+   "sep": "tab",
+   "want": "| a | b | c |\n| 1 | 2 | 3 |\n"
+  },
+  {
+   "id": "cr-tab-3",
+   "input": "a\tb\tc\n1\t2\t3\n",
+   "from": 0,
+   "to": 2,
+   "sep": 3,
+   "want": "| a | b | c |\n| 1 | 2 | 3 |\n"
+  },
+  {
+   "id": "cr-tab-4",
+   "input": "a\tb\tc\n1\t2\t3\n",
+   "from": 0,
+   "to": 2,
+   "sep": "comma",
+   "want": "| a\tb\tc |\n| 1\t2\t3 |\n"
+  },
+  {
+   "id": "cr-tab-none",
+   "input": "a\tb\tc\n1\t2\t3\n",
+   "from": 0,
+   "to": 2,
+   "sep": "guess",
+   "want": "| a | b | c |\n| 1 | 2 | 3 |\n"
+  }
+ ],
+ "rect": [
+  {
+   "id": "rr-copy",
+   "input": "| a | b | c | d |\n|---+---+---+---|\n| 1 | 2 | 3 | 4 |\n| 5 | 6 | 7 | 8 |\n| 9 | 10 | 11 | 12 |\n",
+   "want": "| a | b |  c |  d |\n|---+---+----+----|\n| 1 | 2 |  3 |  4 |\n| 5 | 6 |  7 |  8 |\n| 1 | 2 | 11 | 12 |\n| 5 | 6 |    |    |\n"
+  },
+  {
+   "id": "rr-cut",
+   "input": "| a | b | c | d |\n|---+---+---+---|\n| 1 | 2 | 3 | 4 |\n| 5 | 6 | 7 | 8 |\n| 9 | 10 | 11 | 12 |\n",
+   "want": "| a |  b |  c |  d |\n|---+----+----+----|\n|   |    |  1 |  2 |\n|   |    |  5 |  6 |\n| 9 | 10 | 11 | 12 |\n"
+  },
+  {
+   "id": "rr-field",
+   "input": "| a | b | c | d |\n|---+---+---+---|\n| 1 | 2 | 3 | 4 |\n| 5 | 6 | 7 | 8 |\n| 9 | 10 | 11 | 12 |\n",
+   "want": "| a |  b | c |  d |\n|---+----+---+----|\n| 1 |  2 | 3 |  4 |\n| 5 |  6 | 7 |  8 |\n| 9 | 10 | 1 | 12 |\n"
+  },
+  {
+   "id": "rr-edge",
+   "input": "| a | b | c | d |\n|---+---+---+---|\n| 1 | 2 | 3 | 4 |\n| 5 | 6 | 7 | 8 |\n| 9 | 10 | 11 | 12 |\n",
+   "want": "| a |  b |  c |  d |   |\n|---+----+----+----+---|\n| 1 |  2 |  3 |  1 | 2 |\n| 5 |  6 |  7 |  5 | 6 |\n| 9 | 10 | 11 | 12 |   |\n"
+  },
+  {
+   "id": "rr-bottom",
+   "input": "| a | b | c | d |\n|---+---+---+---|\n| 1 | 2 | 3 | 4 |\n| 5 | 6 | 7 | 8 |\n| 9 | 10 | 11 | 12 |\n",
+   "want": "| a | b |  c |  d |\n|---+---+----+----|\n| 1 | 2 |  3 |  4 |\n| 5 | 6 |  7 |  8 |\n| 1 | 2 | 11 | 12 |\n| 5 | 6 |    |    |\n"
+  },
+  {
+   "id": "rr-rule",
+   "input": "| a | b | c | d |\n|---+---+---+---|\n| 1 | 2 | 3 | 4 |\n| 5 | 6 | 7 | 8 |\n| 9 | 10 | 11 | 12 |\n",
+   "want": "| a | b |  c |  d |\n|---+---+----+----|\n| 1 | 2 |  3 |  4 |\n| 5 | 6 |  7 |  8 |\n| a | b | 11 | 12 |\n| 1 | 2 |    |    |\n| 5 | 6 |    |    |\n"
+  },
+  {
+   "id": "rr-copy-only",
+   "input": "| a | b | c | d |\n|---+---+---+---|\n| 1 | 2 | 3 | 4 |\n| 5 | 6 | 7 | 8 |\n| 9 | 10 | 11 | 12 |\n",
+   "want": "| a | b | c | d |\n|---+---+---+---|\n| 1 | 2 | 3 | 4 |\n| 5 | 6 | 7 | 8 |\n| 9 | 10 | 11 | 12 |\n"
+  },
+  {
+   "id": "rr-formula",
+   "input": "| 1 | 2 |\n| 3 | 4 |\n#+TBLFM: $2=$1*2\n",
+   "want": "| 1 | 1 |\n| 3 | 3 |\n#+TBLFM: $2=$1*2\n"
+  }
+ ],
+ "mark": [
+  {
+   "id": "mr-0",
+   "input": "| ! | a |\n| # | 1 |\n| * | 2 |\n|   | 3 |\n",
+   "want": "| ! | a |\n| # | 1 |\n| * | 2 |\n| * | 3 |\n"
+  }
+ ]
+}

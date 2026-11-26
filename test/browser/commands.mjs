@@ -12,7 +12,7 @@ await page.goto(`${base}/`);
 await page.waitForSelector('.tab.current');
 const sheet = page.locator('.sheet');
 const btn = (n) => sheet.getByRole('button', { name: n, exact: true });
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/27 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/28 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
 const at = async (text, line) => {
   await page.fill('#editor', text);
   await page.evaluate((l) => { const e = document.getElementById('editor'); const o = e.value.split('\n').slice(0, l - 1).reduce((n, s) => n + s.length + 1, 0); e.focus(); e.setSelectionRange(o, o); }, line);
@@ -247,7 +247,7 @@ await page.locator('.sheet.agenda .abar button', { hasText: 'Close' }).click();
 await page.evaluate(() => document.getElementById('editor').focus());
 await page.keyboard.press('Alt+x'); await page.keyboard.type('org-agenda-file-to-front'); await page.keyboard.press('Enter');
 ok((await page.locator('#message').textContent()).includes('File added to front of agenda file list'), 'C-c [ lists the current file');
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/27 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/28 settings/).click();
 ok((await btn(/Agenda files/).textContent()).includes('1 file'), 'Settings shows how many agenda files there are');
 await btn(/Agenda files/).click();
 ok((await sheet.textContent()).includes('agenda-test.org (App storage)'), 'the Agenda files screen lists the file with its storage');
@@ -378,7 +378,7 @@ ok((await prompt()) === 'Foo value:', 'the value prompt names the property');
 await page.keyboard.press('Escape');
 
 // Capture: templates are set as init.el writes them; Capture asks the template's questions, shows the text, and files it
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/27 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/28 settings/).click();
 ok((await btn(/Capture templates/).textContent()).includes('1 template'), 'Emacs\'s default Task template is a real setting');
 await btn('‹ Settings').click(); await btn('Close').click();
 await page.click('#btn-menu'); await btn('Capture').click(); await btn(/Task/).click();
@@ -386,7 +386,7 @@ ok((await sheet.locator('textarea').inputValue()).startsWith('* TODO '), 'the de
 await btn('Save').click();
 await page.waitForFunction(() => /^Captured|does not exist|Heading|Cannot/.test(document.getElementById('message').textContent));
 ok((await page.locator('#message').textContent()) === 'Captured to .notes', 'the default Task template files to .notes');
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/27 settings/).click(); await btn(/Capture templates/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/28 settings/).click(); await btn(/Capture templates/).click();
 await sheet.locator('textarea').fill(`(setq org-capture-templates '(("t" "Todo" entry (file+headline "agenda-test.org" "Inbox") "* TODO %^{What}\\n")))`);
 await btn('Save').click();
 ok((await page.locator('#message').textContent()) === '1 capture template', 'saving the templates counts them');
@@ -411,7 +411,7 @@ ok((await sheet.locator('.item', { hasText: 'GitHub' }).locator('.meta').textCon
 await sheet.getByLabel('Dismiss').click();
 
 // Refile and archive: Refile lists the targets; Archive tags and archives from the command list
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/27 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/28 settings/).click();
 ok((await sheet.textContent()).includes('Refile targets') && (await sheet.textContent()).includes('Archive location'), 'Settings, Emacs lists Refile targets and Archive location');
 const emacsText = await sheet.textContent();
 ok(['Archive marks done', 'Archive saves', 'Refile new headings', 'Log repeats'].every((n) => emacsText.includes(n)), 'Settings, Emacs lists the archive, refile and log options');
@@ -442,7 +442,7 @@ await page.keyboard.press('Escape');
 await at('*/*/* Every day\n', 0);
 await page.click('#btn-files'); await btn('Save as').click(); await sheet.getByLabel('File name').fill('diary-test.org'); await btn('Save').click();
 await page.waitForFunction(() => document.getElementById('message').textContent.startsWith('Wrote'));
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/27 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/28 settings/).click();
 await btn(/Diary file/).click(); await sheet.getByLabel('Diary file').fill('diary-test.org'); await btn('Set').click();
 await btn(/Diary in the agenda/).click();
 ok((await btn(/Diary in the agenda/).textContent()).includes('On') && (await btn(/Diary file/).textContent()).includes('diary-test.org'), 'Settings, Emacs sets the diary file and turns the diary on');
@@ -452,7 +452,7 @@ await page.locator('.sheet.calendar .arow', { hasText: 'Every day' }).waitFor({ 
 ok((await page.locator('.sheet.calendar .arow').allTextContents()).some((t) => t.includes('Diary') && t.includes('Every day')), 'the calendar lists the diary entry of the day with the category Diary');
 await page.locator('.sheet.calendar .abar button', { hasText: 'Close' }).click();
 // Settings: the holiday categories and whether holidays show in the agenda
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/27 settings/).click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/28 settings/).click();
 ok((await btn(/^Holidays General/).textContent()).includes('General, Christian, Solar'), 'all three holiday categories are on by default');
 await btn(/Holidays in the agenda/).click();
 ok((await btn(/Holidays in the agenda/).textContent()).includes('On'), 'Holidays in the agenda turns on');
@@ -476,6 +476,19 @@ await at2('abc\n', 1, 1); await page.keyboard.press('Enter');
 ok((await text()) === 'a\nbc\n', 'RET outside a table is a newline');
 await at2('| a | b |\n| cc | d |\n', 1, 2); await page.keyboard.press('Alt+ArrowDown');
 ok((await text()) === '| cc | d |\n| a | b |\n', 'M-down in a table moves the row');
+
+await at2('| a | b |\n', 1, 2); await page.keyboard.press('Control+#');
+ok((await text()) === '| # | a | b |\n', 'C-# in a table adds a marks column and sets the mark to #');
+await page.fill('#editor', '| a | b |\n| c | d |\n|   |   |\n'); await page.evaluate(() => { const e = document.getElementById('editor'); e.setSelectionRange(2, 15); });
+await ctrl('c'); await ctrl('x'); await page.keyboard.press('Alt+w');
+await page.evaluate(() => { const e = document.getElementById('editor'); e.setSelectionRange(22, 22); });
+await ctrl('c'); await ctrl('x'); await ctrl('y');
+ok((await text()) === '| a | b |\n| c | d |\n| a | b |\n| c | d |\n', 'C-c C-x M-w copies cells and C-c C-x C-y pastes them');
+await at2('| a | b |\n| 1 | 2 |\n', 1, 2); await page.click('#btn-menu'); await btn(/Commands/).click(); await page.keyboard.type('org-table-export'); await page.keyboard.press('Enter');
+await btn('orgtbl-to-csv').click();
+ok((await page.inputValue('.sheet textarea')) === 'a,b\n1,2', 'Export table shows the table as csv');
+await btn('Save').waitFor();
+await page.keyboard.press('Escape');
 
 // Table formulas (Emacs: tf-* cases)
 const FT = '| 1 | 2 |   |\n| 3 | 4 |   |\n#+TBLFM: $3=$1+$2\n';
@@ -556,6 +569,26 @@ await ctrl('u'); await ctrl('c'); await ctrl('w');
 ok((await sheet.locator('h2').textContent()) === 'Goto', 'C-u C-c C-w asks for a target to visit');
 await sheet.locator('.item', { hasText: 'Alpha' }).click();
 ok((await sel()) === '0-0' && (await text()) === '* Alpha\n* Gamma\n** Beta\nbody\n', 'visiting a target moves the cursor and changes nothing');
+// The init file: asks before it runs, then its settings win over the Settings screens
+{
+  const p2 = await (await browser.newContext({ viewport: { width: 393, height: 800 } })).newPage();
+  await p2.goto(`${base}/`); await p2.waitForSelector('.tab.current');
+  await p2.evaluate(async () => {
+    await new Promise((res, rej) => { const r = indexedDB.open('serita-local', 1); r.onsuccess = () => { const t = r.result.transaction('files', 'readwrite'); t.objectStore('files').put({ text: '(setq org-tags-column -60)\n(no-such 1)\n', version: 'v1' }, 'init.el'); t.oncomplete = res; t.onerror = rej; }; });
+    localStorage.setItem('serita.settings', JSON.stringify({ 'serita-init-file': 'local:init.el' }));
+  });
+  await p2.reload();
+  await p2.getByRole('button', { name: 'Run', exact: true }).click();
+  await p2.waitForFunction(() => document.getElementById('message').textContent.startsWith('Init file: 1 file'));
+  ok((await p2.locator('#message').textContent()) === 'Init file: 1 file, 1 settings, 1 problem', 'the init file runs after you trust it and says how it went');
+  await p2.click('#btn-menu'); await p2.getByRole('button', { name: 'Settings', exact: true }).click(); await p2.getByRole('button', { name: /28 settings/ }).click();
+  ok((await p2.locator('.sheet .item', { hasText: 'Tag column' }).textContent()).includes('Init file'), 'a setting the init file sets shows that it comes from there');
+  await p2.locator('.sheet .item', { hasText: 'Tag column' }).click();
+  ok((await p2.locator('.sheet p').first().textContent()) === 'The init file sets this. Edit it there.', 'such a setting cannot be changed on the Settings screen');
+  await p2.getByRole('button', { name: /^Init file local/ }).click();
+  ok((await p2.locator('.sheet .report').first().textContent()) === 'init.el, line 2: Not supported: no-such', 'the Init file sheet lists the problem with its file and line');
+  await p2.close();
+}
 ok(errors.length === 0, `no page errors ${errors.join('; ')}`);
 await close();
 process.exit(failed ? 1 : 0);

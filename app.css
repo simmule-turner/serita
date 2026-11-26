@@ -211,3 +211,5 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 .ol-table.wrap table { width: 100%; }
 .ol-table.wrap .cell { white-space: normal; overflow-wrap: break-word; }
 .ol-table.zebra tr:nth-child(even) td { background: var(--bar); }
+.sheet .report { padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.sheet .report.kept { color: var(--muted); }

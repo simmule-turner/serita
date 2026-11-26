@@ -26,7 +26,7 @@ export function parseTemplates(text) {
     const head = name(form[0]);
     if (head === 'defun') continue;
     if (head === 'setq') for (let i = 1; i < form.length; i += 2) { if (name(form[i]) === 'org-capture-templates') list = quoted(form[i + 1]); }
-    else if (head === 'add-to-list' && name(unquote(form[1])) === 'org-capture-templates') list = [...list, quoted(form[2])];
+    else if (head === 'add-to-list' && name(unquote(form[1])) === 'org-capture-templates') list = form[3] ? [...list, quoted(form[2])] : [quoted(form[2]), ...list]; // as Emacs: the new template goes first unless APPEND
     else if (Array.isArray(form) && typeof form[0] === 'string') list = [...list, form];
     else if (form && form.quote) list = [...list, ...form.quote];
     else throw new Error('Expected setq or add-to-list for org-capture-templates');

@@ -201,5 +201,11 @@ A separate repository holds questions (case files written by us) and results rec
 ### `core/elisp.js`, `test/capture-templates.test.js`, `test/fixtures/emacs-capture-templates.json`, `test/fixtures/user-templates.el`
 - Written from: the Emacs Lisp manual's descriptions of the functions it implements (let, setq, dolist, format, re-search-forward and re-search-backward, insert, replace-match, flush-lines) and observed Emacs 30.1 results with Org 9.7.11 for capture into a function target, :prepare-finalize, item bullets and numbering, tag alignment and table formulas after capture (conformance v0.1.55 and v0.1.56), recorded as fixtures and read as behavior only. user-templates.el is the author's own configuration. No other project's code was consulted.
 
+### `core/tblexport.js`, `test/table-transfer.test.js`, `test/fixtures/emacs-table-transfer.json`
+- Written from: the Org manual's chapters on tables (exporting, importing, rectangles, recalculation marks) and observed Emacs 30.1 results with Org 9.7.11 for orgtbl-to-csv, -tsv, -orgtbl, -generic, -latex, -html, -texinfo and -unicode, org-table-import, org-table-convert-region, rectangle copy, cut and paste, and mark rotation (conformance v0.1.54 and v0.1.57), recorded as fixtures and read as behavior only. No other project's code was consulted.
+
+### `core/init.js`, `test/init.test.js`, `test/fixtures/init/`
+- Written from: the Emacs Lisp manual's descriptions of load, setq, defvar, defun and add-to-list (the new element goes first unless APPEND is given). The fixtures are the author's own configuration files. No other project's code was consulted.
+
 ### `test/conditional.test.js`
 - Written from: the HTTP standard's description of conditional requests (If-None-Match and 304). No other project's code was consulted.

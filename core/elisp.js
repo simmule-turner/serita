@@ -170,8 +170,19 @@ export function makeLisp(forms, { now = new Date() } = {}) {
     },
     'save-excursion': (a, env) => { const pt = buf.pt; try { return evalBody(a, env); } finally { buf.pt = Math.min(pt, buf.text.length + 1); } },
     'save-restriction': (a, env) => evalBody(a, env), 'save-match-data': (a, env) => evalBody(a, env),
-    defun: () => null,
+    defun: (a) => { defs.set(sym(a[0]), { params: a[1].map(sym), body: a.slice(2) }); return a[0]; },
+    defvar: (a, env) => { const n = sym(a[0]); if (a.length > 1 && !globals.has(n)) globals.set(n, ev(a[1], env)); return a[0]; },
+    'add-to-list': (a, env) => {
+      const n = sym(ev(a[0], env)); const el = ev(a[1], env); const append = a[2] === undefined ? null : ev(a[2], env);
+      const cur = globals.get(n) ?? null;
+      if (cur !== null && !Array.isArray(cur)) bad('wrong-type-argument listp');
+      const same = (x) => JSON.stringify(x) === JSON.stringify(el);
+      const next = (cur ?? []).some(same) ? cur : truthy(append) ? [...(cur ?? []), el] : [el, ...(cur ?? [])];
+      globals.set(n, next);
+      return next;
+    },
   };
+  SPECIAL['setq-default'] = SPECIAL.setq;
 
   function ev(form, env) {
     if (form === null || form === true || typeof form === 'number' || typeof form === 'string') return form;
@@ -203,6 +214,10 @@ export function makeLisp(forms, { now = new Date() } = {}) {
 
   return {
     has: (name) => defs.has(name),
+    /** Evaluates one top-level form (setq, defun, add-to-list and the rest) with variables kept between calls. */
+    evaluate(form) { steps = 0; return ev(form, null); },
+    /** The value of a global variable, or undefined when nothing has set it. */
+    get: (name) => globals.get(name),
     /** Runs the function NAME (no arguments) in a buffer; returns the new text and where point is, 1-based. */
     call(name, text, pt = 1) {
       if (!defs.has(name)) bad(`void-function ${name}`);

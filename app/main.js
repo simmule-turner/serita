@@ -36,6 +36,8 @@ import { duplicateLine, indentLine, killLine, killWholeLine, lineInfo, lineStart
 import { createKillRing } from '../core/killring.js';
 import * as table from '../core/table.js';
 import * as tblcmd from '../core/tblcmd.js';
+import * as tblexport from '../core/tblexport.js';
+import { loadInit } from '../core/init.js';
 import * as plot from '../core/plot.js';
 import { lineAt, project, toFull, toShown, touchedFold } from '../core/projection.js';
 import { renderOutline } from './ui/outline-view.js';
@@ -76,7 +78,15 @@ const places = createHistory(); // where Back returns to
 let cur = null;        // what the views show now: { id, a (the outline), proj (the Text view's projection) }
 let pendingSel = null; // where the cursor goes after the next render, in the real text
 
-const setting = (k) => config.settings()[k];
+// ---- The init file's settings: what the init file sets wins over the Settings screens ----------------------------------------------
+
+const INIT_RESULT = 'serita.init';
+const INIT_TRUST = 'serita.trust';
+const EMPTY_INIT = { settings: {}, report: [], files: [], at: null };
+let initResult = localStorage.getItem(INIT_RESULT) === null ? EMPTY_INIT : JSON.parse(localStorage.getItem(INIT_RESULT));
+const settingsNow = () => ({ ...config.settings(), ...initResult.settings });
+const setting = (k) => settingsNow()[k];
+const fromInit = (k) => k in initResult.settings;
 const viewMode = () => (setting('view.mode') === 'outline' ? 'outline' : 'text');
 const emacsKeys = () => setting('view.emacsKeys') === 'true';
 const hideStars = () => setting('org-hide-leading-stars') === 't';
@@ -795,7 +805,7 @@ async function settings() {
         h('div', { class: 'list' },
           h('button', { class: 'item', onclick: () => close('github') }, h('span', {}, 'GitHub'), h('span', { class: 'meta' }, `${summary('github')} ›`)),
           h('button', { class: 'item', onclick: () => close('webdav') }, h('span', {}, 'WebDAV'), h('span', { class: 'meta' }, `${summary('webdav')} ›`)),
-          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '27 settings ›')),
+          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '28 settings ›')),
           h('button', { class: 'item', onclick: () => close('appearance') }, h('span', {}, 'Appearance'), h('span', { class: 'meta' }, `${theme()[0].toUpperCase()}${theme().slice(1)}, ${fontSize()}px ›`)),
           h('button', { class: 'item', onclick: () => close('restore') }, h('span', {}, 'Restore open files on start'), h('span', { class: 'meta' }, restoreOn() ? 'On ›' : 'Off ›')),
           h('button', { class: 'item', onclick: () => close('tools-text') }, h('span', {}, 'Tool row in the Text view'), h('span', { class: 'meta' }, toolRowOn('text') ? 'On ›' : 'Off ›')),
@@ -821,13 +831,19 @@ async function settings() {
   }
 }
 
+/** The setting each row of Settings, Emacs, changes; a row whose setting the init file sets cannot be changed there. */
+const LOCK = { 'agenda-files': 'org-agenda-files', archive: 'org-archive-location', 'archive-done': 'org-archive-mark-done', 'archive-context': 'org-archive-save-context-info', 'time-grid': 'org-agenda-use-time-grid',
+  'capture-templates': 'org-capture-templates', 'contacts-files': 'org-contacts-files', 'birthday-property': 'org-contacts-birthday-property', 'date-style': 'calendar-date-style', 'diary-file': 'diary-file', 'diary-on': 'org-agenda-include-diary',
+  stars: 'org-hide-leading-stars', indented: 'org-startup-indented', holidays: 'calendar-holidays', 'holidays-agenda': 'diary-show-holidays-flag', 'holidays-local': 'holiday-local-holidays', 'log-drawer': 'org-log-into-drawer',
+  'log-repeat': 'org-log-repeat', 'agenda-prefix': 'org-agenda-prefix-settings', refile: 'org-refile-settings', 'refile-new': 'org-refile-allow-creating-parent-nodes', 'tags-column': 'org.tagsColumn' };
+
 /** Settings, Emacs: the settings that are Emacs's own, in alphabetical order. */
 async function emacsSettings() {
   let note = '';
   for (;;) {
     const what = await panel((sheet, close) => {
       const files = agendaFileNames().length;
-      const item = (key, label, meta) => h('button', { class: 'item', onclick: () => close(key) }, h('span', {}, label), h('span', { class: 'meta' }, `${meta} ›`));
+      const item = (key, label, meta) => h('button', { class: 'item', onclick: () => close(key) }, h('span', {}, label), h('span', { class: 'meta' }, `${fromInit(LOCK[key]) ? 'Init file' : meta} ›`));
       put(sheet, h('h2', {}, 'Emacs'), note ? h('p', {}, note) : null,
         h('div', { class: 'list' },
           item('agenda-files', 'Agenda files', `${files} ${files === 1 ? 'file' : 'files'}`),
@@ -856,13 +872,16 @@ async function emacsSettings() {
           item('table-wrap', 'Wrap table cells', wrapCells() ? 'On' : 'Off'),
           item('table-width', 'Table width', `${Math.round(widthFraction() * 100)}%`),
           item('table-zebra', 'Stripe table rows', zebraRows() ? 'On' : 'Off'),
-          item('tags-column', 'Tag column', String(tagsColumn()))),
+          item('tags-column', 'Tag column', String(tagsColumn())),
+          item('init-file', 'Init file', initName() || 'None')),
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
     });
     if (what === undefined) return;
     note = '';
     $('message').textContent = '';
-    if (what === 'agenda-files') await agendaFilesDialog();
+    if (fromInit(LOCK[what])) { note = 'The init file sets this. Edit it there.'; continue; }
+    if (what === 'init-file') await initFileDialog();
+    else if (what === 'agenda-files') await agendaFilesDialog();
     else if (what === 'archive') await archiveLocationDialog();
     else if (what === 'contacts-files') await contactFilesDialog();
     else if (what === 'birthday-property') await birthdayPropertyDialog();
@@ -1096,7 +1115,7 @@ $('btn-menu').addEventListener('click', async () => {
 
 /** org-capture-templates as the text of its init.el form; Emacs's own template when none is set. */
 const DEFAULT_TEMPLATES = '(setq org-capture-templates \'(("t" "Task" entry (file+headline ".notes" "Tasks") "* TODO %?\\n  %u\\n  %a")))';
-const captureText = () => config.settings()['org-capture-templates'] || DEFAULT_TEMPLATES;
+const captureText = () => settingsNow()['org-capture-templates'] || DEFAULT_TEMPLATES;
 const captureTemplates = () => parseTemplates(captureText());
 
 /** The multi-line field of the capture screen, with the caret where %? was. */
@@ -1170,10 +1189,10 @@ async function captureTemplatesDialog() {
 
 const DEFAULT_REFILE = '(setq org-refile-targets \'((nil :level . 1)))';
 const refileCache = new RefileCache();
-const prefixText = () => config.settings()['org-agenda-prefix-settings'] ?? '';
+const prefixText = () => settingsNow()['org-agenda-prefix-settings'] ?? '';
 const DEFAULT_PREFIX = `(setq org-agenda-prefix-format\n      '((agenda . "${DEFAULT_FORMATS.agenda}")\n        (todo . "${DEFAULT_FORMATS.todo}")\n        (tags . "${DEFAULT_FORMATS.tags}")\n        (search . "${DEFAULT_FORMATS.search}")))\n(setq org-agenda-category-icon-alist nil)`;
 const prefixOpts = () => { try { return parseAgendaSettings(prefixText() || DEFAULT_PREFIX); } catch { return parseAgendaSettings(DEFAULT_PREFIX); } };
-const refileText = () => config.settings()['org-refile-settings'] ?? '';
+const refileText = () => settingsNow()['org-refile-settings'] ?? '';
 /** org-archive-mark-done: null (nil), true (t) or a keyword. org-archive-save-context-info: the names saved. */
 const archiveMarkDone = () => { const v = setting('org-archive-mark-done'); return !v || v === 'nil' ? null : v === 't' ? true : v; };
 const archiveContext = () => { const v = setting('org-archive-save-context-info'); return !v ? ARCHIVE_CONTEXT : v === 'nil' ? [] : v.split(/\s+/); };
@@ -1192,7 +1211,7 @@ const localHolidays = () => setting('holiday-local-holidays') || '';
 const holidayOpts = () => ({ which: holidayKinds(), localText: localHolidays() });
 let diaryText = null; // { name, text, style } of the diary the last agenda or calendar read
 const timeGridOn = () => setting('org-agenda-use-time-grid') !== 'nil';
-const archiveLocation = () => config.settings()['org-archive-location'] || '%s_archive::';
+const archiveLocation = () => settingsNow()['org-archive-location'] || '%s_archive::';
 const bufferName = (b) => b.name ?? b.title;
 
 /** The text of a file that may be a refile or archive target: its open buffer, or the file opened. */
@@ -1454,8 +1473,8 @@ const mondayOf = (d) => new Date(d.getTime() - ((d.getUTCDay() + 6) % 7) * 86400
 const categoryOfName = (name) => parseName(name).path.replace(/^.*\//, '').replace(/\.[^.]*$/, '');
 
 /** org-agenda-files: storage names, kept as the Lisp list that init.el would set. */
-const agendaFileNames = () => parseStringList(config.settings()['org-agenda-files'] ?? '()');
-const setAgendaFileNames = (names) => config.update({ settings: { 'org-agenda-files': formatStringList(names) } });
+const agendaFileNames = () => parseStringList(settingsNow()['org-agenda-files'] ?? '()');
+const setAgendaFileNames = (names) => { if (fromInit('org-agenda-files')) { message('Agenda files are set by the init file; edit it there', true); return; } config.update({ settings: { 'org-agenda-files': formatStringList(names) } }); };
 
 /** Puts a file first on the list (Emacs: org-agenda-file-to-front). */
 function addAgendaFile(name) {
@@ -1838,6 +1857,28 @@ function tableEditAt(line, col, fn, { place = true } = {}) {
   if (r.error) message(r.error, true);
 }
 
+let rectClip = null;
+
+/** The corners of the selection as table positions, for the rectangle commands. */
+function rectCorners() {
+  if (editor.selectionStart === editor.selectionEnd) return null;
+  const b = currentBuffer();
+  const pos = (o) => { const f = toFull(cur.proj, o); const line = lineAt(cur.proj, o); return { line, col: f - lineOffset(b.text, line) }; };
+  return [pos(editor.selectionStart), pos(editor.selectionEnd)];
+}
+
+/** C-c C-x M-w and C-c C-x C-w: copies or cuts the cells in the rectangle between the selection's ends. */
+function tableCopyRegion(cut) {
+  const c = rectCorners();
+  const r = c && tblcmd.copyRectangle(currentBuffer().text, c[0], c[1], cut);
+  if (!r) { message('Not in table', true); return; }
+  rectClip = r.clip;
+  if (cut) session.apply(currentBuffer().id, { text: r.text });
+}
+
+/** C-c C-x C-y: pastes the copied cells from the field at the cursor. */
+function tablePasteRectangle() { tableEdit((t, l, c) => { const r = tblcmd.pasteRectangle(t, l, c, rectClip); return { ...r, line: r.line ?? l, col: c }; }); }
+
 /** The same at the cursor. */
 function tableEdit(fn) {
   const at = tableHere();
@@ -2052,6 +2093,64 @@ async function plotTable(line) {
   document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 10000);
   message('Saved the plot as an SVG image');
+}
+
+/** The text of a file the person picks. */
+function pickFileText() {
+  return new Promise((resolve) => {
+    const input = h('input', { type: 'file' });
+    input.addEventListener('change', async () => resolve(input.files[0] ? await input.files[0].text() : undefined));
+    input.addEventListener('cancel', () => resolve(undefined));
+    input.click();
+  });
+}
+
+/** org-table-export: asks for a format, shows the table in it, and offers Copy and Save. */
+async function tableExport() {
+  const at = tableHere();
+  if (!at) { message('Not in table', true); return; }
+  const rows = table.toLisp(currentBuffer().text, at.line);
+  await panel((sheet, close) => {
+    const formats = () => put(sheet, h('h2', {}, 'Export table'),
+      h('div', { class: 'list' }, tblexport.FORMAT_NAMES.map((n) => h('button', { class: 'item', onclick: () => result(n) }, h('span', {}, `orgtbl-to-${n}`)))));
+    const result = (format) => {
+      let out;
+      try { out = tblexport.exportRows(rows, format); } catch (e) { failure(e); return; }
+      const area = h('textarea', { rows: 8, readonly: 'readonly', spellcheck: 'false', 'aria-label': 'Exported table', class: 'mono' }, out);
+      put(sheet, h('h2', {}, 'Export table'), area,
+        h('div', { class: 'row' },
+          h('button', { onclick: formats }, '‹ Formats'),
+          h('button', { onclick: () => { navigator.clipboard.writeText(out).then(() => message('Copied'), () => message('Could not copy to the clipboard', true)); } }, 'Copy'),
+          h('button', { class: 'primary', onclick: () => {
+            const url = URL.createObjectURL(new Blob([out], { type: 'text/plain' }));
+            const ext = { csv: 'csv', tsv: 'tsv', html: 'html', latex: 'tex', texinfo: 'texi' }[format] ?? 'txt';
+            const a = h('a', { href: url, download: `table.${ext}` });
+            document.body.append(a); a.click(); a.remove();
+            setTimeout(() => URL.revokeObjectURL(url), 10000);
+            close(undefined);
+          } }, 'Save')));
+    };
+    formats();
+  });
+}
+
+/** org-table-import: pasted text or a chosen file goes in at the cursor and becomes a table. */
+async function tableImport() {
+  const text = await panel((sheet, close) => {
+    const area = h('textarea', { rows: 6, autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Text to import', placeholder: 'Paste text, or choose a file', class: 'mono' });
+    put(sheet, h('h2', {}, 'Import table'), area,
+      h('div', { class: 'row' },
+        h('button', { onclick: async () => { const t = await pickFileText(); if (t !== undefined) area.value = t; } }, 'Choose file'),
+        h('button', { onclick: () => close(undefined) }, 'Cancel'),
+        h('button', { class: 'primary', onclick: () => close(area.value) }, 'Import')));
+    area.focus();
+  });
+  if (text === undefined) return;
+  const b = currentBuffer();
+  let r;
+  try { r = table.importText(b.text, toFull(cur.proj, editor.selectionStart), text); } catch (e) { failure(e); return; }
+  session.apply(b.id, { text: r.text });
+  placeOffset(lineOffset(r.text, r.line) + r.col);
 }
 
 /** C-c ' : all of the table's formulas in one sheet. */
@@ -2675,6 +2774,13 @@ const COMMANDS = {
   'table-plot': () => plotTable(),
   'table-recalculate-buffer': () => recalculateBuffer(),
   'table-iterate-buffer': () => iterateBuffer(),
+  'init-reload': () => runInit().catch(failure),
+  'table-export': () => tableExport(),
+  'table-import': () => tableImport(),
+  'table-copy-region': () => tableCopyRegion(false),
+  'table-cut-region': () => tableCopyRegion(true),
+  'table-paste-rectangle': () => tablePasteRectangle(),
+  'table-rotate-recalc-marks': () => tableEdit(tblcmd.rotateMark),
   'keep-offline': () => offlineDialog(),
   'table-create': () => tableCreate(),
   'table-field-info': () => { const at = tableHere(); const i = at && table.fieldInfo(currentBuffer().text, at.line, at.col); message(i ?? 'Not in table', !i); },
@@ -3044,7 +3150,7 @@ const PALETTE = [
   ['promote', 'org-metaleft', 'Promote'], ['demote', 'org-metaright', 'Demote'], ['promote-subtree', 'org-shiftmetaleft', 'Promote subtree'], ['demote-subtree', 'org-shiftmetaright', 'Demote subtree'],
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
   ['insert-heading', 'org-insert-heading-respect-content', 'Insert heading after subtree'], ['insert-heading-here', 'org-meta-return', 'Insert heading here'],
-  ['table-align', 'org-table-align', 'Align table'], ['table-sort', 'org-table-sort-lines', 'Sort table lines'], ['table-blank-field', 'org-table-blank-field', 'Blank table field'], ['table-sum', 'org-table-sum', 'Sum table column'], ['keep-offline', 'serita-keep-files-offline', 'Keep files offline', true], ['table-recalculate', 'org-table-recalculate', 'Recalculate table formulas'], ['table-formula', 'org-table-eval-formula', 'Edit a table formula'], ['table-edit-formulas', 'org-table-edit-formulas', 'Edit all table formulas'], ['table-plot', 'org-plot/gnuplot', 'Plot table', true], ['table-toggle-numbers', 'org-table-toggle-coordinate-overlays', 'Show table row and column numbers'], ['table-toggle-debug', 'org-table-toggle-formula-debugger', 'Debug table formulas'], ['table-recalculate-buffer', 'org-table-recalculate-buffer-tables', 'Recalculate all tables', true], ['table-iterate-buffer', 'org-table-iterate-buffer-tables', 'Recalculate all tables until stable', true], ['table-create', 'org-table-create-or-convert-from-region', 'Create table or convert text'],
+  ['table-align', 'org-table-align', 'Align table'], ['table-sort', 'org-table-sort-lines', 'Sort table lines'], ['table-blank-field', 'org-table-blank-field', 'Blank table field'], ['table-sum', 'org-table-sum', 'Sum table column'], ['keep-offline', 'serita-keep-files-offline', 'Keep files offline', true], ['table-recalculate', 'org-table-recalculate', 'Recalculate table formulas'], ['table-formula', 'org-table-eval-formula', 'Edit a table formula'], ['table-edit-formulas', 'org-table-edit-formulas', 'Edit all table formulas'], ['table-plot', 'org-plot/gnuplot', 'Plot table', true], ['table-toggle-numbers', 'org-table-toggle-coordinate-overlays', 'Show table row and column numbers'], ['table-toggle-debug', 'org-table-toggle-formula-debugger', 'Debug table formulas'], ['table-recalculate-buffer', 'org-table-recalculate-buffer-tables', 'Recalculate all tables', true], ['table-iterate-buffer', 'org-table-iterate-buffer-tables', 'Recalculate all tables until stable', true], ['table-create', 'org-table-create-or-convert-from-region', 'Create table or convert text'], ['init-reload', 'serita-reload-init-file', 'Reload init file', true], ['table-export', 'org-table-export', 'Export table'], ['table-import', 'org-table-import', 'Import table text'], ['table-copy-region', 'org-table-copy-region', 'Copy table cells'], ['table-cut-region', 'org-table-cut-region', 'Cut table cells'], ['table-paste-rectangle', 'org-table-paste-rectangle', 'Paste table cells'], ['table-rotate-recalc-marks', 'org-table-rotate-recalc-marks', 'Rotate recalculation mark'],
   ['table-transpose', 'org-table-transpose-table-at-point', 'Transpose table'], ['table-field-info', 'org-table-field-info', 'Show field coordinates'], ['table-hline', 'org-table-insert-hline', 'Insert horizontal line'],
   ['table-copy-down', 'org-table-copy-down', 'Copy field down'], ['table-next-row', 'org-table-next-row', 'Next row'],
   ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],
@@ -3405,6 +3511,73 @@ session.subscribe(() => { clearTimeout(saveTimer); saveTimer = setTimeout(saveSe
 config.onChange(() => { clearTimeout(saveTimer); saveTimer = setTimeout(saveSession, 0); });
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') saveSession(); });
 
+// ---- Running the init file --------------------------------------------------------------------------------------------------------
+
+const initName = () => config.settings()['serita-init-file'] ?? '';
+const trustList = () => JSON.parse(localStorage.getItem(INIT_TRUST) ?? '{}');
+const pathOf = (name) => parseName(name).path;
+
+/** A file the init file runs is code: it runs when its name and content are the ones you ran before, else you read it and decide. */
+async function askTrust(name, hash, text) {
+  const known = trustList();
+  if (known[name] === hash) return true;
+  const run = await panel((sheet, close) => {
+    put(sheet, h('h2', {}, 'Run init file?'),
+      h('p', {}, `${name} ${known[name] ? 'has changed since you last ran it' : 'has not run here before'}. It runs as code. Read it first.`),
+      h('textarea', { rows: 8, readonly: 'readonly', spellcheck: 'false', class: 'mono', 'aria-label': 'The file' }, text),
+      h('div', { class: 'row' }, h('button', { onclick: () => close(false) }, 'Skip'), h('button', { class: 'primary', onclick: () => close(true) }, 'Run')));
+  });
+  if (!run) return false;
+  localStorage.setItem(INIT_TRUST, JSON.stringify({ ...known, [name]: hash }));
+  return true;
+}
+
+const problemsOf = (r) => r.report.filter((x) => x.kind !== 'kept');
+const reportLine = (x) => (x.kind === 'kept' ? x.message : `${pathOf(x.file)}${x.line ? `, line ${x.line}` : ''}: ${x.message}`);
+
+function setInit(r) {
+  initResult = r;
+  if (r === EMPTY_INIT) localStorage.removeItem(INIT_RESULT); else localStorage.setItem(INIT_RESULT, JSON.stringify(r));
+  render();
+}
+
+/** Runs the init file named in Settings and applies what it sets. When the file itself cannot be read or run, the last run stays. */
+async function runInit() {
+  const file = initName();
+  if (!file) { setInit(EMPTY_INIT); return; }
+  const r = await loadInit({ file, read: async (n) => { const f = await app.storage.read(n); if (!f) throw new Error('not found'); return f.text; }, trusted: askTrust });
+  if (r.files.length === 0) { message(`Init file not run: ${reportLine(r.report[0])}`, true); return; }
+  setInit({ ...r, at: Date.now() });
+  const n = problemsOf(r).length;
+  message(`Init file: ${r.files.length} ${r.files.length === 1 ? 'file' : 'files'}, ${Object.keys(r.settings).length} settings${n ? `, ${n} ${n === 1 ? 'problem' : 'problems'}` : ''}`, n > 0);
+}
+
+/** Settings, Emacs, Init file. */
+async function initFileDialog() {
+  let again = true;
+  while (again) {
+    again = false;
+    const v = await panel((sheet, close) => {
+      const input = h('input', { value: initName(), autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Init file', placeholder: 'github:org/init.el' });
+      input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); close(input.value.trim()); } });
+      const lines = initResult.report.map((x) => h('div', { class: `report${x.kind === 'kept' ? ' kept' : ''}` }, reportLine(x)));
+      const n = problemsOf(initResult).length;
+      put(sheet, h('h2', {}, 'Init file'),
+        h('p', {}, 'A Lisp file run at startup, as a storage name such as github:org/init.el. It can load other files.'), input,
+        initResult.at ? h('p', {}, `Last run: ${initResult.files.length} ${initResult.files.length === 1 ? 'file' : 'files'}, ${Object.keys(initResult.settings).length} settings${n ? `, ${n} ${n === 1 ? 'problem' : 'problems'}` : ''}`) : null,
+        h('div', { class: 'list' }, lines, initName() ? h('button', { class: 'item', onclick: () => close(RELOAD) }, h('span', {}, 'Reload now'), h('span', { class: 'meta' }, '›')) : null),
+        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { onclick: () => close(RESET) }, 'Reset'), h('button', { class: 'primary', onclick: () => close(input.value.trim()) }, 'Save')));
+      input.focus();
+    });
+    if (v === undefined) return;
+    if (v === RESET) { config.update({ settings: { 'serita-init-file': '' } }); setInit(EMPTY_INIT); message('No init file'); return; }
+    if (v !== RELOAD) config.update({ settings: { 'serita-init-file': v } });
+    try { await runInit(); } catch (e) { failure(e); }
+    again = true;
+  }
+}
+const RELOAD = Symbol('reload');
+
 async function startSession() {
   let saved = null;
   try { saved = restoreOn() ? JSON.parse(localStorage.getItem(SESSION_KEY) ?? 'null') : null; } catch (e) { failure(e); }
@@ -3424,3 +3597,4 @@ async function startSession() {
 }
 await startSession();
 updatePending().catch(failure);
+runInit().catch(failure);

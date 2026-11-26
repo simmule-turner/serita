@@ -155,3 +155,20 @@ Showing the working: ~=>~ puts the formula and its value in the field.
 
 | 3 |       |
 #+TBLFM: $2=$1*2 => x
+
+* Copy, export and import
+Select from the first cell of "Apple" to the last cell of "Pear", then C-c C-x M-w copies those cells. Move to the empty row and press C-c C-x C-y to paste them. In a table, the palette's Export table shows it as csv or LaTeX, and Import table turns text such as ~a,b,c~ into a table.
+
+| Fruit | Qty |
+|-------+-----|
+| Apple |   3 |
+| Pear  |   5 |
+|       |     |
+|       |     |
+
+C-# in a row turns the mark in its first column from blank to ~#~, then ~*~, then blank again; a table with no marks column gets one.
+
+|   | Qty |
+|---+-----|
+|   |   3 |
+|   |   5 |

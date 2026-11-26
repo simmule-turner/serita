@@ -6,10 +6,10 @@ export const sym = (name) => ({ sym: name });
 export const isSym = (x, name) => x !== null && typeof x === 'object' && !Array.isArray(x) && 'sym' in x && (name === undefined || x.sym === name);
 
 /**
- * @param {string} text @param {{ integers?: boolean }} [opts] with `integers`, a number written without a point is a BigInt, so it stays apart from a float
+ * @param {string} text @param {{ integers?: boolean, spans?: boolean }} [opts] with `integers`, a number written without a point is a BigInt, so it stays apart from a float
  * @returns {any[]} every form in the text
  */
-export function readForms(text, { integers = false } = {}) {
+export function readForms(text, { integers = false, spans = false } = {}) {
   let i = 0;
   const fail = (msg) => { throw new Error(`${msg} at character ${i + 1}`); };
   const skip = () => { for (;;) { while (i < text.length && /\s/.test(text[i])) i++; if (text[i] === ';') { while (i < text.length && text[i] !== '\n') i++; } else return; } };
@@ -49,5 +49,12 @@ export function readForms(text, { integers = false } = {}) {
     return sym(m[0]);
   };
   const forms = [];
-  for (;;) { skip(); if (i >= text.length) return forms; forms.push(read()); }
+  for (;;) {
+    skip();
+    if (i >= text.length) return forms;
+    const start = i;
+    // With `spans`, each form comes with where it starts and ends; a form that cannot be read ends the list with an `error` property.
+    if (!spans) { forms.push(read()); continue; }
+    try { forms.push({ form: read(), start, end: i }); } catch (e) { forms.error = { message: e.message, at: start }; return forms; }
+  }
 }
