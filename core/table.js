@@ -406,9 +406,9 @@ export function sortFunctions(keyName, compareName) {
   const void_ = (n) => new Error(`Symbol’s function definition is void: ${n}`);
   const k = keyName.trim();
   if (k === '') throw new Error('No function given');
-  if (!Object.hasOwn(SORT_KEYS, k)) throw void_(k);
+  if (!Object.prototype.hasOwnProperty.call(SORT_KEYS, k)) throw void_(k);
   const c = compareName.trim();
-  if (c !== '' && !Object.hasOwn(SORT_COMPARE, c)) throw void_(c);
+  if (c !== '' && !Object.prototype.hasOwnProperty.call(SORT_COMPARE, c)) throw void_(c);
   return { key: SORT_KEYS[k], compare: c === '' ? null : SORT_COMPARE[c] };
 }
 

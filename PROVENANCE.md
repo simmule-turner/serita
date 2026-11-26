@@ -176,3 +176,9 @@ A separate repository holds questions (case files written by us) and results rec
 
 ### `core/table.js`, `test/table.test.js`
 - Written from: the Org manual's description of tables and observed Emacs 30.1 results with Org 9.7.11 for the table keys, alignment, sorting, conversion, import and export (conformance v0.1.34), recorded as fixtures and read as behavior only. Statement as above.
+
+### `core/prefix.js`, `test/prefix.test.js`
+- Written from: observed Emacs 30.1 results with Org 9.7.11 for `org-agenda-prefix-format` and `org-agenda-category-icon-alist` (conformance v0.1.37), recorded as fixtures and read as behavior only. Statement as above.
+
+### `core/universal.js`, `test/universal.test.js`, `test/prefix-args.test.js`
+- Written from: the Emacs manual's description of the universal argument and observed Emacs 30.1 results with Org 9.7.11 for refile, cycling, TODO states, heading insertion and table sorting with a prefix (conformance v0.1.38), recorded as fixtures and read as behavior only. Statement as above.

@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.10.6
+Fixes the release check that failed for 0.10.5: the agenda line format and universal argument code now have their provenance entries. Sorting a table with a function no longer depends on ~Object.hasOwn~, which Safari before 15.4 lacks.
+
 * 0.10.5
 Commands take a universal argument. In the Outline view the Commands palette has a C-u button that counts up and a row of digits beside it (Show all is gone, since it only listed commands that need the Text view); the Text view takes C-u and C-0 to C-9 from the keyboard. It changes refile (visit the target, go to the last refile, keep the entry, clear the cache), TAB and S-TAB (overview, startup visibility, show all, a level), the TODO keyword (the Nth, the next set), M-RET, the table rule and row keys, and C-c ^ f sorts by a function. Verified: against Emacs 30.1 with Org 9.7.11.
 
