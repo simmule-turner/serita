@@ -518,7 +518,7 @@ export function tableView(text, line) {
     for (const r of t.rows) { const k = r.rule ? null : COOKIE.exec(r.cells[j] ?? ''); if (k?.[2]) return Number(k[2]); }
     return null;
   });
-  const rows = t.rows.map((r, i) => ({ line: t.start + i, rule: r.rule, cells: Array.from({ length: r.rule ? 0 : n }, (_, j) => r.cells[j] ?? ''), cookies: !r.rule && r.cells.length > 0 && r.cells.every((c) => c === '' || COOKIE.test(c)) }));
+  const rows = t.rows.map((r, i) => ({ line: t.start + i, rule: r.rule, cells: Array.from({ length: r.rule ? 0 : n }, (_, j) => r.cells[j] ?? ''), cookies: !r.rule && r.cells.some((c) => COOKIE.test(c)) && r.cells.every((c) => c === '' || COOKIE.test(c)) }));
   return { start: t.start, end: t.end, n, align, limit, rows };
 }
 

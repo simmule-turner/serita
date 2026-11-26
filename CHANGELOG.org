@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.10.3
+Fixes from testing 0.10.2 on a phone. A row inserted from the Outline grid now shows up, and the cell menu closes after every operation. Wrapped table cells keep short columns whole and long text in a number column wraps instead of scrolling. Agenda and calendar rows line up in columns, and the Agenda button no longer flashes the Outline view. Save as asks "File ‘x’ exists; overwrite?" like Emacs, Clear refile cache is in the Outline palette, and a file reloaded in a background tab tells you when you return. The Outline view ignores Hide leading stars and indent mode, which are for the Text view.
+
 * 0.10.2
 Checkbox counts follow Emacs: C-c C-c on a ~[/]~ or ~[%]~ cookie recounts it, a heading counts only the checkboxes of its own list, and C-c C-c on an item with checkboxes below it sets its box from them. A new ~org-refile-use-cache~ setting keeps the refile targets until you clear them (Clear refile cache in the palette); tables gained Sum column and Blank field, and converting text to a table splits at bars too. Verified: against Emacs 30.1 with Org 9.7.11.
 

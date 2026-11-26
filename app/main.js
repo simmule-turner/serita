@@ -244,7 +244,7 @@ function render() {
       if (sel) editor.setSelectionRange(toShown(proj, sel.start), toShown(proj, sel.end));
     }
     pendingSel = null;
-    if (mode === 'outline') renderOutline($('outline'), { text: shown.text, folds: shown.folds, hideStars: hideStars(), indent: indentOn(shown), tables: { wrap: wrapCells(), zebra: zebraRows(), fraction: widthFraction() }, on: outlineOn });
+    if (mode === 'outline') renderOutline($('outline'), { text: shown.text, folds: shown.folds, hideStars: false, indent: false, tables: { wrap: wrapCells(), zebra: zebraRows(), fraction: widthFraction() }, on: outlineOn });
     if (!$('keyrow').hidden) keyRow.layout();
   } else {
     cur = null;
@@ -335,7 +335,16 @@ async function saveAs(id) {
   const b = session.state().buffers.find((x) => x.id === id);
   const picked = await browse({ mode: 'saveas', suggested: b.name ? parseName(b.name).path.replace(/^.*\//, '') : 'untitled.org', current: b.name });
   if (!picked) return false;
-  try { return await handleSave(await session.saveAs(id, picked, { overwrite: true }), id); } catch (e) { failure(e); return false; }
+  try {
+    let r = await session.saveAs(id, picked);
+    if (r.status === 'exists') {
+      // write-file asks before replacing another file
+      const file = picked.replace(/^.*[:/]/, '');
+      if (!(await ask('Overwrite', `File ‘${file}’ exists; overwrite?`, [{ label: 'No', value: false }, { label: 'Yes', value: true, primary: true }]))) { message('Canceled'); return false; }
+      r = await session.saveAs(id, picked, { overwrite: true });
+    }
+    return await handleSave(r, id);
+  } catch (e) { failure(e); return false; }
 }
 
 async function closeBuffer(id) {
@@ -1479,11 +1488,11 @@ function sidewaysSwipe(onSwipe) {
 }
 
 /** The agenda over the agenda files: a full screen of rows for the dates, the TODO list, tags or a search. Tapping a row goes to that heading. */
-async function agendaScreen() {
+async function agendaScreen(loaded = null) {
   agendaState.anchor ??= todayDate();
-  let files;
-  try { files = await agendaSources(); } catch (e) { failure(e); return; }
-  let diary = await diaryData();
+  let files = loaded?.files;
+  try { files ??= await agendaSources(); } catch (e) { failure(e); return; }
+  let diary = loaded?.diary ?? await diaryData();
   for (;;) {
     const st = agendaState;
     let view;
@@ -1618,7 +1627,7 @@ async function calendarScreen() {
     if (act.move) { const n = stepMonth(y, m, act.move); calendarState.y = n.y; calendarState.m = n.m; }
     else if (act.today) { calendarState.y = t.getUTCFullYear(); calendarState.m = t.getUTCMonth() + 1; calendarState.day = isoOf(t); }
     else if (act.day) { calendarState.day = act.day; const [yy, mm] = act.day.split('-').map(Number); calendarState.y = yy; calendarState.m = mm; }
-    else if (act.agenda) { agendaState.kind = 'agenda'; agendaState.span = 'day'; agendaState.anchor = new Date(`${calendarState.day}T00:00:00Z`); await agendaScreen(); return; }
+    else if (act.agenda) { agendaState.kind = 'agenda'; agendaState.span = 'day'; agendaState.anchor = new Date(`${calendarState.day}T00:00:00Z`); await agendaScreen({ files, diary }); return; }
     else if (act.jump) { await jumpTo(files, act.jump, 'calendar'); return; }
   }
 }
@@ -1823,7 +1832,7 @@ async function cellSheet(line, j) {
     const pick = await choose(sub[0], sub[1].map(([label], i) => ({ label, value: i })));
     if (pick === undefined) { if (dismissed) return; continue; }
     run(sub[1][pick][1]);
-    if (what !== 'sort') return;
+    return;
   }
 }
 
@@ -2638,7 +2647,7 @@ const PALETTE = [
   ['table-transpose', 'org-table-transpose-table-at-point', 'Transpose table'], ['table-field-info', 'org-table-field-info', 'Show field coordinates'], ['table-hline', 'org-table-insert-hline', 'Insert horizontal line'],
   ['table-copy-down', 'org-table-copy-down', 'Copy field down'], ['table-next-row', 'org-table-next-row', 'Next row'],
   ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],
-  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true], ['effort', 'org-set-effort', 'Set effort'], ['capture', 'org-capture', 'Capture', true], ['refile', 'org-refile', 'Refile'], ['refile-copy', 'org-refile-copy', 'Refile and keep'], ['refile-cache-clear', 'org-refile-cache-clear', 'Clear refile cache'], ['archive-subtree', 'org-archive-subtree', 'Archive'], ['archive-sibling', 'org-archive-to-archive-sibling', 'Archive to sibling'], ['archive-tag', 'org-toggle-archive-tag', 'Toggle archive tag'], ['clock-in', 'org-clock-in', 'Clock in'], ['clock-out', 'org-clock-out', 'Clock out'], ['clock-cancel', 'org-clock-cancel', 'Cancel clock'], ['agenda-file-add', 'org-agenda-file-to-front', 'Add file to agenda files', true], ['agenda-file-remove', 'org-remove-file', 'Remove file from agenda files', true],
+  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true], ['effort', 'org-set-effort', 'Set effort'], ['capture', 'org-capture', 'Capture', true], ['refile', 'org-refile', 'Refile'], ['refile-copy', 'org-refile-copy', 'Refile and keep'], ['refile-cache-clear', 'org-refile-cache-clear', 'Clear refile cache', true], ['archive-subtree', 'org-archive-subtree', 'Archive'], ['archive-sibling', 'org-archive-to-archive-sibling', 'Archive to sibling'], ['archive-tag', 'org-toggle-archive-tag', 'Toggle archive tag'], ['clock-in', 'org-clock-in', 'Clock in'], ['clock-out', 'org-clock-out', 'Clock out'], ['clock-cancel', 'org-clock-cancel', 'Cancel clock'], ['agenda-file-add', 'org-agenda-file-to-front', 'Add file to agenda files', true], ['agenda-file-remove', 'org-remove-file', 'Remove file from agenda files', true],
   ['undo', 'undo', 'Undo', true], ['redo', 'undo-redo', 'Redo', true],
   ['select-all', 'mark-whole-buffer', 'Select all'], ['kill-line', 'kill-line', 'Cut to end of line'], ['kill-whole-line', 'kill-whole-line', 'Cut whole line'], ['yank', 'yank', 'Paste'],
   ['next-line', 'next-line', 'Next line'], ['previous-line', 'previous-line', 'Previous line'], ['forward-char', 'forward-char', 'Forward character'], ['backward-char', 'backward-char', 'Backward character'],
@@ -2940,12 +2949,14 @@ if ('serviceWorker' in navigator) {
 }
 
 /** Looks at the open file in storage when you switch to it or come back to the app, and says what it found. A failed check stays quiet; saving reports a failure. */
+let missedNotice = null;
 async function checkChanged(id) {
   try {
     const b = session.state().buffers.find((x) => x.id === id);
     if (!b) return;
     const r = await session.check(id);
-    if (r === 'reloaded') message(`${b.title} changed in storage; reloaded`);
+    // A tab in the background shows its notice when it comes back, so it is not missed
+    if (r === 'reloaded') { if (document.hidden) missedNotice = `${b.title} changed in storage; reloaded`; else message(`${b.title} changed in storage; reloaded`); }
     else if (r === 'changed') message(`${b.title} changed in storage; saving will ask which copy to keep`, true);
     else if (r === 'gone') message(`${b.title} is no longer in storage`, true);
   } catch { /* offline or unreachable */ }
@@ -2958,7 +2969,11 @@ session.subscribe(() => {
   for (const [id, name] of open) if (!watching.has(id)) watching.set(id, { name, off: app.storage.watch(name, (_n, external) => { if (external) checkChanged(id); }) });
 });
 const checkCurrent = () => { const c = session.state().current; if (c !== null) checkChanged(c); };
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') checkCurrent(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState !== 'visible') return;
+  if (missedNotice) { message(missedNotice); missedNotice = null; }
+  checkCurrent();
+});
 window.addEventListener('online', checkCurrent);
 
 // Reopen what was open before the reload, then keep a copy of the open buffers as they change.

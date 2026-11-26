@@ -130,7 +130,7 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 .abody { overflow-y: auto; flex: 1; touch-action: pan-y; }
 .aday { padding: 6px 12px; background: var(--bg-neutral); font-weight: 500; font-size: 13px; }
 .aday.today { color: var(--text-accent); }
-.arow { display: flex; gap: 1ch; width: 100%; text-align: left; padding: 8px 12px 8px calc(12px + 2ch); border: 0; border-bottom: 0.5px solid var(--line); border-radius: 0; background: transparent; align-items: baseline; }
+.arow { display: flex; justify-content: flex-start; gap: 1ch; width: 100%; text-align: left; padding: 8px 12px 8px calc(12px + 2ch); border: 0; border-bottom: 0.5px solid var(--line); border-radius: 0; background: transparent; align-items: baseline; }
 .acat, .atime { font-family: var(--font-mono); font-size: 12px; color: var(--text-secondary); white-space: pre; flex: none; }
 .acat { width: 8ch; overflow: hidden; }
 .atime { width: 11ch; }
@@ -196,6 +196,5 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 .ol-table tr.cookies { display: none; }
 .ol-table .cell { display: block; width: 100%; min-height: 32px; padding: 4px 8px; border: 0; background: transparent; font: inherit; color: inherit; text-align: inherit; white-space: pre; }
 .ol-table.wrap table { width: 100%; }
-.ol-table.wrap .cell { white-space: normal; overflow-wrap: anywhere; }
-.ol-table.wrap td.r .cell { white-space: nowrap; }
+.ol-table.wrap .cell { white-space: normal; overflow-wrap: break-word; }
 .ol-table.zebra tr:nth-child(even) td { background: var(--bar); }

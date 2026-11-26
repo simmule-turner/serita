@@ -51,7 +51,7 @@ Above the mode line, a row of keys stands in for a keyboard: Meta, Ctrl and Shif
 
 Settings, Key event log, records what the keyboard sends and which key chord Serita made of it. Turn it on, press the keys in the editor, then open it again to read the log, Copy it or Clear it; it helps when a key does not do what it should.
 
-Settings, Emacs, Hide leading stars, shows only the last star of each heading. Indent files on open turns on org-indent-mode: each level is indented two columns and the text under a heading lines up with the heading's text, with nothing added to the file. A file can ask for it with ~#+STARTUP: indent~ or refuse with ~#+STARTUP: noindent~, and the palette command Indent mode toggles it for the file you are in.
+Settings, Emacs, Hide leading stars, shows only the last star of each heading. Indent files on open turns on org-indent-mode: each level is indented two columns and the text under a heading lines up with the heading's text, with nothing added to the file. A file can ask for it with ~#+STARTUP: indent~ or refuse with ~#+STARTUP: noindent~, and the palette command Indent mode toggles it for the file you are in. Both apply to the Text view; the Outline view always shows every star and its own indentation.
 
 ** Tool row
 Under the tabs, one row of buttons: undo, redo, line numbers, wrap, smaller text, larger text, and Line. Settings turns the row on or off for each view. In the Outline view the row keeps undo, redo and the two size buttons. Line opens Lines and text: go to a line, select all, copy all, duplicate, delete (to the kill ring), move, indent and outdent the line. Typing within a second is one undo step; each structure edit is its own.

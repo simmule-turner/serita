@@ -160,3 +160,8 @@ test('Emacs table: convert separators treat a bar as a separator; sum and blank-
   assert.equal(T.blankField(F['tb-blank-2'].input, 1, 6).text, F['tb-blank-2'].text);
   assert.ok(T.blankField(F['tb-blank-3'].input, 1, 1).error);
 });
+
+test('table view: an empty row is a row, not a cookie row', () => {
+  const v = T.tableView('| a | b |\n| | |\n| <r> | |\n', 0);
+  assert.deepEqual(v.rows.map((r) => r.cookies), [false, false, true]);
+});

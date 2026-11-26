@@ -212,6 +212,15 @@ await sheet.locator('.item', { hasText: 'Delete' }).click();
 await view('Text');
 ok((await value()) === '* T\n| Item | Qty |\n|---+---|\n| Cake | 2 |\n', 'Row, Delete removes the row');
 
+// A blank row inserted from the grid is a row, and the menu closes
+await page.fill('#editor', '* T\n| Item | Qty |\n|---+---|\n| Tea | 10 |\n');
+await view('Outline');
+await page.locator('.ol-table td button.cell', { hasText: 'Tea' }).click();
+await sheet.locator('.item', { hasText: 'Row' }).click();
+await sheet.locator('.item', { hasText: 'Insert below' }).click();
+ok((await page.locator('.sheet').count()) === 0 && (await page.locator('.ol-table tr:not(.cookies):not(.rule)').count()) === 3, 'Row, Insert below shows a blank row and closes the menu');
+await view('Text');
+
 // Wrapping long cells in the grid
 await page.fill('#editor', '* T\n| Item | Notes |\n|---+---|\n| Tea | Loose leaf from the market on Saturday morning before it opens |\n');
 await page.click('#btn-menu'); await btn('Settings').click(); await btn(/26 settings/).click(); await btn(/Wrap table cells/).click(); await btn('‹ Settings').click(); await btn('Close').click();
