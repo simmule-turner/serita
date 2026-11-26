@@ -1,0 +1,2570 @@
+[
+ {
+  "id": "tf-align-0",
+  "input": "| a | b |  |\n|---+---+--|\n| 100000 | 3 | |\n#+TBLFM: $3=$1/$2\n",
+  "line": 3,
+  "text": "|      a | b |           |\n|--------+---+-----------|\n| 100000 | 3 | 33333.333 |\n#+TBLFM: $3=$1/$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-align-1",
+  "input": "| name | n |\n|---+---|\n| a | 5 |\n| bb | 10 |\n#+TBLFM: @>$2=@-1*2\n",
+  "line": 4,
+  "text": "| name |  n |\n|------+----|\n| a    |  5 |\n| bb   | 10 |\n#+TBLFM: @>$2=@-1*2\n",
+  "error": false
+ },
+ {
+  "id": "tf-align-2",
+  "input": "| é | 2 | |\n#+TBLFM: $3=$2*2\n",
+  "line": 1,
+  "text": "| é | 2 | 4 |\n#+TBLFM: $3=$2*2\n",
+  "error": false
+ },
+ {
+  "id": "tf-align-3",
+  "input": "| | | |\n#+TBLFM: $1=1\n",
+  "line": 1,
+  "text": "| 1 |   |   |\n#+TBLFM: $1=1\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-00",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1+$2\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |  3 |\n| 3 | 4 |  7 |\n| 5 | 6 | 11 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-01",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1*$2\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |  2 |\n| 3 | 4 | 12 |\n| 5 | 6 | 30 |\n#+TBLFM: $3=$1*$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-02",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1/$2\n",
+  "line": 5,
+  "text": "| a | b |          c |\n|---+---+------------|\n| 1 | 2 |        0.5 |\n| 3 | 4 |       0.75 |\n| 5 | 6 | 0.83333333 |\n#+TBLFM: $3=$1/$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-03",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1/0\n",
+  "line": 5,
+  "text": "| a | b | c   |\n|---+---+-----|\n| 1 | 2 | 1/0 |\n| 3 | 4 | 3/0 |\n| 5 | 6 | 5/0 |\n#+TBLFM: $3=$1/0\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-04",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1-$2\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 | -1 |\n| 3 | 4 | -1 |\n| 5 | 6 | -1 |\n#+TBLFM: $3=$1-$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-05",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$2^2\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |  4 |\n| 3 | 4 | 16 |\n| 5 | 6 | 36 |\n#+TBLFM: $3=$2^2\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-06",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=sqrt($1)\n",
+  "line": 5,
+  "text": "| a | b |         c |\n|---+---+-----------|\n| 1 | 2 |         1 |\n| 3 | 4 | 1.7320508 |\n| 5 | 6 | 2.2360680 |\n#+TBLFM: $3=sqrt($1)\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-07",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1+$2;%.2f\n",
+  "line": 5,
+  "text": "| a | b |     c |\n|---+---+-------|\n| 1 | 2 |  3.00 |\n| 3 | 4 |  7.00 |\n| 5 | 6 | 11.00 |\n#+TBLFM: $3=$1+$2;%.2f\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-08",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1/$2;%.3f\n",
+  "line": 5,
+  "text": "| a | b |     c |\n|---+---+-------|\n| 1 | 2 | 0.500 |\n| 3 | 4 | 0.750 |\n| 5 | 6 | 0.833 |\n#+TBLFM: $3=$1/$2;%.3f\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-09",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1*1.5\n",
+  "line": 5,
+  "text": "| a | b |   c |\n|---+---+-----|\n| 1 | 2 | 1.5 |\n| 3 | 4 | 4.5 |\n| 5 | 6 | 7.5 |\n#+TBLFM: $3=$1*1.5\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-10",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=($1+$2)/2\n",
+  "line": 5,
+  "text": "| a | b |   c |\n|---+---+-----|\n| 1 | 2 | 1.5 |\n| 3 | 4 | 3.5 |\n| 5 | 6 | 5.5 |\n#+TBLFM: $3=($1+$2)/2\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-11",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1 + $2\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |  3 |\n| 3 | 4 |  7 |\n| 5 | 6 | 11 |\n#+TBLFM: $3=$1 + $2\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-12",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @2$3=$1+$2\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 3 |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @2$3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-13",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @3$3=$1+$2\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 | 7 |\n| 5 | 6 |   |\n#+TBLFM: @3$3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-14",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @2$3..@3$3=$1*10\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 | 10 |\n| 3 | 4 | 30 |\n| 5 | 6 |    |\n#+TBLFM: @2$3..@3$3=$1*10\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-15",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @2..@3$3=$1*10\n",
+  "line": 5,
+  "text": "|  a |   b |   c |\n|----+-----+-----|\n| 10 | 100 | 100 |\n| 30 | 300 | 300 |\n|  5 |   6 |     |\n#+TBLFM: @2..@3$3=$1*10\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-16",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1;N\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 1 |\n| 3 | 4 | 3 |\n| 5 | 6 | 5 |\n#+TBLFM: $3=$1;N\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-17",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1/3;%.4f\n",
+  "line": 5,
+  "text": "| a | b |      c |\n|---+---+--------|\n| 1 | 2 | 0.3333 |\n| 3 | 4 | 1.0000 |\n| 5 | 6 | 1.6667 |\n#+TBLFM: $3=$1/3;%.4f\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-18",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1/3\n",
+  "line": 5,
+  "text": "| a | b |          c |\n|---+---+------------|\n| 1 | 2 | 0.33333333 |\n| 3 | 4 |          1 |\n| 5 | 6 |  1.6666667 |\n#+TBLFM: $3=$1/3\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-19",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1/3;f2\n",
+  "line": 5,
+  "text": "| a | b |    c |\n|---+---+------|\n| 1 | 2 | 0.33 |\n| 3 | 4 |    1 |\n| 5 | 6 | 1.67 |\n#+TBLFM: $3=$1/3;f2\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-20",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1/3;s2\n",
+  "line": 5,
+  "text": "| a | b |      c |\n|---+---+--------|\n| 1 | 2 | 3.3e-1 |\n| 3 | 4 |      1 |\n| 5 | 6 |  1.7e0 |\n#+TBLFM: $3=$1/3;s2\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-21",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1/3;n2\n",
+  "line": 5,
+  "text": "| a | b |    c |\n|---+---+------|\n| 1 | 2 | 0.33 |\n| 3 | 4 |    1 |\n| 5 | 6 |  1.7 |\n#+TBLFM: $3=$1/3;n2\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-22",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1/3;p5\n",
+  "line": 5,
+  "text": "| a | b |       c |\n|---+---+---------|\n| 1 | 2 | 0.33333 |\n| 3 | 4 |       1 |\n| 5 | 6 |  1.6667 |\n#+TBLFM: $3=$1/3;p5\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-23",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=1e3*$1\n",
+  "line": 5,
+  "text": "| a | b |     c |\n|---+---+-------|\n| 1 | 2 | 1000. |\n| 3 | 4 | 3000. |\n| 5 | 6 | 5000. |\n#+TBLFM: $3=1e3*$1\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-24",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1*$2;%05.1f\n",
+  "line": 5,
+  "text": "| a | b |     c |\n|---+---+-------|\n| 1 | 2 | 002.0 |\n| 3 | 4 | 012.0 |\n| 5 | 6 | 030.0 |\n#+TBLFM: $3=$1*$2;%05.1f\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-25",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1+$2;%d\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |  3 |\n| 3 | 4 |  7 |\n| 5 | 6 | 11 |\n#+TBLFM: $3=$1+$2;%d\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-26",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1+$2;E\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |  3 |\n| 3 | 4 |  7 |\n| 5 | 6 | 11 |\n#+TBLFM: $3=$1+$2;E\n",
+  "error": false
+ },
+ {
+  "id": "tf-basic-27",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1+$2;L\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |  3 |\n| 3 | 4 |  7 |\n| 5 | 6 | 11 |\n#+TBLFM: $3=$1+$2;L\n",
+  "error": false
+ },
+ {
+  "id": "tf-big-0",
+  "input": "| 1 | 2 | 3 | 4 | | |\n#+TBLFM: $5=vsum($1..$4)::$6=vmean($1..$4)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 | 4 | 10 | 2.5 |\n#+TBLFM: $5=vsum($1..$4)::$6=vmean($1..$4)\n",
+  "error": false
+ },
+ {
+  "id": "tf-big-1",
+  "input": "| 1 | |\n| 2 | |\n| 3 | |\n| 4 | |\n| 5 | |\n| 6 | |\n| 7 | |\n| 8 | |\n#+TBLFM: $2=$1*$1\n",
+  "line": 8,
+  "text": "| 1 |  1 |\n| 2 |  4 |\n| 3 |  9 |\n| 4 | 16 |\n| 5 | 25 |\n| 6 | 36 |\n| 7 | 49 |\n| 8 | 64 |\n#+TBLFM: $2=$1*$1\n",
+  "error": false
+ },
+ {
+  "id": "tf-big-2",
+  "input": "| 1 |\n| 2 |\n| 3 |\n| 4 |\n|---|\n| |\n#+TBLFM: @>$1=vsum(@I..@II)\n",
+  "line": 6,
+  "text": "| 1 |\n| 2 |\n| 3 |\n| 4 |\n|---|\n| 0 |\n#+TBLFM: @>$1=vsum(@I..@II)\n",
+  "error": false
+ },
+ {
+  "id": "tf-big-3",
+  "input": "| 20 | |\n| 30 | |\n| 50 | |\n|----+---|\n| | |\n#+TBLFM: @>$1=vsum(@I..@II)::$2=100*$1/@>$1;%.1f::@>$2=vsum(@I..@II)\n",
+  "line": 6,
+  "text": "| 20 | |\n| 30 | |\n| 50 | |\n|----+---|\n| | |\n#+TBLFM: @>$1=vsum(@I..@II)::$2=100*$1/@>$1;%.1f::@>$2=vsum(@I..@II)\n",
+  "error": "user-error"
+ },
+ {
+  "id": "tf-cmd-21",
+  "input": "| 1 | 2 | |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-cmd-4",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1+$2\n",
+  "line": 2,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-cmd-5",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n",
+  "line": 2,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n",
+  "error": false
+ },
+ {
+  "id": "tf-cmd-6",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1+$2\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |  3 |\n| 3 | 4 |  7 |\n| 5 | 6 | 11 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-00",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-01",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-02",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: =$1\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: =$1\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-03",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $9=$1\n",
+  "line": 5,
+  "text": "| a | b | c |   |   |   |   |   |   |\n|---+---+---+---+---+---+---+---+---|\n| 1 | 2 |   |   |   |   |   |   | 1 |\n| 3 | 4 |   |   |   |   |   |   | 3 |\n| 5 | 6 |   |   |   |   |   |   | 5 |\n#+TBLFM: $9=$1\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-04",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$9\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$9\n",
+  "error": "user-error"
+ },
+ {
+  "id": "tf-edge-05",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @9$3=1\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @9$3=1\n",
+  "error": "args-out-of-range"
+ },
+ {
+  "id": "tf-edge-06",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1::\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 1 |\n| 3 | 4 | 3 |\n| 5 | 6 | 5 |\n#+TBLFM: $3=$1::\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-07",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: ::$3=$1\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 1 |\n| 3 | 4 | 3 |\n| 5 | 6 | 5 |\n#+TBLFM: ::$3=$1\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-08",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM:   $3=$1  \n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 1 |\n| 3 | 4 | 3 |\n| 5 | 6 | 5 |\n#+TBLFM:   $3=$1  \n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-09",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1;\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 1 |\n| 3 | 4 | 3 |\n| 5 | 6 | 5 |\n#+TBLFM: $3=$1;\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-10",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1;%\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1;%\n",
+  "error": "error"
+ },
+ {
+  "id": "tf-edge-11",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1;Z\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | Z |\n| 3 | 4 | Z |\n| 5 | 6 | Z |\n#+TBLFM: $3=$1;Z\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-12",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3 = $1\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 1 |\n| 3 | 4 | 3 |\n| 5 | 6 | 5 |\n#+TBLFM: $3 = $1\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-13",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=@2$1..@3$1\n",
+  "line": 5,
+  "text": "| a | b | c      |\n|---+---+--------|\n| 1 | 2 | [1, 3] |\n| 3 | 4 | [1, 3] |\n| 5 | 6 | [1, 3] |\n#+TBLFM: $3=@2$1..@3$1\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-14",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=vsum(@2..@3)\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 0 |\n| 3 | 4 | 0 |\n| 5 | 6 | 0 |\n#+TBLFM: $3=vsum(@2..@3)\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-15",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=vsum(@2$1..@3$2)\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 | 10 |\n| 3 | 4 | 10 |\n| 5 | 6 | 10 |\n#+TBLFM: $3=vsum(@2$1..@3$2)\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-16",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1 +\n",
+  "line": 5,
+  "text": "| a | b | c      |\n|---+---+--------|\n| 1 | 2 | #ERROR |\n| 3 | 4 | #ERROR |\n| 5 | 6 | #ERROR |\n#+TBLFM: $3=$1 +\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-17",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=foo($1)\n",
+  "line": 5,
+  "text": "| a | b | c      |\n|---+---+--------|\n| 1 | 2 | foo(1) |\n| 3 | 4 | foo(3) |\n| 5 | 6 | foo(5) |\n#+TBLFM: $3=foo($1)\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-18",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1.5\n",
+  "line": 5,
+  "text": "| a | b |   c |\n|---+---+-----|\n| 1 | 2 | 0.5 |\n| 3 | 4 | 1.5 |\n| 5 | 6 | 2.5 |\n#+TBLFM: $3=$1.5\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-19",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=\"a\"\n",
+  "line": 5,
+  "text": "| a | b | c    |\n|---+---+------|\n| 1 | 2 | [97] |\n| 3 | 4 | [97] |\n| 5 | 6 | [97] |\n#+TBLFM: $3=\"a\"\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-20",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=if($1>2,10,20)\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 | 20 |\n| 3 | 4 | 10 |\n| 5 | 6 | 10 |\n#+TBLFM: $3=if($1>2,10,20)\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-21",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1>2\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 0 |\n| 3 | 4 | 1 |\n| 5 | 6 | 1 |\n#+TBLFM: $3=$1>2\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-22",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1==1\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 1 |\n| 3 | 4 | 0 |\n| 5 | 6 | 0 |\n#+TBLFM: $3=$1==1\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-23",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1<2 || $2>5\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 1 |\n| 3 | 4 | 0 |\n| 5 | 6 | 1 |\n#+TBLFM: $3=$1<2 || $2>5\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-24",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=floor($1/2)\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 0 |\n| 3 | 4 | 1 |\n| 5 | 6 | 2 |\n#+TBLFM: $3=floor($1/2)\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-25",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=round($1/3)\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 0 |\n| 3 | 4 | 1 |\n| 5 | 6 | 2 |\n#+TBLFM: $3=round($1/3)\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-26",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=abs($1-4)\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 3 |\n| 3 | 4 | 1 |\n| 5 | 6 | 1 |\n#+TBLFM: $3=abs($1-4)\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-27",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=max($1,$2)\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 2 |\n| 3 | 4 | 4 |\n| 5 | 6 | 6 |\n#+TBLFM: $3=max($1,$2)\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-28",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1 mod 2\n",
+  "line": 5,
+  "text": "| a | b | c       |\n|---+---+---------|\n| 1 | 2 | 1 mod 2 |\n| 3 | 4 | 1 mod 2 |\n| 5 | 6 | 1 mod 2 |\n#+TBLFM: $3=$1 mod 2\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-29",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1%2\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 1 |\n| 3 | 4 | 1 |\n| 5 | 6 | 1 |\n#+TBLFM: $3=$1%2\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-30",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=0b11+$1\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 1 |\n| 3 | 4 | 3 |\n| 5 | 6 | 5 |\n#+TBLFM: $3=0b11+$1\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-31",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=\"abc\"+1\n",
+  "line": 5,
+  "text": "| a | b | c             |\n|---+---+---------------|\n| 1 | 2 | [98, 99, 100] |\n| 3 | 4 | [98, 99, 100] |\n| 5 | 6 | [98, 99, 100] |\n#+TBLFM: $3=\"abc\"+1\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-32",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=1:2+$1\n",
+  "line": 5,
+  "text": "| a | b |    c |\n|---+---+------|\n| 1 | 2 |  3:2 |\n| 3 | 4 |  7:2 |\n| 5 | 6 | 11:2 |\n#+TBLFM: $3=1:2+$1\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-33",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=2^10\n",
+  "line": 5,
+  "text": "| a | b |    c |\n|---+---+------|\n| 1 | 2 | 1024 |\n| 3 | 4 | 1024 |\n| 5 | 6 | 1024 |\n#+TBLFM: $3=2^10\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-34",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=exp(1)\n",
+  "line": 5,
+  "text": "| a | b |         c |\n|---+---+-----------|\n| 1 | 2 | 2.7182818 |\n| 3 | 4 | 2.7182818 |\n| 5 | 6 | 2.7182818 |\n#+TBLFM: $3=exp(1)\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-35",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=ln(10)\n",
+  "line": 5,
+  "text": "| a | b |         c |\n|---+---+-----------|\n| 1 | 2 | 2.3025851 |\n| 3 | 4 | 2.3025851 |\n| 5 | 6 | 2.3025851 |\n#+TBLFM: $3=ln(10)\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-36",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=sin(pi/2)\n",
+  "line": 5,
+  "text": "| a | b | c           |\n|---+---+-------------|\n| 1 | 2 | sin(pi / 2) |\n| 3 | 4 | sin(pi / 2) |\n| 5 | 6 | sin(pi / 2) |\n#+TBLFM: $3=sin(pi/2)\n",
+  "error": false
+ },
+ {
+  "id": "tf-edge-37",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=deg(pi)\n",
+  "line": 5,
+  "text": "| a | b | c       |\n|---+---+---------|\n| 1 | 2 | deg(pi) |\n| 3 | 4 | deg(pi) |\n| 5 | 6 | deg(pi) |\n#+TBLFM: $3=deg(pi)\n",
+  "error": false
+ },
+ {
+  "id": "tf-hl-00",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n|   |   |   |\n#+TBLFM: @>$1=vsum(@I..@II)\n",
+  "line": 6,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n| 4 |   |   |\n#+TBLFM: @>$1=vsum(@I..@II)\n",
+  "error": false
+ },
+ {
+  "id": "tf-hl-01",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n|   |   |   |\n#+TBLFM: @>$2=vsum(@I..@>>)\n",
+  "line": 6,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n|   | 6 |   |\n#+TBLFM: @>$2=vsum(@I..@>>)\n",
+  "error": false
+ },
+ {
+  "id": "tf-hl-02",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n|   |   |   |\n#+TBLFM: @>$1=vsum(@I..@>)\n",
+  "line": 6,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n| 4 |   |   |\n#+TBLFM: @>$1=vsum(@I..@>)\n",
+  "error": false
+ },
+ {
+  "id": "tf-hl-03",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n|   |   |   |\n#+TBLFM: @>$1=vsum(@<<..@>>)\n",
+  "line": 6,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n| 4 |   |   |\n#+TBLFM: @>$1=vsum(@<<..@>>)\n",
+  "error": false
+ },
+ {
+  "id": "tf-hl-04",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n|   |   |   |\n#+TBLFM: @II$1=vsum(@I..@II)\n",
+  "line": 6,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n|   |   |   |\n#+TBLFM: @II$1=vsum(@I..@II)\n",
+  "error": "user-error"
+ },
+ {
+  "id": "tf-hl-05",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n|   |   |   |\n#+TBLFM: @II+1$1=1\n",
+  "line": 6,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n|   |   |   |\n#+TBLFM: @II+1$1=1\n",
+  "error": "user-error"
+ },
+ {
+  "id": "tf-hl-06",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n|   |   |   |\n#+TBLFM: @I+1$1=7\n",
+  "line": 6,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n|   |   |   |\n#+TBLFM: @I+1$1=7\n",
+  "error": "user-error"
+ },
+ {
+  "id": "tf-hl-07",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n|   |   |   |\n#+TBLFM: @>$1=vsum(@I+1..@II-1)\n",
+  "line": 6,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n| 4 |   |   |\n#+TBLFM: @>$1=vsum(@I+1..@II-1)\n",
+  "error": false
+ },
+ {
+  "id": "tf-hl-08",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n|   |   |   |\n#+TBLFM: @-I$1=1\n",
+  "line": 6,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n|   |   |   |\n#+TBLFM: @-I$1=1\n",
+  "error": "user-error"
+ },
+ {
+  "id": "tf-hl-09",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n|   |   |   |\n#+TBLFM: @+I$1=1\n",
+  "line": 6,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n|---+---+---|\n| 1 |   |   |\n#+TBLFM: @+I$1=1\n",
+  "error": false
+ },
+ {
+  "id": "tf-lisp-00",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3='(+ $1 $2)\n",
+  "line": 5,
+  "text": "| a | b | c      |\n|---+---+--------|\n| 1 | 2 | #ERROR |\n| 3 | 4 | #ERROR |\n| 5 | 6 | #ERROR |\n#+TBLFM: $3='(+ $1 $2)\n",
+  "error": false
+ },
+ {
+  "id": "tf-lisp-01",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3='(concat $1 \"x\")\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 | 1x |\n| 3 | 4 | 3x |\n| 5 | 6 | 5x |\n#+TBLFM: $3='(concat $1 \"x\")\n",
+  "error": false
+ },
+ {
+  "id": "tf-lisp-02",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3='(identity $1)\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 1 |\n| 3 | 4 | 3 |\n| 5 | 6 | 5 |\n#+TBLFM: $3='(identity $1)\n",
+  "error": false
+ },
+ {
+  "id": "tf-lisp-03",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3='(* 1.0 $1)\n",
+  "line": 5,
+  "text": "| a | b | c      |\n|---+---+--------|\n| 1 | 2 | #ERROR |\n| 3 | 4 | #ERROR |\n| 5 | 6 | #ERROR |\n#+TBLFM: $3='(* 1.0 $1)\n",
+  "error": false
+ },
+ {
+  "id": "tf-lisp-04",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3='(length $1)\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 1 |\n| 3 | 4 | 1 |\n| 5 | 6 | 1 |\n#+TBLFM: $3='(length $1)\n",
+  "error": false
+ },
+ {
+  "id": "tf-lisp-05",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3='(if (> $1 2) \"big\" \"small\")\n",
+  "line": 5,
+  "text": "| a | b | c      |\n|---+---+--------|\n| 1 | 2 | #ERROR |\n| 3 | 4 | #ERROR |\n| 5 | 6 | #ERROR |\n#+TBLFM: $3='(if (> $1 2) \"big\" \"small\")\n",
+  "error": false
+ },
+ {
+  "id": "tf-lisp-06",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3='(+ $1 $2);N\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |  3 |\n| 3 | 4 |  7 |\n| 5 | 6 | 11 |\n#+TBLFM: $3='(+ $1 $2);N\n",
+  "error": false
+ },
+ {
+  "id": "tf-lisp-07",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3='(identity remote(nope,@1$1))\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3='(identity remote(nope,@1$1))\n",
+  "error": "user-error"
+ },
+ {
+  "id": "tf-lisp-08",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3='(org-sbe nope)\n",
+  "line": 5,
+  "text": "| a | b | c      |\n|---+---+--------|\n| 1 | 2 | #ERROR |\n| 3 | 4 | #ERROR |\n| 5 | 6 | #ERROR |\n#+TBLFM: $3='(org-sbe nope)\n",
+  "error": false
+ },
+ {
+  "id": "tf-mark-0",
+  "input": "| # | 1 | 2 | |\n| # | 3 | 4 | |\n#+TBLFM: $4=$2+$3\n",
+  "line": 0,
+  "text": "| # | 1 | 2 | 3 |\n| # | 3 | 4 |   |\n#+TBLFM: $4=$2+$3\n",
+  "error": false
+ },
+ {
+  "id": "tf-mark-1",
+  "input": "| * | 1 | 2 | |\n|   | 3 | 4 | |\n#+TBLFM: $4=$2+$3\n",
+  "line": 0,
+  "text": "| * | 1 | 2 |   |\n|   | 3 | 4 |   |\n#+TBLFM: $4=$2+$3\n",
+  "error": false
+ },
+ {
+  "id": "tf-mark-3",
+  "input": "| / | a | b |\n| | 1 | 2 |\n#+TBLFM: $3=$2*2\n",
+  "line": 2,
+  "text": "| / | a | b |\n|   | 1 | 2 |\n#+TBLFM: $3=$2*2\n",
+  "error": false
+ },
+ {
+  "id": "tf-mark-4",
+  "input": "| _ | 1 | 2 | |\n|   | 3 | 4 | |\n#+TBLFM: $4=$2+$3\n",
+  "line": 2,
+  "text": "| _ | 1 | 2 |   |\n|   | 3 | 4 |   |\n#+TBLFM: $4=$2+$3\n",
+  "error": false
+ },
+ {
+  "id": "tf-multi-0",
+  "input": "| 1 | 2 | | |\n#+TBLFM: $3=$1+$2::$4=$1*$2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 | 2 |\n#+TBLFM: $3=$1+$2::$4=$1*$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-multi-1",
+  "input": "| 1 | 2 | | |\n#+TBLFM: $3=$1+$2\n#+TBLFM: $4=$1*$2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 |   |\n#+TBLFM: $3=$1+$2\n#+TBLFM: $4=$1*$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-multi-2",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1+$2\n#+TBLFM: $3=$3*10\n",
+  "line": 6,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 0 |\n| 3 | 4 | 0 |\n| 5 | 6 | 0 |\n#+TBLFM: $3=$1+$2\n#+TBLFM: $3=$3*10\n",
+  "error": false
+ },
+ {
+  "id": "tf-multi-3",
+  "input": "| 1 | 2 | |\n| 3 | 4 | |\n#+TBLFM: $3=$1+$2::@2$3=100\n",
+  "line": 2,
+  "text": "| 1 | 2 |   3 |\n| 3 | 4 | 100 |\n#+TBLFM: $3=$1+$2::@2$3=100\n",
+  "error": false
+ },
+ {
+  "id": "tf-multi-4",
+  "input": "| 1 | 2 | |\n| 3 | 4 | |\n#+TBLFM: @2$3=100::$3=$1+$2\n",
+  "line": 2,
+  "text": "| 1 | 2 |   3 |\n| 3 | 4 | 100 |\n#+TBLFM: @2$3=100::$3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-multi-5",
+  "input": "| 1 | 2 | | |\n#+TBLFM: $4=$3*2::$3=$1+$2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 | 6 |\n#+TBLFM: $4=$3*2::$3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-name-0",
+  "input": "| ! | x | y | s |\n|---+---+---+---|\n|   | 1 | 2 |   |\n|   | 3 | 4 |   |\n#+TBLFM: $s=$x+$y\n",
+  "line": 4,
+  "text": "| ! | x | y | s |\n|---+---+---+---|\n|   | 1 | 2 |   |\n|   | 3 | 4 |   |\n#+TBLFM: $s=$x+$y\n",
+  "error": "user-error"
+ },
+ {
+  "id": "tf-name-1",
+  "input": "| _ | x | y |\n| ^ | a | b |\n|   | 1 | 2 |\n#+TBLFM: $2=$a*10\n",
+  "line": 3,
+  "text": "| _ | x | y |\n| ^ | a | b |\n|   | 1 | 2 |\n#+TBLFM: $2=$a*10\n",
+  "error": false
+ },
+ {
+  "id": "tf-name-2",
+  "input": "| 2 | |\n#+CONSTANTS: k=10\n#+TBLFM: $2=$1*$k\n",
+  "line": 2,
+  "text": "| 2 | |\n#+CONSTANTS: k=10\n#+TBLFM: $2=$1*$k\n",
+  "error": false
+ },
+ {
+  "id": "tf-name-3",
+  "input": "| $ | max=5 | |\n|   | 3 | |\n|   | 9 | |\n#+TBLFM: $3=$2*max\n",
+  "line": 3,
+  "text": "| $ | max=5 |   |\n|   |     3 |   |\n|   |     9 |   |\n#+TBLFM: $3=$2*max\n",
+  "error": false
+ },
+ {
+  "id": "tf-name-4",
+  "input": "| 1 | |\n#+TBLFM: $2=$c\n",
+  "line": 1,
+  "text": "| 1 | #ERROR |\n#+TBLFM: $2=$c\n",
+  "error": false
+ },
+ {
+  "id": "tf-name-5",
+  "input": "| 1 | |\n#+TBLFM: $2=$pi\n",
+  "line": 1,
+  "text": "| 1 | #ERROR |\n#+TBLFM: $2=$pi\n",
+  "error": false
+ },
+ {
+  "id": "tf-name-6",
+  "input": "| ! | x | y | s |\n|---+---+---+---|\n|   | 1 | 2 |   |\n|   | 3 | 4 |   |\n#+TBLFM: @3$4=$x+$y\n",
+  "line": 4,
+  "text": "| ! | x | y | s |\n|---+---+---+---|\n|   | 1 | 2 |   |\n|   | 3 | 4 | 7 |\n#+TBLFM: @3$4=$x+$y\n",
+  "error": false
+ },
+ {
+  "id": "tf-name-7",
+  "input": "#+NAME: t1\n| 1 | 2 |\n| 3 | |\n\n#+TBLFM: @2$2=remote(t1,@1$1)\n",
+  "line": 5,
+  "text": "#+NAME: t1\n| 1 | 2 |\n| 3 | |\n\n#+TBLFM: @2$2=remote(t1,@1$1)\n",
+  "error": "user-error"
+ },
+ {
+  "id": "tf-name-8",
+  "input": "#+NAME: src\n| 7 | 8 |\n\n#+NAME: dst\n| | |\n#+TBLFM: $1=remote(src,@1$2)\n",
+  "line": 5,
+  "text": "#+NAME: src\n| 7 | 8 |\n\n#+NAME: dst\n| 8 |   |\n#+TBLFM: $1=remote(src,@1$2)\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-00",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @>$3=vsum(@I..@II)\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 | 0 |\n#+TBLFM: @>$3=vsum(@I..@II)\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-01",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=vsum($1..$2)\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |  3 |\n| 3 | 4 |  7 |\n| 5 | 6 | 11 |\n#+TBLFM: $3=vsum($1..$2)\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-02",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=vmean($1..$2)\n",
+  "line": 5,
+  "text": "| a | b |   c |\n|---+---+-----|\n| 1 | 2 | 1.5 |\n| 3 | 4 | 3.5 |\n| 5 | 6 | 5.5 |\n#+TBLFM: $3=vmean($1..$2)\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-03",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=vmax($1..$2)\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 2 |\n| 3 | 4 | 4 |\n| 5 | 6 | 6 |\n#+TBLFM: $3=vmax($1..$2)\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-04",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=vmin($1..$2)\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 1 |\n| 3 | 4 | 3 |\n| 5 | 6 | 5 |\n#+TBLFM: $3=vmin($1..$2)\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-05",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=vcount($1..$2)\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 2 |\n| 3 | 4 | 2 |\n| 5 | 6 | 2 |\n#+TBLFM: $3=vcount($1..$2)\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-06",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=vmedian($1..$2)\n",
+  "line": 5,
+  "text": "| a | b |   c |\n|---+---+-----|\n| 1 | 2 | 1.5 |\n| 3 | 4 | 3.5 |\n| 5 | 6 | 5.5 |\n#+TBLFM: $3=vmedian($1..$2)\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-07",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=vprod($1..$2)\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |  2 |\n| 3 | 4 | 12 |\n| 5 | 6 | 30 |\n#+TBLFM: $3=vprod($1..$2)\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-08",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @5$1=vsum(@2..@4)\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @5$1=vsum(@2..@4)\n",
+  "error": "args-out-of-range"
+ },
+ {
+  "id": "tf-ref-09",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @5$1=vsum(@-3..@-1)\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @5$1=vsum(@-3..@-1)\n",
+  "error": "args-out-of-range"
+ },
+ {
+  "id": "tf-ref-10",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @4$3=@-1$1+@-2$1\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 | 4 |\n#+TBLFM: @4$3=@-1$1+@-2$1\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-11",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$-1+$-2\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |  3 |\n| 3 | 4 |  7 |\n| 5 | 6 | 11 |\n#+TBLFM: $3=$-1+$-2\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-12",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$<<+$>\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 2 |\n| 3 | 4 | 4 |\n| 5 | 6 | 6 |\n#+TBLFM: $3=$<<+$>\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-13",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @>$1=@<<$1+@>>$1\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 4 | 6 |   |\n#+TBLFM: @>$1=@<<$1+@>>$1\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-14",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$#\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 3 |\n| 3 | 4 | 3 |\n| 5 | 6 | 3 |\n#+TBLFM: $3=$#\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-15",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=@#\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 2 |\n| 3 | 4 | 3 |\n| 5 | 6 | 4 |\n#+TBLFM: $3=@#\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-16",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @3$3=@#*10\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |    |\n| 3 | 4 | 30 |\n| 5 | 6 |    |\n#+TBLFM: @3$3=@#*10\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-17",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=@2$1\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 1 |\n| 3 | 4 | 1 |\n| 5 | 6 | 1 |\n#+TBLFM: $3=@2$1\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-18",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=@2$1+$1\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 2 |\n| 3 | 4 | 4 |\n| 5 | 6 | 6 |\n#+TBLFM: $3=@2$1+$1\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-19",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @2$3=$1;N\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 1 |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @2$3=$1;N\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-20",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @>$>=vsum(@<<..@>>)\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 | 0 |\n#+TBLFM: @>$>=vsum(@<<..@>>)\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-21",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$-1;%.1f\n",
+  "line": 5,
+  "text": "| a | b |   c |\n|---+---+-----|\n| 1 | 2 | 2.0 |\n| 3 | 4 | 4.0 |\n| 5 | 6 | 6.0 |\n#+TBLFM: $3=$-1;%.1f\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-22",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @I$3=$1\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @I$3=$1\n",
+  "error": "user-error"
+ },
+ {
+  "id": "tf-ref-23",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @0$3=$1\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @0$3=$1\n",
+  "error": "user-error"
+ },
+ {
+  "id": "tf-ref-24",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @2$0=1\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: @2$0=1\n",
+  "error": "user-error"
+ },
+ {
+  "id": "tf-ref-25",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$0\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | 2 | 0 |\n| 3 | 4 | 0 |\n| 5 | 6 | 0 |\n#+TBLFM: $3=$0\n",
+  "error": false
+ },
+ {
+  "id": "tf-ref-26",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=@0$1+@0$2\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |  3 |\n| 3 | 4 |  7 |\n| 5 | 6 | 11 |\n#+TBLFM: $3=@0$1+@0$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-text-00",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | x |   |\n|   | 4 |   |\n| 5 |   |   |\n#+TBLFM: $3=$1+$2\n",
+  "line": 5,
+  "text": "| a | b |     c |\n|---+---+-------|\n| 1 | x | 1 + x |\n|   | 4 |     4 |\n| 5 |   |     5 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-text-01",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | x |   |\n|   | 4 |   |\n| 5 |   |   |\n#+TBLFM: $3=$1+$2;N\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | x | 1 |\n|   | 4 | 4 |\n| 5 |   | 5 |\n#+TBLFM: $3=$1+$2;N\n",
+  "error": false
+ },
+ {
+  "id": "tf-text-02",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | x |   |\n|   | 4 |   |\n| 5 |   |   |\n#+TBLFM: $3=$1+$2;E\n",
+  "line": 5,
+  "text": "| a | b |     c |\n|---+---+-------|\n| 1 | x | 1 + x |\n|   | 4 |   nan |\n| 5 |   |   nan |\n#+TBLFM: $3=$1+$2;E\n",
+  "error": false
+ },
+ {
+  "id": "tf-text-03",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | x |   |\n|   | 4 |   |\n| 5 |   |   |\n#+TBLFM: $3=$1+$2;L\n",
+  "line": 5,
+  "text": "| a | b |     c |\n|---+---+-------|\n| 1 | x | 1 + x |\n|   | 4 |     4 |\n| 5 |   |     5 |\n#+TBLFM: $3=$1+$2;L\n",
+  "error": false
+ },
+ {
+  "id": "tf-text-04",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | x |   |\n|   | 4 |   |\n| 5 |   |   |\n#+TBLFM: $3=vsum($1..$2)\n",
+  "line": 5,
+  "text": "| a | b |     c |\n|---+---+-------|\n| 1 | x | 1 + x |\n|   | 4 |     4 |\n| 5 |   |     5 |\n#+TBLFM: $3=vsum($1..$2)\n",
+  "error": false
+ },
+ {
+  "id": "tf-text-05",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | x |   |\n|   | 4 |   |\n| 5 |   |   |\n#+TBLFM: $3=vmean($1..$2)\n",
+  "line": 5,
+  "text": "| a | b |           c |\n|---+---+-------------|\n| 1 | x | 0.5 + x / 2 |\n|   | 4 |           4 |\n| 5 |   |           5 |\n#+TBLFM: $3=vmean($1..$2)\n",
+  "error": false
+ },
+ {
+  "id": "tf-text-06",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | x |   |\n|   | 4 |   |\n| 5 |   |   |\n#+TBLFM: $3=vsum($1..$2);N\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | x | 1 |\n|   | 4 | 4 |\n| 5 |   | 5 |\n#+TBLFM: $3=vsum($1..$2);N\n",
+  "error": false
+ },
+ {
+  "id": "tf-text-07",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | x |   |\n|   | 4 |   |\n| 5 |   |   |\n#+TBLFM: $3=$2\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | x | x |\n|   | 4 | 4 |\n| 5 |   | 0 |\n#+TBLFM: $3=$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-text-08",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | x |   |\n|   | 4 |   |\n| 5 |   |   |\n#+TBLFM: $3=$2;N\n",
+  "line": 5,
+  "text": "| a | b | c |\n|---+---+---|\n| 1 | x | 0 |\n|   | 4 | 4 |\n| 5 |   | 0 |\n#+TBLFM: $3=$2;N\n",
+  "error": false
+ },
+ {
+  "id": "tf-time-00",
+  "input": "| 1:30 | 0:45 | |\n| <2026-11-11 Wed> | <2026-11-26 Thu> | |\n#+TBLFM: $3=$1+$2;T\n",
+  "line": 2,
+  "text": "|             1:30 |             0:45 | 02:15:00 |\n| <2026-11-11 Wed> | <2026-11-26 Thu> | 00:00:00 |\n#+TBLFM: $3=$1+$2;T\n",
+  "error": false
+ },
+ {
+  "id": "tf-time-01",
+  "input": "| 1:30 | 0:45 | |\n| <2026-11-11 Wed> | <2026-11-26 Thu> | |\n#+TBLFM: $3=$1+$2;t\n",
+  "line": 2,
+  "text": "|             1:30 |             0:45 | 2.25 |\n| <2026-11-11 Wed> | <2026-11-26 Thu> | 0.00 |\n#+TBLFM: $3=$1+$2;t\n",
+  "error": false
+ },
+ {
+  "id": "tf-time-02",
+  "input": "| 1:30 | 0:45 | |\n| <2026-11-11 Wed> | <2026-11-26 Thu> | |\n#+TBLFM: $3=$2-$1;U\n",
+  "line": 2,
+  "text": "|             1:30 |             0:45 | -00:45 |\n| <2026-11-11 Wed> | <2026-11-26 Thu> |  00:00 |\n#+TBLFM: $3=$2-$1;U\n",
+  "error": false
+ },
+ {
+  "id": "tf-time-03",
+  "input": "| 1:30 | 0:45 | |\n| <2026-11-11 Wed> | <2026-11-26 Thu> | |\n#+TBLFM: $3=$1;T\n",
+  "line": 2,
+  "text": "|             1:30 |             0:45 | 01:30:00 |\n| <2026-11-11 Wed> | <2026-11-26 Thu> | 00:00:00 |\n#+TBLFM: $3=$1;T\n",
+  "error": false
+ },
+ {
+  "id": "tf-time-04",
+  "input": "| 1:30 | 0:45 | |\n| <2026-11-11 Wed> | <2026-11-26 Thu> | |\n#+TBLFM: @2$3=$2-$1\n",
+  "line": 2,
+  "text": "|             1:30 |             0:45 |    |\n| <2026-11-11 Wed> | <2026-11-26 Thu> | 15 |\n#+TBLFM: @2$3=$2-$1\n",
+  "error": false
+ },
+ {
+  "id": "tf-time-05",
+  "input": "| 1:30 | 0:45 | |\n| <2026-11-11 Wed> | <2026-11-26 Thu> | |\n#+TBLFM: @2$3=$2-$1;%.1f\n",
+  "line": 2,
+  "text": "|             1:30 |             0:45 |      |\n| <2026-11-11 Wed> | <2026-11-26 Thu> | 15.0 |\n#+TBLFM: @2$3=$2-$1;%.1f\n",
+  "error": false
+ },
+ {
+  "id": "tf-time-06",
+  "input": "| 1:30 | 0:45 | |\n| <2026-11-11 Wed> | <2026-11-26 Thu> | |\n#+TBLFM: @1$3=$1+$2;T\n",
+  "line": 2,
+  "text": "|             1:30 |             0:45 | 02:15:00 |\n| <2026-11-11 Wed> | <2026-11-26 Thu> |          |\n#+TBLFM: @1$3=$1+$2;T\n",
+  "error": false
+ },
+ {
+  "id": "tf-time-07",
+  "input": "| 1:30 | 0:45 | |\n| <2026-11-11 Wed> | <2026-11-26 Thu> | |\n#+TBLFM: @1$3=$1*2;T\n",
+  "line": 2,
+  "text": "|             1:30 |             0:45 | 03:00:00 |\n| <2026-11-11 Wed> | <2026-11-26 Thu> |          |\n#+TBLFM: @1$3=$1*2;T\n",
+  "error": false
+ },
+ {
+  "id": "tf-time-08",
+  "input": "| 1:30 | 0:45 | |\n| <2026-11-11 Wed> | <2026-11-26 Thu> | |\n#+TBLFM: @1$3=$1+$2;U\n",
+  "line": 2,
+  "text": "|             1:30 |             0:45 | 02:15 |\n| <2026-11-11 Wed> | <2026-11-26 Thu> |       |\n#+TBLFM: @1$3=$1+$2;U\n",
+  "error": false
+ },
+ {
+  "id": "tf-var-0",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1+$2\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |  3 |\n| 3 | 4 |  7 |\n| 5 | 6 | 11 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-var-1",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1/3\n",
+  "line": 5,
+  "text": "| a | b |     c |\n|---+---+-------|\n| 1 | 2 | 0.333 |\n| 3 | 4 |     1 |\n| 5 | 6 |  1.67 |\n#+TBLFM: $3=$1/3\n",
+  "error": false,
+  "digits": 3
+ },
+ {
+  "id": "tf-var-2",
+  "input": "| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n| 5 | 6 |   |\n#+TBLFM: $3=$1+$2\n",
+  "line": 5,
+  "text": "| a | b |  c |\n|---+---+----|\n| 1 | 2 |  3 |\n| 3 | 4 |  7 |\n| 5 | 6 | 11 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "tf-var-5",
+  "input": "| 1 | |\n#+TBLFM: $2=$z\n",
+  "line": 1,
+  "text": "| 1 | 42 |\n#+TBLFM: $2=$z\n",
+  "error": false,
+  "constants": {
+   "z": "42"
+  }
+ },
+ {
+  "id": "tf-var-6",
+  "input": "| 1 | |\n#+TBLFM: $2=$1\n",
+  "line": 1,
+  "text": "| 1 | 1 |\n#+TBLFM: $2=$1\n",
+  "error": false
+ },
+ {
+  "id": "dt-00",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=date(2026,11,26)\n",
+  "line": 1,
+  "text": "| 1 | 2 | [2026-11-26 Thu] |\n#+TBLFM: $3=date(2026,11,26)\n",
+  "error": false
+ },
+ {
+  "id": "dt-01",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=date(<2026-11-26 Thu>)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 739946 |\n#+TBLFM: $3=date(<2026-11-26 Thu>)\n",
+  "error": false
+ },
+ {
+  "id": "dt-02",
+  "input": "| <2026-11-11 Wed> | <2026-11-26 Thu> |  |\n#+TBLFM: $3=date($1)\n",
+  "line": 1,
+  "text": "| <2026-11-11 Wed> | <2026-11-26 Thu> | 739931 |\n#+TBLFM: $3=date($1)\n",
+  "error": false
+ },
+ {
+  "id": "dt-03",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=date(2026,11,26)+1\n",
+  "line": 1,
+  "text": "| 1 | 2 | [2026-11-27 Fri] |\n#+TBLFM: $3=date(2026,11,26)+1\n",
+  "error": false
+ },
+ {
+  "id": "dt-04",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=date(2026,11,26)-date(2026,11,11)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 15 |\n#+TBLFM: $3=date(2026,11,26)-date(2026,11,11)\n",
+  "error": false
+ },
+ {
+  "id": "dt-05",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=date(2026,11,26);U\n",
+  "line": 1,
+  "text": "| 1 | 2 |  |\n#+TBLFM: $3=date(2026,11,26);U\n",
+  "error": "wrong-type-argument"
+ },
+ {
+  "id": "dt-06",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=date(2026,11,26);T\n",
+  "line": 1,
+  "text": "| 1 | 2 |  |\n#+TBLFM: $3=date(2026,11,26);T\n",
+  "error": "wrong-type-argument"
+ },
+ {
+  "id": "dt-07",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=date(2026,11,26);t\n",
+  "line": 1,
+  "text": "| 1 | 2 |  |\n#+TBLFM: $3=date(2026,11,26);t\n",
+  "error": "wrong-type-argument"
+ },
+ {
+  "id": "dt-08",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=date(2026,11,26,13,30)\n",
+  "line": 1,
+  "text": "| 1 | 2 | [2026-11-26 Thu 13:30] |\n#+TBLFM: $3=date(2026,11,26,13,30)\n",
+  "error": false
+ },
+ {
+  "id": "dt-09",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=date(2026,11,26,13,30);U\n",
+  "line": 1,
+  "text": "| 1 | 2 |  |\n#+TBLFM: $3=date(2026,11,26,13,30);U\n",
+  "error": "wrong-type-argument"
+ },
+ {
+  "id": "dt-10",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=date(2026,11,26,13,30);T\n",
+  "line": 1,
+  "text": "| 1 | 2 |  |\n#+TBLFM: $3=date(2026,11,26,13,30);T\n",
+  "error": "wrong-type-argument"
+ },
+ {
+  "id": "dt-11",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=now()\n",
+  "line": 1,
+  "text": "| 1 | 2 | [2026-11-26 Thu 00:18] |\n#+TBLFM: $3=now()\n",
+  "error": false
+ },
+ {
+  "id": "dt-12",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=now();U\n",
+  "line": 1,
+  "text": "| 1 | 2 |  |\n#+TBLFM: $3=now();U\n",
+  "error": "wrong-type-argument"
+ },
+ {
+  "id": "dt-13",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=now()-now()\n",
+  "line": 1,
+  "text": "| 1 | 2 | 0. |\n#+TBLFM: $3=now()-now()\n",
+  "error": false
+ },
+ {
+  "id": "dt-14",
+  "input": "| <2026-11-11 Wed> | <2026-11-26 Thu> |  |\n#+TBLFM: $3=$2-$1\n",
+  "line": 1,
+  "text": "| <2026-11-11 Wed> | <2026-11-26 Thu> | 15 |\n#+TBLFM: $3=$2-$1\n",
+  "error": false
+ },
+ {
+  "id": "dt-15",
+  "input": "| <2026-11-11 Wed> | <2026-11-26 Thu> |  |\n#+TBLFM: $3=$2+1\n",
+  "line": 1,
+  "text": "| <2026-11-11 Wed> | <2026-11-26 Thu> | [2026-11-27 Fri] |\n#+TBLFM: $3=$2+1\n",
+  "error": false
+ },
+ {
+  "id": "dt-16",
+  "input": "| <2026-11-11 Wed> | <2026-11-26 Thu> |  |\n#+TBLFM: $3=$2-$1;U\n",
+  "line": 1,
+  "text": "| <2026-11-11 Wed> | <2026-11-26 Thu> | 00:00 |\n#+TBLFM: $3=$2-$1;U\n",
+  "error": false
+ },
+ {
+  "id": "dt-17",
+  "input": "| <2026-11-11 Wed> | <2026-11-26 Thu> |  |\n#+TBLFM: $3=$2-$1;T\n",
+  "line": 1,
+  "text": "| <2026-11-11 Wed> | <2026-11-26 Thu> | 00:00:00 |\n#+TBLFM: $3=$2-$1;T\n",
+  "error": false
+ },
+ {
+  "id": "dt-18",
+  "input": "| <2026-11-11 Wed> | <2026-11-26 Thu> |  |\n#+TBLFM: $3=$2;U\n",
+  "line": 1,
+  "text": "| <2026-11-11 Wed> | <2026-11-26 Thu> | 00:00 |\n#+TBLFM: $3=$2;U\n",
+  "error": false
+ },
+ {
+  "id": "dt-19",
+  "input": "| <2026-11-11 Wed> | <2026-11-26 Thu> |  |\n#+TBLFM: $3=$1+7;U\n",
+  "line": 1,
+  "text": "| <2026-11-11 Wed> | <2026-11-26 Thu> | 00:00 |\n#+TBLFM: $3=$1+7;U\n",
+  "error": false
+ },
+ {
+  "id": "dt-20",
+  "input": "| <2026-11-11 Wed> | <2026-11-26 Thu> |  |\n#+TBLFM: $3=date($2)-date($1)\n",
+  "line": 1,
+  "text": "| <2026-11-11 Wed> | <2026-11-26 Thu> | 15 |\n#+TBLFM: $3=date($2)-date($1)\n",
+  "error": false
+ },
+ {
+  "id": "dt-21",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=deg(180)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 10313.240 |\n#+TBLFM: $3=deg(180)\n",
+  "error": false
+ },
+ {
+  "id": "dt-22",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=deg(pi)\n",
+  "line": 1,
+  "text": "| 1 | 2 | deg(pi) |\n#+TBLFM: $3=deg(pi)\n",
+  "error": false
+ },
+ {
+  "id": "dt-23",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=rad(180)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3.1415927 |\n#+TBLFM: $3=rad(180)\n",
+  "error": false
+ },
+ {
+  "id": "dt-24",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=deg(3.14159265)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 180.00000 |\n#+TBLFM: $3=deg(3.14159265)\n",
+  "error": false
+ },
+ {
+  "id": "dt-25",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=pi\n",
+  "line": 1,
+  "text": "| 1 | 2 | pi |\n#+TBLFM: $3=pi\n",
+  "error": false
+ },
+ {
+  "id": "dt-26",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=pi*2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 2 pi |\n#+TBLFM: $3=pi*2\n",
+  "error": false
+ },
+ {
+  "id": "dt-27",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=pi;f3\n",
+  "line": 1,
+  "text": "| 1 | 2 | pi |\n#+TBLFM: $3=pi;f3\n",
+  "error": false
+ },
+ {
+  "id": "dt-28",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=sin(90)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1 |\n#+TBLFM: $3=sin(90)\n",
+  "error": false
+ },
+ {
+  "id": "dt-29",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=sin(90);D\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1 |\n#+TBLFM: $3=sin(90);D\n",
+  "error": false
+ },
+ {
+  "id": "dt-30",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=sin(1)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 0.017452406 |\n#+TBLFM: $3=sin(1)\n",
+  "error": false
+ },
+ {
+  "id": "dt-31",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=cos(0)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1 |\n#+TBLFM: $3=cos(0)\n",
+  "error": false
+ },
+ {
+  "id": "dt-32",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=sin(1);R\n",
+  "line": 1,
+  "text": "| 1 | 2 | 0.84147098 |\n#+TBLFM: $3=sin(1);R\n",
+  "error": false
+ },
+ {
+  "id": "dt-33",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=1/3;F\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1:3 |\n#+TBLFM: $3=1/3;F\n",
+  "error": false
+ },
+ {
+  "id": "dt-34",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=1/3;S\n",
+  "line": 1,
+  "text": "| 1 | 2 | 0.33333333 |\n#+TBLFM: $3=1/3;S\n",
+  "error": false
+ },
+ {
+  "id": "dt-35",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=sqrt(2);S\n",
+  "line": 1,
+  "text": "| 1 | 2 | sqrt(2) |\n#+TBLFM: $3=sqrt(2);S\n",
+  "error": false
+ },
+ {
+  "id": "dt-36",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=e\n",
+  "line": 1,
+  "text": "| 1 | 2 | e |\n#+TBLFM: $3=e\n",
+  "error": false
+ },
+ {
+  "id": "dt-37",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=e^1\n",
+  "line": 1,
+  "text": "| 1 | 2 | e |\n#+TBLFM: $3=e^1\n",
+  "error": false
+ },
+ {
+  "id": "dt-38",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=exp(1);f2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 2.72 |\n#+TBLFM: $3=exp(1);f2\n",
+  "error": false
+ },
+ {
+  "id": "dt-39",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=2^0.5\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1.4142136 |\n#+TBLFM: $3=2^0.5\n",
+  "error": false
+ },
+ {
+  "id": "dt-40",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=2^-1\n",
+  "line": 1,
+  "text": "| 1 | 2 | 0.5 |\n#+TBLFM: $3=2^-1\n",
+  "error": false
+ },
+ {
+  "id": "dt-41",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=10^-3\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1e-3 |\n#+TBLFM: $3=10^-3\n",
+  "error": false
+ },
+ {
+  "id": "dt-42",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=-7%3\n",
+  "line": 1,
+  "text": "| 1 | 2 | 2 |\n#+TBLFM: $3=-7%3\n",
+  "error": false
+ },
+ {
+  "id": "dt-43",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=7%-3\n",
+  "line": 1,
+  "text": "| 1 | 2 | -2 |\n#+TBLFM: $3=7%-3\n",
+  "error": false
+ },
+ {
+  "id": "dt-44",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=7.5%2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1.5 |\n#+TBLFM: $3=7.5%2\n",
+  "error": false
+ },
+ {
+  "id": "lp-00",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(format-time-string \"%Y-%m-%d\" (date-to-time \"2026-11-26\") t)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 2026-11-26 |\n#+TBLFM: $3='(format-time-string \"%Y-%m-%d\" (date-to-time \"2026-11-26\") t)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-01",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(format-time-string \"%A %B %d %Y\" (date-to-time \"2026-11-26\") t)\n",
+  "line": 1,
+  "text": "| 1 | 2 | Thursday November 26 2026 |\n#+TBLFM: $3='(format-time-string \"%A %B %d %Y\" (date-to-time \"2026-11-26\") t)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-02",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(format-time-string \"%H:%M:%S\" (date-to-time \"2026-11-26 13:45:10\") t)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 13:45:10 |\n#+TBLFM: $3='(format-time-string \"%H:%M:%S\" (date-to-time \"2026-11-26 13:45:10\") t)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-03",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(format-time-string \"%j %U %a %b %y %e\" (date-to-time \"2026-11-26\") t)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 330 47 Thu Nov 26 26 |\n#+TBLFM: $3='(format-time-string \"%j %U %a %b %y %e\" (date-to-time \"2026-11-26\") t)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-04",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(format-time-string \"%s\" (date-to-time \"2026-11-26 00:00\") t)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1795651200 |\n#+TBLFM: $3='(format-time-string \"%s\" (date-to-time \"2026-11-26 00:00\") t)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-05",
+  "input": "| 2026-11-11 |  |  |\n#+TBLFM: $3='(format-time-string \"%Y-%m-%d\" (date-to-time $1) t)\n",
+  "line": 1,
+  "text": "| 2026-11-11 |   | 2026-11-11 |\n#+TBLFM: $3='(format-time-string \"%Y-%m-%d\" (date-to-time $1) t)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-06",
+  "input": "| 2026-11-11 |  |  |\n#+TBLFM: $3='(format-time-string \"%Y-%m-%d\" (date-to-time $1))\n",
+  "line": 1,
+  "text": "| 2026-11-11 |   | 2026-11-11 |\n#+TBLFM: $3='(format-time-string \"%Y-%m-%d\" (date-to-time $1))\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-07",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(format-time-string \"%d/%m\" (date-to-time \"<2026-11-26 Thu>\") t)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 26/11 |\n#+TBLFM: $3='(format-time-string \"%d/%m\" (date-to-time \"<2026-11-26 Thu>\") t)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-08",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(date-to-time \"2026-11-26\")\n",
+  "line": 1,
+  "text": "| 1 | 2 | #ERROR |\n#+TBLFM: $3='(date-to-time \"2026-11-26\")\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-09",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(format-time-string \"%Y\" nil t)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 2026 |\n#+TBLFM: $3='(format-time-string \"%Y\" nil t)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-10",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(format-time-string \"%Y-%m-%d %H:%M\" (time-add (date-to-time \"2026-11-26\") 86400) t)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 2026-11-27 00:00 |\n#+TBLFM: $3='(format-time-string \"%Y-%m-%d %H:%M\" (time-add (date-to-time \"2026-11-26\") 86400) t)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-11",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(+ (string-to-number $1) (string-to-number $2))\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 |\n#+TBLFM: $3='(+ (string-to-number $1) (string-to-number $2))\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-12",
+  "input": "| 7 |  |  |\n#+TBLFM: $3='(string-to-number $1);N\n",
+  "line": 1,
+  "text": "| 7 |   | #ERROR |\n#+TBLFM: $3='(string-to-number $1);N\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-13",
+  "input": "| a | b |  |\n#+TBLFM: $3='(concat $1 $2)\n",
+  "line": 1,
+  "text": "| a | b | ab |\n#+TBLFM: $3='(concat $1 $2)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-14",
+  "input": "| a | b |  |\n#+TBLFM: $3='(upcase $1)\n",
+  "line": 1,
+  "text": "| a | b | A |\n#+TBLFM: $3='(upcase $1)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-15",
+  "input": "| 42 | b |  |\n#+TBLFM: $3='(format \"%05d\" (string-to-number $1))\n",
+  "line": 1,
+  "text": "| 42 | b | 00042 |\n#+TBLFM: $3='(format \"%05d\" (string-to-number $1))\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-16",
+  "input": "| 3 | b |  |\n#+TBLFM: $3='(if (> (string-to-number $1) 2) \"big\" \"small\")\n",
+  "line": 1,
+  "text": "| 3 | b | big |\n#+TBLFM: $3='(if (> (string-to-number $1) 2) \"big\" \"small\")\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-17",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(+ 1 2)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 |\n#+TBLFM: $3='(+ 1 2)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-18",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(* 2 3)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 6 |\n#+TBLFM: $3='(* 2 3)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-19",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(/ 7 2)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 |\n#+TBLFM: $3='(/ 7 2)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-20",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(/ 7.0 2)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3.5 |\n#+TBLFM: $3='(/ 7.0 2)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-21",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(number-to-string 5)\n",
+  "line": 1,
+  "text": "| 1 | 2 | 5 |\n#+TBLFM: $3='(number-to-string 5)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-22",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(length \"abc\")\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 |\n#+TBLFM: $3='(length \"abc\")\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-23",
+  "input": "| hello |  |  |\n#+TBLFM: $3='(substring $1 0 2)\n",
+  "line": 1,
+  "text": "| hello |   | he |\n#+TBLFM: $3='(substring $1 0 2)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-24",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(identity \"x y\")\n",
+  "line": 1,
+  "text": "| 1 | 2 | x y |\n#+TBLFM: $3='(identity \"x y\")\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-25",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(org-sbe nope)\n",
+  "line": 1,
+  "text": "| 1 | 2 | #ERROR |\n#+TBLFM: $3='(org-sbe nope)\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-26",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(+ $1 $2);N\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 |\n#+TBLFM: $3='(+ $1 $2);N\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-27",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(+ $1 $2);L\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 |\n#+TBLFM: $3='(+ $1 $2);L\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-28",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(concat $1 $2);L\n",
+  "line": 1,
+  "text": "| 1 | 2 | #ERROR |\n#+TBLFM: $3='(concat $1 $2);L\n",
+  "error": false,
+  "tz": "UTC"
+ },
+ {
+  "id": "lp-tz-ny",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3='(format-time-string \"%H\" (date-to-time \"2026-11-26 12:00\"))\n",
+  "line": 1,
+  "text": "| 1 | 2 | 12 |\n#+TBLFM: $3='(format-time-string \"%H\" (date-to-time \"2026-11-26 12:00\"))\n",
+  "error": false,
+  "tz": "America/New_York"
+ },
+ {
+  "id": "mk-0",
+  "input": "| _ | x | y |  |\n|  | 1 | 2 |  |\n#+TBLFM: $4=$2+$3\n",
+  "line": 2,
+  "text": "| _ | x | y |   |\n|   | 1 | 2 |   |\n#+TBLFM: $4=$2+$3\n",
+  "error": false
+ },
+ {
+  "id": "mk-1",
+  "input": "|  | 1 | 2 |  |\n| ^ | a | b |  |\n#+TBLFM: $4=$2+$3\n",
+  "line": 2,
+  "text": "|   | 1 | 2 |   |\n| ^ | a | b |   |\n#+TBLFM: $4=$2+$3\n",
+  "error": false
+ },
+ {
+  "id": "mk-10",
+  "input": "| a | b |\n|--|\n| 1 |  |\n| 2 |  |\n#+TBLFM: @I+1$2=9\n",
+  "line": 4,
+  "text": "| a | b |\n|--|\n| 1 |  |\n| 2 |  |\n#+TBLFM: @I+1$2=9\n",
+  "error": "user-error"
+ },
+ {
+  "id": "mk-11",
+  "input": "| a | b |\n|--|\n| 1 |  |\n| 2 |  |\n#+TBLFM: @>$2=9\n",
+  "line": 4,
+  "text": "| a | b |\n|---+---|\n| 1 |   |\n| 2 | 9 |\n#+TBLFM: @>$2=9\n",
+  "error": false
+ },
+ {
+  "id": "mk-2",
+  "input": "| $ | max=5 |  |\n|  | 3 |  |\n|  | 9 |  |\n#+TBLFM: $3=$2*3\n",
+  "line": 3,
+  "text": "| $ | max=5 |   |\n|   |     3 |   |\n|   |     9 |   |\n#+TBLFM: $3=$2*3\n",
+  "error": false
+ },
+ {
+  "id": "mk-3",
+  "input": "| $ | max=5 |  |\n|  | 3 |  |\n#+TBLFM: $3=$2*max\n",
+  "line": 2,
+  "text": "| $ | max=5 |   |\n|   |     3 |   |\n#+TBLFM: $3=$2*max\n",
+  "error": false
+ },
+ {
+  "id": "mk-4",
+  "input": "| # | 1 | 2 |  |\n#+TBLFM: $4=$2+$3\n",
+  "line": 1,
+  "text": "| # | 1 | 2 | 3 |\n#+TBLFM: $4=$2+$3\n",
+  "error": false
+ },
+ {
+  "id": "mk-5",
+  "input": "| * | 1 | 2 |  |\n#+TBLFM: $4=$2+$3\n",
+  "line": 1,
+  "text": "| * | 1 | 2 | 3 |\n#+TBLFM: $4=$2+$3\n",
+  "error": false
+ },
+ {
+  "id": "mk-6",
+  "input": "| ! | x | y | s |\n|  | 1 | 2 |  |\n#+TBLFM: @2$4=$x+$y\n",
+  "line": 2,
+  "text": "| ! | x | y | s |\n|   | 1 | 2 | 3 |\n#+TBLFM: @2$4=$x+$y\n",
+  "error": false
+ },
+ {
+  "id": "mk-7",
+  "input": "|  | a | b |  |\n| ^ | a | b |  |\n|  | 1 | 2 |  |\n#+TBLFM: @3$4=$a+$b\n",
+  "line": 3,
+  "text": "|   | a | b |       |\n| ^ | a | b |       |\n|   | 1 | 2 | a + b |\n#+TBLFM: @3$4=$a+$b\n",
+  "error": false
+ },
+ {
+  "id": "mk-8",
+  "input": "#+NAME: src\n| 7 | 8 |\n\n| |\n#+TBLFM: @1$1=remote(src,@1$2)\n",
+  "line": 4,
+  "text": "#+NAME: src\n| 7 | 8 |\n\n| 8 |\n#+TBLFM: @1$1=remote(src,@1$2)\n",
+  "error": false
+ },
+ {
+  "id": "mk-9",
+  "input": "#+NAME: src\n| 7 | 8 |\n\n#+NAME: dst\n| |\n#+TBLFM: $1=remote(src,@1$2)\n",
+  "line": 5,
+  "text": "#+NAME: src\n| 7 | 8 |\n\n#+NAME: dst\n| 8 |\n#+TBLFM: $1=remote(src,@1$2)\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-00",
+  "input": "| 2#101 | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 2#101 | 1 | 6 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-01",
+  "input": "| 16#ff | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 16#ff | 1 | 256 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-02",
+  "input": "| 16#FF | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 16#FF | 1 | 256 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-03",
+  "input": "| 36#zz | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 36#zz | 1 | 1296 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-04",
+  "input": "| 8#17 | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 8#17 | 1 | 16 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-05",
+  "input": "| -16#ff | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| -16#ff | 1 | -254 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-06",
+  "input": "| 2#101.1 | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 2#101.1 | 1 | 6.5 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-07",
+  "input": "| 16#1.8 | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 16#1.8 | 1 | 2.5 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-08",
+  "input": "| 1e3 | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 1e3 | 1 | 1001. |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-09",
+  "input": "| 1.5e-3 | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 1.5e-3 | 1 | 1.0015 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-10",
+  "input": "| 1E3 | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 1E3 | 1 | 1001. |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-11",
+  "input": "| .5e1 | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| .5e1 | 1 | 6. |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-12",
+  "input": "| 5. | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 5. | 1 | 6. |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-13",
+  "input": "| 1_000 | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 1_000 | 1 | 1_0 + 1 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-14",
+  "input": "| 0x1f | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 0x1f | 1 | 1 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-cell-15",
+  "input": "| #16#ff | 1 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| #16#ff | 1 | #ERROR |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-00",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=2#101+$1\n",
+  "line": 1,
+  "text": "| 1 | 2 | 6 |\n#+TBLFM: $3=2#101+$1\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-01",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=16#ff*2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 510 |\n#+TBLFM: $3=16#ff*2\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-02",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=16#ff;%x\n",
+  "line": 1,
+  "text": "| 1 | 2 | ff |\n#+TBLFM: $3=16#ff;%x\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-03",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=255;%x\n",
+  "line": 1,
+  "text": "| 1 | 2 | ff |\n#+TBLFM: $3=255;%x\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-04",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=255;%o\n",
+  "line": 1,
+  "text": "| 1 | 2 | 377 |\n#+TBLFM: $3=255;%o\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-05",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=255;%X\n",
+  "line": 1,
+  "text": "| 1 | 2 | FF |\n#+TBLFM: $3=255;%X\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-06",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=255;%b\n",
+  "line": 1,
+  "text": "| 1 | 2 |  |\n#+TBLFM: $3=255;%b\n",
+  "error": "error"
+ },
+ {
+  "id": "nm-fmt-07",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=2#101;N\n",
+  "line": 1,
+  "text": "| 1 | 2 | 5 |\n#+TBLFM: $3=2#101;N\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-08",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=1e3\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1000. |\n#+TBLFM: $3=1e3\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-09",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=1.5e3*2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3000. |\n#+TBLFM: $3=1.5e3*2\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-10",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=1e-3\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1e-3 |\n#+TBLFM: $3=1e-3\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-11",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=1e20\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1e20 |\n#+TBLFM: $3=1e20\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-12",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=123456789012345\n",
+  "line": 1,
+  "text": "| 1 | 2 | 123456789012345 |\n#+TBLFM: $3=123456789012345\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-13",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=1234567.891\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1234567.9 |\n#+TBLFM: $3=1234567.891\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-14",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=0.000012345\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1.2345e-5 |\n#+TBLFM: $3=0.000012345\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-15",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=1e3;s2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1e3 |\n#+TBLFM: $3=1e3;s2\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-16",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=12345.678;s3\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1.23e4 |\n#+TBLFM: $3=12345.678;s3\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-17",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=12345.678;n3\n",
+  "line": 1,
+  "text": "| 1 | 2 | 12300. |\n#+TBLFM: $3=12345.678;n3\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-18",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=12345.678;f1\n",
+  "line": 1,
+  "text": "| 1 | 2 | 12345.7 |\n#+TBLFM: $3=12345.678;f1\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-19",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=12345.678;%.2e\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1.23e+04 |\n#+TBLFM: $3=12345.678;%.2e\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-20",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=12345.678;%g\n",
+  "line": 1,
+  "text": "| 1 | 2 | 12345.7 |\n#+TBLFM: $3=12345.678;%g\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-21",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=12345.678;%.3g\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1.23e+04 |\n#+TBLFM: $3=12345.678;%.3g\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-22",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=0.00001234;%g\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1.234e-05 |\n#+TBLFM: $3=0.00001234;%g\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-23",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=12345.678;%e\n",
+  "line": 1,
+  "text": "| 1 | 2 | 1.234568e+04 |\n#+TBLFM: $3=12345.678;%e\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-24",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=7;%03d\n",
+  "line": 1,
+  "text": "| 1 | 2 | 007 |\n#+TBLFM: $3=7;%03d\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-25",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=7;%+d\n",
+  "line": 1,
+  "text": "| 1 | 2 | +7 |\n#+TBLFM: $3=7;%+d\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-26",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=7.5;%5.1f|\n",
+  "line": 1,
+  "text": "| 1 | 2 | 7.5 |   |\n#+TBLFM: $3=7.5;%5.1f|\n",
+  "error": false
+ },
+ {
+  "id": "nm-fmt-27",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=7;%s\n",
+  "line": 1,
+  "text": "| 1 | 2 | 7 |\n#+TBLFM: $3=7;%s\n",
+  "error": false
+ },
+ {
+  "id": "nm-radix-fix",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=255.5;f2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 16#FF.80 |\n#+TBLFM: $3=255.5;f2\n",
+  "error": false,
+  "radix": 16
+ },
+ {
+  "id": "nm-radix16-0",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=255\n",
+  "line": 1,
+  "text": "| 1 | 2 | 16#FF |\n#+TBLFM: $3=255\n",
+  "error": false,
+  "radix": 16
+ },
+ {
+  "id": "nm-radix16-1",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=255.5\n",
+  "line": 1,
+  "text": "| 1 | 2 | 16#FF.8 |\n#+TBLFM: $3=255.5\n",
+  "error": false,
+  "radix": 16
+ },
+ {
+  "id": "nm-radix16-2",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 16#3 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false,
+  "radix": 16
+ },
+ {
+  "id": "nm-radix16-3",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=1/3\n",
+  "line": 1,
+  "text": "| 1 | 2 | 16#0.55555555 |\n#+TBLFM: $3=1/3\n",
+  "error": false,
+  "radix": 16
+ },
+ {
+  "id": "nm-radix16-4",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=16#ff\n",
+  "line": 1,
+  "text": "| 1 | 2 | 16#FF |\n#+TBLFM: $3=16#ff\n",
+  "error": false,
+  "radix": 16
+ },
+ {
+  "id": "nm-radix2-0",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=255\n",
+  "line": 1,
+  "text": "| 1 | 2 | 2#11111111 |\n#+TBLFM: $3=255\n",
+  "error": false,
+  "radix": 2
+ },
+ {
+  "id": "nm-radix2-1",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=255.5\n",
+  "line": 1,
+  "text": "| 1 | 2 | 2#100000000. |\n#+TBLFM: $3=255.5\n",
+  "error": false,
+  "radix": 2
+ },
+ {
+  "id": "nm-radix2-2",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 2#11 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false,
+  "radix": 2
+ },
+ {
+  "id": "nm-radix2-3",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=1/3\n",
+  "line": 1,
+  "text": "| 1 | 2 | 2#0.010101011 |\n#+TBLFM: $3=1/3\n",
+  "error": false,
+  "radix": 2
+ },
+ {
+  "id": "nm-radix2-4",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=16#ff\n",
+  "line": 1,
+  "text": "| 1 | 2 | 2#11111111 |\n#+TBLFM: $3=16#ff\n",
+  "error": false,
+  "radix": 2
+ },
+ {
+  "id": "nm-radix36-0",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=255\n",
+  "line": 1,
+  "text": "| 1 | 2 | 36#73 |\n#+TBLFM: $3=255\n",
+  "error": false,
+  "radix": 36
+ },
+ {
+  "id": "nm-radix36-1",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=255.5\n",
+  "line": 1,
+  "text": "| 1 | 2 | 36#73.I |\n#+TBLFM: $3=255.5\n",
+  "error": false,
+  "radix": 36
+ },
+ {
+  "id": "nm-radix36-2",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 36#3 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false,
+  "radix": 36
+ },
+ {
+  "id": "nm-radix36-3",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=1/3\n",
+  "line": 1,
+  "text": "| 1 | 2 | 36#0.BZZZZZZZ |\n#+TBLFM: $3=1/3\n",
+  "error": false,
+  "radix": 36
+ },
+ {
+  "id": "nm-radix36-4",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=16#ff\n",
+  "line": 1,
+  "text": "| 1 | 2 | 36#73 |\n#+TBLFM: $3=16#ff\n",
+  "error": false,
+  "radix": 36
+ },
+ {
+  "id": "nm-radix8-0",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=255\n",
+  "line": 1,
+  "text": "| 1 | 2 | 8#377 |\n#+TBLFM: $3=255\n",
+  "error": false,
+  "radix": 8
+ },
+ {
+  "id": "nm-radix8-1",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=255.5\n",
+  "line": 1,
+  "text": "| 1 | 2 | 8#377.4 |\n#+TBLFM: $3=255.5\n",
+  "error": false,
+  "radix": 8
+ },
+ {
+  "id": "nm-radix8-2",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 8#3 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false,
+  "radix": 8
+ },
+ {
+  "id": "nm-radix8-3",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=1/3\n",
+  "line": 1,
+  "text": "| 1 | 2 | 8#0.25252525 |\n#+TBLFM: $3=1/3\n",
+  "error": false,
+  "radix": 8
+ },
+ {
+  "id": "nm-radix8-4",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=16#ff\n",
+  "line": 1,
+  "text": "| 1 | 2 | 8#377 |\n#+TBLFM: $3=16#ff\n",
+  "error": false,
+  "radix": 8
+ },
+ {
+  "id": "od-0",
+  "input": "| 1 | 2 |  |  |\n#+TBLFM: $3=$1+$2::$4=$3*2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 | 6 |\n#+TBLFM: $3=$1+$2::$4=$3*2\n",
+  "error": false
+ },
+ {
+  "id": "od-1",
+  "input": "| 1 | 2 |  |  |\n#+TBLFM: $4=$3*2::$3=$1+$2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 | 6 |\n#+TBLFM: $4=$3*2::$3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "od-10",
+  "input": "| 1 | 2 |  |\n#+TBLFM: $3=$1+$2\n#+TBLFM: $3=$3*10\n",
+  "line": 2,
+  "text": "| 1 | 2 | 0 |\n#+TBLFM: $3=$1+$2\n#+TBLFM: $3=$3*10\n",
+  "error": false
+ },
+ {
+  "id": "od-2",
+  "input": "| 1 | 2 |  |  |\n#+TBLFM: @1$3=$1+$2::@1$4=@1$3*2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 | 6 |\n#+TBLFM: @1$3=$1+$2::@1$4=@1$3*2\n",
+  "error": false
+ },
+ {
+  "id": "od-3",
+  "input": "| 1 | 2 |  |  |\n#+TBLFM: @1$4=@1$3*2::@1$3=$1+$2\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 | 6 |\n#+TBLFM: @1$4=@1$3*2::@1$3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "od-4",
+  "input": "| 1 | 2 |  |\n| 3 | 4 |  |\n#+TBLFM: $3=$1+$2::@1$3=100\n",
+  "line": 2,
+  "text": "| 1 | 2 | 100 |\n| 3 | 4 |   7 |\n#+TBLFM: $3=$1+$2::@1$3=100\n",
+  "error": false
+ },
+ {
+  "id": "od-5",
+  "input": "| 1 | 2 |  |  |\n| 3 | 4 |  |  |\n#+TBLFM: @1$3=100::$4=$3+1\n",
+  "line": 2,
+  "text": "| 1 | 2 | 100 | 1 |\n| 3 | 4 |     | 1 |\n#+TBLFM: @1$3=100::$4=$3+1\n",
+  "error": false
+ },
+ {
+  "id": "od-6",
+  "input": "| 1 | 2 |  |  |\n| 3 | 4 |  |  |\n#+TBLFM: $4=$3+1::@1$3=100\n",
+  "line": 2,
+  "text": "| 1 | 2 | 100 | 1 |\n| 3 | 4 |     | 1 |\n#+TBLFM: $4=$3+1::@1$3=100\n",
+  "error": false
+ },
+ {
+  "id": "od-7",
+  "input": "| 1 |  |  |  |\n#+TBLFM: $2=$1+1::$3=$2+1::$4=$3+1\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 | 4 |\n#+TBLFM: $2=$1+1::$3=$2+1::$4=$3+1\n",
+  "error": false
+ },
+ {
+  "id": "od-8",
+  "input": "| 1 |  |  |  |\n#+TBLFM: $4=$3+1::$3=$2+1::$2=$1+1\n",
+  "line": 1,
+  "text": "| 1 | 2 | 3 | 4 |\n#+TBLFM: $4=$3+1::$3=$2+1::$2=$1+1\n",
+  "error": false
+ },
+ {
+  "id": "od-9",
+  "input": "| 1 | 2 | 3 |\n| 4 | 5 | 6 |\n#+TBLFM: $3=$3+1\n",
+  "line": 2,
+  "text": "| 1 | 2 | 4 |\n| 4 | 5 | 7 |\n#+TBLFM: $3=$3+1\n",
+  "error": false
+ },
+ {
+  "id": "tm-00",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=$1+$2;T\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | 02:15:00 |\n#+TBLFM: $3=$1+$2;T\n",
+  "error": false
+ },
+ {
+  "id": "tm-01",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=$1+$2;t\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | 2.25 |\n#+TBLFM: $3=$1+$2;t\n",
+  "error": false
+ },
+ {
+  "id": "tm-02",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=$1+$2;U\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | 02:15 |\n#+TBLFM: $3=$1+$2;U\n",
+  "error": false
+ },
+ {
+  "id": "tm-03",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=$1*2;T\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | 03:00:00 |\n#+TBLFM: $3=$1*2;T\n",
+  "error": false
+ },
+ {
+  "id": "tm-04",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=$1/2;T\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | 00:45:00 |\n#+TBLFM: $3=$1/2;T\n",
+  "error": false
+ },
+ {
+  "id": "tm-05",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=$1-$2;T\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | 00:45:00 |\n#+TBLFM: $3=$1-$2;T\n",
+  "error": false
+ },
+ {
+  "id": "tm-06",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=$2-$1;T\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | -00:45:00 |\n#+TBLFM: $3=$2-$1;T\n",
+  "error": false
+ },
+ {
+  "id": "tm-07",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=$1;t\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | 1.50 |\n#+TBLFM: $3=$1;t\n",
+  "error": false
+ },
+ {
+  "id": "tm-08",
+  "input": "| 1:30:15 | 0:45:50 |  |\n#+TBLFM: $3=$1+$2;T\n",
+  "line": 1,
+  "text": "| 1:30:15 | 0:45:50 | 02:16:05 |\n#+TBLFM: $3=$1+$2;T\n",
+  "error": false
+ },
+ {
+  "id": "tm-09",
+  "input": "| 1:30:15 | 0:45:50 |  |\n#+TBLFM: $3=$1+$2;t\n",
+  "line": 1,
+  "text": "| 1:30:15 | 0:45:50 | 2.27 |\n#+TBLFM: $3=$1+$2;t\n",
+  "error": false
+ },
+ {
+  "id": "tm-10",
+  "input": "| 1:30:15 | 0:45:50 |  |\n#+TBLFM: $3=$1+$2;U\n",
+  "line": 1,
+  "text": "| 1:30:15 | 0:45:50 | 02:16 |\n#+TBLFM: $3=$1+$2;U\n",
+  "error": false
+ },
+ {
+  "id": "tm-11",
+  "input": "| 25:00 | 0:00 |  |\n#+TBLFM: $3=$1+$2;T\n",
+  "line": 1,
+  "text": "| 25:00 | 0:00 | 25:00:00 |\n#+TBLFM: $3=$1+$2;T\n",
+  "error": false
+ },
+ {
+  "id": "tm-12",
+  "input": "| 3600 |  |  |\n#+TBLFM: $3=$1;T\n",
+  "line": 1,
+  "text": "| 3600 |   | 01:00:00 |\n#+TBLFM: $3=$1;T\n",
+  "error": false
+ },
+ {
+  "id": "tm-13",
+  "input": "| 90 |  |  |\n#+TBLFM: $3=$1;T\n",
+  "line": 1,
+  "text": "| 90 |   | 00:01:30 |\n#+TBLFM: $3=$1;T\n",
+  "error": false
+ },
+ {
+  "id": "tm-14",
+  "input": "| 3600 |  |  |\n#+TBLFM: $3=$1;t\n",
+  "line": 1,
+  "text": "| 3600 |   | 1.00 |\n#+TBLFM: $3=$1;t\n",
+  "error": false
+ },
+ {
+  "id": "tm-15",
+  "input": "| 1:30 | 15 |  |\n#+TBLFM: $3=$1+$2;T\n",
+  "line": 1,
+  "text": "| 1:30 | 15 | 01:30:15 |\n#+TBLFM: $3=$1+$2;T\n",
+  "error": false
+ },
+ {
+  "id": "tm-16",
+  "input": "|  |  |  |\n#+TBLFM: $3=$1;T\n",
+  "line": 1,
+  "text": "|   |   | 00:00:00 |\n#+TBLFM: $3=$1;T\n",
+  "error": false
+ },
+ {
+  "id": "tm-17",
+  "input": "| x | 1:00 |  |\n#+TBLFM: $3=$1+$2;T\n",
+  "line": 1,
+  "text": "| x | 1:00 | 01:00:00 |\n#+TBLFM: $3=$1+$2;T\n",
+  "error": false
+ },
+ {
+  "id": "tm-18",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=vsum($1..$2);T\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | 02:15:00 |\n#+TBLFM: $3=vsum($1..$2);T\n",
+  "error": false
+ },
+ {
+  "id": "tm-19",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=vmean($1..$2);T\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | 01:07:30 |\n#+TBLFM: $3=vmean($1..$2);T\n",
+  "error": false
+ },
+ {
+  "id": "tm-20",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=$1+$2;T;%.1f\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | #ERROR |\n#+TBLFM: $3=$1+$2;T;%.1f\n",
+  "error": false
+ },
+ {
+  "id": "tm-21",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=$1+$2;t;%.1f\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | #ERROR |\n#+TBLFM: $3=$1+$2;t;%.1f\n",
+  "error": false
+ },
+ {
+  "id": "tm-22",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=$1+$2;T1\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | 1 |\n#+TBLFM: $3=$1+$2;T1\n",
+  "error": false
+ },
+ {
+  "id": "tm-23",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=$1+$2;T;N\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | #ERROR |\n#+TBLFM: $3=$1+$2;T;N\n",
+  "error": false
+ },
+ {
+  "id": "tm-24",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=$1+$2;N\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | 1 |\n#+TBLFM: $3=$1+$2;N\n",
+  "error": false
+ },
+ {
+  "id": "tm-25",
+  "input": "| 1:30 | 0:45 |  |\n#+TBLFM: $3=$1+$2\n",
+  "line": 1,
+  "text": "| 1:30 | 0:45 | 1:30 |\n#+TBLFM: $3=$1+$2\n",
+  "error": false
+ },
+ {
+  "id": "tm-26",
+  "input": "| 1.5 |  |  |\n#+TBLFM: $3=$1*60;T\n",
+  "line": 1,
+  "text": "| 1.5 |   | 00:01:30 |\n#+TBLFM: $3=$1*60;T\n",
+  "error": false
+ },
+ {
+  "id": "tm-27",
+  "input": "| 1.5 |  |  |\n#+TBLFM: $3=$1*3600;T\n",
+  "line": 1,
+  "text": "| 1.5 |   | 01:30:00 |\n#+TBLFM: $3=$1*3600;T\n",
+  "error": false
+ },
+ {
+  "id": "tm-28",
+  "input": "| -1:30 | 0:45 |  |\n#+TBLFM: $3=$1+$2;T\n",
+  "line": 1,
+  "text": "| -1:30 | 0:45 | -00:45:00 |\n#+TBLFM: $3=$1+$2;T\n",
+  "error": false
+ },
+ {
+  "id": "tm-29",
+  "input": "| 0:00:30 | 0:00:45 |  |\n#+TBLFM: $3=$1+$2;T\n",
+  "line": 1,
+  "text": "| 0:00:30 | 0:00:45 | 00:01:15 |\n#+TBLFM: $3=$1+$2;T\n",
+  "error": false
+ }
+]

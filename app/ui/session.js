@@ -97,13 +97,13 @@ export function createSession({ app }) {
     async openFile(name) {
       const open = buffers.find((b) => b.name === name);
       if (open) { current = open.id; changed(); return { ok: true, id: open.id }; }
-      const r = await app.storage.read(name);
+      const r = await app.storage.read(name, { cached: true });
       if (!r) return { ok: false, reason: 'missing' };
       const id = nextId++;
       buffers = [...buffers, { id, name, text: r.text, saved: r.text, version: r.version, folds: startupFolds(r.text), undo: [], redo: [], group: false, at: 0 }];
       current = id;
       changed();
-      return { ok: true, id };
+      return { ok: true, id, opened: true };
     },
 
     /** Opens a file that does not exist yet as an unsaved buffer. */
@@ -136,14 +136,16 @@ export function createSession({ app }) {
     async restore(snap) {
       const skipped = [];
       const ids = [];
-      for (const e of snap.buffers) {
+      // Files come from the saved copy at once (checkChanged looks at storage afterward), and are asked for together.
+      const reads = snap.buffers.map((e) => (e.name === null ? null : app.storage.read(e.name, { cached: true }).catch(() => null)));
+      for (const [i, e] of snap.buffers.entries()) {
         const id = nextId++;
         if (e.name === null) {
           buffers = [...buffers, { id, name: null, title: e.title ?? scratchTitle(id), text: e.draft ?? '', saved: '', version: null, folds: validFolds(analyze(e.draft ?? '').foldables, e.folds ?? {}), undo: [], redo: [], group: false, at: 0 }];
           ids.push(id);
           continue;
         }
-        const r = await app.storage.read(e.name).catch(() => null);
+        const r = await reads[i];
         if (!r) { skipped.push(e.name); continue; }
         const text = e.draft ?? r.text;
         buffers = [...buffers, { id, name: e.name, text, saved: r.text, version: r.version, folds: validFolds(analyze(text).foldables, e.folds ?? startupFolds(r.text)), undo: [], redo: [], group: false, at: 0 }];

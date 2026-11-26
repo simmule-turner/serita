@@ -36,6 +36,18 @@ test('online: reads and writes pass through; offline reads come from the cache',
   assert.deepEqual(await p.read('a.org'), { text: 'one', version: w.version });
 });
 
+test('a cached read answers from the saved copy without asking the server, and asks when nothing is saved', async () => {
+  const { p, state, external } = setup();
+  await p.write('a.org', 'one');
+  await external('a.org', 'two');
+  const before = state.calls;
+  assert.equal((await p.read('a.org', { cached: true })).text, 'one');
+  assert.equal(state.calls, before);
+  assert.equal((await p.read('a.org')).text, 'two');
+  await external('b.org', 'new');
+  assert.equal((await p.read('b.org', { cached: true })).text, 'new');
+});
+
 test('offline with nothing cached is a clear network error, not null', async () => {
   const { p, state } = setup();
   state.offline = true;

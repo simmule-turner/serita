@@ -1,6 +1,6 @@
 // Offline cache. The version below must equal package.json's version (a test checks this),
 // so every release gets a new cache and replaces the old one.
-const VERSION = '0.10.7';
+const VERSION = '0.10.8';
 const CACHE = `serita-${VERSION}`;
 const FILES = [
   './',
@@ -81,6 +81,11 @@ const FILES = [
   'core/parse.js',
   'core/projection.js',
   'core/settings-file.js',
+  'app/storage/timeout.js',
+  'core/calc.js',
+  'core/tblfm.js',
+  'core/tblcmd.js',
+  'core/tblisp.js',
 ];
 
 self.addEventListener('install', (event) => {

@@ -1,5 +1,5 @@
 #+TITLE: Tables
-# CC0 1.0: public domain. In the Text view put the cursor in a table and try TAB, RET, S-RET, M-up, M-down, M-left, M-right and C-c -; in the Outline view tap a cell.
+# CC0 1.0: public domain. In the Text view put the cursor in a table and try TAB, RET, S-RET, M-up, M-down, M-left, M-right and C-c -; in the Outline view tap a cell. The formula sections below say which key or sheet to use.
 
 * A table to edit
 Columns line up when you press TAB, and numbers are right-aligned. TAB at the last field adds a row.
@@ -19,3 +19,52 @@ Put the cursor in the Item column and press C-c ^ then a to sort a-z; the rows b
 
 * Make a table
 C-c | asks for a size such as 3x4 and makes an empty table. With text selected, C-c | turns each line into a row, split at tabs, commas or runs of spaces.
+
+* Formulas: a column
+A column formula fills every row below the first rule. Put the cursor in the table and press C-c C-c on the #+TBLFM: line, or press C-c * in a row. In the Outline view tap a cell, then Recalculate.
+| Item   | Qty | Price | Total |
+|--------+-----+-------+-------|
+| Coffee |   2 |  9.50 |       |
+| Tea    |  10 |  4.00 |       |
+| Cake   |   1 | 12.25 |       |
+#+TBLFM: $4=$2*$3;%.2f
+
+* Formulas: a field and a sum
+A field formula sets one cell: @5$4 is row 5, column 4. vsum adds a range, and @I..@II is everything between the first two rules.
+| Item   | Qty |
+|--------+-----|
+| Coffee |   2 |
+| Tea    |  10 |
+|--------+-----|
+| Total  |     |
+#+TBLFM: @>$2=vsum(@I..@II)
+
+* Recalculate: this row, the table, until stable
+C-c * recalculates the row you are in. C-u C-c * recalculates the whole table. C-u C-u C-c * repeats until nothing changes, which is what you want when a formula uses the result of another. In the Outline view: tap a cell, Recalculate, then pick one.
+| a | b | c |
+|---+---+---|
+| 1 |   |   |
+| 2 |   |   |
+#+TBLFM: $2=$1*2 :: $3=$2+1
+
+* Add or change a formula
+C-c = asks for a column formula such as $3=$1+$2. C-u C-c = asks for a field formula for the cell you are in. Leave the answer empty to remove it. In the Outline view: tap a cell, Formulas, then Add or tap a formula to edit it.
+| x | y |
+|---+---|
+| 4 |   |
+| 5 |   |
+
+* Flags after a semicolon
+;%.2f prints two decimals. ;N reads text as 0. ;T prints hours and minutes as hh:mm:ss. ;D and ;R choose degrees or radians.
+| Hours | Duration |
+|-------+----------|
+| 1:30  |          |
+| 0:45  |          |
+#+TBLFM: $2=$1;T
+
+* Which cell is this? And a quick sum
+C-c ? shows the row and column of the cell, such as @2$1. C-c + sums the numbers in the column and puts the result in the kill ring so C-y pastes it.
+| n |
+|---|
+| 3 |
+| 4 |

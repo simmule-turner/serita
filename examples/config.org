@@ -49,6 +49,7 @@ org-agenda-include-diary is t or nil, diary-file names the diary (any storage na
 
 ** Contacts
 org-contacts-files lists the contacts files (any storage names, separated by spaces), and org-contacts-birthday-property names the property that holds a birthday (BIRTHDAY by default).
+serita-offline-files lists the files kept offline (storage names, separated by spaces); Keep files offline in the Commands palette sets it and fetches them.
 
 ** Holidays
 calendar-holidays lists general, christian and solar (empty means all, nil means none), diary-show-holidays-flag is t to show holidays in the agenda, and holiday-local-holidays holds your own holiday forms.

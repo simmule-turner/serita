@@ -9,6 +9,7 @@
 
 import { CapabilityUnavailable, NetworkUnavailable } from '../interface/contract.js';
 import { parseXml, childrenOf } from './xml.js';
+import { fetchWithin } from './timeout.js';
 
 const DAV = 'DAV:';
 
@@ -40,7 +41,7 @@ const PROPFIND_BODY = '<?xml version="1.0" encoding="utf-8"?><propfind xmlns="DA
  * }} opts
  * @returns {import('./local.js').Provider}
  */
-export function createWebdavProvider({ baseUrl, getCredentials, fetch = (...a) => globalThis.fetch(...a) }) {
+export function createWebdavProvider({ baseUrl, getCredentials, fetch = fetchWithin() }) {
   const root = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
   const rootPath = new URL(root).pathname;
   const urlOf = (path) => root + encodePath(path);

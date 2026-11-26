@@ -212,6 +212,37 @@ ok((await sheet.locator('.argsaid').textContent()) === 'Next command runs with C
 await sheet.locator('.item', { hasText: 'org-refile ' }).first().click();
 ok((await page.locator('#message').textContent()).includes('Refile cache has been cleared'), 'C-0 with Refile clears the refile cache');
 
+// Refile with C-u C-u from the Outline view: refile a heading from its menu, then Commands with C-u twice and Refile goes to where it landed
+await view('Text');
+await page.fill('#editor', '* Alpha\n* Beta\nbody\n* Gamma\n');
+await view('Outline');
+await page.locator('.sheet').count();
+await page.click('#btn-menu'); await btn(/Commands/).click();
+await sheet.locator('.item', { hasText: 'org-refile  ' }).first().click();
+ok((await page.locator('#message').textContent()).includes('Tap a heading, then Refile'), 'Refile from the Commands list without a prefix says to tap a heading');
+await page.getByText('Beta', { exact: true }).first().click();
+await sheet.locator('.item', { hasText: /^Refile/ }).first().click();
+await sheet.locator('.item', { hasText: 'Gamma' }).first().click();
+await page.click('#btn-menu'); await btn(/Commands/).click();
+await sheet.locator('.row.prefix button.cu').click(); await sheet.locator('.row.prefix button.cu').click();
+await sheet.locator('.item', { hasText: 'org-refile  ' }).first().click();
+await page.waitForFunction(() => document.getElementById('message').textContent.includes('last refile'));
+ok((await page.locator('#editor').isVisible()) && (await page.evaluate(() => document.getElementById('editor').selectionStart)) === 16, 'C-u C-u Refile from the Outline view goes to the refiled heading');
+await view('Outline');
+await page.click('#btn-menu'); await btn(/Commands/).click();
+await sheet.locator('.row.prefix button.cu').click();
+await page.keyboard.press('Escape');
+await page.click('#btn-menu'); await btn(/Commands/).click();
+ok((await sheet.locator('.argsaid').textContent()) === 'No prefix.', 'a prefix armed in the palette is dropped when the palette is closed');
+await page.keyboard.press('Escape');
+
+// Keep files offline opens from the palette
+await page.keyboard.press('Escape');
+await page.click('#btn-menu'); await btn(/Commands/).click();
+await sheet.locator('input').fill('offline'); await sheet.locator('.item', { hasText: 'serita-keep-files-offline' }).first().click();
+ok((await sheet.locator('h2').textContent()) === 'Keep files offline' && (await sheet.textContent()).includes('No Org files found'), 'Keep files offline opens and says when there are no files');
+await page.keyboard.press('Escape');
+
 // Tables in the Outline view
 await page.keyboard.press('Escape');
 await view('Text');
@@ -237,6 +268,20 @@ ok((await sheet.textContent()).includes('Default'), 'then the compare functions,
 await sheet.locator('.item', { hasText: /^string</ }).first().click();
 await view('Text');
 ok((await value()) === '* T\n| Item | Qty |\n|---+---|\n| Apple | 12 |\n| apple | 2 |\n| fig | 1 |\n| pear | 3 |\n', 'upcase with string< sorts the rows from the grid');
+
+// Formulas from the grid: Formulas adds a column formula, Recalculate fills it
+await page.fill('#editor', '* T\n| a | b | c |\n|---+---+---|\n| 1 | 2 | x |\n| 3 | 4 | y |\n');
+await view('Outline');
+await page.locator('.ol-table td button.cell', { hasText: 'y' }).first().click();
+ok(!(await sheet.locator('.item', { hasText: 'Recalculate' }).getAttribute('class')).includes('dim'), 'Recalculate in the cell sheet is live');
+await sheet.locator('.item', { hasText: 'Formulas' }).click();
+ok((await sheet.locator('h2').textContent()) === 'Formulas' && (await sheet.textContent()).includes('Column formula for C'), 'Formulas lists the ways to add one');
+await sheet.locator('.item', { hasText: 'Column formula for C' }).click();
+await sheet.locator('input').fill('$1+$2');
+await sheet.getByRole('button', { name: 'Save', exact: true }).click();
+await sheet.getByRole('button', { name: 'Close', exact: true }).click();
+await view('Text');
+ok((await value()) === '* T\n| a | b | c |\n|---+---+---|\n| 1 | 2 | 3 |\n| 3 | 4 | 7 |\n#+TBLFM: $3=$1+$2\n', 'Save writes the #+TBLFM: line and fills the column');
 
 // A blank row inserted from the grid is a row, and the menu closes
 await page.fill('#editor', '* T\n| Item | Qty |\n|---+---|\n| Tea | 10 |\n');

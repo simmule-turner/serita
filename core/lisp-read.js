@@ -5,8 +5,11 @@
 export const sym = (name) => ({ sym: name });
 export const isSym = (x, name) => x !== null && typeof x === 'object' && !Array.isArray(x) && 'sym' in x && (name === undefined || x.sym === name);
 
-/** @param {string} text @returns {any[]} every form in the text */
-export function readForms(text) {
+/**
+ * @param {string} text @param {{ integers?: boolean }} [opts] with `integers`, a number written without a point is a BigInt, so it stays apart from a float
+ * @returns {any[]} every form in the text
+ */
+export function readForms(text, { integers = false } = {}) {
   let i = 0;
   const fail = (msg) => { throw new Error(`${msg} at character ${i + 1}`); };
   const skip = () => { for (;;) { while (i < text.length && /\s/.test(text[i])) i++; if (text[i] === ';') { while (i < text.length && text[i] !== '\n') i++; } else return; } };
@@ -42,7 +45,7 @@ export function readForms(text) {
     i += m[0].length;
     if (m[0] === 't') return true;
     if (m[0] === 'nil') return null;
-    if (/^[-+]?\d+(\.\d+)?$/.test(m[0])) return Number(m[0]);
+    if (/^[-+]?\d+(\.\d+)?$/.test(m[0])) return integers && !m[0].includes('.') ? BigInt(m[0]) : Number(m[0]);
     return sym(m[0]);
   };
   const forms = [];

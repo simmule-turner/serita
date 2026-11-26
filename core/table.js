@@ -599,3 +599,12 @@ export function blankField(text, line, col) {
   const next = `${s.slice(0, from)}${' '.repeat(to - from)}${s.slice(to)}`;
   return here(splice(text, line, line + 1, [next]), line, fieldStart(next, j));
 }
+
+/** Reads the table at `line` as rows of cell texts (null for a rule), lets `edit` return the new rows, and writes them back aligned. Returns null outside a table. */
+export function editTable(text, line, edit) {
+  const t = load(text, line);
+  if (!t) return null;
+  const next = edit(t.rows.map((r) => (r.rule ? null : [...r.cells])));
+  const rows = next.map((c) => (c === null ? { indent: t.indent, rule: true, raw: [], cells: [] } : { indent: t.indent, rule: false, raw: c, cells: c }));
+  return { text: splice(text, t.start, t.end, layout(rows, t.indent).lines), start: t.start, end: t.end };
+}

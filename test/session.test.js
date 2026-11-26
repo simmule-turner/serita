@@ -175,6 +175,20 @@ test('restore reopens files and scratch drafts, keeps unsaved edits and the curr
   assert.equal(st.current, st.buffers[0].id);
 });
 
+test('restore asks for every file at once, so slow storage costs the slowest read and not the sum', async () => {
+  const { app, s } = make();
+  for (const n of ['a', 'b', 'c', 'd']) { await app.storage.write(`local:${n}.org`, n); await s.openFile(`local:${n}.org`); }
+  const snap = JSON.parse(JSON.stringify(s.snapshot()));
+  const read = app.storage.read.bind(app.storage);
+  let active = 0, peak = 0;
+  app.storage.read = async (name) => { active++; peak = Math.max(peak, active); await new Promise((r) => setTimeout(r, 30)); active--; return read(name); };
+  const again = createSession({ app });
+  const r = await again.restore(snap);
+  assert.equal(r.opened, 4);
+  assert.equal(peak, 4);
+  assert.deepEqual(again.state().buffers.map((b) => b.text), ['a', 'b', 'c', 'd']);
+});
+
 test('a sample opened as a scratch buffer is unmodified until it is edited', () => {
   const { s } = make();
   const id = s.newScratch('sample.org', '* A\n');

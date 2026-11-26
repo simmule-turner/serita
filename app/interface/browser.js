@@ -60,7 +60,7 @@ export function createBrowserInterface({ providers, env = globalThis, now = () =
       [c, available[c] ? { available: true } : { available: false, reason: REASONS[c] ?? 'not available in this browser' }])),
 
     storage: {
-      async read(name) { const { path, impl } = resolve(name); return impl.read(path); },
+      async read(name, opts) { const { path, impl } = resolve(name); return impl.read(path, opts); },
       async write(name, text, opts) {
         const { path, impl, full } = resolve(name);
         const r = await impl.write(path, text, opts);

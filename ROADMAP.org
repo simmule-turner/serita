@@ -28,10 +28,9 @@ Planned work only. Phase order is in SPEC.md section 12.
 - The heading title popup's three buttons, which insert at the cursor: footnote (A with a superscript 1), timer (stopwatch), and timestamp (calendar: C-c ., C-c !, C-u C-c ., S-up and S-down change it). They arrive with their features: timestamps and timers in the dates phase, footnotes in the markup phase.
 
 * Later: tables
-- Formulas: ~#+TBLFM~ with field and range references, Calc and Lisp formulas, recalculation with C-c C-c, and ~#+PLOT:~ (planned for 0.11.0).
+- Formulas, the rest: ~remote()~ references, names from a ~^~ row, parameters in a ~$~ row, symbolic results, the ~E~ flag, unit conversions (lowest priority), C-c ', C-c { and C-c } (formula editor, debugging, row and column numbers), and ~#+PLOT:~ (planned for 0.11.0).
 - Sorting a table with a function of your own (lambda or any Lisp function), which needs the Lisp interpreter; the built-in names work.
 - The rest of the universal argument: C-u C-c C-t (a state-change note), a number with TAB (go up to that level), C-2 and C-4 with C-c C-w, and C-u C-c C-x C-a (archive the finished trees).
-- The Recalculate and Formulas entries of the cell sheet, once formulas exist.
 
 * Later: dates
 - Calendar: the Hebrew, Islamic, Bahá'í and Chinese holiday categories and their diary expressions; org-contacts-birthday-format and the anniversary property of org-contacts-anniversaries; the exact order and display of diary entries in the agenda; the wording of diary-remind for counts other than 3.
@@ -51,4 +50,4 @@ Planned work only. Phase order is in SPEC.md section 12.
 
 * Later: documentation
 - The Info manual, ~manual/*.org~, one file per chapter, with the examples linked from it, and a test that every key and command in the app is described there.
-- Examples for the chapters not built yet (tables with formulas, Babel in Lisp and JavaScript, an export sample) as each arrives.
+- Examples for the chapters not built yet (Babel in Lisp and JavaScript, an export sample) as each arrives.

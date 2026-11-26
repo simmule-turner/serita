@@ -35,6 +35,7 @@ import { createMinibuffer } from './ui/minibuffer.js';
 import { duplicateLine, indentLine, killLine, killWholeLine, lineInfo, lineStart, moveLine } from '../core/lines.js';
 import { createKillRing } from '../core/killring.js';
 import * as table from '../core/table.js';
+import * as tblcmd from '../core/tblcmd.js';
 import { lineAt, project, toFull, toShown, touchedFold } from '../core/projection.js';
 import { renderOutline } from './ui/outline-view.js';
 import { TEXT_KEYS, chordOf, createKeymap } from './ui/keys.js';
@@ -1017,7 +1018,7 @@ $('import-file').addEventListener('change', async (ev) => {
 
 async function openNamed(name) {
   try {
-    const r = await session.openFile(name);
+    const r = await openFile(name);
     if (r.ok) recent.add(name); else message(`${name} does not exist`, true);
   } catch (e) { failure(e); }
 }
@@ -1111,7 +1112,7 @@ async function fileCapture(tpl, captured) {
   const name = tpl.target.file;
   let buffer = session.state().buffers.find((b) => b.name === name);
   if (!buffer) {
-    const opened = await session.openFile(name);
+    const opened = await openFile(name);
     const id = opened.ok ? opened.id : session.createFile(name, '');
     buffer = session.state().buffers.find((b) => b.id === id);
   }
@@ -1194,7 +1195,7 @@ const bufferName = (b) => b.name ?? b.title;
 async function bufferFor(name) {
   let b = session.state().buffers.find((x) => x.name === name);
   if (!b) {
-    const opened = await session.openFile(name);
+    const opened = await openFile(name);
     if (!opened.ok) return null;
     b = session.state().buffers.find((x) => x.id === opened.id);
   }
@@ -1232,7 +1233,7 @@ async function refileHere(copy0 = false, hd0 = enclosingHead()) {
   const goto = !copy0 && a?.list === 4;
   const copy = copy0 || a?.num === 3;
   let hd = hd0;
-  if (!hd && !goto) { message('Not at a heading'); return; }
+  if (!hd && !goto) { message(hd0 === null ? 'Tap a heading, then Refile' : 'Not at a heading'); return; }
   try {
     const settings = parseRefileSettings(refileText() || DEFAULT_REFILE);
     let b = currentBuffer();
@@ -1281,7 +1282,7 @@ async function archiveHere(hd = enclosingHead()) {
     const loc = archiveLocation();
     if (b.name === null && loc.slice(0, loc.indexOf('::')).includes('%s')) { message('No file associated to buffer', true); return; }
     const file = loc.slice(0, loc.indexOf('::')).replace('%s', cname);
-    const ab = file && file !== cname ? await (async () => { const x = session.state().buffers.find((y) => y.name === file); if (x) return x; const o = await session.openFile(file); return o.ok ? session.state().buffers.find((y) => y.id === o.id) : null; })() : null;
+    const ab = file && file !== cname ? await (async () => { const x = session.state().buffers.find((y) => y.name === file); if (x) return x; const o = await openFile(file); return o.ok ? session.state().buffers.find((y) => y.id === o.id) : null; })() : null;
     const category = /^#\+CATEGORY:[ \t]*(\S.*?)[ \t]*$/im.exec(b.text)?.[1] ?? cname.replace(/^.*\//, '').replace(/\.[^.]*$/, '');
     const r = archiveSubtree(b.text, hd.line, { fileName: cname, category, location: loc, now: localNow(), archiveText: ab?.text ?? null, column: tagsColumn(), markDone: archiveMarkDone(), contextInfo: archiveContext() });
     session.apply(b.id, { text: r.text });
@@ -1458,6 +1459,12 @@ function addAgendaFile(name) {
 }
 
 /** The files the agenda covers: those on the list, taking the text of an open one from its tab. */
+/** A file's saved copy at once; storage is asked afterward so the next read is current. */
+function readSaved(name) {
+  const r = app.storage.read(name, { cached: true });
+  r.then(() => app.storage.read(name)).catch(() => {});
+  return r;
+}
 async function agendaSources() {
   const files = [];
   const unread = [];
@@ -1465,7 +1472,7 @@ async function agendaSources() {
     const open = session.state().buffers.find((b) => b.name === name);
     if (open) { files.push({ id: open.id, name, category: categoryOfName(name), text: open.text }); continue; }
     try {
-      const r = await app.storage.read(name);
+      const r = await readSaved(name);
       if (r) files.push({ id: null, name, category: categoryOfName(name), text: r.text });
       else unread.push(`${name} (not found)`);
     } catch (e) { unread.push(`${name} (${e.message})`); }
@@ -1479,7 +1486,7 @@ async function diaryData() {
   for (const name of contactFiles()) {
     const open = session.state().buffers.find((b) => b.name === name);
     try {
-      const r = open ? { text: open.text } : await app.storage.read(name);
+      const r = open ? { text: open.text } : await readSaved(name);
       if (r) contactTexts.push(r.text); else message(`Cannot read ${name} (not found)`, true);
     } catch (e) { message(`Cannot read ${name} (${e.message})`, true); }
   }
@@ -1487,7 +1494,7 @@ async function diaryData() {
   if (!diaryOn() || !diaryFile()) return null;
   const open = session.state().buffers.find((b) => b.name === diaryFile());
   try {
-    const r = open ? { text: open.text } : await app.storage.read(diaryFile());
+    const r = open ? { text: open.text } : await readSaved(diaryFile());
     if (!r) { message(`Cannot read ${diaryFile()} (not found)`, true); return null; }
     diaryText = { name: diaryFile(), text: r.text, style: dateStyle() };
   } catch (e) { message(`Cannot read ${diaryFile()} (${e.message})`, true); }
@@ -1625,7 +1632,7 @@ async function jumpTo(files, e, from) {
   const f = e.diary ? { id: session.state().buffers.find((b) => b.name === diaryFile())?.id ?? null, name: diaryFile() } : files[e.file];
   let id = f.id;
   if (id === null) {
-    const opened = await session.openFile(f.name);
+    const opened = await openFile(f.name);
     if (!opened.ok) { failure(new Error(`${f.name} does not exist`)); return; }
     id = opened.id;
   }
@@ -1663,9 +1670,10 @@ async function calendarScreen() {
           h('span', { class: 'dn' }, String(c.d)), h('span', { class: 'marks' }, ...marks.map((k) => h('i', { class: k }))));
       };
       const picked = byDay.get(calendarState.day) ?? [];
-      const cols = phoneColumns(prefixOpts().formats.agenda, picked, prefixOpts().icons);
+      const holidays = (hol.get(calendarState.day) ?? []).map((n) => ({ category: 'Diary', title: n, tags: [], holiday: true }));
+      const cols = phoneColumns(prefixOpts().formats.agenda, [...holidays, ...picked], prefixOpts().icons);
       const phoneRow = (c, e) => phoneCells(c, e, prefixOpts().icons).map((t, i) => h('span', { class: `acol${c[i].spec === 't' && e.late > 0 && e.kind !== 'stamp' ? ' late' : ''}`, style: `width:${c[i].width}ch` }, t));
-      const row = (e) => h('button', { class: 'arow', onclick: () => close({ jump: e }) },
+      const row = (e) => h(e.holiday ? 'div' : 'button', { class: `arow${e.holiday ? ' holiday' : ''}`, ...(e.holiday ? {} : { onclick: () => close({ jump: e }) }) },
         ...phoneRow(cols, e),
         h('span', { class: 'atitle' }, [e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ')),
         e.tags.length ? h('span', { class: 'atags' }, `:${e.tags.join(':')}:`) : null);
@@ -1674,8 +1682,7 @@ async function calendarScreen() {
         Object.assign(h('div', { class: 'abody' },
           h('div', { class: 'cal' }, ...['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((n) => h('span', { class: 'dow' }, n)), ...monthGrid(y, m).map(cell)),
           h('div', { class: 'aday' }, calendarState.day),
-          ...(hol.get(calendarState.day) ?? []).map((n) => h('div', { class: 'arow holiday' }, h('span', { class: 'acat' }, 'Holiday'), h('span', { class: 'atime' }, ''), h('span', { class: 'atitle' }, n))),
-          ...(picked.length || hol.has(calendarState.day) ? picked.map(row) : [h('p', { class: 'aempty' }, 'Nothing on this day')])), sidewaysSwipe((dir) => close({ move: dir }))),
+          ...(picked.length || holidays.length ? [...holidays, ...picked].map(row) : [h('p', { class: 'aempty' }, 'Nothing on this day')])), sidewaysSwipe((dir) => close({ move: dir }))),
         h('div', { class: 'abar' }, h('button', { onclick: () => close({ today: true }) }, 'Today'), h('button', { onclick: () => close({ agenda: true }) }, 'Agenda'), h('button', { onclick: () => close(undefined) }, 'Close')));
     });
     if (!act) return;
@@ -1761,7 +1768,7 @@ async function bulkAction(st, files, view) {
   for (const [i, f] of files.entries()) {
     if (texts[i] === f.text) continue;
     let id = f.id;
-    if (id === null) { const opened = await session.openFile(f.name); if (!opened.ok) { failure(new Error(`${f.name} does not exist`)); continue; } id = opened.id; }
+    if (id === null) { const opened = await openFile(f.name); if (!opened.ok) { failure(new Error(`${f.name} does not exist`)); continue; } id = opened.id; }
     session.apply(id, { text: texts[i] });
   }
   for (const c of created) { const b = await bufferFor(c.file); if (b) session.apply(b.id, { text: c.text }); else session.createFile(c.file, c.text); }
@@ -1867,6 +1874,166 @@ async function chooseSortFunctions() {
   return table.sortFunctions(key, compare === 'default' ? '' : compare);
 }
 
+// ---- Keep files offline -------------------------------------------------------------------------
+
+/** The files kept offline, as storage names: the setting, or while it is unset the GitHub and WebDAV files that are open. */
+const offlineFiles = () => {
+  const v = setting('serita-offline-files');
+  if (v !== undefined && v !== '') return v === 'nil' ? [] : v.split(/\s+/);
+  return session.state().buffers.map((b) => b.name).filter((n) => n && /^(github|webdav):/.test(n));
+};
+
+async function offlineDialog() {
+  const names = [];
+  for (const p of ['github', 'webdav']) {
+    if (!(p in providers)) continue;
+    try { for (const e of await app.storage.entries(`${p}:`)) if (!e.folder && /\.org$/i.test(e.name)) names.push(e.name); } catch { /* a source that cannot be listed shows no files */ }
+  }
+  let on = new Set(offlineFiles().filter((n) => names.includes(n)));
+  const state = new Map(); // name -> 'fetching' | 'saved' | 'failed'
+  const save = () => config.update({ settings: { 'serita-offline-files': on.size ? [...on].join(' ') : 'nil' } });
+  await panel((sheet, close) => {
+    const draw = () => {
+      const total = on.size;
+      const done = [...on].filter((n) => state.get(n) === 'saved').length;
+      const busy = [...on].some((n) => state.get(n) === 'fetching');
+      const label = (n) => (!on.has(n) ? 'Off' : state.get(n) === 'fetching' ? 'On · fetching' : state.get(n) === 'saved' ? 'On · saved' : state.get(n) === 'failed' ? 'On · not saved' : 'On');
+      put(sheet, h('h2', {}, 'Keep files offline'),
+        h('div', { class: 'list' }, ...(names.length ? names.map((n) => h('button', { class: 'item', onclick: () => { if (on.has(n)) on.delete(n); else on.add(n); state.delete(n); save(); draw(); } }, h('span', {}, n.replace(/^[a-z]+:/, '')), h('span', { class: 'meta' }, label(n)))) : [h('p', {}, 'No Org files found. Set up GitHub or WebDAV first.')])),
+        total ? h('progress', { max: total, value: done }) : null,
+        total ? h('p', { class: 'meta' }, `${done} of ${total} saved`) : null,
+        h('div', { class: 'row' }, h('button', { disabled: busy || !total, onclick: fetchAll }, 'Fetch now'), h('button', { onclick: () => close(undefined) }, 'Close')));
+    };
+    async function fetchAll() {
+      for (const n of on) state.set(n, 'fetching');
+      draw();
+      await Promise.all([...on].map(async (n) => { try { await app.storage.read(n); state.set(n, 'saved'); } catch { state.set(n, 'failed'); } draw(); }));
+    }
+    draw();
+  });
+}
+
+// ---- Table formulas -----------------------------------------------------------------------------
+
+const formulaCount = (text, line) => { const n = tblcmd.formulasOf(text, line)?.length ?? 0; return n === 0 ? '' : `${n} formula${n === 1 ? '' : 's'}`; };
+
+/** The table line (or #+TBLFM: line) the cursor is on, or null. */
+const formulaHere = () => {
+  const at = lineAt(cur.proj, editor.selectionStart);
+  const b = currentBuffer();
+  return tblcmd.formulaLines(b.text, at) ? { line: at, col: cursorOffset() - lineOffset(b.text, at) } : null;
+};
+
+/** Recalculates the table at a line in the given mode and shows what Org says. Returns false when it could not. */
+function recalculateAt(line, col, mode, { place = true } = {}) {
+  let said = null;
+  tableEditAt(line, col, (text, l, c) => {
+    const r = tblcmd.recalculate(text, l, mode);
+    said = r.message ?? null;
+    return { text: r.text, line: l, col: c, error: r.error };
+  }, { place });
+  if (said) message(said);
+}
+
+/** C-c * (this row), C-u C-c * (the table), C-u C-u C-c * (until stable); on a #+TBLFM: line, that line. */
+function recalculateCommand() {
+  const at = formulaHere();
+  if (!at) { message('Not in table', true); return; }
+  const onFormula = /^[ \t]*#\+TBLFM:/i.test(currentBuffer().text.split('\n')[at.line] ?? '');
+  const mode = (arg?.list ?? 0) >= 16 ? 'iterate' : arg ? 'all' : onFormula ? 'all' : 'row';
+  recalculateAt(at.line, at.col, mode);
+}
+
+/** The panel for Recalculate: this row, the table, until stable, every table. True when the chain should end. */
+async function recalculateSheet(line, col) {
+  const v = await choose('Recalculate', [
+    { label: 'This row', meta: 'C-c *', value: 'row' },
+    { label: 'Whole table', meta: 'C-u C-c *', value: 'all' },
+    { label: 'Whole table, until stable', meta: 'C-u C-u C-c *', value: 'iterate' },
+    { label: 'All tables in the file', meta: 'recalculate-buffer-tables', value: 'buffer' }]);
+  if (v === undefined) return dismissed;
+  if (v === 'buffer') { recalculateBuffer(); return true; }
+  recalculateAt(line, col, v, { place: false });
+  return true;
+}
+
+function recalculateBuffer() {
+  const b = currentBuffer();
+  const r = tblcmd.recalculateBuffer(b.text);
+  if (r.error) { message(r.error, true); return; }
+  if (r.text !== b.text) session.apply(b.id, { text: r.text });
+  message(r.message);
+}
+
+/** Asks for a formula: the expression and its flags; undefined when cancelled, RESET or an empty answer remove it. */
+function formulaPrompt(lhs, value, kind) {
+  const title = `${kind} formula`;
+  const help = `${kind} formula ${lhs}= . Flags go after a semicolon, for example ;%.2f or ;N. Empty removes the formula.`;
+  if (viewMode() === 'text') return mini.ask({ prompt: `${kind} formula ${lhs}=`, value });
+  return panel((sheet, close) => {
+    const input = h('input', { value, autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': title });
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); close(input.value); } });
+    put(sheet, h('h2', {}, title), h('p', {}, help), input,
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Formulas'), h('button', { onclick: () => close(RESET) }, 'Reset'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
+    input.focus();
+  });
+}
+
+/** Sets the formula for lhs ('' removes it) and recalculates the table so the result shows. */
+function applyFormula(line, col, lhs, body, place) {
+  let said = null;
+  tableEditAt(line, col, (text, l, c) => {
+    const r = tblcmd.setFormula(text, l, lhs, body);
+    if (r.error || !body.trim()) return { text: r.text, line: l, col: c, error: r.error };
+    const f = tblcmd.recalculate(r.text, l, 'all');
+    said = f.message ?? null;
+    return { text: f.text, line: l, col: c, error: f.error };
+  }, { place });
+  if (said) message(said);
+}
+
+/** C-c = (the column's formula) and C-u C-c = (the field's formula) in the Text view. */
+async function formulaCommand() {
+  const at = tableHere();
+  if (!at) { message('Not in table', true); return; }
+  const b = currentBuffer();
+  const info = /@(\d+)\$(\d+)/.exec(table.fieldInfo(b.text, at.line, at.col) ?? '');
+  if (!info) { message('Not in table', true); return; }
+  const field = !!arg;
+  const lhs = field ? `@${info[1]}$${info[2]}` : `$${info[2]}`;
+  const old = tblcmd.formulasOf(b.text, at.line)?.find((x) => x.lhs === lhs);
+  const v = await formulaPrompt(lhs, old?.source.slice(old.lhs.length + 1) ?? '', field ? 'Field' : 'Column');
+  if (v === undefined || v === RESET) { if (v === RESET) applyFormula(at.line, at.col, lhs, '', true); return; }
+  applyFormula(at.line, at.col, lhs, v, true);
+}
+
+/** The Formulas sheet of a table in the Outline view: its formulas, and the two ways to add one. True when the chain should end. */
+async function formulasSheet(line, j, rowNo) {
+  for (;;) {
+    const b = currentBuffer();
+    const list = tblcmd.formulasOf(b.text, line) ?? [];
+    const col = columnName(j);
+    const colLhs = `$${j + 1}`;
+    const fieldLhs = `@${rowNo}$${j + 1}`;
+    const v = await panel((sheet, close) => {
+      put(sheet, h('h2', {}, 'Formulas'),
+        h('div', { class: 'list' },
+          ...list.map((f) => h('button', { class: 'item', onclick: () => close(f.lhs) }, h('span', { class: 'mono' }, f.source.replace('=', ' = ')), h('span', { class: 'meta' }, /^\$[-+]?[\w<>#]+$/.test(f.lhs) ? 'column' : 'field'))),
+          h('button', { class: 'item', onclick: () => close(colLhs) }, h('span', {}, `Column formula for ${col}…`), h('span', { class: 'meta' }, 'C-c =')),
+          h('button', { class: 'item', onclick: () => close(fieldLhs) }, h('span', {}, `Field formula for ${col}${rowNo}…`), h('span', { class: 'meta' }, 'C-u C-c ='))),
+        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Cell'), h('button', { onclick: () => close('close') }, 'Close')));
+    });
+    if (v === 'close') return true;
+    if (v === undefined) return dismissed;
+    const old = list.find((f) => f.lhs === v);
+    const kind = /^\$[-+]?[\w<>#]+$/.test(v) ? 'Column' : 'Field';
+    const r = await formulaPrompt(v, old ? old.source.slice(old.lhs.length + 1) : '', kind);
+    if (r === undefined) { if (dismissed) return true; continue; }
+    const at = table.cellCol(b.text, line, j);
+    applyFormula(line, at, v, r === RESET ? '' : r, false);
+  }
+}
+
 /** What a tap on a cell of a table in the Outline view opens. */
 async function cellSheet(line, j) {
   for (;;) {
@@ -1885,12 +2052,13 @@ async function cellSheet(line, j) {
           h('button', { class: 'item', onclick: () => close('row') }, h('span', {}, 'Row'), h('span', { class: 'meta' }, '▾')),
           h('button', { class: 'item', onclick: () => close('column') }, h('span', {}, 'Column'), h('span', { class: 'meta' }, '▾')),
           h('button', { class: 'item', onclick: () => close('sort') }, h('span', {}, 'Sort'), h('span', { class: 'meta' }, '▾')),
-          h('button', { class: 'item dim', onclick: () => close('recalculate') }, h('span', {}, 'Recalculate')),
-          h('button', { class: 'item dim', onclick: () => close('formulas') }, h('span', {}, 'Formulas'))),
+          h('button', { class: 'item', onclick: () => close('recalculate') }, h('span', {}, 'Recalculate'), h('span', { class: 'meta' }, '▾')),
+          h('button', { class: 'item', onclick: () => close('formulas') }, h('span', {}, 'Formulas'), h('span', { class: 'meta' }, formulaCount(b.text, line)))),
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Close')));
     });
     if (what === undefined) return;
-    if (what === 'recalculate' || what === 'formulas') { message('Formulas arrive in a later version'); continue; }
+    if (what === 'recalculate') { if (await recalculateSheet(line, at(), 'outline')) return; continue; }
+    if (what === 'formulas') { if (await formulasSheet(line, j, rowNo)) return; continue; }
     if (what === 'edit') {
       const v2 = await askText({ prompt: 'Cell:', title: `Edit ${columnName(j)}${rowNo}`, value, ok: 'Save' });
       if (v2 !== undefined) run((t, l) => table.setField(t, l, j, v2));
@@ -2311,7 +2479,8 @@ const COMMANDS = {
   'back': () => goBack(),
   'effort': () => setEffort(),
   'capture': () => capture(),
-  'refile': () => refileHere(false),
+  // In the Outline view there is no cursor, so Refile from the palette is for the argument forms; a heading is refiled from its own menu
+  'refile': () => refileHere(false, viewMode() === 'outline' ? null : undefined),
   'refile-copy': () => refileHere(true),
   'refile-cache-clear': () => { refileCache.clear(); message('Refile cache has been cleared'); },
   'archive-subtree': () => archiveHere(),
@@ -2376,6 +2545,7 @@ const COMMANDS = {
   'sparse-tree-todo': () => sparse('todo'),
   'sparse-tree-todo-keyword': () => sparse('todo-keyword'),
   'toggle-checkbox': () => {
+    if (viewMode() === 'text' && /^[ \t]*#\+TBLFM:/i.test(currentBuffer().text.split('\n')[lineAt(cur.proj, editor.selectionStart)] ?? '') && formulaHere()) { recalculateCommand(); return; }
     if (inTable()) { tableEdit(table.align); return; }
     if (marks.length) { marks = []; paintOverlay(); message('Temporary highlights/overlays removed from current buffer'); return; }
     const at = editor.selectionStart;
@@ -2404,6 +2574,10 @@ const COMMANDS = {
     killRing.kill(sum, { append: false });
     navigator.clipboard.writeText(sum).catch(() => message('Could not copy to the clipboard', true));
   },
+  'table-recalculate': () => recalculateCommand(),
+  'table-formula': () => formulaCommand(),
+  'table-recalculate-buffer': () => recalculateBuffer(),
+  'keep-offline': () => offlineDialog(),
   'table-create': () => tableCreate(),
   'table-field-info': () => { const at = tableHere(); const i = at && table.fieldInfo(currentBuffer().text, at.line, at.col); message(i ?? 'Not in table', !i); },
   'table-transpose': () => tableEdit(table.transpose),
@@ -2772,11 +2946,11 @@ const PALETTE = [
   ['promote', 'org-metaleft', 'Promote'], ['demote', 'org-metaright', 'Demote'], ['promote-subtree', 'org-shiftmetaleft', 'Promote subtree'], ['demote-subtree', 'org-shiftmetaright', 'Demote subtree'],
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
   ['insert-heading', 'org-insert-heading-respect-content', 'Insert heading after subtree'], ['insert-heading-here', 'org-meta-return', 'Insert heading here'],
-  ['table-align', 'org-table-align', 'Align table'], ['table-sort', 'org-table-sort-lines', 'Sort table lines'], ['table-blank-field', 'org-table-blank-field', 'Blank table field'], ['table-sum', 'org-table-sum', 'Sum table column'], ['table-create', 'org-table-create-or-convert-from-region', 'Create table or convert text'],
+  ['table-align', 'org-table-align', 'Align table'], ['table-sort', 'org-table-sort-lines', 'Sort table lines'], ['table-blank-field', 'org-table-blank-field', 'Blank table field'], ['table-sum', 'org-table-sum', 'Sum table column'], ['keep-offline', 'serita-keep-files-offline', 'Keep files offline', true], ['table-recalculate', 'org-table-recalculate', 'Recalculate table formulas'], ['table-formula', 'org-table-eval-formula', 'Edit a table formula'], ['table-recalculate-buffer', 'org-table-recalculate-buffer-tables', 'Recalculate all tables', true], ['table-create', 'org-table-create-or-convert-from-region', 'Create table or convert text'],
   ['table-transpose', 'org-table-transpose-table-at-point', 'Transpose table'], ['table-field-info', 'org-table-field-info', 'Show field coordinates'], ['table-hline', 'org-table-insert-hline', 'Insert horizontal line'],
   ['table-copy-down', 'org-table-copy-down', 'Copy field down'], ['table-next-row', 'org-table-next-row', 'Next row'],
   ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],
-  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true], ['effort', 'org-set-effort', 'Set effort'], ['capture', 'org-capture', 'Capture', true], ['refile', 'org-refile', 'Refile'], ['refile-copy', 'org-refile-copy', 'Refile and keep'], ['refile-cache-clear', 'org-refile-cache-clear', 'Clear refile cache', true], ['archive-subtree', 'org-archive-subtree', 'Archive'], ['archive-sibling', 'org-archive-to-archive-sibling', 'Archive to sibling'], ['archive-tag', 'org-toggle-archive-tag', 'Toggle archive tag'], ['clock-in', 'org-clock-in', 'Clock in'], ['clock-out', 'org-clock-out', 'Clock out'], ['clock-cancel', 'org-clock-cancel', 'Cancel clock'], ['agenda-file-add', 'org-agenda-file-to-front', 'Add file to agenda files', true], ['agenda-file-remove', 'org-remove-file', 'Remove file from agenda files', true],
+  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true], ['effort', 'org-set-effort', 'Set effort'], ['capture', 'org-capture', 'Capture', true], ['refile', 'org-refile', 'Refile', true], ['refile-copy', 'org-refile-copy', 'Refile and keep'], ['refile-cache-clear', 'org-refile-cache-clear', 'Clear refile cache', true], ['archive-subtree', 'org-archive-subtree', 'Archive'], ['archive-sibling', 'org-archive-to-archive-sibling', 'Archive to sibling'], ['archive-tag', 'org-toggle-archive-tag', 'Toggle archive tag'], ['clock-in', 'org-clock-in', 'Clock in'], ['clock-out', 'org-clock-out', 'Clock out'], ['clock-cancel', 'org-clock-cancel', 'Cancel clock'], ['agenda-file-add', 'org-agenda-file-to-front', 'Add file to agenda files', true], ['agenda-file-remove', 'org-remove-file', 'Remove file from agenda files', true],
   ['undo', 'undo', 'Undo', true], ['redo', 'undo-redo', 'Redo', true],
   ['select-all', 'mark-whole-buffer', 'Select all'], ['kill-line', 'kill-line', 'Cut to end of line'], ['kill-whole-line', 'kill-whole-line', 'Cut whole line'], ['yank', 'yank', 'Paste'],
   ['next-line', 'next-line', 'Next line'], ['previous-line', 'previous-line', 'Previous line'], ['forward-char', 'forward-char', 'Forward character'], ['backward-char', 'backward-char', 'Backward character'],
@@ -2793,7 +2967,7 @@ async function commandPalette() {
   if (text) {
     const name = await mini.ask({ prompt: 'M-x', historyKey: 'M-x', require: true,
       complete: (t) => (t.trim() === '' ? [] : found(t).map((e) => ({ label: e.label, value: e.name, hint: `${e.name}  ${e.key}`.trim() }))) });
-    if (name === undefined || name.trim() === '') return;
+    if (name === undefined || name.trim() === '') { argState = NO_ARG; return; }
     entry = entries.find((e) => e.name === name);
     if (!entry) { message('[No match]', true); beep(); return; }
   } else {
@@ -2819,7 +2993,7 @@ async function commandPalette() {
       put(sheet, h('h2', {}, 'Commands'), said, input, list, h('div', { class: 'row prefix' }, cu, h('div', { class: 'digits' }, ...Object.values(digits))));
       input.focus();
     });
-    if (!entry) return;
+    if (!entry) { argState = NO_ARG; return; }
   }
   goal = null;
   await invoke(entry.command);
@@ -3104,6 +3278,12 @@ session.subscribe(() => {
   for (const [id, w] of watching) if (open.get(id) !== w.name) { w.off(); watching.delete(id); }
   for (const [id, name] of open) if (!watching.has(id)) watching.set(id, { name, off: app.storage.watch(name, (_n, external) => { if (external) checkChanged(id); }) });
 });
+/** Opens a file from its saved copy; storage is looked at afterward, and a newer copy is loaded (or reported) as for any file. */
+async function openFile(name) {
+  const r = await session.openFile(name);
+  if (r.ok && r.opened) checkChanged(r.id);
+  return r;
+}
 const checkCurrent = () => { const c = session.state().current; if (c !== null) checkChanged(c); };
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState !== 'visible') return;
@@ -3140,6 +3320,8 @@ async function startSession() {
   }
   restoring = false;
   saveSession();
+  // The files were opened from their saved copies; storage is looked at now, without holding anything up.
+  for (const b of session.state().buffers) if (b.name) checkChanged(b.id);
   message(r.skipped.length ? `Could not reopen ${r.skipped.join(', ')}` : r.opened > 0 ? 'Reopened your files' : 'Welcome to Serita', r.skipped.length > 0);
 }
 await startSession();

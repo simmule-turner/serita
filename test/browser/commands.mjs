@@ -476,6 +476,16 @@ await at2('abc\n', 1, 1); await page.keyboard.press('Enter');
 ok((await text()) === 'a\nbc\n', 'RET outside a table is a newline');
 await at2('| a | b |\n| cc | d |\n', 1, 2); await page.keyboard.press('Alt+ArrowDown');
 ok((await text()) === '| cc | d |\n| a | b |\n', 'M-down in a table moves the row');
+
+// Table formulas (Emacs: tf-* cases)
+const FT = '| 1 | 2 |   |\n| 3 | 4 |   |\n#+TBLFM: $3=$1+$2\n';
+await at(FT, 3); await ctrl('c'); await ctrl('c');
+ok((await text()) === '| 1 | 2 | 3 |\n| 3 | 4 | 7 |\n#+TBLFM: $3=$1+$2\n', 'C-c C-c on a #+TBLFM: line recalculates the table');
+await at(FT, 1); await ctrl('c'); await page.keyboard.press('*');
+ok((await text()) === '| 1 | 2 | 3 |\n| 3 | 4 |   |\n#+TBLFM: $3=$1+$2\n', 'C-c * recalculates only the current row');
+await at('| 1 | 2 |\n', 1); await ctrl('c'); await page.keyboard.press('=');
+ok((await prompt()) === 'Column formula $1=', 'C-c = asks for the column formula');
+await page.keyboard.press('Escape');
 await at2('| a | b |\n| cc | d |\n', 1, 2); await ctrl('c'); await page.keyboard.press('-');
 ok((await text()) === '| a | b |\n|---+---|\n| cc | d |\n', 'C-c - adds a horizontal line');
 await at2('| b | 2 |\n| a | 1 |\n', 1, 2); await ctrl('c'); await page.keyboard.press('^');

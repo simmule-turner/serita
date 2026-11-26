@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.10.8
+Table formulas. A #+TBLFM: line under a table recalculates with C-c C-c, and C-c *, C-u C-c * and C-u C-u C-c * recalculate the row, the table, or until nothing changes. C-c = and C-u C-c = set a column or field formula, and the cell sheet's Recalculate and Formulas do the same in the Outline view. Arithmetic is exact, with fractions, other bases, dates and Lisp formulas. Keep files offline saves your GitHub and WebDAV files for offline use. Startup reads every file at once from the saved copy, and requests give up after 8 seconds. Fixes Refile in the Outline view and calendar holiday rows.
+
 * 0.10.7
 Fixes from testing the universal argument. The line that says which prefix is armed now sits above the command entry box, where it is always in view. Sorting with a function lists the key and compare functions and what each does, in the Text view prompts and, new, in the table cell menu (Sort, With a function). C-u C-u C-c C-w now goes to the refiled heading in a file that has not been saved, and opens the folds that hide it.
 

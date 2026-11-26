@@ -6,6 +6,7 @@
 // 404, 409 or 422 on a write is settled by reading the file again and comparing versions.
 
 import { CapabilityUnavailable, NetworkUnavailable } from '../interface/contract.js';
+import { fetchWithin } from './timeout.js';
 
 const API_VERSION = '2026-03-10';
 
@@ -42,7 +43,7 @@ const defaultMessage = (path, kind) => `${kind === 'create' ? 'Create' : kind ==
  */
 export function createGithubProvider({
   owner, repo, branch, getToken,
-  fetch = (...a) => globalThis.fetch(...a),
+  fetch = fetchWithin(),
   baseUrl = 'https://api.github.com',
   message = defaultMessage,
 }) {

@@ -33,10 +33,12 @@ export function createCachedProvider({ remote, cache, isOnline = () => true }) {
   const drop = (path) => cache.update(path, () => ({ remove: true, result: undefined }));
 
   const provider = {
-    async read(path) {
+    /** `cached` answers from the saved copy when there is one, without asking the server (the caller checks later). */
+    async read(path, { cached = false } = {}) {
       const rec = await cache.get(path);
       if (rec?.deleted) return null;
       if (rec?.local !== undefined) return { text: rec.local, version: rec.token };
+      if (cached && rec?.base) return { text: rec.base.text, version: rec.base.version };
       try {
         const r = await attempt(() => remote.read(path));
         if (r) await put(path, { base: r, seq: rec?.seq ?? 0 });
