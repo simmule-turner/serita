@@ -2,6 +2,7 @@
 # CC0 1.0: public domain. Settings, Emacs, Contacts files names this file (for example github:contacts.org); the diary example and the agenda-birthdays example then show these birthdays.
 
 A birthday is a date such as 1990-11-23, an Org timestamp such as <1990-11-23 Fri>, or 11-23 without a year.
+The Contact template in config.org captures a new person with a :BIRTHDAY: property, which is what %%(org-contacts-anniversaries) shows in the diary.
 Jane and John use the flat layout of org-vcard; Ada uses its tree layout, where a heading with FIELDTYPE birthday holds the date.
 * Jane Doe
 :PROPERTIES:

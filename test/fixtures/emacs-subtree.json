@@ -1,0 +1,743 @@
+[
+ {
+  "id": "cs-copy-last",
+  "input": "* A\n* B\nlast",
+  "line": 2,
+  "col": 0,
+  "keys": "C-c C-x M-w M-> C-c C-x C-y",
+  "text": "* A\n* B\nlast\n* B\nlast\n",
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-copy-n2",
+  "input": "* A\n** A1\n* B\nb\n* C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-u 2 C-c C-x M-w",
+  "text": "* A\n** A1\n* B\nb\n* C\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-copy-then-yank",
+  "input": "* A\nbody\n* B\n",
+  "line": 3,
+  "col": 0,
+  "keys": "C-c C-x M-w C-p C-p C-y",
+  "text": "* B\n* A\nbody\n* B\n",
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-copy-top",
+  "input": "* A\nbody\n** A1\nx\n* B\ny\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w",
+  "text": "* A\nbody\n** A1\nx\n* B\ny\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-cut-before",
+  "input": "text\n* A\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x C-w",
+  "text": "text\n* A\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": "user-error"
+ },
+ {
+  "id": "cs-cut-blank",
+  "input": "* A\nx\n\n* B\ny\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x C-w",
+  "text": "* B\ny\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-cut-blank2",
+  "input": "* A\nx\n\n\n* B\ny\n\n* C\n",
+  "line": 3,
+  "col": 0,
+  "keys": "C-c C-x C-w",
+  "text": "* B\ny\n\n* C\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-cut-body-star",
+  "input": "* A\n*bold* text\n* B\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x C-w",
+  "text": "* B\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-cut-body",
+  "input": "* A\nbody\n** A1\nx\n* B\ny\n",
+  "line": 2,
+  "col": 0,
+  "keys": "C-c C-x C-w",
+  "text": "* B\ny\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-cut-child",
+  "input": "* A\nbody\n** A1\nx\n* B\ny\n",
+  "line": 3,
+  "col": 0,
+  "keys": "C-c C-x C-w",
+  "text": "* A\nbody\n* B\ny\n",
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-cut-fold",
+  "input": "* A\nbody\n** A1\n* B\n",
+  "line": 1,
+  "col": 0,
+  "keys": "TAB C-c C-x C-w",
+  "text": "* B\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-cut-last",
+  "input": "* A\n* B\nlast",
+  "line": 2,
+  "col": 0,
+  "keys": "C-c C-x C-w",
+  "text": "* A\n",
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-cut-n2",
+  "input": "* A\n** A1\n* B\nb\n* C\nc\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-u 2 C-c C-x C-w",
+  "text": "* C\nc\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-cut-n9",
+  "input": "* A\n* B\nb\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-u 9 C-c C-x C-w",
+  "text": "",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-cut-point",
+  "input": "* A\n* B\n* C\n",
+  "line": 2,
+  "col": 0,
+  "keys": "C-c C-x C-w C-e",
+  "text": "* A\n* C\n",
+  "point": {
+   "line": 2,
+   "col": 3
+  },
+  "error": false
+ },
+ {
+  "id": "cs-cut-tags",
+  "input": "* TODO A :x:y:\nb\n* B\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x C-w",
+  "text": "* B\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-cut-top",
+  "input": "* A\nbody\n** A1\nx\n* B\ny\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x C-w",
+  "text": "* B\ny\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-after-b",
+  "input": "* A\nx\n* B\n* C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x C-w C-e C-c C-x C-y",
+  "text": "* B\n* A\nx\n* C\n",
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-body",
+  "input": "* A\n* B\nb1\nb2\n* C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-c C-x C-y",
+  "text": "* A\n* B\nb1\nb2\n* A\n* C\n",
+  "point": {
+   "line": 5,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-deeper",
+  "input": "* A\nx\n** C\n* D\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-c C-x C-y",
+  "text": "* A\nx\n** A\nx\n*** C\n** C\n* D\n",
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-down",
+  "input": "* A\nx\n* B\n* C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x C-w C-n C-c C-x C-y",
+  "text": "* B\n* A\nx\n* C\n",
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-empty",
+  "input": "* A\n* B\n\n* C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-n C-c C-x C-y",
+  "text": "* A\n* B\n\n* A\n* C\n",
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-eob-nl",
+  "input": "* A\n* B\nb\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w M-> C-c C-x C-y",
+  "text": "* A\n* B\nb\n* A\n",
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-eob",
+  "input": "* A\n* B\nb",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w M-> C-c C-x C-y",
+  "text": "* A\n* B\nb\n* A\n",
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-folded",
+  "input": "* A\n* B\nb\n* C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n TAB C-c C-x C-y",
+  "text": "* A\n* A\n* B\nb\n* C\n",
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-head",
+  "input": "* A\nx\n* B\n* C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x C-w C-c C-x C-y",
+  "text": "* A\nx\n* B\n* C\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-lvl",
+  "input": "* A\nx\n* B\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-u 3 C-c C-x C-y",
+  "text": "* A\nx\n*** A\nx\n* B\n",
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-lvl1",
+  "input": "*** A\nx\n* B\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-u 1 C-c C-x C-y",
+  "text": "*** A\nx\n* A\nx\n* B\n",
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-mid",
+  "input": "* A\n* B\nbody text\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-f C-f C-c C-x C-y",
+  "text": "* A\n* B\nbody text\n* A\n",
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-mixed",
+  "input": "* A\n**** B\nb\n* C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-c C-x C-y",
+  "text": "* A\n**** B\nb\n**** A\n******* B\nb\n* C\n",
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-n2",
+  "input": "* A\n** A1\n* B\n* C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-u 2 C-c C-x M-w M-> C-c C-x C-y",
+  "text": "* A\n** A1\n* B\n* C\n* A\n** A1\n* B\n",
+  "point": {
+   "line": 5,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-none",
+  "input": "* A\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x C-y",
+  "text": "* A\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": "error"
+ },
+ {
+  "id": "cs-paste-shallower",
+  "input": "* A\n** C\nc\n* D\n",
+  "line": 2,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-c C-x C-y",
+  "text": "* A\n** C\nc\n* C\nc\n* D\n",
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-tags",
+  "input": "* A :tag:\n* B\n** C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-c C-x C-y",
+  "text": "* A :tag:\n* B\n** A                                                                    :tag:\n** C\n",
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs-paste-text",
+  "input": "* A\nxyz\n",
+  "line": 2,
+  "col": 0,
+  "keys": "C-k C-c C-x C-y",
+  "text": "* A\n\n",
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "error": "user-error"
+ },
+ {
+  "id": "cs-paste-twice",
+  "input": "* A\n* B\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-c C-x C-y C-c C-x C-y",
+  "text": "* A\n* A\n* A\n* B\n",
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-after-blank",
+  "input": "* A\n* B\nb\n\n* C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-c C-x C-y",
+  "text": "* A\n* B\nb\n\n* A\n* C\n",
+  "point": {
+   "line": 5,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-blank-mid",
+  "input": "* A\n* B\nb\n\nc\n* C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-n C-c C-x C-y",
+  "text": "* A\n* B\nb\n\nc\n* A\n* C\n",
+  "point": {
+   "line": 6,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-body-child",
+  "input": "* A\n* B\nb\n** B1\nc\n* C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-c C-x C-y",
+  "text": "* A\n* B\nb\n** A\n** B1\nc\n* C\n",
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-copy-n2-levels",
+  "input": "* A\n** A1\n* B\n",
+  "line": 2,
+  "col": 0,
+  "keys": "C-u 2 C-c C-x M-w M-> C-c C-x C-y",
+  "text": "* A\n** A1\n* B\n* A1\n",
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-copy-n9",
+  "input": "* A\n* B\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-u 9 C-c C-x M-w M-> C-c C-x C-y",
+  "text": "* A\n* B\n* A\n* B\n",
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-cut-blank-last",
+  "input": "* A\n* B\nb\n\n",
+  "line": 2,
+  "col": 0,
+  "keys": "C-c C-x C-w",
+  "text": "* A\n",
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-cut-n-plain",
+  "input": "* A\n* B\n* C\n* D\n* E\n* F\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-u C-c C-x C-w",
+  "text": "* E\n* F\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-cut-n2-diff",
+  "input": "** A\n* B\n** C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-u 2 C-c C-x C-w",
+  "text": "* B\n** C\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-cut-point-body",
+  "input": "* A\n* B\nb\n* C\n",
+  "line": 3,
+  "col": 0,
+  "keys": "C-c C-x C-w",
+  "text": "* A\n* C\n",
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-cut-ring",
+  "input": "* A\nx\n* B\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x C-w M-> C-y",
+  "text": "* B\n* A\nx\n",
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-end-head",
+  "input": "* A\n* B\n** B1\n* C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-e C-c C-x C-y",
+  "text": "* A\n* B\n** A\n** B1\n* C\n",
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-in-child",
+  "input": "* A\n* B\nb\n** B1\nc\n* C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-n C-n C-c C-x C-y",
+  "text": "* A\n* B\nb\n** B1\nc\n** A\n* C\n",
+  "point": {
+   "line": 6,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-paste-blank-between",
+  "input": "* A\nx\n\n* B\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-n C-n C-c C-x C-y",
+  "text": "* A\nx\n\n* B\n* A\nx\n\n",
+  "point": {
+   "line": 5,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-paste-cut-twice",
+  "input": "* A\n* B\n* C\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x C-w C-c C-x C-w C-c C-x C-y",
+  "text": "* A\n* B\n* C\n",
+  "point": {
+   "line": 1,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-paste-eob-lvl",
+  "input": "* A\n* B\n** C\nc\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w M-> C-c C-x C-y",
+  "text": "* A\n* B\n** C\nc\n** A\n",
+  "point": {
+   "line": 5,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-paste-n-plain",
+  "input": "* A\nx\n* B\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-u C-c C-x C-y",
+  "text": "* A\nx\n* B\n* A\nx\n",
+  "point": {
+   "line": 4,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-paste-n0",
+  "input": "* A\nx\n* B\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-u 0 C-c C-x C-y",
+  "text": "* A\nx\n* A\nx\n* B\n",
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "error": "user-error"
+ },
+ {
+  "id": "cs2-paste-neg",
+  "input": "* A\nx\n* B\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-u - C-c C-x C-y",
+  "text": "* A\nx\n* A\nx\n* B\n",
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-paste-todo",
+  "input": "* TODO A\n:PROPERTIES:\n:ID: 1\n:END:\nbody\n* B\n",
+  "line": 1,
+  "col": 0,
+  "keys": "C-c C-x M-w C-n C-n C-n C-n C-n C-n C-c C-x C-y",
+  "text": "* TODO A\n:PROPERTIES:\n:ID: 1\n:END:\nbody\n* B\n* TODO A\n:PROPERTIES:\n:ID: 1\n:END:\nbody\n",
+  "point": {
+   "line": 7,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-preamble-head",
+  "input": "text\n* A\n",
+  "line": 2,
+  "col": 0,
+  "keys": "C-c C-x M-w C-p C-c C-x C-y",
+  "text": "text\n* A\n* A\n",
+  "point": {
+   "line": 2,
+   "col": 0
+  },
+  "error": false
+ },
+ {
+  "id": "cs2-preamble",
+  "input": "text\nmore\n* A\n",
+  "line": 3,
+  "col": 0,
+  "keys": "C-c C-x M-w M-< C-c C-x C-y",
+  "text": "text\nmore\n* A\n* A\n",
+  "point": {
+   "line": 3,
+   "col": 0
+  },
+  "error": false
+ }
+]

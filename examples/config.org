@@ -27,7 +27,10 @@
     ("n" "Note" entry (file+headline "capture.org" "Inbox") "* %?\n")
     ("j" "Journal" entry (file+olp "capture.org" "Journal") "* %U %?")
     ("l" "Log" table-line (file+headline "capture.org" "Log") "| %U | %? |")
-    ("d" "Dated log" entry (file+function "capture.org" log-today) "* %^T %?\n")))
+    ("d" "Dated log" entry (file+function "capture.org" log-today) "* %^T %?\n")
+    ;; The birthday goes in the property drawer, where org-contacts-anniversaries reads it.
+    ("v" "Contact" entry (file+headline "contacts.org" "Contacts")
+     "* %^{Name}\n:PROPERTIES:\n:EMAIL: %^{Email}\n:BIRTHDAY: %^{Birthday (YYYY-MM-DD)}\n:END:\n%?")))
 
 ;; A function target finds or makes the heading and leaves point on it.
 (defun log-today ()

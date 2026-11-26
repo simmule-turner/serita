@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.5
+Subtrees cut, copy and paste as in Emacs: C-c C-x C-w, M-w and C-y (cells in a table), with a count before C-w or M-w for sibling subtrees and a level before C-y; consecutive cuts join. Table rows and columns are in the palette, Export is in the Outline view's table sheet, a GitHub token loses stray spaces and line breaks when saved, and the theme is set before files are read, with a plain message when GitHub rejects the token.
+
 * 0.11.4
 An init file. Settings, Emacs, Init file names a Lisp file such as github:org/init.el that runs at startup and on Reload init file; it sets Serita's Emacs settings with setq, adds capture templates with add-to-list, defines functions with defun and loads other files with load. What it sets wins over the Settings screens. A file runs only after you read it and choose Run, and asks again when it changes; a failing form is listed with its file and line and the rest still runs. add-to-list now puts the newest capture template first, as Emacs does.
 

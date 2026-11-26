@@ -1,6 +1,6 @@
 // Offline cache. The version below must equal package.json's version (a test checks this),
 // so every release gets a new cache and replaces the old one.
-const VERSION = '0.11.4';
+const VERSION = '0.11.5';
 const CACHE = `serita-${VERSION}`;
 const FILES = [
   './',
@@ -87,6 +87,7 @@ const FILES = [
   'core/tblcmd.js',
   'core/tblexport.js',
   'core/init.js',
+  'core/subtree.js',
   'core/elisp.js',
   'core/plot.js',
   'core/units.js',

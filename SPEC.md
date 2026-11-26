@@ -293,7 +293,7 @@ The author's real configuration (Appendix A) must run in emacs-org. The code its
 **Templates.** Each has a key, a description, a type, a target, a template string and options.
 
 1. **Types:** `entry` (a heading), `item` (a list item), `checkitem` (a list item with a checkbox), `table-line` (a row), `plain` (text as written).
-2. **Targets:** `file+headline`, `file+olp` (an outline path), `file+function` (a Lisp function that moves point), and `file`. A missing heading or path is created, newest first when the template says `:prepend`.
+2. **Targets:** `file+headline`, `file+olp` (an outline path), `file+function` (a Lisp function that moves point), and `file`. A missing `file+headline` heading is created; a missing `file+olp` path is an error, as in Emacs. Entries go newest first when the template says `:prepend`.
 3. **Options:** `:prepend`, `:empty-lines`, `:prepare-finalize` (a function run on the captured text before it is filed). Also `:immediate-finish` and `:clock-in` from the guide.
 4. **Escapes:** `%^{Prompt}` asks a question (a default and a choice list may follow after `|`), `%\\1` and `%\\2` repeat the first and second answers, `%^T` asks for an active timestamp, `%<format>` inserts the current time with a strftime-style format, `%U` and `%T` insert a stamp, `%a` links back to where capture began, `%i` inserts the selected text, `%?` leaves the caret there, `%%` is a percent sign.
 5. **Filing:** an entry goes under the target heading; an item or checkitem joins the list there (first or last by `:prepend`); a table-line adds a row to the table at the target, creating it first when absent; plain inserts where the function left point.

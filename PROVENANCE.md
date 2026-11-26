@@ -207,5 +207,8 @@ A separate repository holds questions (case files written by us) and results rec
 ### `core/init.js`, `test/init.test.js`, `test/fixtures/init/`
 - Written from: the Emacs Lisp manual's descriptions of load, setq, defvar, defun and add-to-list (the new element goes first unless APPEND is given). The fixtures are the author's own configuration files. No other project's code was consulted.
 
+### `core/subtree.js`, `test/subtree.test.js`, `test/fixtures/emacs-subtree.json`
+- Written from: the Org manual's description of cutting, copying and pasting subtrees and observed Emacs 30.1 results with Org 9.7.11 for org-cut-subtree, org-copy-subtree and org-paste-subtree. No other project's code was consulted.
+
 ### `test/conditional.test.js`
 - Written from: the HTTP standard's description of conditional requests (If-None-Match and 304). No other project's code was consulted.

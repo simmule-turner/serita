@@ -490,6 +490,18 @@ ok((await page.inputValue('.sheet textarea')) === 'a,b\n1,2', 'Export table show
 await btn('Save').waitFor();
 await page.keyboard.press('Escape');
 
+await at2('| a | b |\n| cc | d |\n', 2, 2); await page.click('#btn-menu'); await btn(/Commands/).click(); await page.keyboard.type('org-table-kill-row'); await page.keyboard.press('Enter');
+ok((await text()) === '| a | b |\n', 'org-table-kill-row in the palette deletes the row');
+
+const palette = async (name) => { await page.click('#btn-menu'); await btn(/Commands/).click(); await page.keyboard.type(name); await page.keyboard.press('Enter'); };
+await at('* A\nx\n** A1\n* B\n', 1); await palette('org-cut-subtree');
+ok((await text()) === '* B\n', 'org-cut-subtree removes the heading with its children');
+await palette('org-paste-subtree');
+ok((await text()) === '* A\nx\n** A1\n* B\n', 'org-paste-subtree puts it back before the heading at the cursor');
+await at('* A\n* B\n', 1); await palette('org-copy-subtree'); await page.evaluate(() => { const e = document.getElementById('editor'); e.setSelectionRange(8, 8); });
+await palette('org-paste-subtree');
+ok((await text()) === '* A\n* B\n* A\n', 'org-paste-subtree at the end of the buffer adds the subtree after the last one');
+
 // Table formulas (Emacs: tf-* cases)
 const FT = '| 1 | 2 |   |\n| 3 | 4 |   |\n#+TBLFM: $3=$1+$2\n';
 await at(FT, 3); await ctrl('c'); await ctrl('c');

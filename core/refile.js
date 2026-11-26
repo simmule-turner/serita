@@ -7,6 +7,7 @@ import { readForms, isSym } from './lisp-read.js';
 import { emacsRegexp } from './regexp.js';
 import { propertiesOf, setProperty } from './properties.js';
 import { DEFAULT_TAGS_COLUMN, setTags } from './outline-edit.js';
+import { relevel } from './subtree.js';
 import { formatStamp } from './timestamp.js';
 
 const join = (lines) => lines.map((l) => l.text + l.eol).join('');
@@ -120,10 +121,7 @@ function cut(text, line, level, column = DEFAULT_TAGS_COLUMN) {
   const lines = splitLines(text);
   const sub = lines.slice(h.line, h.end).map((l) => ({ ...l }));
   if (sub.length && sub[sub.length - 1].eol === '') sub[sub.length - 1].eol = '\n';
-  const delta = level - h.level;
-  for (const l of sub) if (/^\*+(?: |$)/.test(l.text)) { const stars = /^\*+/.exec(l.text)[0].length; l.text = '*'.repeat(Math.max(1, stars + delta)) + l.text.slice(stars); }
-  let moved = join(sub);
-  if (delta !== 0) for (const x of analyze(moved).heads) if (x.tags.length) moved = setTags(moved, x.line, x.tags, column).text;
+  const moved = relevel(join(sub), level, column);
   return { sub: splitLines(moved), rest: join([...lines.slice(0, h.line), ...lines.slice(h.end)]), head: h, a };
 }
 

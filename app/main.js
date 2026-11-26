@@ -24,6 +24,7 @@ import { archiveSubtree, ARCHIVE_CONTEXT, checkTarget, newChild, archiveToSiblin
 import { isEffort } from '../core/effort.js';
 import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../core/properties.js';
 import { DEFAULT_FORMATS, parseAgendaSettings, phoneCells, phoneColumns } from '../core/prefix.js';
+import { cutSubtree, subtreeAt, pasteSubtree } from '../core/subtree.js';
 import { NONE as NO_ARG, argLabel, argValue, pressDigit, pressU } from '../core/universal.js';
 import { agenda, searchView, tagsView, todoList } from '../core/agenda.js';
 import { filterActive, filterLabel, noFilter, parseEffort, parseSigned } from '../core/agenda-filter.js';
@@ -105,6 +106,7 @@ const setView = (mode) => config.update({ settings: { 'view.mode': mode } });
 const toolRowOn = (mode) => (mode === 'text' ? setting('view.toolRowText') !== 'false' : setting('view.toolRowOutline') === 'true');
 const THEMES = ['system', 'light', 'dark'];
 const theme = () => (THEMES.includes(setting('view.theme')) ? setting('view.theme') : 'system');
+const applyTheme = () => { document.documentElement.dataset.theme = theme() === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme(); };
 const FONTS = { monospace: 'ui-monospace, Menlo, Consolas, monospace', 'sans-serif': 'system-ui, sans-serif', serif: 'ui-serif, Georgia, serif', system: 'system-ui, sans-serif' };
 const fontChoice = () => setting('view.font') ?? 'monospace';
 const fontFamily = () => FONTS[fontChoice()] ?? `"${fontChoice().replace(/["\\]/g, '')}", monospace`;
@@ -240,7 +242,7 @@ function render() {
   document.documentElement.style.setProperty('--fs', `${fontSize()}px`);
   document.documentElement.style.setProperty('--ff', fontFamily());
   document.documentElement.style.setProperty('--ps', `${paragraphSpacing()}px`);
-  document.documentElement.dataset.theme = theme() === 'system' ? (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') : theme();
+  applyTheme();
   $('main').classList.toggle('nums', lineNumbers());
   $('main').classList.toggle('nowrap', !wrapOn());
   editor.wrap = wrapOn() ? 'soft' : 'off';
@@ -787,7 +789,10 @@ async function setup(p) {
         } }, 'Remove'),
         h('button', { onclick: () => close(undefined) }, 'Cancel'),
         h('button', { class: 'primary', onclick: async () => {
-          config.update({ settings: Object.fromEntries(inputs.map(([k, i]) => [k, i.value.trim()])), secrets: secret.value ? { [def.secret[0]]: secret.value } : {} });
+          // A token never has spaces or line breaks; they come from copying, and the browser refuses to send them.
+          const secretValue = p === 'github' ? secret.value.trim() : secret.value;
+          if (p === 'github' && /[^\x21-\x7e]/.test(secretValue)) { message('The token has characters a GitHub token never contains; paste it again', true); return; }
+          config.update({ settings: Object.fromEntries(inputs.map(([k, i]) => [k, i.value.trim()])), secrets: secretValue ? { [def.secret[0]]: secretValue } : {} });
           try { await rebuild(); await updatePending(); message(config[`${p}Ready`]() ? `${def.title} set up` : `${def.title} needs every field before it can be used`); } catch (e) { failure(e); }
           close(true);
         } }, 'Save')));
@@ -1879,6 +1884,30 @@ function tableCopyRegion(cut) {
 /** C-c C-x C-y: pastes the copied cells from the field at the cursor. */
 function tablePasteRectangle() { tableEdit((t, l, c) => { const r = tblcmd.pasteRectangle(t, l, c, rectClip); return { ...r, line: r.line ?? l, col: c }; }); }
 
+/** C-c C-x C-w and C-c C-x M-w outside a table: cut or copy the subtree at the cursor (a number cuts that many siblings). */
+function subtreeKill(cut) {
+  const b = currentBuffer();
+  const line = viewMode() === 'outline' ? enclosingHead()?.line ?? -1 : lineAt(cur.proj, editor.selectionStart);
+  const n = Math.max(1, arg?.num ?? arg?.list ?? 1);
+  try {
+    const r = cut ? cutSubtree(b.text, line, n) : { killed: subtreeAt(b.text, line, n).text };
+    killRing.kill(r.killed, { append: cut && wasKill });
+    if (cut) lastKill = true;
+    navigator.clipboard.writeText(killRing.get()).catch(() => message('Could not copy to the clipboard', true));
+    if (cut) { session.apply(b.id, { text: r.text }); if (viewMode() === 'text') placeOffset(lineStart(r.text, r.line + 1)); }
+    message(`${cut ? 'Cut' : 'Copied'}: Subtree(s) with ${killRing.get().length} characters`);
+  } catch (e) { failure(e); }
+}
+
+/** C-c C-x C-y outside a table: pastes the last kill as a subtree (a number sets its level). */
+function subtreePaste() {
+  const p = cursorOffset();
+  const before = currentBuffer().text.slice(0, p);
+  const line = before.split('\n').length - 1;
+  const r = runEdit((t) => { const x = pasteSubtree(t, line, p - (before.lastIndexOf('\n') + 1), killRing.get(), { level: arg?.num > 0 ? arg.num : undefined, after: arg?.list === 4, column: tagsColumn() }); return { text: x.text, line: x.line }; });
+  if (r && viewMode() === 'text') placeOffset(lineStart(r.text, r.line + 1));
+}
+
 /** The same at the cursor. */
 function tableEdit(fn) {
   const at = tableHere();
@@ -2106,8 +2135,8 @@ function pickFileText() {
 }
 
 /** org-table-export: asks for a format, shows the table in it, and offers Copy and Save. */
-async function tableExport() {
-  const at = tableHere();
+async function tableExport(line) {
+  const at = line === undefined ? tableHere() : { line };
   if (!at) { message('Not in table', true); return; }
   const rows = table.toLisp(currentBuffer().text, at.line);
   await panel((sheet, close) => {
@@ -2237,12 +2266,14 @@ async function cellSheet(line, j) {
           h('button', { class: 'item', onclick: () => close('sort') }, h('span', {}, 'Sort'), h('span', { class: 'meta' }, '▾')),
           h('button', { class: 'item', onclick: () => close('recalculate') }, h('span', {}, 'Recalculate'), h('span', { class: 'meta' }, '▾')),
           h('button', { class: 'item', onclick: () => close('plot') }, h('span', {}, 'Plot')),
-          h('button', { class: 'item', onclick: () => close('formulas') }, h('span', {}, 'Formulas'), h('span', { class: 'meta' }, formulaCount(b.text, line)))),
+          h('button', { class: 'item', onclick: () => close('formulas') }, h('span', {}, 'Formulas'), h('span', { class: 'meta' }, formulaCount(b.text, line))),
+          h('button', { class: 'item', onclick: () => close('export') }, h('span', {}, 'Export'))),
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Close')));
     });
     if (what === undefined) return;
     if (what === 'recalculate') { if (await recalculateSheet(line, at(), 'outline')) return; continue; }
     if (what === 'plot') { await plotTable(line); if (dismissed) return; continue; }
+    if (what === 'export') { await tableExport(line); if (dismissed) return; continue; }
     if (what === 'formulas') { if (await formulasSheet(line, j, rowNo)) return; continue; }
     if (what === 'edit') {
       const v2 = await askText({ prompt: 'Cell:', title: `Edit ${columnName(j)}${rowNo}`, value, ok: 'Save' });
@@ -2755,6 +2786,12 @@ const COMMANDS = {
   'table-hline': () => { const above = !!arg; tableEdit((t, l, c) => table.insertHline(t, l, c, above)); },
   'table-hline-and-move': () => tableEdit(table.hlineAndMove),
   'table-delete-row': () => tableEdit(table.deleteRow),
+  'table-move-row-up': () => tableEdit((t, l, c) => table.moveRow(t, l, c, -1)),
+  'table-move-row-down': () => tableEdit((t, l, c) => table.moveRow(t, l, c, 1)),
+  'table-delete-column': () => tableEdit(table.deleteColumn),
+  'table-insert-column': () => tableEdit(table.insertColumn),
+  'table-move-column-left': () => tableEdit((t, l, c) => table.moveColumn(t, l, c, -1)),
+  'table-move-column-right': () => tableEdit((t, l, c) => table.moveColumn(t, l, c, 1)),
   'table-insert-row': () => { const below = !!arg; tableEdit((t, l, c) => table.insertRow(t, l, c, below)); },
   'table-align': () => tableEdit(table.align),
   'table-sort': () => tableSort(),
@@ -2780,6 +2817,12 @@ const COMMANDS = {
   'table-copy-region': () => tableCopyRegion(false),
   'table-cut-region': () => tableCopyRegion(true),
   'table-paste-rectangle': () => tablePasteRectangle(),
+  'cut-subtree': () => subtreeKill(true),
+  'copy-subtree': () => subtreeKill(false),
+  'paste-subtree': () => subtreePaste(),
+  'cut-special': () => (inTable() ? tableCopyRegion(true) : subtreeKill(true)),
+  'copy-special': () => (inTable() ? tableCopyRegion(false) : subtreeKill(false)),
+  'paste-special': () => (inTable() ? tablePasteRectangle() : subtreePaste()),
   'table-rotate-recalc-marks': () => tableEdit(tblcmd.rotateMark),
   'keep-offline': () => offlineDialog(),
   'table-create': () => tableCreate(),
@@ -3150,7 +3193,8 @@ const PALETTE = [
   ['promote', 'org-metaleft', 'Promote'], ['demote', 'org-metaright', 'Demote'], ['promote-subtree', 'org-shiftmetaleft', 'Promote subtree'], ['demote-subtree', 'org-shiftmetaright', 'Demote subtree'],
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
   ['insert-heading', 'org-insert-heading-respect-content', 'Insert heading after subtree'], ['insert-heading-here', 'org-meta-return', 'Insert heading here'],
-  ['table-align', 'org-table-align', 'Align table'], ['table-sort', 'org-table-sort-lines', 'Sort table lines'], ['table-blank-field', 'org-table-blank-field', 'Blank table field'], ['table-sum', 'org-table-sum', 'Sum table column'], ['keep-offline', 'serita-keep-files-offline', 'Keep files offline', true], ['table-recalculate', 'org-table-recalculate', 'Recalculate table formulas'], ['table-formula', 'org-table-eval-formula', 'Edit a table formula'], ['table-edit-formulas', 'org-table-edit-formulas', 'Edit all table formulas'], ['table-plot', 'org-plot/gnuplot', 'Plot table', true], ['table-toggle-numbers', 'org-table-toggle-coordinate-overlays', 'Show table row and column numbers'], ['table-toggle-debug', 'org-table-toggle-formula-debugger', 'Debug table formulas'], ['table-recalculate-buffer', 'org-table-recalculate-buffer-tables', 'Recalculate all tables', true], ['table-iterate-buffer', 'org-table-iterate-buffer-tables', 'Recalculate all tables until stable', true], ['table-create', 'org-table-create-or-convert-from-region', 'Create table or convert text'], ['init-reload', 'serita-reload-init-file', 'Reload init file', true], ['table-export', 'org-table-export', 'Export table'], ['table-import', 'org-table-import', 'Import table text'], ['table-copy-region', 'org-table-copy-region', 'Copy table cells'], ['table-cut-region', 'org-table-cut-region', 'Cut table cells'], ['table-paste-rectangle', 'org-table-paste-rectangle', 'Paste table cells'], ['table-rotate-recalc-marks', 'org-table-rotate-recalc-marks', 'Rotate recalculation mark'],
+  ['cut-subtree', 'org-cut-subtree', 'Cut subtree'], ['copy-subtree', 'org-copy-subtree', 'Copy subtree'], ['paste-subtree', 'org-paste-subtree', 'Paste subtree'], ['cut-special', 'org-cut-special', 'Cut subtree or table cells'], ['copy-special', 'org-copy-special', 'Copy subtree or table cells'], ['paste-special', 'org-paste-special', 'Paste subtree or table cells'],
+  ['table-align', 'org-table-align', 'Align table'], ['table-sort', 'org-table-sort-lines', 'Sort table lines'], ['table-blank-field', 'org-table-blank-field', 'Blank table field'], ['table-sum', 'org-table-sum', 'Sum table column'], ['keep-offline', 'serita-keep-files-offline', 'Keep files offline', true], ['table-recalculate', 'org-table-recalculate', 'Recalculate table formulas'], ['table-formula', 'org-table-eval-formula', 'Edit a table formula'], ['table-edit-formulas', 'org-table-edit-formulas', 'Edit all table formulas'], ['table-plot', 'org-plot/gnuplot', 'Plot table', true], ['table-toggle-numbers', 'org-table-toggle-coordinate-overlays', 'Show table row and column numbers'], ['table-toggle-debug', 'org-table-toggle-formula-debugger', 'Debug table formulas'], ['table-recalculate-buffer', 'org-table-recalculate-buffer-tables', 'Recalculate all tables', true], ['table-iterate-buffer', 'org-table-iterate-buffer-tables', 'Recalculate all tables until stable', true], ['table-create', 'org-table-create-or-convert-from-region', 'Create table or convert text'], ['init-reload', 'serita-reload-init-file', 'Reload init file', true], ['table-delete-row', 'org-table-kill-row', 'Delete table row'], ['table-insert-row', 'org-table-insert-row', 'Insert table row'], ['table-hline-and-move', 'org-table-hline-and-move', 'Add table rule and move below'], ['table-move-row-up', 'org-table-move-row-up', 'Move table row up'], ['table-move-row-down', 'org-table-move-row-down', 'Move table row down'], ['table-delete-column', 'org-table-delete-column', 'Delete table column'], ['table-insert-column', 'org-table-insert-column', 'Insert table column'], ['table-move-column-left', 'org-table-move-column-left', 'Move table column left'], ['table-move-column-right', 'org-table-move-column-right', 'Move table column right'], ['table-export', 'org-table-export', 'Export table'], ['table-import', 'org-table-import', 'Import table text'], ['table-copy-region', 'org-table-copy-region', 'Copy table cells'], ['table-cut-region', 'org-table-cut-region', 'Cut table cells'], ['table-paste-rectangle', 'org-table-paste-rectangle', 'Paste table cells'], ['table-rotate-recalc-marks', 'org-table-rotate-recalc-marks', 'Rotate recalculation mark'],
   ['table-transpose', 'org-table-transpose-table-at-point', 'Transpose table'], ['table-field-info', 'org-table-field-info', 'Show field coordinates'], ['table-hline', 'org-table-insert-hline', 'Insert horizontal line'],
   ['table-copy-down', 'org-table-copy-down', 'Copy field down'], ['table-next-row', 'org-table-next-row', 'Next row'],
   ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],
@@ -3545,7 +3589,7 @@ function setInit(r) {
 async function runInit() {
   const file = initName();
   if (!file) { setInit(EMPTY_INIT); return; }
-  const r = await loadInit({ file, read: async (n) => { const f = await app.storage.read(n); if (!f) throw new Error('not found'); return f.text; }, trusted: askTrust });
+  const r = await loadInit({ file, read: async (n) => { let f; try { f = await app.storage.read(n); } catch (e) { throw new Error(e.status === 401 ? 'GitHub rejected the token (401); it may have expired. Check Settings, GitHub' : e.message); } if (!f) throw new Error('not found'); return f.text; }, trusted: askTrust });
   if (r.files.length === 0) { message(`Init file not run: ${reportLine(r.report[0])}`, true); return; }
   setInit({ ...r, at: Date.now() });
   const n = problemsOf(r).length;
@@ -3595,6 +3639,7 @@ async function startSession() {
   for (const b of session.state().buffers) if (b.name) checkChanged(b.id);
   message(r.skipped.length ? `Could not reopen ${r.skipped.join(', ')}` : r.opened > 0 ? 'Reopened your files' : 'Welcome to Serita', r.skipped.length > 0);
 }
+applyTheme(); // the colors are set before any file is read
 await startSession();
 updatePending().catch(failure);
 runInit().catch(failure);
