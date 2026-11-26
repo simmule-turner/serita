@@ -397,6 +397,10 @@ const SORT_COMPARE = {
   '<': (a, b) => a < b, '>': (a, b) => a > b, '<=': (a, b) => a <= b, '>=': (a, b) => a >= b,
 };
 
+/** What each name C-c ^ f accepts does, for the lists a prompt offers. */
+export const SORT_KEY_HELP = [['upcase', 'ignore case: A and a are equal'], ['downcase', 'ignore case: A and a are equal'], ['capitalize', 'compare with a capital first letter'], ['identity', 'the text as written'], ['length', 'by the number of characters'], ['string-to-number', 'by the number a field starts with'], ['string-trim', 'ignore spaces around the text']];
+export const SORT_COMPARE_HELP = [['', 'default: numbers by <, text by string<'], ['string<', 'A to Z, by character code'], ['string>', 'Z to A, by character code'], ['<', 'smaller numbers first'], ['>', 'larger numbers first'], ['<=', 'smaller or equal first'], ['>=', 'larger or equal first']];
+
 /**
  * The functions C-c ^ f asks for, by name (the key function, then the compare function; an empty compare name is the default of sort-subr: numbers by <, strings by string<).
  * A name that is not one of the built-in ones fails as Emacs does with a void function.

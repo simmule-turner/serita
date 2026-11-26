@@ -202,6 +202,7 @@ await view('Outline');
 await page.click('#btn-menu'); await btn(/Commands/).click();
 ok((await sheet.getByRole('button', { name: 'Show all' }).count()) === 0, 'the palette has no Show all');
 ok((await sheet.locator('.argsaid').textContent()) === 'No prefix.', 'the palette says there is no prefix');
+ok(await page.evaluate(() => { const a = document.querySelector('.sheet .argsaid').getBoundingClientRect(); const i = document.querySelector('.sheet.palette input').getBoundingClientRect(); return a.bottom <= i.top; }), 'the prefix line is above the command entry box, where it is always seen');
 await sheet.locator('.row.prefix button.cu').click(); await sheet.locator('.row.prefix button.cu').click();
 ok((await sheet.locator('.argsaid').textContent()) === 'Next command runs with C-u C-u.' && (await sheet.locator('.row.prefix button.cu').textContent()) === 'C-u ×2', 'C-u counts up and the palette says which prefix is armed');
 await sheet.locator('.row.prefix button.cu').click(); await sheet.locator('.row.prefix button.cu').click();
@@ -223,6 +224,19 @@ await sheet.locator('.item', { hasText: 'Row' }).click();
 await sheet.locator('.item', { hasText: 'Delete' }).click();
 await view('Text');
 ok((await value()) === '* T\n| Item | Qty |\n|---+---|\n| Cake | 2 |\n', 'Row, Delete removes the row');
+
+// Sort with a function from the grid: two lists that say what each choice does
+await page.fill('#editor', '* T\n| Item | Qty |\n|---+---|\n| pear | 3 |\n| Apple | 12 |\n| fig | 1 |\n| apple | 2 |\n');
+await view('Outline');
+await page.locator('.ol-table td button.cell', { hasText: 'pear' }).click();
+await sheet.locator('.item', { hasText: 'Sort' }).click();
+await sheet.locator('.item', { hasText: /^With a function$/ }).click();
+ok((await sheet.textContent()).includes('ignore case'), 'Sort, With a function lists the key functions and what each does');
+await sheet.locator('.item', { hasText: /^upcase/ }).click();
+ok((await sheet.textContent()).includes('Default'), 'then the compare functions, with the default first');
+await sheet.locator('.item', { hasText: /^string</ }).first().click();
+await view('Text');
+ok((await value()) === '* T\n| Item | Qty |\n|---+---|\n| Apple | 12 |\n| apple | 2 |\n| fig | 1 |\n| pear | 3 |\n', 'upcase with string< sorts the rows from the grid');
 
 // A blank row inserted from the grid is a row, and the menu closes
 await page.fill('#editor', '* T\n| Item | Qty |\n|---+---|\n| Tea | 10 |\n');

@@ -1206,12 +1206,18 @@ let lastRefile = null;
 
 /** Takes the buffer shown to the line of a heading, as visiting it does. */
 async function visitLine(name, line) {
-  const x = await bufferFor(name);
-  if (!x) { failure(new Error(`${name} does not exist`)); return; }
+  const here = currentBuffer();
+  const x = bufferName(here) === name ? here : await bufferFor(name);
+  if (!x) { failure(new Error(`${name} does not exist`)); return false; }
   leaveHere();
   session.select(x.id);
   setView('text');
+  // as Emacs does when it goes to a refile target: the folds that hide it open
+  const b = currentBuffer();
+  const opened = reveal(analyze(b.text).foldables, b.folds, Math.max(0, line));
+  if (JSON.stringify(opened) !== JSON.stringify(b.folds)) session.setFolds(b.id, opened);
   placeCursor(Math.max(0, line));
+  return true;
 }
 
 async function refileHere(copy0 = false, hd0 = enclosingHead()) {
@@ -1220,8 +1226,7 @@ async function refileHere(copy0 = false, hd0 = enclosingHead()) {
   if (!copy0 && (a?.num === 0 || a?.list === 64)) { refileCache.clear(); message('Refile cache has been cleared'); return; }
   if (!copy0 && a?.list === 16) {
     if (!lastRefile) { message('No refile location stored', true); return; }
-    await visitLine(lastRefile.file, lastRefile.line);
-    message('This is the location of the last refile');
+    if (await visitLine(lastRefile.file, lastRefile.line)) message('This is the location of the last refile');
     return;
   }
   const goto = !copy0 && a?.list === 4;
@@ -1836,14 +1841,15 @@ async function tableSort() {
   if (!tableHere()) { message('Not in table', true); return; }
   const kinds = [['a', 'Alphabetic'], ['n', 'Numeric'], ['t', 'Time'], ['f', 'With a function'], ['A', 'Alphabetic, reversed'], ['N', 'Numeric, reversed'], ['T', 'Time, reversed'], ['F', 'With a function, reversed']];
   const v = await askText({ prompt: 'Sort table:', title: 'Sort table', help: 'a, n, t or f for alphabetic, numeric, time or function order. A capital letter reverses it.', ok: 'Sort', key: /^[antfANTF]$/,
-    complete: (t) => kinds.filter(([k]) => t === '' || k === t).map(([k, label]) => ({ label, value: k, hint: k })) });
+    complete: (t) => kinds.filter(([k]) => t === '' || k === t).map(([k, label]) => ({ label, value: k, hint: k })), showAll: true });
   if (v === undefined) return;
   const k = v.trim();
   if (!/^[antfANTF]$/.test(k)) { message('Invalid sorting type', true); return; }
   if (k.toLowerCase() !== 'f') { tableEdit((t, l, c) => table.sortRows(t, l, c, k)); return; }
-  const keyName = await askText({ prompt: 'Function for extracting keys:', title: 'Sort with a function', help: 'upcase, downcase, capitalize, identity, length, string-to-number or string-trim.', ok: 'Next' });
+  const options = (rows) => (t) => rows.filter(([n]) => n.startsWith(t.trim())).map(([n, d]) => ({ label: n === '' ? '(empty)' : n, value: n, hint: d }));
+  const keyName = await askText({ prompt: 'Function for extracting keys:', title: 'Sort with a function', help: 'Tap one: it says how the rows will be ordered.', ok: 'Next', complete: options(table.SORT_KEY_HELP), showAll: true });
   if (keyName === undefined) return;
-  const compareName = await askText({ prompt: "Function for comparing keys (empty for default `sort-subr' predicate):", title: 'Sort with a function', help: 'string<, string>, <, >, <= or >=. Empty compares numbers with < and text with string<.', ok: 'Sort' });
+  const compareName = await askText({ prompt: "Function for comparing keys (empty for default `sort-subr' predicate):", title: 'Sort with a function', help: 'Leave it empty to compare numbers with < and text with string<.', ok: 'Sort', complete: options(table.SORT_COMPARE_HELP), showAll: true });
   if (compareName === undefined) return;
   let fn;
   try { fn = table.sortFunctions(keyName, compareName); } catch (e) { message(e.message, true); return; }
@@ -1851,6 +1857,15 @@ async function tableSort() {
 }
 
 const columnName = (n) => { let s = ''; for (let k = n + 1; k > 0; k = Math.floor((k - 1) / 26)) s = String.fromCharCode(65 + ((k - 1) % 26)) + s; return s; };
+
+/** C-c ^ f in the Outline view: two lists, each line saying how the rows will be ordered; undefined when cancelled. */
+async function chooseSortFunctions() {
+  const key = await choose('Sort by', table.SORT_KEY_HELP.map(([n, d]) => ({ label: n, meta: d, value: n })));
+  if (key === undefined) return undefined;
+  const compare = await choose('Compare with', table.SORT_COMPARE_HELP.map(([n, d]) => ({ label: n === '' ? 'Default' : n, meta: d, value: n === '' ? 'default' : n })));
+  if (compare === undefined) return undefined;
+  return table.sortFunctions(key, compare === 'default' ? '' : compare);
+}
 
 /** What a tap on a cell of a table in the Outline view opens. */
 async function cellSheet(line, j) {
@@ -1886,11 +1901,18 @@ async function cellSheet(line, j) {
         ['Add rule below', (t, l, c) => table.insertHline(t, l, c)], ['Delete', table.deleteRow]]],
       column: ['Column', [['Insert left', table.insertColumn], ['Insert right', (t, l, c) => { const a = table.insertColumn(t, l, c); return table.moveColumn(a.text, l, table.cellCol(a.text, l, j), 1); }],
         ['Move left', (t, l, c) => table.moveColumn(t, l, c, -1)], ['Move right', (t, l, c) => table.moveColumn(t, l, c, 1)], ['Delete', table.deleteColumn]]],
-      sort: ['Sort', [['Alphabetic', 'a'], ['Alphabetic, reversed', 'A'], ['Numeric', 'n'], ['Numeric, reversed', 'N'], ['Time', 't'], ['Time, reversed', 'T']].map(([l, k]) => [l, (t, ln, c) => table.sortRows(t, ln, c, k)])],
+      sort: ['Sort', [['Alphabetic', 'a'], ['Alphabetic, reversed', 'A'], ['Numeric', 'n'], ['Numeric, reversed', 'N'], ['Time', 't'], ['Time, reversed', 'T']].map(([l, k]) => [l, (t, ln, c) => table.sortRows(t, ln, c, k)]).concat([['With a function', 'f'], ['With a function, reversed', 'F']])],
     }[what];
     const pick = await choose(sub[0], sub[1].map(([label], i) => ({ label, value: i })));
     if (pick === undefined) { if (dismissed) return; continue; }
-    run(sub[1][pick][1]);
+    const act = sub[1][pick][1];
+    if (typeof act === 'string') {
+      const fn = await chooseSortFunctions();
+      if (!fn) return;
+      run((t, ln, c) => table.sortRows(t, ln, c, act, fn));
+      return;
+    }
+    run(act);
     return;
   }
 }
@@ -2467,8 +2489,8 @@ function killWith(fn, { append = false }) {
  * One line of input. In the Text view the minibuffer asks, as Emacs does; in the Outline view a touch dialog does.
  * Resolves with the text, or undefined when cancelled.
  */
-function askText({ prompt, title, help = null, value = '', complete = null, inputMode = 'text', ok = 'OK', key = null }) {
-  if (viewMode() === 'text') return mini.ask({ prompt, value, complete, inputMode, key });
+function askText({ prompt, title, help = null, value = '', complete = null, inputMode = 'text', ok = 'OK', key = null, showAll = false }) {
+  if (viewMode() === 'text') return mini.ask({ prompt, value, complete, inputMode, key, showAll });
   return panel((sheet, close) => {
     const input = h('input', { inputmode: inputMode, autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': title });
     input.value = value;
@@ -2794,7 +2816,7 @@ async function commandPalette() {
         said.textContent = argLabel(argState) ? `Next command runs with ${argLabel(argState)}.` : 'No prefix.';
       };
       redraw();
-      put(sheet, h('h2', {}, 'Commands'), input, list, said, h('div', { class: 'row prefix' }, cu, h('div', { class: 'digits' }, ...Object.values(digits))));
+      put(sheet, h('h2', {}, 'Commands'), said, input, list, h('div', { class: 'row prefix' }, cu, h('div', { class: 'digits' }, ...Object.values(digits))));
       input.focus();
     });
     if (!entry) return;

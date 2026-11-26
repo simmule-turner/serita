@@ -18,7 +18,7 @@ export function createMinibuffer({ root, list, bell, restoreFocus = () => {} }) 
    * `complete(text)` gives [{ label, value, hint? }]; the list follows the text.
    * @returns {{ input: HTMLInputElement, setPrompt: (text: string, failing?: boolean) => void, close: () => void, setValue: (v: string) => void }}
    */
-  function open({ prompt, stack = false, longPrompt = false, value = '', buttons = [], onInput = () => {}, onKey = () => false, complete = null, onPick = null, inputMode = 'text', historyKey = null, label: name = prompt.replace(/:\s*$/, '') }) {
+  function open({ prompt, stack = false, longPrompt = false, showAll = false, value = '', buttons = [], onInput = () => {}, onKey = () => false, complete = null, onPick = null, inputMode = 'text', historyKey = null, label: name = prompt.replace(/:\s*$/, '') }) {
     active?.close();
     const label = h('span', { class: 'prompt' }, prompt);
     const input = h('input', { autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', inputmode: inputMode, 'aria-label': name });
@@ -29,7 +29,7 @@ export function createMinibuffer({ root, list, bell, restoreFocus = () => {} }) 
     const showList = () => {
       items = complete ? complete(input.value) : [];
       at = Math.min(at, Math.max(0, items.length - 1));
-      list.replaceChildren(...items.slice(0, 6).map((it, i) => h('button', { class: `choice${i === at ? ' on' : ''}`, onclick: () => (onPick ? onPick(it) : (input.value = it.value, showList(), input.focus())) },
+      list.replaceChildren(...items.slice(0, showAll ? 8 : 6).map((it, i) => h('button', { class: `choice${i === at ? ' on' : ''}`, onclick: () => (onPick ? onPick(it) : (input.value = it.value, showList(), input.focus())) },
         h('span', {}, it.label), it.hint ? h('span', { class: 'hint' }, it.hint) : null)));
       list.hidden = items.length === 0;
     };
@@ -76,6 +76,7 @@ export function createMinibuffer({ root, list, bell, restoreFocus = () => {} }) 
     active = self;
     showList();
     input.focus();
+    if (showAll) showList();
     self.remember = (v) => { if (historyKey && v !== '') history.set(historyKey, [...(history.get(historyKey) ?? []), v].slice(-50)); };
     return self;
   }
@@ -86,7 +87,7 @@ export function createMinibuffer({ root, list, bell, restoreFocus = () => {} }) 
    * @returns {Promise<string | undefined>}
    */
   /** `key` is a regexp: an answer it matches is taken at once, like a question Emacs reads one key for. */
-  function ask({ prompt, value = '', complete = null, require = false, historyKey = null, inputMode = 'text', key = null }) {
+  function ask({ prompt, value = '', complete = null, require = false, historyKey = null, inputMode = 'text', key = null, showAll = false }) {
     return new Promise((resolve) => {
       let mb;
       const done = (v) => { mb.remember(v ?? ''); mb.close(); resolve(v); };
@@ -97,7 +98,7 @@ export function createMinibuffer({ root, list, bell, restoreFocus = () => {} }) 
         done(require && pick && !complete(text).some((c) => c.value === text) ? pick.value : text);
       };
       mb = open({
-        prompt, value, complete, historyKey, inputMode, longPrompt: prompt.length > 24,
+        prompt, value, complete, historyKey, inputMode, showAll, longPrompt: prompt.length > 24,
         onInput: (t) => { if (key?.test(t)) done(t); },
         buttons: [{ label: '✓', aria: 'Accept', onclick: accept }, { label: '✕', aria: 'Cancel', onclick: cancel }],
         onPick: complete ? (it) => done(it.value) : null,

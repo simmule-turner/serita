@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.10.7
+Fixes from testing the universal argument. The line that says which prefix is armed now sits above the command entry box, where it is always in view. Sorting with a function lists the key and compare functions and what each does, in the Text view prompts and, new, in the table cell menu (Sort, With a function). C-u C-u C-c C-w now goes to the refiled heading in a file that has not been saved, and opens the folds that hide it.
+
 * 0.10.6
 Fixes the release check that failed for 0.10.5: the agenda line format and universal argument code now have their provenance entries. Sorting a table with a function no longer depends on ~Object.hasOwn~, which Safari before 15.4 lacks.
 
