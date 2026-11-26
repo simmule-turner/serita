@@ -37,7 +37,7 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Agenda: agenda files other than the open ones, filters by top headline and by saved views, bulk actions that need a prompt Emacs shows (refile, scatter, function), the order of items of equal priority beyond what was recorded, an effort filter's sign (Emacs ignored it in our results).
 
 * Later: capture, refile and archive
-- Template parts that need the Lisp interpreter or more results: ~:prepare-finalize~, ~file+function~ and other function targets, ~:clock-in~, ~%^T~ and the other ~%^~ prompts, groups of templates, and capture templates typed by key.
+- Template parts not done yet: ~:clock-in~, datetree targets, groups of templates, and capture templates typed by key.
 - Refile: ~org-refile-use-cache~ as a setting (the list is built each time here).
 
 * Later: Appearance

@@ -1,0 +1,692 @@
+[
+ {
+  "id": "c-00",
+  "now": "2026-11-26 12:48",
+  "tpl": "c",
+  "input": "",
+  "typed": "milk",
+  "answers": [],
+  "text": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\n- milk\n",
+  "error": false
+ },
+ {
+  "id": "c-01",
+  "now": "2026-11-26 12:48",
+  "tpl": "c",
+  "input": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\n- [ ] one\n- [X] two\n",
+  "typed": "milk",
+  "answers": [],
+  "text": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\n- [ ] one\n- [X] two\n- milk\n",
+  "error": false
+ },
+ {
+  "id": "c-02",
+  "now": "2026-11-26 12:48",
+  "tpl": "c",
+  "input": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\n- one\n- two\n",
+  "typed": "milk",
+  "answers": [],
+  "text": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\n- one\n- two\n- milk\n",
+  "error": false
+ },
+ {
+  "id": "c-03",
+  "now": "2026-11-26 12:48",
+  "tpl": "c",
+  "input": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\ntext\n",
+  "typed": "milk",
+  "answers": [],
+  "text": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\ntext\n- milk\n",
+  "error": false
+ },
+ {
+  "id": "j-00",
+  "now": "2026-11-26 12:48",
+  "tpl": "j",
+  "input": "",
+  "typed": "note",
+  "answers": [],
+  "text": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\n- 12:48 - note\n",
+  "error": false
+ },
+ {
+  "id": "j-01",
+  "now": "2026-11-26 12:48",
+  "tpl": "j",
+  "input": "* 📔 Journal - journal and diary\n",
+  "typed": "note",
+  "answers": [],
+  "text": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\n- 12:48 - note\n",
+  "error": false
+ },
+ {
+  "id": "j-02",
+  "now": "2026-11-26 12:48",
+  "tpl": "j",
+  "input": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-20\n- old\n",
+  "typed": "note",
+  "answers": [],
+  "text": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\n- 12:48 - note\n*** 2026-11-20\n- old\n",
+  "error": false
+ },
+ {
+  "id": "j-03",
+  "now": "2026-11-26 12:48",
+  "tpl": "j",
+  "input": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\n- 09:00 - first\n- 10:00 - second\n",
+  "typed": "note",
+  "answers": [],
+  "text": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\n- 09:00 - first\n- 10:00 - second\n- 12:48 - note\n",
+  "error": false
+ },
+ {
+  "id": "j-04",
+  "now": "2026-11-26 12:48",
+  "tpl": "j",
+  "input": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\nSome text\n",
+  "typed": "note",
+  "answers": [],
+  "text": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\nSome text\n- 12:48 - note\n",
+  "error": false
+ },
+ {
+  "id": "j-05",
+  "now": "2026-11-26 12:48",
+  "tpl": "j",
+  "input": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\n- 09:00 - first\n*** 2026-11-25\n- 08:00 - older\n* Other\n",
+  "typed": "note",
+  "answers": [],
+  "text": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\n- 09:00 - first\n- 12:48 - note\n*** 2026-11-25\n- 08:00 - older\n* Other\n",
+  "error": false
+ },
+ {
+  "id": "j-06",
+  "now": "2026-11-26 12:48",
+  "tpl": "j",
+  "input": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\n- 09:00 - first\n",
+  "typed": "",
+  "answers": [],
+  "text": "* 📔 Journal - journal and diary\n** 2026-11 Nov\n*** 2026-11-26\n- 09:00 - first\n- 12:48 - \n",
+  "error": false
+ },
+ {
+  "id": "m-00",
+  "now": "2026-11-26 12:48",
+  "tpl": "m",
+  "input": "* 📥 Inbox - unprocessed\n** Meeting Notes\n*** Old meeting\n",
+  "typed": "",
+  "answers": [
+   "Standup",
+   "Ship it"
+  ],
+  "text": "* 📥 Inbox - unprocessed\n** Meeting Notes\n* Standup :meeting:\n:PROPERTIES:\n:CREATED: [2026-11-26 Thu 12:48]\n:END:\n** Attendees\n- \n** Notes\n- \n** Action Items\n*** TODO [#A] Ship it\n*** Old meeting\n",
+  "error": false
+ },
+ {
+  "id": "m-01",
+  "now": "2026-11-26 12:48",
+  "tpl": "m",
+  "input": "* 📥 Inbox - unprocessed\n** Meeting Notes\n",
+  "typed": "",
+  "answers": [
+   "Standup",
+   "Ship it"
+  ],
+  "text": "* 📥 Inbox - unprocessed\n** Meeting Notes\n* Standup :meeting:\n:PROPERTIES:\n:CREATED: [2026-11-26 Thu 12:48]\n:END:\n** Attendees\n- \n** Notes\n- \n** Action Items\n*** TODO [#A] Ship it\n",
+  "error": false
+ },
+ {
+  "id": "t-00",
+  "now": "2026-11-26 12:48",
+  "tpl": "t",
+  "input": "",
+  "typed": "",
+  "answers": [],
+  "text": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n|   |            |      |    |\n|---+------------+------+----|\n| 1 | 2026-11-26 | 1248 | 13 |\n#+TBLFM: $1=@#-1 :: $4=if(round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60) == 24, 0, round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60))\n",
+  "error": false
+ },
+ {
+  "id": "t-01",
+  "now": "2026-11-26 12:48",
+  "tpl": "t",
+  "input": "* Other\nbody\n",
+  "typed": "",
+  "answers": [],
+  "text": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n|   |            |      |    |\n|---+------------+------+----|\n| 1 | 2026-11-26 | 1248 | 13 |\n#+TBLFM: $1=@#-1 :: $4=if(round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60) == 24, 0, round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60))\n* Other\nbody\n",
+  "error": false
+ },
+ {
+  "id": "t-02",
+  "now": "2026-11-26 12:48",
+  "tpl": "t",
+  "input": "* 🛍️ Bag - lists and notes\ntext\n* Other\n",
+  "typed": "",
+  "answers": [],
+  "text": "* 🛍️ Bag - lists and notes\ntext\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n|   |            |      |    |\n|---+------------+------+----|\n| 1 | 2026-11-26 | 1248 | 13 |\n#+TBLFM: $1=@#-1 :: $4=if(round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60) == 24, 0, round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60))\n* Other\n",
+  "error": false
+ },
+ {
+  "id": "t-03",
+  "now": "2026-11-26 12:48",
+  "tpl": "t",
+  "input": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n* Other\n",
+  "typed": "",
+  "answers": [],
+  "text": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n|   |            |      |    |\n|---+------------+------+----|\n| 1 | 2026-11-26 | 1248 | 13 |\n#+TBLFM: $1=@#-1 :: $4=if(round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60) == 24, 0, round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60))\n* Other\n",
+  "error": false
+ },
+ {
+  "id": "t-04",
+  "now": "2026-11-26 12:48",
+  "tpl": "t",
+  "input": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-10\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n|   |\n|---|\n#+TBLFM: $1=@#-1\n| | 2026-10-30 | 0900 | |\n",
+  "typed": "",
+  "answers": [],
+  "text": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n|   |            |      |    |\n|---+------------+------+----|\n| 1 | 2026-11-26 | 1248 | 13 |\n#+TBLFM: $1=@#-1 :: $4=if(round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60) == 24, 0, round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60))\n**** 2026-10\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n|   |\n|---|\n#+TBLFM: $1=@#-1\n| | 2026-10-30 | 0900 | |\n",
+  "error": false
+ },
+ {
+  "id": "t-05",
+  "now": "2026-11-26 12:48",
+  "tpl": "t",
+  "input": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n|   |\n|---|\n#+TBLFM: $1=@#-1\n| | 2026-11-25 | 0900 | |\n* Other\n",
+  "typed": "",
+  "answers": [],
+  "text": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n|   |            |      |   |\n|---+------------+------+---|\n| 1 | 2026-11-26 | 1248 |   |\n#+TBLFM: $1=@#-1\n| | 2026-11-25 | 0900 | |\n* Other\n",
+  "error": false
+ },
+ {
+  "id": "t-06",
+  "now": "2026-11-26 12:48",
+  "tpl": "t",
+  "input": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\nnotes\n* Other\n",
+  "typed": "",
+  "answers": [],
+  "text": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\nnotes\n|   |            |      |   |\n|---+------------+------+---|\n|   | 2026-11-26 | 1248 |   |\n* Other\n",
+  "error": false
+ },
+ {
+  "id": "t-07",
+  "now": "2026-11-26 12:48",
+  "tpl": "t",
+  "input": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n|   |\n|---|\n#+TBLFM: $1=@#-1\n| | 2026-11-25 | 0900 | |\n**** 2026-10\nold\n",
+  "typed": "",
+  "answers": [],
+  "text": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n|   |            |      |   |\n|---+------------+------+---|\n| 1 | 2026-11-26 | 1248 |   |\n#+TBLFM: $1=@#-1\n| | 2026-11-25 | 0900 | |\n**** 2026-10\nold\n",
+  "error": false
+ },
+ {
+  "id": "v-00",
+  "now": "2026-11-26 12:48",
+  "tpl": "v",
+  "input": "* New\n",
+  "typed": "",
+  "answers": [
+   "Ann",
+   "Lee",
+   "friend",
+   "ann@example.org",
+   "555-1",
+   "555-2",
+   "1 Main St",
+   "Durham",
+   "NC",
+   "27701",
+   "USA",
+   "1990-01-02",
+   "a note",
+   "Acme",
+   "Dev"
+  ],
+  "text": "* New\n** Ann Lee                                                           :friend:\nBEGIN:VCARD\nVERSION:3.0\nFN:Ann Lee\nN:Lee;Ann;;;\nEMAIL:ann@example.org\nTEL;TYPE=voice:555-1\nTEL;TYPE=cell:555-2\nADR;TYPE=home:;;1 Main St;Durham;NC;27701;USA\nBDAY:1990-01-02\nNOTE:a note\nORG:Acme\nTITLE:Dev\nEND:VCARD\n\n\n",
+  "error": false
+ },
+ {
+  "id": "v-01",
+  "now": "2026-11-26 12:48",
+  "tpl": "v",
+  "input": "* New\n",
+  "typed": "",
+  "answers": [
+   "Ann",
+   "Lee",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   ""
+  ],
+  "text": "* New\n** Ann Lee\nBEGIN:VCARD\nVERSION:3.0\nFN:Ann Lee\nN:Lee;Ann;;;\nEND:VCARD\n\n\n",
+  "error": false
+ },
+ {
+  "id": "v-02",
+  "now": "2026-11-26 12:48",
+  "tpl": "v",
+  "input": "* New\n** Earlier\n",
+  "typed": "",
+  "answers": [
+   "Bo",
+   "Kay",
+   "",
+   "bo@x.org",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   ""
+  ],
+  "text": "* New\n** Earlier\n** Bo Kay\nBEGIN:VCARD\nVERSION:3.0\nFN:Bo Kay\nN:Kay;Bo;;;\nEMAIL:bo@x.org\nEND:VCARD\n\n\n",
+  "error": false
+ },
+ {
+  "id": "v-03",
+  "now": "2026-11-26 12:48",
+  "tpl": "v",
+  "input": "* New\n",
+  "typed": "",
+  "answers": [
+   "Cy",
+   "Ng",
+   "work",
+   "",
+   "555-9",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   "",
+   ""
+  ],
+  "text": "* New\n** Cy Ng                                                               :work:\nBEGIN:VCARD\nVERSION:3.0\nFN:Cy Ng\nN:Ng;Cy;;;\nTEL;TYPE=voice:555-9\nEND:VCARD\n\n\n",
+  "error": false
+ },
+ {
+  "id": "v-04",
+  "now": "2026-11-26 12:48",
+  "tpl": "v",
+  "input": "* Other\n",
+  "typed": "",
+  "answers": [
+   "Ann",
+   "Lee",
+   "friend",
+   "ann@example.org",
+   "555-1",
+   "555-2",
+   "1 Main St",
+   "Durham",
+   "NC",
+   "27701",
+   "USA",
+   "1990-01-02",
+   "a note",
+   "Acme",
+   "Dev"
+  ],
+  "text": "* Other\n",
+  "error": true
+ },
+ {
+  "id": "a-00",
+  "now": "2026-11-26 12:59",
+  "tpl": "a",
+  "input": "",
+  "typed": "notes",
+  "answers": [
+   "Dentist"
+  ],
+  "text": "* 2026\n** Dentist <2026-11-27 Fri 10:30>\nnotes\n",
+  "error": false
+ },
+ {
+  "id": "a-01",
+  "now": "2026-11-26 12:59",
+  "tpl": "a",
+  "input": "* 2025\nold\n* 2026\n** Existing\n* 2027\n",
+  "typed": "notes",
+  "answers": [
+   "Dentist"
+  ],
+  "text": "* 2025\nold\n* 2026\n** Existing\n** Dentist <2026-11-27 Fri 10:30>\nnotes\n* 2027\n",
+  "error": false
+ },
+ {
+  "id": "a-02",
+  "now": "2026-11-26 12:59",
+  "tpl": "a",
+  "input": "* 2025\nold\n",
+  "typed": "notes",
+  "answers": [
+   "Dentist"
+  ],
+  "text": "* 2025\nold\n* 2026\n** Dentist <2026-11-27 Fri 10:30>\nnotes\n",
+  "error": false
+ },
+ {
+  "id": "a-03",
+  "now": "2026-11-26 12:59",
+  "tpl": "a",
+  "input": "* 2026 Year\nintro\n",
+  "typed": "",
+  "answers": [
+   "Dentist"
+  ],
+  "text": "* 2026 Year\nintro\n** Dentist <2026-11-27 Fri 10:30>\n\n",
+  "error": false
+ },
+ {
+  "id": "d-00",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* A\n",
+  "typed": "x",
+  "answers": [],
+  "text": "* A\n* <2026-11-27 Fri 10:30> <2026-11-27 Fri 10:30> [2026-11-27 Fri 10:30] [2026-11-27 Fri 10:30] x\n",
+  "error": false,
+  "custom": {
+   "type": "entry",
+   "tpl": "* %^T %^t %^U %^u %?\n",
+   "opts": "",
+   "target": "(list (quote file) file)"
+  }
+ },
+ {
+  "id": "e-00",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* A\n",
+  "typed": "x",
+  "answers": [],
+  "text": "* A\n* x\n",
+  "error": false,
+  "custom": {
+   "type": "entry",
+   "tpl": "* %?\n\n",
+   "opts": "",
+   "target": "(list (quote file) file)"
+  }
+ },
+ {
+  "id": "e-01",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* Z\n",
+  "typed": "x",
+  "answers": [],
+  "text": "* Z\n* A\nbody x\n",
+  "error": false,
+  "custom": {
+   "type": "entry",
+   "tpl": "* A\nbody %?",
+   "opts": "",
+   "target": "(list (quote file) file)"
+  }
+ },
+ {
+  "id": "e-02",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* A\n",
+  "typed": "x",
+  "answers": [],
+  "text": "* A\n* x\n",
+  "error": false,
+  "custom": {
+   "type": "entry",
+   "tpl": "* %?\n\n\n",
+   "opts": "",
+   "target": "(list (quote file) file)"
+  }
+ },
+ {
+  "id": "e-03",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* A\n",
+  "typed": "x",
+  "answers": [],
+  "text": "* A\n* TODO x :a:b:\nbody\n",
+  "error": false,
+  "custom": {
+   "type": "entry",
+   "tpl": "* TODO %? :a:b:\nbody\n",
+   "opts": "",
+   "target": "(list (quote file) file)"
+  }
+ },
+ {
+  "id": "e-04",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* A\n",
+  "typed": "A fairly long heading title that is lengthy enough to matter here",
+  "answers": [],
+  "text": "* A\n* A fairly long heading title that is lengthy enough to matter here  :tag:\n",
+  "error": false,
+  "custom": {
+   "type": "entry",
+   "tpl": "* %?  :tag:\n",
+   "opts": "",
+   "target": "(list (quote file) file)"
+  }
+ },
+ {
+  "id": "i-00",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* L\n1. one\n2. two\n* Z\n",
+  "typed": "three",
+  "answers": [],
+  "text": "* L\n1. one\n2. two\n3. three\n* Z\n",
+  "error": false,
+  "custom": {
+   "type": "item",
+   "tpl": "1. %?\n",
+   "opts": "",
+   "target": "(list (quote file+headline) file \"L\")"
+  }
+ },
+ {
+  "id": "i-01",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* L\n+ one\n* Z\n",
+  "typed": "two",
+  "answers": [],
+  "text": "* L\n+ one\n+ two\n* Z\n",
+  "error": false,
+  "custom": {
+   "type": "item",
+   "tpl": "+ %?\n",
+   "opts": "",
+   "target": "(list (quote file+headline) file \"L\")"
+  }
+ },
+ {
+  "id": "i-02",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* L\n- one\n* Z\n",
+  "typed": "two",
+  "answers": [],
+  "text": "* L\n- one\n- two\n* Z\n",
+  "error": false,
+  "custom": {
+   "type": "item",
+   "tpl": "  - %?\n",
+   "opts": "",
+   "target": "(list (quote file+headline) file \"L\")"
+  }
+ },
+ {
+  "id": "i-03",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* L\n- one\n* Z\n",
+  "typed": "two",
+  "answers": [],
+  "text": "* L\n- one\n- * two\n* Z\n",
+  "error": false,
+  "custom": {
+   "type": "item",
+   "tpl": "* %?\n",
+   "opts": "",
+   "target": "(list (quote file+headline) file \"L\")"
+  }
+ },
+ {
+  "id": "i-04",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* L\n1. one\n2. two\n* Z\n",
+  "typed": "three",
+  "answers": [],
+  "text": "* L\n1. one\n2. two\n3. three\n* Z\n",
+  "error": false,
+  "custom": {
+   "type": "item",
+   "tpl": "%?\n",
+   "opts": "",
+   "target": "(list (quote file+headline) file \"L\")"
+  }
+ },
+ {
+  "id": "i-05",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* L\n- one\n* Z\n",
+  "typed": "x",
+  "answers": [],
+  "text": "* L\n- one\n- first x\n  second\n* Z\n",
+  "error": false,
+  "custom": {
+   "type": "item",
+   "tpl": "first %?\nsecond\n",
+   "opts": "",
+   "target": "(list (quote file+headline) file \"L\")"
+  }
+ },
+ {
+  "id": "k-00",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* L\n- [ ] one\n* Z\n",
+  "typed": "two",
+  "answers": [],
+  "text": "* L\n- [ ] one\n- two\n* Z\n",
+  "error": false,
+  "custom": {
+   "type": "checkitem",
+   "tpl": "%?\n",
+   "opts": "",
+   "target": "(list (quote file+headline) file \"L\")"
+  }
+ },
+ {
+  "id": "k-01",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* L\n- [ ] one\n* Z\n",
+  "typed": "two",
+  "answers": [],
+  "text": "* L\n- [ ] one\n- [ ] two\n* Z\n",
+  "error": false,
+  "custom": {
+   "type": "checkitem",
+   "tpl": "[ ] %?\n",
+   "opts": "",
+   "target": "(list (quote file+headline) file \"L\")"
+  }
+ },
+ {
+  "id": "p-00",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* A\n",
+  "typed": "x",
+  "answers": [],
+  "text": "* A\nnote x\n",
+  "error": false,
+  "custom": {
+   "type": "plain",
+   "tpl": "note %?",
+   "opts": "",
+   "target": "(list (quote file) file)"
+  }
+ },
+ {
+  "id": "p-01",
+  "now": "2026-11-26 12:59",
+  "tpl": "x",
+  "input": "* A\n",
+  "typed": "x",
+  "answers": [],
+  "text": "* A\nnote x\n",
+  "error": false,
+  "custom": {
+   "type": "plain",
+   "tpl": "note %?\n\n",
+   "opts": "",
+   "target": "(list (quote file) file)"
+  }
+ },
+ {
+  "id": "t-08",
+  "now": "2026-11-26 12:59",
+  "tpl": "t",
+  "input": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n|   |\n|---|\n| | 2026-11-24 | 0830 | |\n| | 2026-11-25 | 2355 | |\n#+TBLFM: $1=@#-1 :: $4=if(round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60) == 24, 0, round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60))\n* Other\n",
+  "typed": "",
+  "answers": [],
+  "text": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n|   |            |      |    |\n|---+------------+------+----|\n| 1 | 2026-11-24 | 0830 |  9 |\n| 2 | 2026-11-25 | 2355 |  0 |\n| 3 | 2026-11-26 | 1259 | 13 |\n#+TBLFM: $1=@#-1 :: $4=if(round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60) == 24, 0, round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60))\n* Other\n",
+  "error": false
+ },
+ {
+  "id": "t-09",
+  "now": "2026-11-26 12:59",
+  "tpl": "t",
+  "input": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n| 1 | 2026-11-24 | 0830 | 99 |\n| 2 | 2026-11-25 | 0900 | 99 |\n#+TBLFM: $1=@#-1 :: $4=if(round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60) == 24, 0, round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60))\n* Other\n",
+  "typed": "",
+  "answers": [],
+  "text": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n| 0 | 2026-11-24 | 0830 |  9 |\n| 1 | 2026-11-25 | 0900 |  9 |\n| 2 | 2026-11-26 | 1259 | 13 |\n#+TBLFM: $1=@#-1 :: $4=if(round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60) == 24, 0, round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60))\n* Other\n",
+  "error": false
+ },
+ {
+  "id": "t-10",
+  "now": "2026-11-26 12:59",
+  "tpl": "t",
+  "input": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n| a | b | c | d |\n|---+---+---+---|\n| | 2026-11-24 | 0830 | |\n#+TBLFM: $1=@#-1 :: $4=if(round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60) == 24, 0, round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60))\n\ntext after\n",
+  "typed": "",
+  "answers": [],
+  "text": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n#+PLOT: title:\"Tracking\" ind:4 deps:1 with:points ticks:6\n| a |          b |    c |  d |\n|---+------------+------+----|\n| 1 | 2026-11-24 | 0830 |  9 |\n| 2 | 2026-11-26 | 1259 | 13 |\n#+TBLFM: $1=@#-1 :: $4=if(round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60) == 24, 0, round(trunc($3/100) + 100*($3/100 - trunc($3/100)) / 60))\n\ntext after\n",
+  "error": false
+ },
+ {
+  "id": "t-11",
+  "now": "2026-11-26 12:59",
+  "tpl": "t",
+  "input": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n| a | b |\n#+TBLFM: $1=$$bad(\n",
+  "typed": "",
+  "answers": [],
+  "text": "* 🛍️ Bag - lists and notes\n** ❤️ Health\n*** 🏩 Tracking\n**** 2026-11\n| #ERROR |          b |      |   |\n| #ERROR | 2026-11-26 | 1259 |   |\n#+TBLFM: $1=$$bad(\n",
+  "error": false
+ }
+]

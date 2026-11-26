@@ -540,6 +540,79 @@ function utemp(v, target, prec) {
   const out = ({ K: (x) => x, degC: (x) => sub(x, frac(27315n, 100n), prec), degF: (x) => sub(mul(x, frac(9n, 5n), prec), frac(45967n, 100n), prec) })[t](k);
   return fromTree(sMul(N(toFloat(out, prec)), { t: 's', name: t }, prec));
 }
+/**
+ * The text of a formula as Calc echoes it before the => of an evalto: parsed, not simplified, and printed the Calc way
+ * (spaces around + and -, a space for a product, a tight a/b between whole numbers).
+ */
+export function inputText(src, { prec = DEFAULTS.prec } = {}) {
+  const toks = tokens(src);
+  let i = 0;
+  const peek = () => toks[i];
+  const eat = (v) => { if (toks[i]?.t === 'op' && toks[i].v === v) { i++; return true; } return false; };
+  const need = (v) => { if (!eat(v)) throw new Error('syntax'); };
+  const list = (close) => { const a = []; if (!eat(close)) { do a.push(or()); while (eat(',')); need(close); } return a; };
+  const primary = () => {
+    const t = toks[i++];
+    if (!t) throw new Error('syntax');
+    if (t.t === 'num') { const v = parseNumber(t.v, prec); if (!v) throw new Error('syntax'); return N(v); }
+    if (t.t === 'date') return { t: 's', name: t.v };
+    if (t.t === 'str') return { t: 's', name: JSON.stringify(t.v) };
+    if (t.t === 'op') {
+      if (t.v === '(') { const e = or(); need(')'); return { t: 'paren', a: e }; }
+      if (t.v === '[') return { t: 'vec', items: list(']') };
+      throw new Error('syntax');
+    }
+    if (eat('(')) return { t: 'fn', name: t.v, args: list(')') };
+    return { t: 's', name: t.v };
+  };
+  const unary = () => { if (eat('-')) return { t: 'neg', a: unary() }; if (eat('+')) return unary(); if (eat('!')) return { t: 'bin', op: '!', a: unary() }; const a = primary(); return eat('^') ? { t: 'pow', a, b: unary() } : a; };
+  const implicit = (t) => t && ((t.t === 'id' && t.v !== 'mod') || (t.t === 'op' && t.v === '(') || t.t === 'num');
+  const mulDiv = () => {
+    let a = unary();
+    for (;;) {
+      const t = peek();
+      if (t?.t === 'op' && t.v === '/') { i++; let r = unary(); while (implicit(peek())) r = { t: 'mul', a: r, b: unary() }; a = { t: 'div', a, b: r }; }
+      else if (t?.t === 'op' && ['*'].includes(t.v)) { i++; a = { t: 'mul', a, b: unary() }; }
+      else if (t?.t === 'op' && t.v === '%') { i++; a = { t: 'bin', op: '%', a, b: unary() }; }
+      else if (t?.t === 'id' && t.v === 'mod') { i++; a = { t: 'bin', op: 'mod', a, b: unary() }; }
+      else if (implicit(t)) a = { t: 'mul', a, b: unary() };
+      else return a;
+    }
+  };
+  const level = (ops, next, node) => () => {
+    let a = next();
+    while (peek()?.t === 'op' && ops.includes(peek().v)) { const op = toks[i++].v; a = node(op, a, next()); }
+    return a;
+  };
+  const sum = level(['+', '-'], mulDiv, (op, a, b) => ({ t: op === '+' ? 'add' : 'sub', a, b }));
+  const compare = level(['<', '>', '<=', '>=', '==', '!='], sum, (op, a, b) => ({ t: 'bin', op, a, b }));
+  const and = level(['&&'], compare, (op, a, b) => ({ t: 'bin', op, a, b }));
+  const or = level(['||'], and, (op, a, b) => ({ t: 'bin', op, a, b }));
+  const tree = or();
+  if (i < toks.length) throw new Error('syntax');
+  const show = (t, wrap = false) => {
+    const w = (x) => `(${x})`;
+    switch (t.t) {
+      case 'paren': { const x = show(t.a); return ['add', 'sub', 'bin', 'neg'].includes(t.a.t) || t.a.t === 'mul' || t.a.t === 'div' ? w(x) : x; }
+      case 'vec': return `[${t.items.map((x) => show(x)).join(', ')}]`;
+      case 'bin': return t.b ? `${show(t.a)} ${t.op} ${show(t.b)}` : `!${show(t.a)}`;
+      case 'div': return /^n$/.test(t.a.t) && /^n$/.test(t.b.t) ? `${show(t.a)}/${show(t.b)}` : `${show(t.a)} / ${show(t.b)}`;
+      case 'add': case 'sub': case 'mul': case 'pow': case 'neg': return printTree(strip(t), DEFAULTS).replace(/\u0000/g, '');
+      case 'fn': return `${t.name}(${t.args.map((x) => show(x)).join(', ')})`;
+      default: return printTree(t, DEFAULTS);
+    }
+  };
+  // printTree knows add/sub/mul/pow/neg; hand it a tree whose other nodes are already text
+  const strip = (t) => {
+    if (t.t === 'paren') return { t: 's', name: show(t) };
+    if (t.t === 'div' && t.a.t === 'n' && t.b.t === 'n') return { t: 's', name: show(t) };
+    if (['add', 'sub', 'mul', 'div', 'pow'].includes(t.t)) return { ...t, a: strip(t.a), b: strip(t.b) };
+    if (t.t === 'neg') return { ...t, a: strip(t.a) };
+    if (['vec', 'bin', 'fn'].includes(t.t)) return { t: 's', name: show(t) };
+    return t;
+  };
+  return show(tree);
+}
 const SYM = { '+': sAdd, '-': sSub, '*': sMul, '/': sDiv, '^': sPow };
 
 /**

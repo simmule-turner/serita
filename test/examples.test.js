@@ -48,7 +48,7 @@ test('the settings example names every setting the app keeps', () => {
 test('the settings example forms are ones the app accepts', () => {
   const t = read('config.org');
   assert.deepEqual(parseStringList(/setq org-agenda-files '(\([^)]*\))/.exec(block(t, 'Agenda files'))[1]), ['capture.org', 'weekly-review.org', 'project.org']);
-  assert.equal(parseTemplates(block(t, 'Capture templates')).length, 4);
+  assert.equal(parseTemplates(block(t, 'Capture templates')).length, 5);
   assert.equal(parseRefileSettings(block(t, 'Refile targets')).outline, true);
 });
 

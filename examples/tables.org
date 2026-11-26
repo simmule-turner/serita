@@ -150,3 +150,8 @@ C-c " g on a table under ~#+PLOT: type:grid~ draws its numbers as colored cells;
 | 1 | 2 | 3 |
 | 2 | 4 | 6 |
 | 3 | 6 | 9 |
+
+Showing the working: ~=>~ puts the formula and its value in the field.
+
+| 3 |       |
+#+TBLFM: $2=$1*2 => x

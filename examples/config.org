@@ -25,7 +25,20 @@
   '(("t" "Task" entry (file+headline "capture.org" "Tasks") "* TODO %?\n  %u")
     ("n" "Note" entry (file+headline "capture.org" "Inbox") "* %?\n")
     ("j" "Journal" entry (file+olp "capture.org" "Journal") "* %U %?")
-    ("l" "Log" table-line (file+headline "capture.org" "Log") "| %U | %? |")))
+    ("l" "Log" table-line (file+headline "capture.org" "Log") "| %U | %? |")
+    ("d" "Dated log" entry (file+function "capture.org" log-today) "* %^T %?\n")))
+
+;; A function target finds or makes the heading and leaves point on it.
+(defun log-today ()
+  "Find or make today's heading."
+  (let ((day (format-time-string "%Y-%m-%d")))
+    (goto-char (point-min))
+    (unless (re-search-forward (format "^\\* %s$" day) nil t)
+      (goto-char (point-max))
+      (unless (bolp) (insert "\n"))
+      (insert "* " day "\n")
+      (forward-line -1))
+    (beginning-of-line)))
 #+end_src
 ** Refile targets
 #+begin_src emacs-lisp

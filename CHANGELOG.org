@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.2
+Capture runs your own templates.el: a ~file+function~ target or ~:prepare-finalize~ names a ~defun~ that finds or makes the heading or tidies the text, run by a small built-in Emacs Lisp. ~%^T~ and the other date prompts ask for a date. Items get a bullet and numbered lists renumber, a table-line capture reruns the table's formulas, moved entries align their tags, and formulas take Calc's ~=>~ to show the working (~1+2 => 3~).
+
 * 0.11.1
 Unit conversion in formulas: uconv(2.5 km, ft) converts (8202.0997 ft), as Org's own uconv recipe does but with no setup in your config, and utemp(100 degC, degF) gives the absolute temperature (212 degF), since uconv, like Calc's u c, treats temperatures as differences. About 90 units are known with Calc's names and sizes (distance, weight, volume, speed, pressure, energy, power, time), and a name Calc does not know stays plain text, as in Emacs.
 

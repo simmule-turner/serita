@@ -198,5 +198,8 @@ A separate repository holds questions (case files written by us) and results rec
 ### `core/plot.js`, `test/plot.test.js`, `test/fixtures/emacs-plot.json`, `test/fixtures/emacs-plotscript.json`
 - Written from: the Org manual's section on org-plot (the `#+PLOT:` options and plot types) and observed Emacs 30.1 results with Org 9.7.11 for option merging, defaults and the gnuplot script it produces (conformance v0.1.45 to v0.1.48, gnuplot stubbed), recorded as fixtures and read as behavior only. The charts are drawn by Serita's own SVG code. No other project's code was consulted.
 
+### `core/elisp.js`, `test/capture-templates.test.js`, `test/fixtures/emacs-capture-templates.json`, `test/fixtures/user-templates.el`
+- Written from: the Emacs Lisp manual's descriptions of the functions it implements (let, setq, dolist, format, re-search-forward and re-search-backward, insert, replace-match, flush-lines) and observed Emacs 30.1 results with Org 9.7.11 for capture into a function target, :prepare-finalize, item bullets and numbering, tag alignment and table formulas after capture (conformance v0.1.55 and v0.1.56), recorded as fixtures and read as behavior only. user-templates.el is the author's own configuration. No other project's code was consulted.
+
 ### `test/conditional.test.js`
 - Written from: the HTTP standard's description of conditional requests (If-None-Match and 304). No other project's code was consulted.

@@ -1112,7 +1112,7 @@ function askCapture(title, target, initial, caret) {
 }
 
 /** Files the captured text into its target file, opening the file when it is not open. */
-async function fileCapture(tpl, captured) {
+async function fileCapture(tpl, captured, unchanged = false) {
   const name = tpl.target.file;
   let buffer = session.state().buffers.find((b) => b.name === name);
   if (!buffer) {
@@ -1120,7 +1120,7 @@ async function fileCapture(tpl, captured) {
     const id = opened.ok ? opened.id : session.createFile(name, '');
     buffer = session.state().buffers.find((b) => b.id === id);
   }
-  const r = place(buffer.text, tpl, captured);
+  const r = place(buffer.text, tpl, captured, { tagsColumn: tagsColumn(), unchanged });
   session.apply(buffer.id, { text: r.text });
   message(`Captured to ${name}`);
 }
@@ -1133,8 +1133,8 @@ async function capture() {
     if (!tpl) return;
     const answers = [];
     for (const q of promptsOf(tpl.template)) {
-      const a = q.choices.length ? await choose(q.prompt, q.choices.map((c) => ({ label: c, value: c }))) : await askText({ prompt: `${q.prompt}:`, title: q.prompt, value: q.default, ok: 'OK' });
-      if (a === undefined) return;
+      const a = q.date ? await askStamp(q.prompt, q.date.active) : q.choices.length ? await choose(q.prompt, q.choices.map((c) => ({ label: c, value: c }))) : await askText({ prompt: `${q.prompt}:`, title: q.prompt, value: q.default, ok: 'OK' });
+      if (a === undefined || a === null) return;
       answers.push(a);
     }
     const b = currentBuffer();
@@ -1146,7 +1146,7 @@ async function capture() {
     const where = tpl.target.path ? `${tpl.target.file} › ${tpl.target.path.join(' › ')}` : tpl.target.file;
     const captured = tpl.opts.immediate ? e.text : await askCapture(`Capture: ${tpl.description}`, where, e.text, e.caret);
     if (captured === undefined) return;
-    await fileCapture(tpl, captured);
+    await fileCapture(tpl, tpl.opts.prepare ? tpl.lisp.call(tpl.opts.prepare, captured).text : captured, captured === e.text);
   } catch (e) { failure(e); }
 }
 

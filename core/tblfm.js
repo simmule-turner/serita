@@ -4,7 +4,7 @@
 
 import { editTable, tableAt, tableView } from './table.js';
 import { evalLisp } from './tblisp.js';
-import { DEFAULTS, evaluate, fixed, fromNumber, parseNumber, text as calcText, toNumber } from './calc.js';
+import { DEFAULTS, evaluate, fixed, inputText, fromNumber, parseNumber, text as calcText, toNumber } from './calc.js';
 
 const TBLFM = /^[ \t]*#\+TBLFM:(.*)$/i;
 class Failure extends Error { constructor(kind, message, partial = false) { super(message); this.kind = kind; this.partial = partial; } }
@@ -315,19 +315,28 @@ function runField(m, rhs, flags, row, col, opts) {
   if (opts.note) opts.note.subst = src;
   if (src.includes('#ERROR')) return '#ERROR';
   let v;
-  try { v = evaluate(src, { prec: flags.prec ?? opts.prec ?? DEFAULTS.prec, angle: flags.R ? 'rad' : 'deg', frac: !!flags.F, symbolic: !!flags.S }); } catch (e) { if (e.message === 'syntax') return '#ERROR'; throw e; }
+  const arrow = src.search(/=>/);
+  try { v = arrow >= 0 ? evalto(src.slice(0, arrow), flags, opts) : evaluate(src, { prec: flags.prec ?? opts.prec ?? DEFAULTS.prec, angle: flags.R ? 'rad' : 'deg', frac: !!flags.F, symbolic: !!flags.S }); } catch (e) { if (e.message === 'syntax') return '#ERROR'; throw e; }
   if (v.k === 'd' && (flags.T || flags.t || flags.U)) throw new Failure('error', 'wrong-type-argument');
   if ((v.k === 's' || v.k === 'x') && flags.N) return '#ERROR';
   if ((v.k === 's' || v.k === 'x') && (flags.T || flags.t || flags.U)) throw new Failure('error', 'wrong-type-argument');
   const shown = { ...DEFAULTS, radix: opts.radix, ...(flags.mode ? { mode: flags.mode, digits: flags.digits } : { ...(opts.mode ? { mode: opts.mode } : {}), digits: opts.digits ?? DEFAULTS.digits }) };
   if (v.k !== 'q' && v.k !== 'f') {
-    const lead = v.k === 'x' && flags.format?.includes('%') ? /^[-+]?\d+(\.\d*)?/.exec(calcText(v)) : null; // Org formats the number the text starts with
+    const lead = (v.k === 'x' || arrow >= 0) && flags.format?.includes('%') ? /^[-+]?\d+(\.\d*)?/.exec(calcText(v)) : null; // Org formats the number the text starts with
     return lead ? printf(flags.format, parseNumber(lead[0], DEFAULTS.prec)) : calcText(v, v.k === 'x' ? shown : undefined);
   }
   if (opts.note) opts.note.raw = calcText(v);
   if (flags.T || flags.t || flags.U) return flags.format && !flags.format.includes('%') ? flags.format : duration(v, flags);
   if (flags.format) return printf(flags.format, v);
   return calcText(v, { ...DEFAULTS, radix: opts.radix, ...(flags.mode ? { mode: flags.mode, digits: flags.digits } : { ...(opts.mode ? { mode: opts.mode } : {}), digits: opts.digits ?? DEFAULTS.digits }) });
+}
+
+/** Calc's `a => b`: the formula as written, then its value; whatever follows the arrow is ignored. */
+function evalto(lhs, flags, opts) {
+  const prec = flags.prec ?? opts.prec ?? DEFAULTS.prec;
+  const v = evaluate(lhs, { prec, angle: flags.R ? 'rad' : 'deg', frac: !!flags.F, symbolic: !!flags.S });
+  const shown = { ...DEFAULTS, radix: opts.radix, ...(flags.mode ? { mode: flags.mode, digits: flags.digits } : { ...(opts.mode ? { mode: opts.mode } : {}), digits: opts.digits ?? DEFAULTS.digits }) };
+  return { k: 's', text: `${inputText(lhs, { prec })} => ${calcText(v, shown)}` };
 }
 
 function parseFormula(f) {

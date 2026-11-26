@@ -6,6 +6,9 @@ import { analyze } from './outline.js';
 import { alignLines } from './table.js';
 import { readForms, isSym } from './lisp-read.js';
 import { formatStamp } from './timestamp.js';
+import { makeLisp } from './elisp.js';
+import { setTags, DEFAULT_TAGS_COLUMN } from './outline-edit.js';
+import { recalc } from './tblfm.js';
 
 const two = (n) => String(n).padStart(2, '0');
 const join = (lines) => lines.map((l) => l.text + l.eol).join('');
@@ -17,15 +20,18 @@ const name = (x) => (isSym(x) ? x.sym : null);
  */
 export function parseTemplates(text) {
   let list = [];
-  for (const form of readForms(text)) {
+  const forms = readForms(text);
+  const lisp = makeLisp(forms);
+  for (const form of forms) {
     const head = name(form[0]);
+    if (head === 'defun') continue;
     if (head === 'setq') for (let i = 1; i < form.length; i += 2) { if (name(form[i]) === 'org-capture-templates') list = quoted(form[i + 1]); }
     else if (head === 'add-to-list' && name(unquote(form[1])) === 'org-capture-templates') list = [...list, quoted(form[2])];
     else if (Array.isArray(form) && typeof form[0] === 'string') list = [...list, form];
     else if (form && form.quote) list = [...list, ...form.quote];
     else throw new Error('Expected setq or add-to-list for org-capture-templates');
   }
-  return list.map(template);
+  return list.map((t) => ({ ...template(t), lisp }));
 }
 const unquote = (x) => (x && x.quote !== undefined ? x.quote : x);
 const quoted = (x) => { const v = unquote(x); if (!Array.isArray(v)) throw new Error('Expected a list of templates'); return v; };
@@ -37,7 +43,8 @@ function template(t) {
   const kind = name(type);
   if (!['entry', 'item', 'checkitem', 'table-line', 'plain'].includes(kind)) throw new Error(`Template ${key}: unknown type ${kind ?? type}`);
   const tk = name(target?.[0]);
-  const spec = { file: { kind: 'file', file: target?.[1] }, 'file+headline': { kind: 'headline', file: target?.[1], path: [target?.[2]] }, 'file+olp': { kind: 'olp', file: target?.[1], path: target?.slice(2) } }[tk];
+  const spec = { file: { kind: 'file', file: target?.[1] }, 'file+headline': { kind: 'headline', file: target?.[1], path: [target?.[2]] }, 'file+olp': { kind: 'olp', file: target?.[1], path: target?.slice(2) }, 'file+function': { kind: 'function', file: target?.[1], fn: name(unquote(target?.[2])) } }[tk];
+  if (tk === 'file+function' && !spec.fn) throw new Error(`Template ${key}: file+function needs the name of a function`);
   if (!spec || typeof spec.file !== 'string') throw new Error(`Template ${key}: the target ${tk ?? 'given'} is not supported yet`);
   if (typeof text !== 'string') throw new Error(`Template ${key}: the template text is missing`);
   const opts = {};
@@ -48,6 +55,7 @@ function template(t) {
     else if (k === ':empty-lines-before') opts.before = rest[i + 1];
     else if (k === ':empty-lines-after') opts.after = rest[i + 1];
     else if (k === ':immediate-finish') opts.immediate = rest[i + 1] === true;
+    else if (k === ':prepare-finalize') { opts.prepare = name(unquote(rest[i + 1])); if (!opts.prepare) throw new Error(`Template ${key}: :prepare-finalize needs the name of a function`); }
     else throw new Error(`Template ${key}: the option ${k} is not supported yet`);
   }
   return { key, description, type: kind, target: spec, template: text, opts };
@@ -57,7 +65,10 @@ function template(t) {
 
 /** The questions a template asks, in order: { prompt, default, choices }. */
 export function promptsOf(tpl) {
-  return [...tpl.matchAll(/%\^\{([^}]*)\}/g)].map((m) => { const [prompt, def, ...more] = m[1].split('|'); return { prompt, default: more.length ? '' : def ?? '', choices: more.length ? [def, ...more] : [] }; });
+  return [...tpl.matchAll(/%\^\{([^}]*)\}|%\^([TtUu])/g)].map((m) => {
+    if (m[2]) return { prompt: 'Date', default: '', choices: [], date: { active: m[2] === 'T' || m[2] === 't', time: m[2] === 'T' || m[2] === 'U' } };
+    const [prompt, def, ...more] = m[1].split('|'); return { prompt, default: more.length ? '' : def ?? '', choices: more.length ? [def, ...more] : [] };
+  });
 }
 
 const DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -76,14 +87,15 @@ function strftime(fmt, d) {
  */
 export function expand(tpl, { answers, now, link = '', selection = '' }) {
   const asked = promptsOf(tpl);
+  const named = asked.flatMap((p, k) => (p.date ? [] : [k])); // %\\1 counts the %^{} questions only
   let n = 0;
   let caret = -1;
   let out = '';
   for (let i = 0; i < tpl.length; i++) {
     const rest = tpl.slice(i);
     let m;
-    if ((m = /^%\^\{([^}]*)\}/.exec(rest))) { const a = answers[n] ?? ''; out += a === '' ? asked[n].default : a; n++; i += m[0].length - 1; }
-    else if ((m = /^%\\(\d)/.exec(rest))) { const k = +m[1] - 1; const a = answers[k] ?? ''; out += a === '' ? asked[k]?.default ?? '' : a; i += m[0].length - 1; }
+    if ((m = /^%\^(?:\{([^}]*)\}|([TtUu]))/.exec(rest))) { const a = answers[n] ?? ''; out += a === '' ? asked[n].default : a; n++; i += m[0].length - 1; }
+    else if ((m = /^%\\(\d)/.exec(rest))) { const k = named[+m[1] - 1]; const a = answers[k] ?? ''; out += a === '' ? asked[k]?.default ?? '' : a; i += m[0].length - 1; }
     else if ((m = /^%<([^>]*)>/.exec(rest))) { out += strftime(m[1], now); i += m[0].length - 1; }
     else if (/^%[UTtua?i]/.test(rest)) {
       const c = rest[1];
@@ -97,6 +109,7 @@ export function expand(tpl, { answers, now, link = '', selection = '' }) {
       i++;
     } else out += tpl[i];
   }
+  if (caret >= 0 && caret === out.length) out += '\n'; // a caret at the very end sits on a line of its own
   return { text: out, caret: caret < 0 ? out.length : caret };
 }
 
@@ -117,7 +130,13 @@ function insertAt(lines, at, add) {
  * @param {string} captured the text of the capture buffer
  * @returns {{ text: string, line: number }} the new document and the line where the new text starts
  */
-export function place(text, tpl, captured) {
+export function place(text, tpl, captured, { tagsColumn = DEFAULT_TAGS_COLUMN, unchanged = false } = {}) {
+  let fnLine = -1;
+  if (tpl.target.kind === 'function') {
+    const r = tpl.lisp.call(tpl.target.fn, text);
+    text = r.text;
+    fnLine = text.slice(0, r.point - 1).split('\n').length - 1;
+  }
   const lines = splitLines(text);
   const a = analyze(text);
   const prepend = tpl.opts.prepend === true;
@@ -128,9 +147,14 @@ export function place(text, tpl, captured) {
   let level = 1;
   let head = null;
   let pendingHeading = null;
+  let realign = false;
+  let renumber = false;
   if (t.kind !== 'file') {
     const find = (title, among) => among.find((h) => h.title === title);
-    if (t.kind === 'headline') { head = find(t.path[0], a.heads); if (!head) pendingHeading = t.path[0]; }
+    if (t.kind === 'function') {
+      const inside = a.heads.filter((h) => h.line <= fnLine && fnLine < h.end).sort((x, y) => y.level - x.level)[0];
+      head = inside ?? null;
+    } else if (t.kind === 'headline') { head = find(t.path[0], a.heads); if (!head) pendingHeading = t.path[0]; }
     else {
       let among = a.heads.filter((h) => h.level === 1);
       t.path.forEach((p, i) => { head = find(p, among); if (!head) throw new Error(`Heading not found on level ${i + 1}: ${p}`); among = head.children; });
@@ -149,8 +173,9 @@ export function place(text, tpl, captured) {
     const first = /^(\*+)/.exec(body);
     if (!first) throw new Error('An entry template must start with a heading');
     const shift = level - first[1].length;
+    realign = shift !== 0;
     const shifted = body.split('\n').map((l) => (/^\*+ /.test(l) || /^\*+$/.test(l) ? '*'.repeat(Math.max(1, /^\*+/.exec(l)[0].length + shift)) + l.replace(/^\*+/, '') : l)).join('\n');
-    add = [...blank(tpl.opts.before), ...asLines(shifted), ...blank(tpl.opts.after)];
+    add = [...blank(tpl.opts.before), ...asLines(shifted), ...blank(unchanged ? Math.max(0, /\n*$/.exec(captured)[0].length - 1) : 0), ...blank(tpl.opts.after)];
     at = prepend ? (head ? ownEnd : (a.heads[0]?.line ?? lines.length)) : end;
     if (prepend && !head && t.kind === 'file') at = a.heads[0]?.line ?? lines.length;
   } else if (tpl.type === 'plain') {
@@ -178,10 +203,39 @@ export function place(text, tpl, captured) {
     }
   } else {
     const items = a.items.filter((it) => !it.parent && it.line >= start && it.line < ownEnd);
-    add = [...blank(tpl.opts.before), ...asLines(body), ...blank(tpl.opts.after)];
+    const ref = items.length ? (prepend ? items[0] : items[items.length - 1]) : null;
+    const refBullet = ref ? /^([ \t]*)([-+*]|\d+[.)])[ \t]/.exec(lines[ref.line].text) : null;
+    const own = /^(?:[ \t]*(?:[-+]|\d+[.)])|[ \t]+\*)[ \t]/.exec(body); // a star is a bullet only when indented
+    const ind = ' '.repeat(refBullet ? refBullet[1].length : 0);
+    const bullet = own ? own[0].trim() : refBullet && /\d/.test(refBullet[2]) ? `1${refBullet[2].slice(-1)}` : '-';
+    const [first, ...more] = (own ? body.slice(own[0].length) : body).split('\n');
+    const pad = ' '.repeat(bullet.length + 1);
+    const itemText = [`${ind}${bullet} ${first}`, ...more.map((l) => (l.trim() === '' ? l : `${ind}${pad}${l.replace(/^[ \t]+/, '')}`))].join('\n');
+    add = [...blank(tpl.opts.before), ...asLines(itemText), ...blank(tpl.opts.after)];
+    renumber = true;
     if (items.length) at = prepend ? items[0].line : items[items.length - 1].end;
     else { at = ownEnd; while (at > start && lines[at - 1].text.trim() === '') at--; }
   }
   insertAt(lines, at, add);
-  return { text: join(lines), line: at };
+  let out = join(lines);
+  if (renumber) { // the numbers of an ordered list run on from the first
+    const l = out.split('\n');
+    const top = analyze(out).items.filter((it) => !it.parent && it.line >= start && it.line < at + add.length + (ownEnd - start));
+    const num = top.map((it) => /^([ \t]*)(\d+)([.)])/.exec(l[it.line]));
+    const base = num[0] ? Number(num[0][2]) : 1;
+    top.forEach((it, k) => { if (num[k]) l[it.line] = l[it.line].replace(/^([ \t]*)\d+/, `$1${base + k}`); });
+    out = l.join('\n');
+  }
+  if (realign) { // an entry that was moved to another level has its tags set at the tag column
+    const from = at + (tpl.opts.before ?? 0);
+    const to = from + asLines(captured.replace(/\n+$/, '')).length;
+    for (const h of analyze(out).heads.filter((x) => x.line >= from && x.line < to && x.tags.length)) out = setTags(out, h.line, h.tags, tagsColumn).text;
+  }
+  if (tpl.type === 'table-line') { // the table's formulas run over the new row
+    const l = out.split('\n');
+    let k = at;
+    while (k < l.length && /^\s*\|/.test(l[k])) k++;
+    if (/^[ \t]*#\+TBLFM:/i.test(l[k] ?? '')) out = recalc(out, k).text;
+  }
+  return { text: out, line: at };
 }
