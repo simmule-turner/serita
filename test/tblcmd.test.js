@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { recalculate, recalculateBuffer, setFormula, formulasOf, evalFieldFormula, editorText, installFormulas } from '../core/tblcmd.js';
+import { recalculate, recalculateBuffer, setFormula, formulasOf, evalFieldFormula, editorText, installFormulas, historyText } from '../core/tblcmd.js';
 
 const cases = JSON.parse(readFileSync(new URL('./fixtures/emacs-tblcmd.json', import.meta.url), 'utf8'));
 const MODE = { 'C-c *': 'row', 'C-u C-c *': 'all', 'C-u C-u C-c *': 'iterate' };
@@ -44,4 +44,23 @@ test('C-c \' text lists the formulas by kind and installing it writes one #+TBLF
   assert.equal(installFormulas(t, 2, '$4 = 1 :: $5=2').text.split('\n')[3], '#+TBLFM: $4=1 :: $5=2');
   assert.equal(installFormulas(t, 2, '').text.split('\n')[3], '#+TBLFM: ');
   assert.ok(installFormulas(t, 2, '$3 = 1\n$3 = 9').error);
+});
+
+const DEBUG = { 'c4-00': 'row', 'c4-02': 'all', 'c4-04': 'row', 'c4-05': 'row', 'c4-06': 'row' };
+for (const c of cases.filter((x) => DEBUG[x.id])) {
+  test(`Emacs ${c.id}: ${c.question}`, () => {
+    const r = recalculate(c.input, c.line, DEBUG[c.id], { trace: [] });
+    const want = c.texts.find((t) => t.startsWith('DEBUGBUF:')).slice(9);
+    assert.equal(historyText(r.trace.at(-1)), want);
+    assert.equal(r.text, c.text);
+  });
+}
+
+test('stopping the formula debugger keeps the fields before the one it stopped at', () => {
+  const t = '| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n| 3 | 4 |   |\n#+TBLFM: $3=$1+$2\n';
+  const r = recalculate(t, 2, 'all', { trace: [], limit: 1 });
+  assert.equal(r.error, 'Abort');
+  assert.equal(r.text.split('\n')[2], '| 1 | 2 | 3 |');
+  assert.equal(r.text.split('\n')[3], '| 3 | 4 |   |');
+  assert.equal(recalculate(t, 2, 'all', { trace: [], limit: 0 }).text, t);
 });

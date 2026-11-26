@@ -56,12 +56,13 @@ export function renderOutline(root, { text, folds, hideStars, indent = false, ta
 function drawTable(v, on, tables, pad) {
   const clip = (c, j) => (!tables?.wrap && v.limit[j] !== null && [...c].length > v.limit[j] ? `${[...c].slice(0, Math.max(0, v.limit[j] - 1)).join('')}…` : c);
   const trs = v.rows.map((r, i) => {
-    if (r.rule) return h('tr', { class: 'rule' }, h('td', { colspan: String(Math.max(1, v.n) + (tables?.numbers ? 1 : 0)) }));
+    if (r.rule && tables?.numbers) return h('tr', { class: 'rule nums' }, h('td', { class: 'num' }, `I*${v.rows.slice(0, i + 1).filter((x) => x.rule).length}`), ...Array.from({ length: v.n }, (_, j) => h('td', { class: 'num' }, `$${j + 1}`)));
+    if (r.rule) return h('tr', { class: 'rule' }, h('td', { colspan: String(Math.max(1, v.n)) }));
     const no = v.rows.slice(0, i + 1).filter((x) => !x.rule).length;
     return h('tr', { class: r.cookies ? 'cookies' : v.rows.slice(i + 1).some((x) => x.rule) && !v.rows.slice(0, i).some((x) => x.rule) ? 'head' : '' },
       tables?.numbers ? h('td', { class: 'num' }, String(no)) : null,
       ...r.cells.map((c, j) => h('td', { class: v.align[j] === 'r' ? 'r' : v.align[j] === 'c' ? 'c' : '', style: tables?.wrap && v.limit[j] !== null ? `max-width: ${v.limit[j] + 2}ch` : undefined },
         h('button', { class: 'cell', 'aria-label': `Cell ${j + 1}, ${c || 'empty'}`, onclick: () => on.cell(r.line, j) }, clip(c, j) || ' '))));
   });
-  return h('div', { class: `ol-table${tables?.wrap ? ' wrap' : ''}${tables?.zebra ? ' zebra' : ''}`, style: [pad ? `padding-left: ${pad}` : '', tables && tables.fraction < 1 ? `max-width: ${Math.round(tables.fraction * 100)}%` : ''].filter(Boolean).join(';') || undefined }, h('table', {}, h('tbody', {}, tables?.numbers ? h('tr', { class: 'nums' }, h('td', { class: 'num' }), ...Array.from({ length: v.n }, (_, j) => h('td', { class: 'num' }, `$${j + 1}`))) : null, ...trs)));
+  return h('div', { class: `ol-table${tables?.wrap ? ' wrap' : ''}${tables?.zebra ? ' zebra' : ''}`, style: [pad ? `padding-left: ${pad}` : '', tables && tables.fraction < 1 ? `max-width: ${Math.round(tables.fraction * 100)}%` : ''].filter(Boolean).join(';') || undefined }, h('table', {}, h('tbody', {}, ...trs)));
 }

@@ -1928,14 +1928,32 @@ const formulaHere = () => {
 };
 
 /** Recalculates the table at a line in the given mode and shows what Org says. Returns false when it could not. */
-function recalculateAt(line, col, mode, { place = true } = {}) {
+async function recalculateAt(line, col, mode, { place = true } = {}) {
   let said = null;
+  let opts = {};
+  if (formulaDebug && mode !== 'iterate') {
+    const trace = tblcmd.recalculate(currentBuffer().text, line, mode, { trace: [] }).trace ?? [];
+    for (let i = 0; i < trace.length; i++) {
+      if (!(await debugSheet(trace[i], i + 1, trace.length))) { opts = { trace: [], limit: i }; break; }
+    }
+  }
   tableEditAt(line, col, (text, l, c) => {
-    const r = tblcmd.recalculate(text, l, mode);
+    const r = tblcmd.recalculate(text, l, mode, opts);
     said = r.message ?? null;
     return { text: r.text, line: l, col: c, error: r.error };
   }, { place });
   if (said) message(said);
+}
+
+/** The formula debugger's question for one field: its substitution history, then Continue or Stop (the x also stops). */
+function debugSheet(rec, n, total) {
+  return panel((sheet, close) => {
+    put(sheet, h('h2', {}, 'Debugging formula'),
+      h('p', { class: 'meta' }, `Field ${rec.field}${total > 1 ? ` · ${n} of ${total}` : ''}`),
+      h('pre', { class: 'mono' }, tblcmd.historyText(rec).split('\n').slice(1).join('\n')),
+      h('p', {}, 'Continue to the next field, or stop here. Stopping keeps the fields already calculated. Turn debugging off with C-c {.'),
+      h('div', { class: 'row' }, h('button', { onclick: () => close(false) }, 'Stop'), h('button', { class: 'primary', onclick: () => close(true) }, 'Continue')));
+  }).then((v) => v === true);
 }
 
 /** C-c * (this row), C-u C-c * (the table), C-u C-u C-c * (until stable); on a #+TBLFM: line, that line. */

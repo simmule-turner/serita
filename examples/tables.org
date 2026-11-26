@@ -63,7 +63,7 @@ C-c = asks for a column formula such as $3=$1+$2. C-u C-c = asks for a field for
 #+TBLFM: $2=$1;T
 
 * Which cell is this? And a quick sum
-C-c ? shows the row and column of the cell, such as @2$1. C-c } toggles row and column numbers on the tables in the Outline view (the numbers you use in formulas, like @2$1). C-c { toggles formula debugging; the message says whether it is on. C-c + sums the numbers in the column and puts the result in the kill ring so C-y pastes it.
+C-c ? shows the row and column of the cell, such as @2$1. C-c } toggles row and column numbers on the tables in the Outline view (the numbers you use in formulas, like @2$1). C-c { toggles formula debugging; the message says whether it is on. With it on, C-c * on a row shows the steps for each field (the formula, the fields substituted, the result) and asks Continue or Stop. C-c + sums the numbers in the column and puts the result in the kill ring so C-y pastes it.
 | n |
 |---|
 | 3 |

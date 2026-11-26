@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.10.11
+C-c { now steps through a recalculation: for each field a sheet shows how its formula was read and calculated, and you Continue or Stop (Stop keeps the fields already done). C-c } labels horizontal lines with their number and the column numbers. C-c ' lists formulas in Emacs's order. A formula defined twice, a range past the last column, ~1 2~ as a product and ~[1,5]^2~ now behave as in Emacs.
+
 * 0.10.10
 C-c ' edits all of a table's formulas in one sheet, and C-c } shows row and column numbers on Outline tables. C-c { toggles formula debugging. Formulas follow Emacs on 111 more cases: ~@+I~ targets, ranges and errors, numbers like ~1_000~ and ~1,5~, pairs, ~mod~ forms and Calc's simplifications. C-c * also applies field formulas.
 

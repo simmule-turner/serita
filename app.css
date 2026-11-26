@@ -102,6 +102,7 @@ main { flex: 1; min-height: 0; display: flex; position: relative; background: va
 #keyrow.float .grip { grid-column: 1 / -1; }
 #keyrow.float button { min-width: 0; }
 .sheet textarea { width: 100%; min-height: 140px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: var(--fs, 18px)/1.5 var(--ff, ui-monospace, Menlo, Consolas, monospace); resize: vertical; }
+.sheet pre.mono { margin: 0; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); color: var(--fg); font: calc(var(--fs, 18px) - 2px)/1.5 var(--ff, ui-monospace, Menlo, Consolas, monospace); white-space: pre-wrap; overflow-wrap: anywhere; }
 .sheet textarea:focus { outline: 2px solid var(--fg); outline-offset: 0; }
 .ol-line { position: relative; }
 .ol-line .ichev { position: absolute; left: 0; top: 0; min-height: 32px; width: 32px; padding: 0; border: 0; background: transparent; color: var(--muted); }

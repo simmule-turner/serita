@@ -57,6 +57,11 @@ const applyAll = (text, f, opts) => {
  * @param {string} text @param {number} line @param {'row'|'all'|'iterate'|'line'} mode @param {object} [opts]
  */
 export function recalculate(text, line, mode, opts = {}) {
+  const r = recalculateRun(text, line, mode, opts);
+  return opts.trace ? { ...r, trace: opts.trace } : r;
+}
+
+function recalculateRun(text, line, mode, opts) {
   const f = formulaLines(text, line);
   if (!f) return { text, error: 'Not in table' };
   if (mode === 'line') {
@@ -138,17 +143,23 @@ const isColumnLhs = (lhs) => /^\$[-+]?[\w<>#]+$/.test(lhs);
 const isNamedLhs = (lhs) => /^\$[A-Za-z_]\w*$/.test(lhs);
 const isRelativeLhs = (lhs) => /^@[-+I<>]/.test(lhs);
 
-/** The text C-c ' edits: Field and Range Formulas (@> , @I and the like), then Column Formulas, then Named Field Formulas, one `lhs = rhs` per line. */
+/** The text C-c ' edits. Formulas come in the order: row targets (@>$2, @I$1), column formulas, single fields and ranges (@2$3), named fields. */
 export function editorText(text, line) {
   const list = formulasOf(text, line) ?? [];
-  const row = (f) => `${f.lhs} = ${f.source.slice(f.lhs.length + 1)}`;
-  const sorted = [...list].sort((a, b) => (a.lhs < b.lhs ? -1 : a.lhs > b.lhs ? 1 : 0));
-  const sections = [
-    ['# Field and Range Formulas', sorted.filter((f) => isRelativeLhs(f.lhs))],
-    ['# Column Formulas', sorted.filter((f) => !isRelativeLhs(f.lhs) && !isNamedLhs(f.lhs))],
-    ['# Named Field Formulas', sorted.filter((f) => isNamedLhs(f.lhs))],
-  ].filter(([, fs]) => fs.length);
-  return sections.map(([head, fs]) => [head, ...fs.map(row)].join('\n')).join('\n\n') + (sections.length ? '\n' : '');
+  const rank = (l) => (isRelativeLhs(l) ? 0 : isNamedLhs(l) ? 3 : isColumnLhs(l) ? 1 : 2);
+  const nums = (l) => (l.match(/\d+/g) ?? []).map(Number);
+  const byNumber = (a, b) => { const x = nums(a); const y = nums(b); for (let k = 0; k < Math.max(x.length, y.length); k++) if ((x[k] ?? -1) !== (y[k] ?? -1)) return (x[k] ?? -1) - (y[k] ?? -1); return a < b ? -1 : a > b ? 1 : 0; };
+  const sorted = [...list].sort((a, b) => rank(a.lhs) - rank(b.lhs) || (rank(a.lhs) === 0 ? (a.lhs < b.lhs ? -1 : a.lhs > b.lhs ? 1 : 0) : byNumber(a.lhs, b.lhs)));
+  const out = [];
+  let headed = false;
+  for (const f of sorted) {
+    const r = rank(f.lhs);
+    const head = r === 0 || (r === 2 && !headed) ? '# Field and Range Formulas' : r === 1 ? '# Column Formulas' : r === 3 ? '# Named Field Formulas' : null;
+    if (head && !out.includes(head)) { if (out.length) out.push(''); out.push(head); }
+    headed = true;
+    out.push(`${f.lhs} = ${f.source.slice(f.lhs.length + 1)}`);
+  }
+  return out.length ? `${out.join('\n')}\n` : '';
 }
 
 /**
@@ -171,4 +182,9 @@ export function installFormulas(text, line, edited) {
   const next = `#+TBLFM: ${items.join('::')}`;
   if (f.tblfm.length) lines.splice(f.tblfm[0], f.tblfm.length, next); else lines.splice(f.end, 0, next);
   return { text: lines.join('\n'), message: 'New formulas installed - press C-u C-c C-c to apply.' };
+}
+
+/** The formula debugger's substitution history of one field, as Org prints it. */
+export function historyText(r) {
+  return `Substitution history of formula\nOrig:   ${r.orig}\n$xyz->  ${r.xyz}\n@r$c->  ${r.rc}\n$1->    ${r.subst}\nResult: ${r.result}\nFormat: ${r.format}\nFinal:  ${r.final}\n`;
 }

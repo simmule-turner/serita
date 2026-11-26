@@ -269,7 +269,7 @@ function duration(v, flags) {
 }
 
 /** A '(...) formula: each field becomes a Lisp string, or a number with the N or L flag. */
-function runLisp(m, rhs, flags, row, col) {
+function runLisp(m, rhs, flags, row, col, opts = {}) {
   const lispField = (raw) => {
     const v = raw.trim();
     if (flags.N || flags.L) return parseNumber(v, DEFAULTS.prec) ? v : flags.N ? '0' : JSON.stringify(v);
@@ -290,12 +290,29 @@ function runLisp(m, rhs, flags, row, col) {
     if (p.row === null) throw new Failure('user-error', 'Bad hline reference');
     return lispField(cell(m, p.row, p.col));
   });
+  if (opts.note) opts.note.subst = src.trim();
   try { return evalLisp(src.trim().replace(/^'/, '')); } catch (e) { if (e instanceof Error && !(e instanceof Failure)) return '#ERROR'; throw e; }
 }
 
+/** One field's value; with opts.trace the steps are kept for the formula debugger, and opts.limit stops (Abort) before the field after that many. */
 function run(m, rhs, flags, row, col, opts) {
-  if (rhs.startsWith("'(")) return runLisp(m, rhs, flags, row, col);
+  if (!opts.trace) return runField(m, rhs, flags, row, col, opts);
+  const note = {};
+  const value = runField(m, rhs, flags, row, col, { ...opts, note });
+  const cur = opts.current;
+  opts.trace.push({
+    field: `@${row}$${col}`,
+    orig: cur && isColumn(cur.lhs) && !cur.hasFlags ? cur.rhs : '?',
+    xyz: rhs, rc: rhs, subst: note.subst ?? rhs, result: note.raw ?? value, format: flags.format ?? 'NONE', final: value,
+  });
+  if (opts.limit != null && opts.trace.length > opts.limit) throw new Failure('user-error', 'Abort', true);
+  return value;
+}
+
+function runField(m, rhs, flags, row, col, opts) {
+  if (rhs.startsWith("'(")) { const v = runLisp(m, rhs, flags, row, col, opts); return v; }
   const src = substitute(m, rhs, row, col, flags);
+  if (opts.note) opts.note.subst = src;
   if (src.includes('#ERROR')) return '#ERROR';
   let v;
   try { v = evaluate(src, { prec: flags.prec ?? opts.prec ?? DEFAULTS.prec, angle: flags.R ? 'rad' : 'deg', frac: !!flags.F, symbolic: !!flags.S }); } catch (e) { if (e.message === 'syntax') return '#ERROR'; throw e; }
@@ -303,6 +320,7 @@ function run(m, rhs, flags, row, col, opts) {
   if ((v.k === 's' || v.k === 'x') && flags.N) return '#ERROR';
   if ((v.k === 's' || v.k === 'x') && (flags.T || flags.t || flags.U)) throw new Failure('error', 'wrong-type-argument');
   if (v.k !== 'q' && v.k !== 'f') return calcText(v);
+  if (opts.note) opts.note.raw = calcText(v);
   if (flags.T || flags.t || flags.U) return flags.format && !flags.format.includes('%') ? flags.format : duration(v, flags);
   if (flags.format) return printf(flags.format, v);
   return calcText(v, { ...DEFAULTS, radix: opts.radix, ...(flags.mode ? { mode: flags.mode, digits: flags.digits } : { ...(opts.mode ? { mode: opts.mode } : {}), digits: opts.digits ?? DEFAULTS.digits }) });
@@ -317,7 +335,7 @@ function parseFormula(f) {
   const rhs = (semi < 0 ? rest : rest.slice(0, semi)).trim();
   const flags = semi < 0 ? undefined : rest.slice(semi + 1);
   if (rhs === '') return null;
-  return { lhs, rhs, flags: parseFlags(flags) };
+  return { lhs, rhs, flags: parseFlags(flags), hasFlags: semi >= 0 };
 }
 
 const setCell = (m, row, col, value) => {
@@ -330,6 +348,7 @@ const setCell = (m, row, col, value) => {
 /** Applies one formula to the model: a column formula fills its rows; a field or range sets those fields. */
 function apply(m, f, rows, opts) {
   const lhs = f.lhs;
+  opts.current = f;
   if (/^\$[-+]?\d+$|^\$[<>]+$/.test(lhs)) {
     const col = columnNumber(m, lhs.slice(1), 0);
     for (const row of rows) setCell(m, row, col, run(m, f.rhs, f.flags, row, col, opts));
@@ -342,7 +361,7 @@ function apply(m, f, rows, opts) {
     if (row < 1) throw new Failure('args-out-of-range', 'Row 1 is outside the table');
     const first = plus[2] ? Math.max(1, Number(plus[1])) : 1;
     for (let c = first; c <= last; c++) {
-      if (c > m.columns) throw new Failure('user-error', `Column ${c} is outside the table`, true);
+      if (c > m.columns) throw new Failure('user-error', 'Missing columns in the table. Aborting', true);
       setCell(m, row, c, run(m, f.rhs, f.flags, row, c, opts));
     }
     return;
@@ -359,7 +378,7 @@ function apply(m, f, rows, opts) {
   }
   for (const [r, c] of targets) {
     if (r < 1 || r > m.data.length) throw new Failure('args-out-of-range', `Row ${r} is outside the table`);
-    if (c > m.columns) throw new Failure('user-error', `Column ${c} is outside the table`, true);
+    if (c > m.columns) throw new Failure('user-error', 'Missing columns in the table. Aborting', true);
     setCell(m, r, c, run(m, f.rhs, f.flags, r, c, opts));
   }
 }
@@ -385,6 +404,8 @@ export function recalc(text, line, opts = {}) {
     const out = editTable(text, t.start, (grid) => {
       const m = model(grid, opts.constants);
       m.text = text;
+      const dup = formulas.find((f, i) => formulas.findIndex((g) => g.lhs === f.lhs) !== i);
+      if (dup) throw new Failure('user-error', `Double definition \`${dup.lhs}=' in TBLFM line, please fix by hand`);
       if (formulas.filter((f) => /^@\+I/.test(f.lhs)).length > 1) throw new Failure('user-error', 'More than one @+I target');
       const ordered = [...formulas].sort((a, b) => (a.lhs < b.lhs ? -1 : a.lhs > b.lhs ? 1 : 0));
       const rows = opts.only ? [opts.only] : opts.only === 0 ? [] : fillRows(m); // C-c * does its row whatever its mark or place

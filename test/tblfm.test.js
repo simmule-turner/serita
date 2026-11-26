@@ -34,3 +34,12 @@ test('integers and fractions are exact however large, and decimals are kept to 1
   assert.equal(t('1/0'), '1/0');
   assert.equal(text(evaluate('1/3', { prec: 20 }), { mode: 'float', digits: 20 }), '0.33333333333333333333');
 });
+
+test('observed in Emacs 29.3 / Org 9.6: implicit product, vector square, double definition', () => {
+  const one = (cell, f) => recalc(`| ${cell} |  |\n#+TBLFM: ${f}\n`, 1);
+  assert.equal(one('1 2', '$2=$1+1').text.split('\n')[0], '| 1 2 | 3 |');
+  assert.equal(one('1', '$2=[1,5]^2').text.split('\n')[0], '| 1 | 26 |');
+  const d = one('1', '$2=$1*2::$2=$1+');
+  assert.equal(d.text, '| 1 |  |\n#+TBLFM: $2=$1*2::$2=$1+\n');
+  assert.match(d.error, /Double definition/);
+});

@@ -519,6 +519,7 @@ export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fract
       const r = a.k === 'm' ? binary(op, m.a, on) : binary(op, on, m.a);
       return { k: 'm', a: mod(r, m.n, prec), n: m.n };
     }
+    if (op === '^' && a.k === 'v' && b.k === 'q' && b.d === 1n && b.n === 2n && a.items.every(numeric)) return a.items.reduce((t, x) => add(t, mul(x, x, prec), prec), int(0));
     if (a.k === 'v' || b.k === 'v') {
       if (a.k === 'v' && b.k === 'v' && a.items.length !== b.items.length) throw new Error('syntax');
       const len = a.k === 'v' ? a.items.length : b.items.length;
@@ -611,7 +612,7 @@ export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fract
   };
   const unary = () => { if (eat('-')) { const a = unary(); return numeric(a) ? neg(a) : a.k === 'l' && a.items.every(numeric) ? { ...a, items: a.items.map(neg) } : fromTree(sNeg(toTree(a), prec)); } if (eat('+')) return unary(); if (eat('!')) return bool(isZero(unary())); return power(); };
   const power = () => { const a = primary(); return eat('^') ? binary('^', a, unary()) : a; };
-  const implicit = (t) => t && ((t.t === 'id' && t.v !== 'mod') || (t.t === 'op' && t.v === '(') || (t.t === 'num' && t.v.startsWith('.')));
+  const implicit = (t) => t && ((t.t === 'id' && t.v !== 'mod') || (t.t === 'op' && t.v === '(') || t.t === 'num');
   const mulDiv = () => {
     let a = unary();
     for (;;) {
