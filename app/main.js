@@ -2026,15 +2026,28 @@ async function plotTable(line) {
   if (!at) { message('Not in table', true); return; }
   let model;
   try { model = plot.plotModel(currentBuffer().text, at.line); } catch (e) { message(e.message, true); return; }
-  const svg = plot.plotSvg(model);
+  const view = { az: -35, el: 30 };
   const v = await panel((sheet, close) => {
     const box = h('div', { class: 'plot' });
-    box.innerHTML = svg;
-    put(sheet, h('h2', {}, model.title || 'Plot'), box,
+    const draw = () => { box.innerHTML = plot.plotSvg(model, { view }); };
+    draw();
+    if (model.kind === '3d') {
+      let from;
+      box.style.touchAction = 'none';
+      box.addEventListener('pointerdown', (e) => { from = { x: e.clientX, y: e.clientY, az: view.az, el: view.el }; box.setPointerCapture(e.pointerId); });
+      box.addEventListener('pointermove', (e) => {
+        if (!from) return;
+        view.az = from.az + (e.clientX - from.x) * 0.5;
+        view.el = Math.min(90, Math.max(0, from.el + (e.clientY - from.y) * 0.5));
+        draw();
+      });
+      box.addEventListener('pointerup', () => { from = undefined; });
+    }
+    put(sheet, h('h2', {}, model.title || 'Plot'), box, ...(model.kind === '3d' ? [h('p', { class: 'hint' }, 'Drag to rotate')] : []),
       h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Close'), h('button', { class: 'primary', onclick: () => close('save') }, 'Save image')));
   });
   if (v !== 'save') return;
-  const url = URL.createObjectURL(new Blob([plot.plotSvg(model, { width: 640, height: 440, titleInside: true })], { type: 'image/svg+xml' }));
+  const url = URL.createObjectURL(new Blob([plot.plotSvg(model, { width: 640, height: 440, titleInside: true, view })], { type: 'image/svg+xml' }));
   const a = h('a', { href: url, download: `${(model.title || 'plot').replace(/[^\w-]+/g, '-')}.svg` });
   document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 10000);

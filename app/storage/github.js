@@ -50,7 +50,7 @@ export function createGithubProvider({
   const repoUrl = `${baseUrl}/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
   const contentsUrl = (path) => `${repoUrl}/contents/${encodePath(path)}`;
 
-  async function call(method, url, body) {
+  async function call(method, url, body, extra = {}) {
     const token = await getToken();
     if (!token) throw new CapabilityUnavailable('storage', 'the github provider has no access token');
     let res;
@@ -62,23 +62,26 @@ export function createGithubProvider({
           Authorization: `Bearer ${token}`,
           'X-GitHub-Api-Version': API_VERSION,
           ...(body ? { 'Content-Type': 'application/json' } : {}),
+          ...extra,
         },
         body: body ? JSON.stringify(body) : undefined,
       });
     } catch (e) { throw new NetworkUnavailable(e); }
     let json = null;
     try { json = await res.json(); } catch { /* no body */ }
-    return { status: res.status, json };
+    return { status: res.status, json, etag: res.headers?.get?.('ETag') ?? undefined };
   }
   const fail = (r) => new GithubError(r.status, r.json?.message ?? 'request failed');
 
-  async function getFile(path) {
-    const r = await call('GET', `${contentsUrl(path)}?ref=${encodeURIComponent(branch)}`);
+  /** `etag` is the ETag of a copy already held: the server answers 304 when it is still current, and `{ notModified: true }` comes back. */
+  async function getFile(path, { etag } = {}) {
+    const r = await call('GET', `${contentsUrl(path)}?ref=${encodeURIComponent(branch)}`, undefined, etag ? { 'If-None-Match': etag } : {});
+    if (r.status === 304) return { notModified: true };
     if (r.status === 404) return null;
     if (r.status !== 200) throw fail(r);
     if (Array.isArray(r.json) || r.json.type !== 'file') throw new GithubError(0, `${path} is not a file`);
     if (r.json.encoding !== 'base64') throw new GithubError(0, `${path} is larger than 1 MB, which is not supported yet`);
-    return { text: base64ToUtf8(r.json.content), version: r.json.sha };
+    return { text: base64ToUtf8(r.json.content), version: r.json.sha, ...(r.etag ? { etag: r.etag } : {}) };
   }
 
   const conflict = (cur) => ({ ok: false, conflict: { theirs: cur?.text ?? null, theirsVersion: cur?.version ?? null } });

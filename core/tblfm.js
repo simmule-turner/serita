@@ -319,7 +319,11 @@ function runField(m, rhs, flags, row, col, opts) {
   if (v.k === 'd' && (flags.T || flags.t || flags.U)) throw new Failure('error', 'wrong-type-argument');
   if ((v.k === 's' || v.k === 'x') && flags.N) return '#ERROR';
   if ((v.k === 's' || v.k === 'x') && (flags.T || flags.t || flags.U)) throw new Failure('error', 'wrong-type-argument');
-  if (v.k !== 'q' && v.k !== 'f') return calcText(v);
+  const shown = { ...DEFAULTS, radix: opts.radix, ...(flags.mode ? { mode: flags.mode, digits: flags.digits } : { ...(opts.mode ? { mode: opts.mode } : {}), digits: opts.digits ?? DEFAULTS.digits }) };
+  if (v.k !== 'q' && v.k !== 'f') {
+    const lead = v.k === 'x' && flags.format?.includes('%') ? /^[-+]?\d+(\.\d*)?/.exec(calcText(v)) : null; // Org formats the number the text starts with
+    return lead ? printf(flags.format, parseNumber(lead[0], DEFAULTS.prec)) : calcText(v, v.k === 'x' ? shown : undefined);
+  }
   if (opts.note) opts.note.raw = calcText(v);
   if (flags.T || flags.t || flags.U) return flags.format && !flags.format.includes('%') ? flags.format : duration(v, flags);
   if (flags.format) return printf(flags.format, v);

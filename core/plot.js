@@ -58,6 +58,13 @@ export function plotModel(text, line) {
   const lines = text.split('\n');
   const opts = plotOptions(lines, v.rows[0].line);
   const type = String(opts.type ?? '2d');
+  if (type === '3d' || type === 'grid') {
+    const all = v.rows.filter((r) => !r.rule);
+    const hdr = v.rows.findIndex((r) => r.rule) === 1;
+    const matrix = (hdr ? all.slice(1) : all).map((r) => r.cells.map(number));
+    if (!matrix.length || !matrix.some((r) => r.some((z) => z !== null))) throw new Error('Nothing to plot');
+    return { kind: type, title: opts.title === undefined ? '' : String(opts.title), matrix, settings: settings(opts), options: opts };
+  }
   if (type !== '2d') throw new Error(`Plot type ${type} is not supported`);
   const style = String(opts.with ?? 'lines');
   if (!STYLES.includes(style)) throw new Error(`Plot style ${style} is not supported`);
@@ -100,7 +107,9 @@ export function niceTicks(lo, hi, count = 5) {
 }
 
 /** The chart as an SVG string. `titleInside` draws the title in the picture (for a saved image). */
-export function plotSvg(model, { width = 320, height = 220, titleInside = false } = {}) {
+export function plotSvg(model, { width = 320, height = 220, titleInside = false, view } = {}) {
+  if (model.kind === 'grid') return gridSvg(model, { width, height, titleInside });
+  if (model.kind === '3d') return surfaceSvg(model, { width, height, titleInside, view });
   const { series, style, categories, settings: st } = model;
   const o0 = model.options;
   const title = titleInside ? (st.title ?? model.title) : '';
@@ -186,6 +195,83 @@ export function plotSvg(model, { width = 320, height = 220, titleInside = false 
       x += 24 + s.name.length * 6.5;
     });
   }
+  out.push('</svg>');
+  return out.join('');
+}
+
+// ---- grid (a heat map) and 3d (a wireframe surface) -------------------------------------------------------------
+
+const RAMP = [[0xE6, 0xF1, 0xFB], [0x85, 0xB7, 0xEB], [0x18, 0x5F, 0xA5], [0x04, 0x2C, 0x53]];
+function rampColor(t) {
+  const k = Math.min(Math.max(t, 0), 1) * (RAMP.length - 1);
+  const i = Math.min(Math.floor(k), RAMP.length - 2);
+  const f = k - i;
+  return `rgb(${RAMP[i].map((c, j) => Math.round(c + (RAMP[i + 1][j] - c) * f)).join(',')})`;
+}
+const zRange = (matrix) => {
+  const zs = matrix.flat().filter((z) => z !== null);
+  const lo = Math.min(...zs), hi = Math.max(...zs);
+  return lo === hi ? [lo - 1, hi + 1] : [lo, hi];
+};
+const frame = (model, width, height, titleInside) => {
+  const title = titleInside ? (model.settings.title ?? model.title) : '';
+  const out = [`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="100%" role="img" font-family="sans-serif">`, `<title>${esc(model.title || 'Plot')}</title>`];
+  if (title) out.push(`<text x="${width / 2}" y="16" text-anchor="middle" font-size="13" fill="currentColor">${esc(title)}</text>`);
+  return { out, top: title ? 26 : 10 };
+};
+
+/** type:grid: the table's numbers as colored cells, row 1 on top, with a color scale on the right. */
+function gridSvg(model, { width, height, titleInside }) {
+  const { matrix, settings: st } = model;
+  const rows = matrix.length;
+  const cols = Math.max(...matrix.map((r) => r.length));
+  const [lo, hi] = zRange(matrix);
+  const { out, top } = frame(model, width, height, titleInside);
+  const l = 34, r = 44, b = 24;
+  const cw = (width - l - r) / cols, ch = (height - top - b) / rows;
+  matrix.forEach((row, j) => row.forEach((z, i) => {
+    if (z === null) return;
+    out.push(`<rect x="${fmt(l + i * cw)}" y="${fmt(top + j * ch)}" width="${fmt(cw)}" height="${fmt(ch)}" fill="${rampColor((z - lo) / (hi - lo))}" stroke="${st.grid ? 'currentColor' : 'none'}" stroke-opacity="0.3" stroke-width="0.5"><title>${esc(z)}</title></rect>`);
+  }));
+  for (let i = 0; i < cols; i++) out.push(`<text x="${fmt(l + (i + 0.5) * cw)}" y="${height - 8}" text-anchor="middle" font-size="11" fill="currentColor" fill-opacity="0.7">${i + 1}</text>`);
+  for (let j = 0; j < rows; j++) out.push(`<text x="${l - 5}" y="${fmt(top + (j + 0.5) * ch + 4)}" text-anchor="end" font-size="11" fill="currentColor" fill-opacity="0.7">${j + 1}</text>`);
+  const bx = width - r + 12, bh = height - top - b;
+  for (let k = 0; k < 20; k++) out.push(`<rect x="${bx}" y="${fmt(top + (bh / 20) * k)}" width="10" height="${fmt(bh / 20 + 0.5)}" fill="${rampColor(1 - (k + 0.5) / 20)}"/>`);
+  out.push(`<text x="${bx + 14}" y="${top + 9}" font-size="11" fill="currentColor">${fmt(hi)}</text><text x="${bx + 14}" y="${top + bh}" font-size="11" fill="currentColor">${fmt(lo)}</text>`);
+  out.push('</svg>');
+  return out.join('');
+}
+
+/** type:3d: the table's numbers as a wireframe surface seen from `view` ({ az, el } in degrees); columns run along x, rows along y. */
+function surfaceSvg(model, { width, height, titleInside, view = {} }) {
+  const { matrix } = model;
+  const az = ((view.az ?? -35) * Math.PI) / 180, el = ((view.el ?? 30) * Math.PI) / 180;
+  const rows = matrix.length;
+  const cols = Math.max(...matrix.map((r) => r.length));
+  const [lo, hi] = zRange(matrix);
+  const P = (i, j, z) => {
+    const x = cols > 1 ? i / (cols - 1) - 0.5 : 0, y = rows > 1 ? j / (rows - 1) - 0.5 : 0, h = ((z - lo) / (hi - lo)) * 0.7;
+    return { sx: x * Math.cos(az) - y * Math.sin(az), sy: h * Math.cos(el) + (x * Math.sin(az) + y * Math.cos(az)) * Math.sin(el), d: x * Math.sin(az) + y * Math.cos(az) };
+  };
+  const pts = matrix.map((row, j) => Array.from({ length: cols }, (_, i) => (row[i] === null || row[i] === undefined ? null : P(i, j, row[i]))));
+  const corners = [[0, 0], [cols - 1, 0], [cols - 1, rows - 1], [0, rows - 1]].map(([i, j]) => P(i, j, lo));
+  const all = [...pts.flat().filter(Boolean), ...corners];
+  const sxs = all.map((p) => p.sx), sys = all.map((p) => p.sy);
+  const { out, top } = frame(model, width, height, titleInside);
+  const pad = 14;
+  const k = Math.min((width - 2 * pad) / (Math.max(...sxs) - Math.min(...sxs) || 1), (height - top - 2 * pad) / (Math.max(...sys) - Math.min(...sys) || 1));
+  const X = (p) => fmt(width / 2 + (p.sx - (Math.max(...sxs) + Math.min(...sxs)) / 2) * k);
+  const Y = (p) => fmt(top + (height - top) / 2 - (p.sy - (Math.max(...sys) + Math.min(...sys)) / 2) * k);
+  out.push(`<polygon points="${corners.map((p) => `${X(p)},${Y(p)}`).join(' ')}" fill="none" stroke="currentColor" stroke-opacity="0.35"/>`);
+  const quads = [];
+  for (let j = 0; j + 1 < rows; j++) for (let i = 0; i + 1 < cols; i++) {
+    const q = [pts[j][i], pts[j][i + 1], pts[j + 1][i + 1], pts[j + 1][i]];
+    if (q.every(Boolean)) quads.push({ q, d: q.reduce((a, p) => a + p.d, 0) / 4, z: (matrix[j][i] + matrix[j][i + 1] + matrix[j + 1][i + 1] + matrix[j + 1][i]) / 4 });
+  }
+  quads.sort((a, b) => b.d - a.d);
+  for (const { q, z } of quads) out.push(`<polygon points="${q.map((p) => `${X(p)},${Y(p)}`).join(' ')}" fill="${rampColor((z - lo) / (hi - lo))}" fill-opacity="0.55" stroke="#185FA5" stroke-width="1" stroke-linejoin="round"/>`);
+  if (!quads.length) for (const p of all) out.push(`<circle cx="${X(p)}" cy="${Y(p)}" r="3" fill="#185FA5"/>`);
+  out.push(`<text x="6" y="${height - 6}" font-size="11" fill="currentColor" fill-opacity="0.7">z ${fmt(lo)} to ${fmt(hi)}</text>`);
   out.push('</svg>');
   return out.join('');
 }

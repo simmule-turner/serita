@@ -35,7 +35,7 @@ test('series are titled by the header row or column number, labels ignored; a ba
   assert.equal(plotModel('#+PLOT: ind:1 deps:(3) labels:("X" "A" "B")\n| 1 | 2 | 3 |\n', 1).series[0].name, '3');
   assert.equal(plotModel('#+PLOT: ind:0 deps:(1)\n| 1 | 2 |\n', 1).series[0].points[0][0], 1);
   assert.throws(() => plotModel('#+PLOT: deps:(9)\n| 1 | 2 |\n', 1), /Column 9/);
-  assert.throws(() => plotModel('#+PLOT: type:3d\n| 1 | 2 |\n', 1), /not supported/);
+  assert.throws(() => plotModel('#+PLOT: type:pie\n| 1 | 2 |\n', 1), /not supported/);
 });
 
 test('the drawing has a line per series, the legend, and keeps the title out unless asked', () => {
@@ -88,4 +88,20 @@ test('dots and filledcurves styles draw', () => {
   const d = plotSvg(plotModel('#+PLOT: ind:1 with:dots\n' + t, 1), {});
   assert.match(d, /r="1.2"/);
   assert.match(plotSvg(plotModel('#+PLOT: ind:1 with:filledcurves\n' + t, 1), {}), /<polygon/);
+});
+
+const M = '| x | a | b |\n|---+---+---|\n| 1 | 2 | 3 |\n| 2 | 4 | 5 |\n| 3 | 6 | 7 |\n';
+test('type:grid draws a colored cell per number, with a scale', () => {
+  const svg = plotSvg(plotModel('#+PLOT: type:grid\n' + M, 1), {});
+  assert.equal((svg.match(/<rect /g) ?? []).length, 9 + 20);
+  assert.match(svg, />7</); assert.match(svg, />1</);
+});
+test('type:3d draws a surface, and turning it changes the picture', () => {
+  const m = plotModel('#+PLOT: type:3d\n' + M, 1);
+  const a = plotSvg(m, {}), b = plotSvg(m, { view: { az: 20, el: 50 } });
+  assert.equal((a.match(/<polygon/g) ?? []).length, 1 + 4);
+  assert.notEqual(a, b);
+});
+test('grid and 3d need numbers', () => {
+  assert.throws(() => plotModel('#+PLOT: type:grid\n| a | b |\n|---+---|\n| x | y |\n', 1), /Nothing to plot/);
 });

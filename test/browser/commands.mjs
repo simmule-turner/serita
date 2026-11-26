@@ -506,6 +506,17 @@ await at('#+PLOT: title:"Sales" ind:1 deps:(2)\n| x | a |\n|---+---|\n| 1 | 2 |\
 await page.waitForSelector('.sheet .plot svg');
 ok((await page.locator('.sheet h2').textContent()) === 'Sales' && (await page.locator('.sheet .plot polyline').count()) === 1, 'C-c " g plots the table in a sheet');
 await page.locator('.sheet button', { hasText: 'Close' }).click();
+await at('#+PLOT: type:3d\n| 1 | 2 | 3 |\n| 2 | 4 | 6 |\n| 3 | 6 | 9 |\n', 2); await ctrl('c'); await page.keyboard.press('"'); await page.keyboard.press('g');
+await page.waitForSelector('.sheet .plot polygon');
+const spun = await page.locator('.sheet .plot').innerHTML();
+const plotBox = await page.locator('.sheet .plot').boundingBox();
+await page.mouse.move(plotBox.x + 50, plotBox.y + 50); await page.mouse.down(); await page.mouse.move(plotBox.x + 120, plotBox.y + 70); await page.mouse.up();
+ok((await page.locator('.sheet .plot').innerHTML()) !== spun, 'dragging a 3d plot turns it');
+await page.locator('.sheet button', { hasText: 'Close' }).click();
+await at('#+PLOT: type:grid\n| 1 | 2 |\n| 3 | 4 |\n', 2); await ctrl('c'); await page.keyboard.press('"'); await page.keyboard.press('g');
+await page.waitForSelector('.sheet .plot rect');
+ok((await page.locator('.sheet .plot rect').count()) === 4 + 20, 'a grid plot draws one cell per number and a scale');
+await page.locator('.sheet button', { hasText: 'Close' }).click();
 await at(FT, 1); await ctrl('c'); await page.keyboard.press('{');
 await at(FT, 1); await ctrl('c'); await page.keyboard.press('*');
 await page.waitForSelector('.sheet pre.mono');

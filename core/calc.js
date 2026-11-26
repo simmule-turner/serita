@@ -5,6 +5,7 @@
 //         { k: 'f', m, e }       the decimal m x 10^e, m rounded to `prec` digits
 //         { k: 'v', items }      a vector
 //         { k: 's', text }       an expression Calc leaves as it is (1/0, foo(1))
+import { UNITS, sameDim } from './units.js';
 
 export const DEFAULTS = { prec: 12, mode: 'float', digits: 8 };
 
@@ -247,7 +248,7 @@ export function text(x, opts = DEFAULTS) {
       return floatText(x, opts.mode === 'eng' ? { ...opts, digits: opts.digits } : opts);
     }
     case 'v': return `[${x.items.map((i) => text(i, opts)).join(', ')}]`;
-    case 'x': return printTree(x.e);
+    case 'x': return printTree(x.e, opts);
     case 'm': return `${text(x.a, opts)} mod ${text(x.n, opts)}`;
     case 'l': return x.paren ? `(${x.items.map((i) => text(i, opts)).join(', ')})` : x.items.map((i) => text(i, opts)).join(', ');
     case 'd': return dateText(x);
@@ -349,19 +350,19 @@ const N = (v) => ({ t: 'n', v });
 const isN = (t) => t.t === 'n';
 const toTree = (v) => (v.k === 'x' ? v.e : v.k === 's' ? { t: 's', name: v.text } : N(v));
 const fromTree = (t) => (t.t === 'n' ? t.v : t.t === 's' ? { k: 's', text: t.name } : { k: 'x', e: t });
-const wrapIf = (c, t) => (c ? `(${printTree(t)})` : printTree(t));
+const wrapIf = (c, t, o) => (c ? `(${printTree(t, o)})` : printTree(t, o));
 /** The text of a symbolic expression: a coefficient and its factors are written with a space, a power with ^. */
-function printTree(t) {
+function printTree(t, o = DEFAULTS) {
   switch (t.t) {
-    case 'n': return text(t.v, DEFAULTS);
+    case 'n': return text(t.v, o);
     case 's': return t.name;
-    case 'add': return `${printTree(t.a)} + ${wrapIf(t.b.t === 'add' || t.b.t === 'sub', t.b)}`;
-    case 'sub': return `${printTree(t.a)} - ${wrapIf(t.b.t === 'add' || t.b.t === 'sub', t.b)}`;
-    case 'mul': return `${wrapIf(['add', 'sub', 'div'].includes(t.a.t), t.a)} ${wrapIf(['add', 'sub', 'div'].includes(t.b.t), t.b)}`;
-    case 'div': return `${wrapIf(t.a.t === 'add' || t.a.t === 'sub', t.a)} / ${wrapIf(['add', 'sub', 'mul', 'div'].includes(t.b.t), t.b)}`;
-    case 'pow': return `${wrapIf(!['s', 'fn'].includes(t.a.t) && !(t.a.t === 'n' && sign(t.a.v) >= 0), t.a)}^${wrapIf(!['s', 'fn', 'n'].includes(t.b.t), t.b)}`;
-    case 'neg': return `-${wrapIf(['add', 'sub'].includes(t.a.t), t.a)}`;
-    default: return `${t.name}(${t.args.map(printTree).join(', ')})`;
+    case 'add': return `${printTree(t.a, o)} + ${wrapIf(t.b.t === 'add' || t.b.t === 'sub', t.b, o)}`;
+    case 'sub': return `${printTree(t.a, o)} - ${wrapIf(t.b.t === 'add' || t.b.t === 'sub', t.b, o)}`;
+    case 'mul': return `${wrapIf(['add', 'sub', 'div'].includes(t.a.t), t.a, o)} ${wrapIf(['add', 'sub', 'div'].includes(t.b.t), t.b, o)}`;
+    case 'div': return `${wrapIf(t.a.t === 'add' || t.a.t === 'sub', t.a, o)} / ${wrapIf(['add', 'sub', 'mul', 'div'].includes(t.b.t), t.b, o)}`;
+    case 'pow': return `${wrapIf(!['s', 'fn'].includes(t.a.t) && !(t.a.t === 'n' && sign(t.a.v) >= 0), t.a, o)}^${wrapIf(!['s', 'fn', 'n'].includes(t.b.t), t.b, o)}`;
+    case 'neg': return `-${wrapIf(['add', 'sub'].includes(t.a.t), t.a, o)}`;
+    default: return `${t.name}(${t.args.map((x) => printTree(x, o)).join(', ')})`;
   }
 }
 const sameTree = (a, b) => printTree(a) === printTree(b);
@@ -405,6 +406,8 @@ function sMul(a, b, prec) {
   if (isN(a) && b.t === 'div' && isN(b.b)) return sDiv(b.a, N(mul(b.b.v, a.v, prec)), prec);
   if (!isN(a) && a.t === 'neg') return sNeg(sMul(a.a, b, prec), prec);
   if (!isN(a) && b.t === 'neg') return sNeg(sMul(a, b.a, prec), prec);
+  if (isN(a) && b.t === 'div') return sDiv(sMul(a, b.a, prec), b.b, prec);
+  if (!isN(a) && a.t === 'div' && a.a.t === 'mul' && isN(a.a.a)) return sDiv(sMul(a.a, b, prec), a.b, prec);
   if (!isN(a) && a.t === 'div') return sDiv(a.a, sMul(a.b, b, prec), prec);
   if (!isN(a) && b.t === 'div') return sDiv(sMul(a, b.a, prec), b.b, prec);
   if (isN(a)) {
@@ -414,6 +417,7 @@ function sMul(a, b, prec) {
     return { t: 'mul', a, b };
   }
   if (a.t === 'mul' && isN(a.a)) return sMul(a.a, sMul(a.b, b, prec), prec);
+  if (b.t === 'mul' && isN(b.a)) return sMul(b.a, sMul(a, b.b, prec), prec);
   if (sameTree(a, b)) return sPow(a, N(int(2)), prec);
   if (a.t === 'pow' && b.t === 'pow' && isN(a.b) && isN(b.b) && sameTree(a.a, b.a)) return sPow(a.a, N(add(a.b.v, b.b.v, prec)), prec);
   if (a.t === 'pow' && isN(a.b) && sameTree(a.a, b)) return sPow(a.a, N(add(a.b.v, int(1), prec)), prec);
@@ -434,6 +438,7 @@ function sDiv(a, b, prec) {
     if ((a.t === 'pow' || b.t === 'pow') && !isN(pa) && sameTree(pa, pb)) return sPow(pa, N(sub(ea, eb, prec)), prec);
   }
   if (isN(b) && a.t === 'mul' && isN(a.a)) return sMul(N(div(a.a.v, b.v, prec)), a.b, prec);
+  if (a.t === 'mul' && isN(a.a) && b.t === 'mul' && isN(b.a)) return sMul(N(div(a.a.v, b.a.v, prec)), { t: 'div', a: a.b, b: b.b }, prec);
   if (a.t === 'div' && sameTree(a.b, b)) return sDiv(a.a, sPow(b, N(int(2)), prec), prec);
   if (isN(b) && a.t === 'add' && (isN(a.a) || isN(a.b))) return sAdd(sDiv(a.a, b, prec), sDiv(a.b, b, prec), prec);
   return { t: 'div', a, b };
@@ -444,7 +449,64 @@ function sPow(a, b, prec) {
   if (isN(b) && isOne(b.v, prec)) return a;
   if (isN(a) && isN(b)) return N(pow(a.v, b.v, prec));
   if (a.t === 'pow' && isN(a.b) && isN(b)) return sPow(a.a, N(mul(a.b.v, b.v, prec)), prec);
+  if (a.t === 'mul' && isN(a.a) && isN(b) && b.v.k === 'q' && b.v.d === 1n) return sMul(N(pow(a.a.v, b.v, prec)), sPow(a.b, b, prec), prec);
   return { t: 'pow', a, b };
+}
+/** usimplify: the value as a number times units, with commensurable units merged into the first one met; null when the expression is not made of known units. */
+function unitForm(t, prec) {
+  const ONE = { c: int(1), f: [] };
+  const merge = (a, b, k) => ({ c: mul(a.c, b.c, prec), f: [...a.f.map((x) => [...x]), ...b.f.map(([u, e]) => [u, e * k])] });
+  switch (t.t) {
+    case 'n': return numeric(t.v) ? { c: t.v, f: [] } : null;
+    case 's': return Object.hasOwn(UNITS, t.name) ? { c: int(1), f: [[t.name, 1]] } : null;
+    case 'neg': { const a = unitForm(t.a, prec); return a && { c: neg(a.c), f: a.f }; }
+    case 'mul': { const a = unitForm(t.a, prec); const b = a && unitForm(t.b, prec); return b && merge(a, b, 1); }
+    case 'div': { const a = unitForm(t.a, prec); const b = a && unitForm(t.b, prec); return b && { c: div(a.c, b.c, prec), f: [...a.f.map((x) => [...x]), ...b.f.map(([u, e]) => [u, -e])] }; }
+    case 'pow': { const a = unitForm(t.a, prec); if (!a || !isN(t.b) || t.b.v.k !== 'q' || t.b.v.d !== 1n) return null; const e = Number(t.b.v.n); return { c: pow(a.c, t.b.v, prec), f: a.f.map(([u, x]) => [u, x * e]) }; }
+    case 'add': case 'sub': {
+      const a = norm(unitForm(t.a, prec), prec); const b = a && norm(unitForm(t.b, prec), prec);
+      if (!b) return null;
+      const r = convertTo(b, a.f, prec);
+      return r && { c: t.t === 'add' ? add(a.c, r, prec) : sub(a.c, r, prec), f: a.f };
+    }
+    default: return ONE && null;
+  }
+}
+const dimOf = (u) => UNITS[u].dim;
+const ratio = (u, v) => frac(BigInt(UNITS[u].n) * BigInt(UNITS[v].d), BigInt(UNITS[u].d) * BigInt(UNITS[v].n));
+/** Merges units of one dimension into the first of them; zero exponents drop out. */
+function norm(a, prec) {
+  if (!a) return null;
+  let c = a.c; const f = [];
+  for (const [u, e] of a.f) {
+    const at = f.find(([v]) => sameDim(dimOf(v), dimOf(u)));
+    if (!at) { f.push([u, e]); continue; }
+    const k = ratio(u, at[0]);
+    c = mul(c, pow(k, int(e), prec), prec); at[1] += e;
+  }
+  return { c, f: f.filter(([, e]) => e !== 0) };
+}
+/** The coefficient of `a` written in the units `target`, or null when they do not measure the same thing. */
+function convertTo(a, target, prec) {
+  const sig = (f) => f.map(([u, e]) => [dimOf(u), e]);
+  if (a.f.length !== target.length) return null;
+  let c = a.c;
+  for (const [u, e] of a.f) {
+    const t = target.find(([v, x]) => x === e && sameDim(dimOf(v), dimOf(u)));
+    if (!t) return null;
+    const k = ratio(u, t[0]);
+    c = mul(c, pow(k, int(e), prec), prec);
+  }
+  return sig && c;
+}
+function unitTree(a, prec) {
+  const power = ([u, e]) => sPow({ t: 's', name: u }, N(int(Math.abs(e))), prec);
+  const prod = (xs) => xs.map(power).reduce((p, x) => (p ? sMul(p, x, prec) : x), null);
+  const top = prod(a.f.filter(([, e]) => e > 0)); const bottom = prod(a.f.filter(([, e]) => e < 0));
+  const c = a.c.k === 'q' && a.c.d !== 1n ? toFloat(a.c, prec) : a.c;
+  let r = top ? sMul(N(c), top, prec) : N(c);
+  if (bottom) r = { t: 'div', a: r, b: bottom };
+  return r;
 }
 const SYM = { '+': sAdd, '-': sSub, '*': sMul, '/': sDiv, '^': sPow };
 
@@ -578,7 +640,12 @@ export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fract
     if ((name === 'abs' || name === 'sqrt') && args.length === 1 && (args[0].k === 's' || args[0].k === 'x') && args[0].text !== 'nan') {
       let a = toTree(args[0]);
       if (name === 'abs' && a.t === 'neg') a = a.a;
+      if (name === 'sqrt' && a.t === 'mul' && isN(a.a) && numeric(a.a.v)) { const r = FUNCS.sqrt(a.a.v, prec); if (r.k === 'q') return fromTree(sMul(N(r), { t: 'fn', name, args: [a.b] }, prec)); }
       return fromTree({ t: 'fn', name, args: [a] });
+    }
+    if (name === 'usimplify' && args.length === 1) {
+      if (numeric(args[0])) return args[0];
+      if (args[0].k === 's' || args[0].k === 'x') { const u = norm(unitForm(toTree(args[0]), prec), prec); if (u) return fromTree(unitTree(u, prec)); }
     }
     if (name === 'vlen' && args.length === 1 && args[0].k === 'v') return int(args[0].items.length);
     if (name === 'ln' && args.length === 1 && args[0].k === 's' && args[0].text === 'e') return int(1);
@@ -617,7 +684,8 @@ export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fract
     let a = unary();
     for (;;) {
       const t = peek();
-      if (t?.t === 'op' && ['*', '/', '%'].includes(t.v)) { i++; a = binary(t.v, a, unary()); }
+      if (t?.t === 'op' && t.v === '/') { i++; let r = unary(); while (implicit(peek())) r = binary('*', r, unary()); a = binary('/', a, r); }
+      else if (t?.t === 'op' && ['*', '%'].includes(t.v)) { i++; a = binary(t.v, a, unary()); }
       else if (t?.t === 'id' && t.v === 'mod') { i++; a = binary('mod', a, unary()); }
       else if (implicit(t)) a = binary('*', a, unary());
       else return a;

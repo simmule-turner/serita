@@ -40,7 +40,9 @@ export function createCachedProvider({ remote, cache, isOnline = () => true }) {
       if (rec?.local !== undefined) return { text: rec.local, version: rec.token };
       if (cached && rec?.base) return { text: rec.base.text, version: rec.base.version };
       try {
-        const r = await attempt(() => remote.read(path));
+        const known = rec?.base?.etag ?? rec?.base?.version;
+        const r = await attempt(() => remote.read(path, known ? { etag: known } : undefined));
+        if (r?.notModified) return { text: rec.base.text, version: rec.base.version };
         if (r) await put(path, { base: r, seq: rec?.seq ?? 0 });
         else if (rec) await drop(path);
         return r;

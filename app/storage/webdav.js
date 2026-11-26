@@ -60,8 +60,10 @@ export function createWebdavProvider({ baseUrl, getCredentials, fetch = fetchWit
   }
   const fail = async (res) => new WebdavError(res.status, (await res.text().catch(() => '')).slice(0, 200) || 'request failed');
 
-  async function getFile(path) {
-    const res = await call('GET', urlOf(path));
+  /** `etag` is the ETag of a copy already held: the server answers 304 when it is still current, and `{ notModified: true }` comes back. */
+  async function getFile(path, { etag } = {}) {
+    const res = await call('GET', urlOf(path), etag ? { headers: { 'If-None-Match': etag } } : {});
+    if (res.status === 304) return { notModified: true };
     if (res.status === 404) return null;
     if (res.status !== 200) throw await fail(res);
     const version = res.headers.get('ETag');

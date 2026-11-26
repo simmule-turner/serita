@@ -124,3 +124,22 @@ Run ~M-x org-table-iterate-buffer-tables~ (palette: Recalculate all tables until
 
 | 1 |   |   |
 #+TBLFM: $1=$2+1::$2=$3+1::$3=5
+
+* Units in formulas
+Units are names. ~usimplify~ merges them: the third column below reads 1.2 km.
+
+| 1 km | 200 m |   |
+#+TBLFM: $3=usimplify($1+$2)
+
+* Heat map and surface plots
+C-c " g on a table under ~#+PLOT: type:grid~ draws its numbers as colored cells; ~type:3d~ draws a surface you can drag to turn.
+
+#+PLOT: type:grid title:"Heat"
+| 1 | 2 | 3 |
+| 2 | 4 | 6 |
+| 3 | 6 | 9 |
+
+#+PLOT: type:3d title:"Surface"
+| 1 | 2 | 3 |
+| 2 | 4 | 6 |
+| 3 | 6 | 9 |

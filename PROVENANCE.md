@@ -186,8 +186,8 @@ A separate repository holds questions (case files written by us) and results rec
 ### `app/storage/timeout.js`, `test/timeout.test.js`
 - Written from: the Fetch standard's AbortController interface. No other project's code was consulted.
 
-### `core/calc.js`, `core/tblfm.js`, `test/tblfm.test.js`, `test/fixtures/emacs-tblfm.json`
-- Written from: the Org manual's chapter on the spreadsheet (references, ranges, flags, #+TBLFM: lines) and the Calc manual's description of algebraic entry, and observed Emacs 30.1 results with Org 9.7.11 for 189 formula questions (conformance v0.1.40), recorded as the fixture and read as behavior only. Statement as above.
+### `core/calc.js`, `core/units.js`, `core/tblfm.js`, `test/tblfm.test.js`, `test/fixtures/emacs-tblfm.json`
+- Written from: the Org manual's chapter on the spreadsheet (references, ranges, flags, #+TBLFM: lines) and the Calc manual's description of algebraic entry and of units (usimplify), the unit sizes from standard reference tables, and observed Emacs 30.1 results with Org 9.7.11 for formula questions (conformance v0.1.40 to v0.1.50), recorded as the fixture and read as behavior only. Statement as above.
 
 ### `core/tblcmd.js`, `test/tblcmd.test.js`, `test/fixtures/emacs-tblcmd.json`, `test/fixtures/emacs-iterate.json`
 - Written from: the Org manual's description of recalculation (C-c *, C-u C-c *, C-u C-u C-c *, C-c =, C-u C-c =) and observed Emacs 30.1 results with Org 9.7.11 for the commands and messages (conformance v0.1.41, v0.1.42 and v0.1.49), recorded as the fixture and read as behavior only. No other project's code was consulted.
@@ -197,3 +197,6 @@ A separate repository holds questions (case files written by us) and results rec
 
 ### `core/plot.js`, `test/plot.test.js`, `test/fixtures/emacs-plot.json`, `test/fixtures/emacs-plotscript.json`
 - Written from: the Org manual's section on org-plot (the `#+PLOT:` options and plot types) and observed Emacs 30.1 results with Org 9.7.11 for option merging, defaults and the gnuplot script it produces (conformance v0.1.45 to v0.1.48, gnuplot stubbed), recorded as fixtures and read as behavior only. The charts are drawn by Serita's own SVG code. No other project's code was consulted.
+
+### `test/conditional.test.js`
+- Written from: the HTTP standard's description of conditional requests (If-None-Match and 304). No other project's code was consulted.

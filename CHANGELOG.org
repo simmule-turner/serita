@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.0
+#+PLOT: gains type:grid, a heat map of the table's numbers, and type:3d, a surface you drag to turn; Save image keeps the view you chose. Formulas understand units as Emacs does: 5 m + 3 m is 8 m, products and quotients keep their units, and usimplify(1 km + 200 m) gives 1.2 km, with the symbolic simplifier now matching Emacs on 92 more cases. Reloading a GitHub or WebDAV file asks the server whether it changed and skips the download when it has not.
+
 * 0.10.13
 New command org-table-iterate-buffer-tables (palette: Recalculate all tables until stable) recalculates every table in the file repeatedly until nothing changes, as Emacs does, and reports "Convergence after N iterations" or stops after 10. Formulas that mention the current time are no longer compared against Emacs, since the answer changes every minute. Fixes the release check that failed for 0.10.12 because plotting had no provenance entry.
 
