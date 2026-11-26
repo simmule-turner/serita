@@ -48,7 +48,7 @@ C-c * recalculates the row you are in. C-u C-c * recalculates the whole table. C
 #+TBLFM: $2=$1*2 :: $3=$2+1
 
 * Add or change a formula
-C-c = asks for a column formula such as $3=$1+$2. C-u C-c = asks for a field formula for the cell you are in. Leave the answer empty to remove it. In the Outline view: tap a cell, Formulas, then Add or tap a formula to edit it.
+C-c = asks for a column formula such as $3=$1+$2. C-u C-c = asks for a field formula for the cell you are in. Leave the answer empty to remove it. C-c ' opens every formula of the table in one sheet: change a line, delete it to remove the formula, or add a line such as ~$4 = $3*2~, then Save and recalculate with C-u C-c C-c. In the Outline view: tap a cell, Formulas, then Add or tap a formula to edit it.
 | x | y |
 |---+---|
 | 4 |   |
@@ -63,7 +63,7 @@ C-c = asks for a column formula such as $3=$1+$2. C-u C-c = asks for a field for
 #+TBLFM: $2=$1;T
 
 * Which cell is this? And a quick sum
-C-c ? shows the row and column of the cell, such as @2$1. C-c + sums the numbers in the column and puts the result in the kill ring so C-y pastes it.
+C-c ? shows the row and column of the cell, such as @2$1. C-c } toggles row and column numbers on the tables in the Outline view (the numbers you use in formulas, like @2$1). C-c { toggles formula debugging; the message says whether it is on. C-c + sums the numbers in the column and puts the result in the kill ring so C-y pastes it.
 | n |
 |---|
 | 3 |

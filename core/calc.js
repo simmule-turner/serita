@@ -249,6 +249,7 @@ export function text(x, opts = DEFAULTS) {
     case 'v': return `[${x.items.map((i) => text(i, opts)).join(', ')}]`;
     case 'x': return printTree(x.e);
     case 'm': return `${text(x.a, opts)} mod ${text(x.n, opts)}`;
+    case 'l': return x.paren ? `(${x.items.map((i) => text(i, opts)).join(', ')})` : x.items.map((i) => text(i, opts)).join(', ');
     case 'd': return dateText(x);
     default: return x.text;
   }
@@ -284,7 +285,14 @@ const trimZeros = (s) => (s.includes('.') ? s.replace(/0+$/, '').replace(/\.$/, 
 
 // ---- the expression language ----------------------------------------------
 
-const TOKEN = /\s*(?:([<[]\d{4}-\d\d-\d\d(?: [A-Za-z]+)?(?: \d\d:\d\d(?::\d\d)?)?[>\]])|(\d+#[0-9a-zA-Z]+(?:\.[0-9a-zA-Z]*)?|\d+:\d+(?![\d.eE]))|(\d*\.\d+(?:[eE][-+]?\d+)?|\d+\.?(?:[eE][-+]?\d+)?|\d+\.)|([A-Za-z_][A-Za-z_0-9]*)|(&&|\|\||==|!=|<=|>=|[-+*/^%(),<>!\[\]])|"((?:[^"\\]|\\.)*)")/y;
+// 1_000 is the atom 1_0 (the part after _ is read as an integer); _5 is -5
+const underscore = (w) => {
+  let x = /^(\d+)_(\d+)$/.exec(w);
+  if (x) return { t: 'id', v: `${x[1]}_${BigInt(x[2])}` };
+  x = /^_(\d+)$/.exec(w);
+  return x ? { t: 'num', v: `-${x[1]}` } : { t: 'id', v: w };
+};
+const TOKEN = /\s*(?:([<[]\d{4}-\d\d-\d\d(?: [A-Za-z]+)?(?: \d\d:\d\d(?::\d\d)?)?[>\]])|(\d+#[0-9a-zA-Z]+(?:\.[0-9a-zA-Z]*)?|\d+:\d+(?![\d.eE]))|(\d+_\d+(?![\w.]))|(\d*\.\d+(?:[eE][-+]?\d+)?|\d+\.?(?:[eE][-+]?\d+)?|\d+\.)|([A-Za-z_][A-Za-z_0-9]*)|(&&|\|\||==|!=|<=|>=|[-+*/^%(),<>!\[\]])|"((?:[^"\\]|\\.)*)")/y;
 
 function tokens(src) {
   const out = [];
@@ -294,7 +302,7 @@ function tokens(src) {
     TOKEN.lastIndex = i;
     const m = TOKEN.exec(src);
     if (!m) throw new Error('syntax');
-    out.push(m[1] ? { t: 'date', v: m[1] } : m[2] ? { t: 'num', v: m[2] } : m[3] ? { t: 'num', v: m[3] } : m[4] ? { t: 'id', v: m[4] } : m[6] !== undefined ? { t: 'str', v: m[6] } : { t: 'op', v: m[5] });
+    out.push(m[1] ? { t: 'date', v: m[1] } : m[2] ? { t: 'num', v: m[2] } : m[3] ? underscore(m[3]) : m[4] ? { t: 'num', v: m[4] } : m[5] ? underscore(m[5]) : m[7] !== undefined ? { t: 'str', v: m[7] } : { t: 'op', v: m[6] });
     i = TOKEN.lastIndex;
   }
   return out;
@@ -351,19 +359,20 @@ function printTree(t) {
     case 'sub': return `${printTree(t.a)} - ${wrapIf(t.b.t === 'add' || t.b.t === 'sub', t.b)}`;
     case 'mul': return `${wrapIf(['add', 'sub', 'div'].includes(t.a.t), t.a)} ${wrapIf(['add', 'sub', 'div'].includes(t.b.t), t.b)}`;
     case 'div': return `${wrapIf(t.a.t === 'add' || t.a.t === 'sub', t.a)} / ${wrapIf(['add', 'sub', 'mul', 'div'].includes(t.b.t), t.b)}`;
-    case 'pow': return `${wrapIf(!['s', 'fn'].includes(t.a.t) && !(t.a.t === 'n' && sign(t.a.v) >= 0), t.a)}^${wrapIf(!['s', 'fn'].includes(t.b.t) && !(t.b.t === 'n' && sign(t.b.v) >= 0), t.b)}`;
+    case 'pow': return `${wrapIf(!['s', 'fn'].includes(t.a.t) && !(t.a.t === 'n' && sign(t.a.v) >= 0), t.a)}^${wrapIf(!['s', 'fn', 'n'].includes(t.b.t), t.b)}`;
     case 'neg': return `-${wrapIf(['add', 'sub'].includes(t.a.t), t.a)}`;
     default: return `${t.name}(${t.args.map(printTree).join(', ')})`;
   }
 }
 const sameTree = (a, b) => printTree(a) === printTree(b);
-const coef = (t) => (isN(t) ? [t.v, null] : t.t === 'mul' && isN(t.a) ? [t.a.v, t.b] : [int(1), t]);
+const coef = (t) => (isN(t) ? [t.v, null] : t.t === 'neg' ? [int(-1), t.a] : t.t === 'mul' && isN(t.a) ? [t.a.v, t.b] : [int(1), t]);
 const isOne = (v, prec) => cmp(v, int(1), prec) === 0;
 
 function sAdd(a, b, prec) {
   if (isN(a) && isN(b)) return N(add(a.v, b.v, prec));
   if (isN(b) && isZero(b.v)) return a;
   if (isN(a) && isZero(a.v)) return b;
+  if (a.t === 'sub' && sameTree(a.b, b)) return a.a;
   if (a.t === 'add' && isN(a.b) && isN(b)) return sAdd(a.a, N(add(a.b.v, b.v, prec)), prec);
   const [ca, ra] = coef(a); const [cb, rb] = coef(b);
   if (ra && rb && sameTree(ra, rb)) return sMul(N(add(ca, cb, prec)), ra, prec);
@@ -373,11 +382,17 @@ function sSub(a, b, prec) {
   if (isN(a) && isN(b)) return N(sub(a.v, b.v, prec));
   if (isN(b) && isZero(b.v)) return a;
   if (isN(a) && isZero(a.v)) return sNeg(b, prec);
+  if (b.t === 'add') return sSub(sSub(a, b.a, prec), b.b, prec);
+  if (b.t === 'sub') return sAdd(sSub(a, b.a, prec), b.b, prec);
   if (sameTree(a, b)) return N(int(0));
+  const [ca, ra] = coef(a); const [cb, rb] = coef(b);
+  if (ra && rb && sameTree(ra, rb)) return sMul(N(sub(ca, cb, prec)), ra, prec);
   return { t: 'sub', a, b };
 }
 function sNeg(a, prec) {
   if (isN(a)) return N(neg(a.v));
+  if (a.t === 'add') return sSub(sNeg(a.a, prec), a.b, prec);
+  if (a.t === 'sub') return sAdd(sNeg(a.a, prec), a.b, prec);
   return a.t === 'neg' ? a.a : { t: 'neg', a };
 }
 function sMul(a, b, prec) {
@@ -386,6 +401,12 @@ function sMul(a, b, prec) {
   if (isN(a) && isOne(a.v, prec)) return b;
   if (isN(b) && isOne(b.v, prec)) return a;
   if (isN(b)) [a, b] = [b, a];
+  if (isN(a) && cmp(a.v, int(-1), prec) === 0 && !isN(b)) return sNeg(b, prec);
+  if (isN(a) && b.t === 'div' && isN(b.b)) return sDiv(b.a, N(mul(b.b.v, a.v, prec)), prec);
+  if (!isN(a) && a.t === 'neg') return sNeg(sMul(a.a, b, prec), prec);
+  if (!isN(a) && b.t === 'neg') return sNeg(sMul(a, b.a, prec), prec);
+  if (!isN(a) && a.t === 'div') return sDiv(a.a, sMul(a.b, b, prec), prec);
+  if (!isN(a) && b.t === 'div') return sDiv(sMul(a, b.a, prec), b.b, prec);
   if (isN(a)) {
     if (b.t === 'add') return sAdd(sMul(a, b.a, prec), sMul(a, b.b, prec), prec);
     if (b.t === 'sub') return sSub(sMul(a, b.a, prec), sMul(a, b.b, prec), prec);
@@ -394,6 +415,7 @@ function sMul(a, b, prec) {
   }
   if (a.t === 'mul' && isN(a.a)) return sMul(a.a, sMul(a.b, b, prec), prec);
   if (sameTree(a, b)) return sPow(a, N(int(2)), prec);
+  if (a.t === 'pow' && b.t === 'pow' && isN(a.b) && isN(b.b) && sameTree(a.a, b.a)) return sPow(a.a, N(add(a.b.v, b.b.v, prec)), prec);
   if (a.t === 'pow' && isN(a.b) && sameTree(a.a, b)) return sPow(a.a, N(add(a.b.v, int(1), prec)), prec);
   if (b.t === 'pow' && isN(b.b) && sameTree(b.a, a)) return sPow(a, N(add(b.b.v, int(1), prec)), prec);
   return { t: 'mul', a, b };
@@ -403,13 +425,25 @@ function sDiv(a, b, prec) {
   if (isN(b) && isOne(b.v, prec)) return a;
   if (isN(a) && isZero(a.v)) return a;
   if (sameTree(a, b)) return N(int(1));
+  if (isN(b) && cmp(b.v, int(-1), prec) === 0) return sNeg(a, prec);
+  if (isN(b) && a.t === 'div' && isN(a.b)) return sDiv(a.a, N(mul(a.b.v, b.v, prec)), prec);
+  if (isN(a) && isOne(a.v, prec) && b.t === 'pow' && isN(b.b)) return sPow(b.a, N(neg(b.b.v)), prec);
+  {
+    const [pa, ea] = a.t === 'pow' && isN(a.b) ? [a.a, a.b.v] : [a, int(1)];
+    const [pb, eb] = b.t === 'pow' && isN(b.b) ? [b.a, b.b.v] : [b, int(1)];
+    if ((a.t === 'pow' || b.t === 'pow') && !isN(pa) && sameTree(pa, pb)) return sPow(pa, N(sub(ea, eb, prec)), prec);
+  }
+  if (isN(b) && a.t === 'mul' && isN(a.a)) return sMul(N(div(a.a.v, b.v, prec)), a.b, prec);
+  if (a.t === 'div' && sameTree(a.b, b)) return sDiv(a.a, sPow(b, N(int(2)), prec), prec);
   if (isN(b) && a.t === 'add' && (isN(a.a) || isN(a.b))) return sAdd(sDiv(a.a, b, prec), sDiv(a.b, b, prec), prec);
   return { t: 'div', a, b };
 }
 function sPow(a, b, prec) {
+  if (a.t === 'fn' && a.name === 'sqrt' && isN(b) && cmp(b.v, int(2), prec) === 0) return a.args[0];
   if (isN(b) && isZero(b.v)) return N(int(1));
   if (isN(b) && isOne(b.v, prec)) return a;
   if (isN(a) && isN(b)) return N(pow(a.v, b.v, prec));
+  if (a.t === 'pow' && isN(a.b) && isN(b)) return sPow(a.a, N(mul(a.b.v, b.v, prec)), prec);
   return { t: 'pow', a, b };
 }
 const SYM = { '+': sAdd, '-': sSub, '*': sMul, '/': sDiv, '^': sPow };
@@ -433,13 +467,54 @@ export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fract
       if (['<', '>', '<=', '>=', '==', '!='].includes(op) && a.k === b.k) return binary(op, a.v, b.v);
       return { k: 's', text: `${text(a)} ${op} ${text(b)}` };
     }
+    if (op === 'mod' && a.k === 'v' && numeric(b)) return { k: 'v', items: a.items.map((x) => binary('mod', x, b)) };
     if (op === 'mod') {
+      if (numeric(a) && numeric(b) && isZero(b)) return { k: 's', text: `makemod(${text(a)}, 0)` };
       if (!numeric(a) || !numeric(b) || isZero(b)) return { k: 's', text: `${text(a)} mod ${text(b)}` };
       return { k: 'm', a: mod(a, b, prec), n: b };
+    }
+    if (a.k === 'l' || b.k === 'l') {
+      const l = a.k === 'l' ? a : b; const o = a.k === 'l' ? b : a;
+      const pair = (x) => x.k === 'l' && x.paren && x.items.length === 2 && x.items.every(numeric);
+      if (pair(a) && pair(b) && ['+', '-', '*'].includes(op)) {
+        const [p1, q1] = a.items; const [p2, q2] = b.items;
+        const items = op === '+' ? [add(p1, p2, prec), add(q1, q2, prec)] : op === '-' ? [sub(p1, p2, prec), sub(q1, q2, prec)]
+          : [sub(mul(p1, p2, prec), mul(q1, q2, prec), prec), add(mul(p1, q2, prec), mul(q1, p2, prec), prec)];
+        return isZero(items[1]) ? items[0] : { ...a, items };
+      }
+      if (op === '^' && pair(a) && b.k === 'q' && b.d === 1n && b.n >= 1n) { let r = a; for (let i = 1n; i < b.n; i++) r = binary('*', r, a); return r; }
+      if (o.k === 'l' || !numeric(o)) return { k: 's', text: `${text(a)} ${op} ${text(b)}` };
+      const f = (x) => (a.k === 'l' ? binary(op, x, o) : binary(op, o, x));
+      const items = op === '*' || op === '/' ? l.items.map(f) : [f(l.items[0]), ...l.items.slice(1)];
+      return l.paren && items.length === 2 && numeric(items[1]) && isZero(items[1]) ? items[0] : { ...l, items };
     }
     if (a.k === 'm' || b.k === 'm') {
       const m = a.k === 'm' ? a : b; const o = a.k === 'm' ? b : a;
       const on = o.k === 'm' ? o.a : o;
+      const whole = (x) => x.k === 'q' && x.d === 1n;
+      const inverse = (x, n) => { // x^-1 mod n, when n is a whole number and x is prime to it
+        if (!whole(x) || !whole(n)) return null;
+        let [r0, r1, t0, t1] = [n.n, ((x.n % n.n) + n.n) % n.n, 0n, 1n];
+        while (r1 !== 0n) { const q = r0 / r1; [r0, r1] = [r1, r0 - q * r1]; [t0, t1] = [t1, t0 - q * t1]; }
+        return r0 === 1n ? { k: 'q', n: ((t0 % n.n) + n.n) % n.n, d: 1n } : null;
+      };
+      if (a.k === 'm' && b.k === 'm' && !(sign(sub(a.n, b.n, prec)) === 0)) return { k: 's', text: `${text(a)} ${op} ${text(b)}` };
+      if (op === '^' && a.k === 'm' && whole(b) && whole(a.a) && whole(a.n)) {
+        let base = a.a; let e = b.n;
+        if (e < 0n) { base = inverse(base, a.n); e = -e; if (!base) return { k: 's', text: `${text(a)} ^ ${text(b)}` }; }
+        let r = { k: 'q', n: 1n, d: 1n }; for (let i = 0n; i < e; i++) r = mod(mul(r, base, prec), a.n, prec);
+        return { k: 'm', a: r, n: a.n };
+      }
+      if (op === '^' && a.k === 'm' && numeric(b)) return { k: 'm', a: mod(pow(a.a, b, prec), a.n, prec), n: a.n };
+      if (['==', '!='].includes(op) && a.k === 'm' && b.k === 'm') return bool((sign(sub(a.a, b.a, prec)) === 0) === (op === '=='));
+      if (op === '/' && whole(m.n ?? m)) {
+        const den = b.k === 'm' ? b.a : b; const num = a.k === 'm' ? a.a : a;
+        const inv = inverse(den, m.n);
+        if (inv && numeric(num)) return { k: 'm', a: mod(mul(num, inv, prec), m.n, prec), n: m.n };
+        const q = numeric(num) && !isZero(den) ? div(num, den, prec) : null; // not prime to the modulus: an exact quotient still counts
+        if (q && q.k === 'q' && q.d === 1n) return { k: 'm', a: mod(q, m.n, prec), n: m.n };
+        return { k: 's', text: `${text(a)} / ${b.k === 'm' ? `(${text(b)})` : text(b)}` };
+      }
       if (!['+', '-', '*'].includes(op) || !numeric(on) || (o.k === 'm' && !numeric(o.n))) return { k: 's', text: `${text(a)} ${op} ${text(b)}` };
       const r = a.k === 'm' ? binary(op, m.a, on) : binary(op, on, m.a);
       return { k: 'm', a: mod(r, m.n, prec), n: m.n };
@@ -482,7 +557,11 @@ export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fract
       return v;
     }
     if (t.t === 'op') {
-      if (t.v === '(') { const v = or(); need(')'); return v; }
+      if (t.v === '(') {
+        const v = or();
+        if (peek()?.v === ',') { const items = [v]; while (eat(',')) items.push(or()); need(')'); return items.length === 2 && items.every(numeric) && isZero(items[1]) ? items[0] : { k: 'l', items, paren: true }; }
+        need(')'); return v;
+      }
       if (t.v === '[') { const items = []; if (!eat(']')) { do items.push(or()); while (eat(',')); need(']'); } return { k: 'v', items }; }
       throw new Error('syntax');
     }
@@ -494,6 +573,12 @@ export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fract
     return { k: 's', text: t.v };
   };
   const call = (name, args) => {
+    if (name === 'abs' && args.length === 1 && args[0].k === 'm') return args[0];
+    if ((name === 'abs' || name === 'sqrt') && args.length === 1 && (args[0].k === 's' || args[0].k === 'x') && args[0].text !== 'nan') {
+      let a = toTree(args[0]);
+      if (name === 'abs' && a.t === 'neg') a = a.a;
+      return fromTree({ t: 'fn', name, args: [a] });
+    }
     if (name === 'vlen' && args.length === 1 && args[0].k === 'v') return int(args[0].items.length);
     if (name === 'ln' && args.length === 1 && args[0].k === 's' && args[0].text === 'e') return int(1);
     if (name === 'mod' && args.length === 2 && numeric(args[0]) && numeric(args[1])) return mod(args[0], args[1], prec);
@@ -524,7 +609,7 @@ export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fract
     if (name === 'if' && args.length === 3) return isZero(args[0]) ? args[2] : args[1];
     return { k: 's', text: `${name}(${args.map((a) => text(a)).join(', ')})` };
   };
-  const unary = () => { if (eat('-')) { const a = unary(); return numeric(a) ? neg(a) : fromTree(sNeg(toTree(a), prec)); } if (eat('+')) return unary(); if (eat('!')) return bool(isZero(unary())); return power(); };
+  const unary = () => { if (eat('-')) { const a = unary(); return numeric(a) ? neg(a) : a.k === 'l' && a.items.every(numeric) ? { ...a, items: a.items.map(neg) } : fromTree(sNeg(toTree(a), prec)); } if (eat('+')) return unary(); if (eat('!')) return bool(isZero(unary())); return power(); };
   const power = () => { const a = primary(); return eat('^') ? binary('^', a, unary()) : a; };
   const implicit = (t) => t && ((t.t === 'id' && t.v !== 'mod') || (t.t === 'op' && t.v === '(') || (t.t === 'num' && t.v.startsWith('.')));
   const mulDiv = () => {
@@ -541,7 +626,8 @@ export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fract
   const compare = level(['<', '>', '<=', '>=', '==', '!='], sum);
   const and = level(['&&'], compare);
   const or = level(['||'], and);
-  const v = or();
+  let v = or();
+  if (toks[i]?.v === ',') { const items = [v]; while (eat(',')) items.push(or()); v = { k: 'l', items }; }
   if (i < toks.length) throw new Error('syntax');
   return v;
 }

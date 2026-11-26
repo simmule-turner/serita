@@ -68,7 +68,11 @@ export function recalculate(text, line, mode, opts = {}) {
     const r = applyAll(text, f, { ...opts, only: dataRowNumber(text, f, line) });
     return r.error ? r : { text: r.text, message: 'Re-applying formulas... done' };
   }
-  if (mode === 'all') return applyAll(text, f, opts);
+  if (mode === 'whole') return applyAll(text, f, opts);
+  if (mode === 'all') {
+    if (TBLFM.test(text.split('\n')[line] ?? '')) { const ls = text.split('\n'); ls[line] = ` ${ls[line]}`; return { text: ls.join('\n') }; }
+    return applyAll(text, f, opts);
+  }
   let cur = text;
   for (let i = 1; i <= MAX_ITERATIONS; i++) {
     const r = applyAll(cur, formulaLines(cur, f.start) ?? f, opts);
@@ -128,4 +132,43 @@ export function evalFieldFormula(text, line, j) {
   if (!m || !m[1].trim()) return null;
   const set = setFormula(text, line, `$${j + 1}`, m[1].trim());
   return recalculate(set.text, line, 'row');
+}
+
+const isColumnLhs = (lhs) => /^\$[-+]?[\w<>#]+$/.test(lhs);
+const isNamedLhs = (lhs) => /^\$[A-Za-z_]\w*$/.test(lhs);
+const isRelativeLhs = (lhs) => /^@[-+I<>]/.test(lhs);
+
+/** The text C-c ' edits: Field and Range Formulas (@> , @I and the like), then Column Formulas, then Named Field Formulas, one `lhs = rhs` per line. */
+export function editorText(text, line) {
+  const list = formulasOf(text, line) ?? [];
+  const row = (f) => `${f.lhs} = ${f.source.slice(f.lhs.length + 1)}`;
+  const sorted = [...list].sort((a, b) => (a.lhs < b.lhs ? -1 : a.lhs > b.lhs ? 1 : 0));
+  const sections = [
+    ['# Field and Range Formulas', sorted.filter((f) => isRelativeLhs(f.lhs))],
+    ['# Column Formulas', sorted.filter((f) => !isRelativeLhs(f.lhs) && !isNamedLhs(f.lhs))],
+    ['# Named Field Formulas', sorted.filter((f) => isNamedLhs(f.lhs))],
+  ].filter(([, fs]) => fs.length);
+  return sections.map(([head, fs]) => [head, ...fs.map(row)].join('\n')).join('\n\n') + (sections.length ? '\n' : '');
+}
+
+/**
+ * Installs what C-c ' edited as the table's #+TBLFM: line. Blank lines, lines starting with # and lines without a left side, an = and a right side are skipped;
+ * a left side given twice is an error.
+ */
+export function installFormulas(text, line, edited) {
+  const f = formulaLines(text, line);
+  if (!f) return { text, error: 'Not in table' };
+  const items = [];
+  const seen = new Set();
+  for (const l of edited.split('\n')) {
+    const m = /^\s*(@[-+I<>0-9$.]+|\$[-\w<>#]+)\s*=\s*(\S.*?)\s*$/.exec(l);
+    if (!m || l.trim().startsWith('#')) continue;
+    if (seen.has(m[1])) return { text, error: `Double definition of formula for ${m[1]}` };
+    seen.add(m[1]);
+    items.push(`${m[1]}=${m[2]}`);
+  }
+  const lines = text.split('\n');
+  const next = `#+TBLFM: ${items.join('::')}`;
+  if (f.tblfm.length) lines.splice(f.tblfm[0], f.tblfm.length, next); else lines.splice(f.end, 0, next);
+  return { text: lines.join('\n'), message: 'New formulas installed - press C-u C-c C-c to apply.' };
 }

@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { recalculate, recalculateBuffer, setFormula, formulasOf, evalFieldFormula } from '../core/tblcmd.js';
+import { recalculate, recalculateBuffer, setFormula, formulasOf, evalFieldFormula, editorText, installFormulas } from '../core/tblcmd.js';
 
 const cases = JSON.parse(readFileSync(new URL('./fixtures/emacs-tblcmd.json', import.meta.url), 'utf8'));
 const MODE = { 'C-c *': 'row', 'C-u C-c *': 'all', 'C-u C-u C-c *': 'iterate' };
@@ -34,4 +34,14 @@ test('a formula can be set, replaced and removed', () => {
 test('every table in a buffer', () => {
   const T = '| 1 | 2 |   |\n#+TBLFM: $3=$1+$2\n';
   assert.equal(recalculateBuffer(`${T}\n${T}`).count, 2);
+});
+
+test('C-c \' text lists the formulas by kind and installing it writes one #+TBLFM: line', () => {
+  const t = '| a | b | c |\n|---+---+---|\n| 1 | 2 |   |\n#+TBLFM: $3=$1+$2::@2$3=7::@>$2=5::$1=$2;N\n';
+  assert.equal(editorText(t, 2), '# Field and Range Formulas\n@>$2 = 5\n\n# Column Formulas\n$1 = $2;N\n$3 = $1+$2\n@2$3 = 7\n');
+  assert.equal(editorText('| a |\n#+TBLFM: $y=1::$1=2\n', 0), '# Column Formulas\n$1 = 2\n\n# Named Field Formulas\n$y = 1\n');
+  assert.equal(installFormulas(t, 2, '# Column Formulas\n$3 = $1+$2\n$4 = 1\n$5\n$6=\n= 1\n\n# note').text.split('\n')[3], '#+TBLFM: $3=$1+$2::$4=1');
+  assert.equal(installFormulas(t, 2, '$4 = 1 :: $5=2').text.split('\n')[3], '#+TBLFM: $4=1 :: $5=2');
+  assert.equal(installFormulas(t, 2, '').text.split('\n')[3], '#+TBLFM: ');
+  assert.ok(installFormulas(t, 2, '$3 = 1\n$3 = 9').error);
 });

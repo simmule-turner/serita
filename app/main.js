@@ -80,6 +80,9 @@ const viewMode = () => (setting('view.mode') === 'outline' ? 'outline' : 'text')
 const emacsKeys = () => setting('view.emacsKeys') === 'true';
 const hideStars = () => setting('org-hide-leading-stars') === 't';
 const wrapCells = () => setting('org-table-widget-wrap-columns') === 't';
+/** C-c } and C-c { are on for this session only, as Emacs's are for the buffer. */
+let tableNumbers = false;
+let formulaDebug = false;
 const zebraRows = () => setting('org-table-widget-zebra-stripe') === 't';
 /** The share of the screen width a table may use, from 0.3 to 1; 1 unless set. */
 const widthFraction = () => { const f = Number(setting('org-table-widget-max-width-fraction')); return f >= 0.3 && f <= 1 ? f : 1; };
@@ -247,7 +250,7 @@ function render() {
       if (sel) editor.setSelectionRange(toShown(proj, sel.start), toShown(proj, sel.end));
     }
     pendingSel = null;
-    if (mode === 'outline') renderOutline($('outline'), { text: shown.text, folds: shown.folds, hideStars: false, indent: false, tables: { wrap: wrapCells(), zebra: zebraRows(), fraction: widthFraction() }, on: outlineOn });
+    if (mode === 'outline') renderOutline($('outline'), { text: shown.text, folds: shown.folds, hideStars: false, indent: false, tables: { wrap: wrapCells(), zebra: zebraRows(), fraction: widthFraction(), numbers: tableNumbers }, on: outlineOn });
     if (!$('keyrow').hidden) keyRow.layout();
   } else {
     cur = null;
@@ -1940,7 +1943,7 @@ function recalculateCommand() {
   const at = formulaHere();
   if (!at) { message('Not in table', true); return; }
   const onFormula = /^[ \t]*#\+TBLFM:/i.test(currentBuffer().text.split('\n')[at.line] ?? '');
-  const mode = (arg?.list ?? 0) >= 16 ? 'iterate' : arg ? 'all' : onFormula ? 'all' : 'row';
+  const mode = (arg?.list ?? 0) >= 16 ? 'iterate' : arg ? 'all' : onFormula ? 'whole' : 'row';
   recalculateAt(at.line, at.col, mode);
 }
 
@@ -1991,6 +1994,26 @@ function applyFormula(line, col, lhs, body, place) {
   if (said) message(said);
 }
 
+/** C-c ' : all of the table's formulas in one sheet. */
+async function editFormulas(line) {
+  const at = line === undefined ? tableHere() : { line };
+  if (!at) { message('Not in table', true); return; }
+  const b = currentBuffer();
+  const start = tblcmd.editorText(b.text, at.line);
+  const v = await panel((sheet, close) => {
+    const area = h('textarea', { rows: 8, autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Formulas', class: 'mono' }, start);
+    put(sheet, h('h2', {}, 'Edit formulas'), area,
+      h('p', {}, 'One formula per line, like $3 = $1+$2. Lines starting with # are ignored. Delete a line to remove its formula.'),
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { class: 'primary', onclick: () => close(area.value) }, 'Save')));
+    area.focus();
+  });
+  if (v === undefined) return;
+  const r = tblcmd.installFormulas(currentBuffer().text, at.line, v);
+  if (r.error) { message(r.error, true); return; }
+  session.apply(b.id, { text: r.text });
+  message(r.message);
+}
+
 /** C-c = (the column's formula) and C-u C-c = (the field's formula) in the Text view. */
 async function formulaCommand() {
   const at = tableHere();
@@ -2019,11 +2042,13 @@ async function formulasSheet(line, j, rowNo) {
         h('div', { class: 'list' },
           ...list.map((f) => h('button', { class: 'item', onclick: () => close(f.lhs) }, h('span', { class: 'mono' }, f.source.replace('=', ' = ')), h('span', { class: 'meta' }, /^\$[-+]?[\w<>#]+$/.test(f.lhs) ? 'column' : 'field'))),
           h('button', { class: 'item', onclick: () => close(colLhs) }, h('span', {}, `Column formula for ${col}…`), h('span', { class: 'meta' }, 'C-c =')),
-          h('button', { class: 'item', onclick: () => close(fieldLhs) }, h('span', {}, `Field formula for ${col}${rowNo}…`), h('span', { class: 'meta' }, 'C-u C-c ='))),
+          h('button', { class: 'item', onclick: () => close(fieldLhs) }, h('span', {}, `Field formula for ${col}${rowNo}…`), h('span', { class: 'meta' }, 'C-u C-c =')),
+          h('button', { class: 'item', onclick: () => close('edit-all') }, h('span', {}, 'Edit all formulas…'), h('span', { class: 'meta' }, "C-c '"))),
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Cell'), h('button', { onclick: () => close('close') }, 'Close')));
     });
     if (v === 'close') return true;
     if (v === undefined) return dismissed;
+    if (v === 'edit-all') { await editFormulas(line); if (dismissed) return true; continue; }
     const old = list.find((f) => f.lhs === v);
     const kind = /^\$[-+]?[\w<>#]+$/.test(v) ? 'Column' : 'Field';
     const r = await formulaPrompt(v, old ? old.source.slice(old.lhs.length + 1) : '', kind);
@@ -2582,6 +2607,9 @@ const COMMANDS = {
   },
   'table-recalculate': () => recalculateCommand(),
   'table-formula': () => formulaCommand(),
+  'table-toggle-numbers': () => { if (!tableHere()) { message('Not in table', true); return; } tableNumbers = !tableNumbers; message(`Tables Row/Column numbers display turned ${tableNumbers ? 'on' : 'off'}`); render(); },
+  'table-toggle-debug': () => { formulaDebug = !formulaDebug; message(`Formula debugging has been turned ${formulaDebug ? 'on' : 'off'}`); },
+  'table-edit-formulas': () => editFormulas(),
   'table-recalculate-buffer': () => recalculateBuffer(),
   'keep-offline': () => offlineDialog(),
   'table-create': () => tableCreate(),
@@ -2952,7 +2980,7 @@ const PALETTE = [
   ['promote', 'org-metaleft', 'Promote'], ['demote', 'org-metaright', 'Demote'], ['promote-subtree', 'org-shiftmetaleft', 'Promote subtree'], ['demote-subtree', 'org-shiftmetaright', 'Demote subtree'],
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
   ['insert-heading', 'org-insert-heading-respect-content', 'Insert heading after subtree'], ['insert-heading-here', 'org-meta-return', 'Insert heading here'],
-  ['table-align', 'org-table-align', 'Align table'], ['table-sort', 'org-table-sort-lines', 'Sort table lines'], ['table-blank-field', 'org-table-blank-field', 'Blank table field'], ['table-sum', 'org-table-sum', 'Sum table column'], ['keep-offline', 'serita-keep-files-offline', 'Keep files offline', true], ['table-recalculate', 'org-table-recalculate', 'Recalculate table formulas'], ['table-formula', 'org-table-eval-formula', 'Edit a table formula'], ['table-recalculate-buffer', 'org-table-recalculate-buffer-tables', 'Recalculate all tables', true], ['table-create', 'org-table-create-or-convert-from-region', 'Create table or convert text'],
+  ['table-align', 'org-table-align', 'Align table'], ['table-sort', 'org-table-sort-lines', 'Sort table lines'], ['table-blank-field', 'org-table-blank-field', 'Blank table field'], ['table-sum', 'org-table-sum', 'Sum table column'], ['keep-offline', 'serita-keep-files-offline', 'Keep files offline', true], ['table-recalculate', 'org-table-recalculate', 'Recalculate table formulas'], ['table-formula', 'org-table-eval-formula', 'Edit a table formula'], ['table-edit-formulas', 'org-table-edit-formulas', 'Edit all table formulas'], ['table-toggle-numbers', 'org-table-toggle-coordinate-overlays', 'Show table row and column numbers'], ['table-toggle-debug', 'org-table-toggle-formula-debugger', 'Debug table formulas'], ['table-recalculate-buffer', 'org-table-recalculate-buffer-tables', 'Recalculate all tables', true], ['table-create', 'org-table-create-or-convert-from-region', 'Create table or convert text'],
   ['table-transpose', 'org-table-transpose-table-at-point', 'Transpose table'], ['table-field-info', 'org-table-field-info', 'Show field coordinates'], ['table-hline', 'org-table-insert-hline', 'Insert horizontal line'],
   ['table-copy-down', 'org-table-copy-down', 'Copy field down'], ['table-next-row', 'org-table-next-row', 'Next row'],
   ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],

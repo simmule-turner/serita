@@ -199,6 +199,7 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 .ol-table { padding: 6px 12px 6px 32px; overflow-x: auto; border-bottom: 1px solid var(--line); }
 .ol-table table { border-collapse: collapse; font: calc(var(--fs, 18px) - 1px)/1.4 var(--ff, ui-monospace, Menlo, Consolas, monospace); }
 .ol-table td { border: 1px solid var(--line); padding: 0; }
+.ol-table td.num { padding: 0 6px; color: var(--dim, #888); text-align: right; border-style: dashed; }
 .ol-table td.r { text-align: right; }
 .ol-table td.c { text-align: center; }
 .ol-table tr.rule td { height: 3px; padding: 0; border-left: 0; border-right: 0; border-top: 2px solid var(--muted); }

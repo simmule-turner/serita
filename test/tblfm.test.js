@@ -9,8 +9,6 @@ const cases = JSON.parse(readFileSync(new URL('./fixtures/emacs-tblfm.json', imp
 // What this does not do yet, by case id; each is checked to still differ, so finishing one means deleting its line here.
 const PENDING = {
   'dt-11': 'the time now', 'sy-now-0': 'the time now', 'sy-now-2': 'the time now', 'sy-now-3': 'the time now',
-  'nm-cell-13': 'a number with _', 'lit-c02': 'a number with _', 'lit-f02': 'a number with _', 'lit-c10': 'a number with a comma', 'lit-f10': 'a number with a comma',
-  'hl2-13': '@+I with a column formula', 'sy-pi-07': 'pi with the N flag',
 };
 
 for (const c of cases) {

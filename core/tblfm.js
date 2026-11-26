@@ -7,7 +7,7 @@ import { evalLisp } from './tblisp.js';
 import { DEFAULTS, evaluate, fixed, fromNumber, parseNumber, text as calcText, toNumber } from './calc.js';
 
 const TBLFM = /^[ \t]*#\+TBLFM:(.*)$/i;
-class Failure extends Error { constructor(kind, message) { super(message); this.kind = kind; } }
+class Failure extends Error { constructor(kind, message, partial = false) { super(message); this.kind = kind; this.partial = partial; } }
 
 /** Splits a TBLFM line's formulas at `::`, outside double quotes. */
 export function splitFormulas(line) {
@@ -300,6 +300,8 @@ function run(m, rhs, flags, row, col, opts) {
   let v;
   try { v = evaluate(src, { prec: flags.prec ?? opts.prec ?? DEFAULTS.prec, angle: flags.R ? 'rad' : 'deg', frac: !!flags.F, symbolic: !!flags.S }); } catch (e) { if (e.message === 'syntax') return '#ERROR'; throw e; }
   if (v.k === 'd' && (flags.T || flags.t || flags.U)) throw new Failure('error', 'wrong-type-argument');
+  if ((v.k === 's' || v.k === 'x') && flags.N) return '#ERROR';
+  if ((v.k === 's' || v.k === 'x') && (flags.T || flags.t || flags.U)) throw new Failure('error', 'wrong-type-argument');
   if (v.k !== 'q' && v.k !== 'f') return calcText(v);
   if (flags.T || flags.t || flags.U) return flags.format && !flags.format.includes('%') ? flags.format : duration(v, flags);
   if (flags.format) return printf(flags.format, v);
@@ -333,11 +335,16 @@ function apply(m, f, rows, opts) {
     for (const row of rows) setCell(m, row, col, run(m, f.rhs, f.flags, row, col, opts));
     return;
   }
-  const plus = /^@\+I(?:\$(\d+))?$/.exec(lhs); // the row after the last horizontal line
+  const plus = /^@\+I(?:\$(\d+)(?:\.\.@\+I\$(\d+))?)?$/.exec(lhs); // the last row, from column 1 to the column named
   if (plus) {
-    const row = (m.rules.at(-1) ?? 0) + 1;
-    if (row > m.data.length) throw new Failure('args-out-of-range', `Row ${row} is outside the table`);
-    setCell(m, row, Number(plus[1] ?? 1), run(m, f.rhs, f.flags, row, Number(plus[1] ?? 1), opts));
+    const row = m.data.length;
+    const last = Math.max(1, Number(plus[2] ?? plus[1] ?? 1));
+    if (row < 1) throw new Failure('args-out-of-range', 'Row 1 is outside the table');
+    const first = plus[2] ? Math.max(1, Number(plus[1])) : 1;
+    for (let c = first; c <= last; c++) {
+      if (c > m.columns) throw new Failure('user-error', `Column ${c} is outside the table`, true);
+      setCell(m, row, c, run(m, f.rhs, f.flags, row, c, opts));
+    }
     return;
   }
   if (/^@[^$]*\$[A-Za-z_]/.test(lhs)) return; // a field in a column named by a ! row is left alone
@@ -352,6 +359,7 @@ function apply(m, f, rows, opts) {
   }
   for (const [r, c] of targets) {
     if (r < 1 || r > m.data.length) throw new Failure('args-out-of-range', `Row ${r} is outside the table`);
+    if (c > m.columns) throw new Failure('user-error', `Column ${c} is outside the table`, true);
     setCell(m, r, c, run(m, f.rhs, f.flags, r, c, opts));
   }
 }
@@ -373,19 +381,18 @@ export function recalc(text, line, opts = {}) {
   if (!t) return { text };
   try {
     const formulas = splitFormulas(lines[line]).map(parseFormula).filter(Boolean);
+    let failed = null;
     const out = editTable(text, t.start, (grid) => {
       const m = model(grid, opts.constants);
       m.text = text;
+      if (formulas.filter((f) => /^@\+I/.test(f.lhs)).length > 1) throw new Failure('user-error', 'More than one @+I target');
       const ordered = [...formulas].sort((a, b) => (a.lhs < b.lhs ? -1 : a.lhs > b.lhs ? 1 : 0));
       const rows = opts.only ? [opts.only] : opts.only === 0 ? [] : fillRows(m); // C-c * does its row whatever its mark or place
-      for (const f of ordered) {
-        if (isColumn(f.lhs)) apply(m, f, rows, opts);
-        else if (opts.only == null) apply(m, f, rows, opts);
-        else { const r = /^@(\d+)\$/.exec(f.lhs); if (r && Number(r[1]) === opts.only) apply(m, f, rows, opts); }
-      }
+      try { for (const f of ordered) apply(m, f, rows, opts); } catch (e) { if (!(e instanceof Failure)) throw e; failed = e; if (!e.partial) throw e; } // what was set before the error stays
       // a result holding | is two fields once the line is read again
       return grid.map((r) => (r && r.some((c) => c.includes('|')) ? r.flatMap((c) => c.split('|').map((x) => x.trim())) : r));
     });
+    if (failed) return { text: out.text, error: failed.message, kind: failed.kind };
     return { text: out.text };
   } catch (e) {
     if (e instanceof Failure) return { text, error: e.message, kind: e.kind };
