@@ -67,7 +67,8 @@ const dateText = (x) => {
   return `[${dt.getUTCFullYear()}-${two(dt.getUTCMonth() + 1)}-${two(dt.getUTCDate())} ${DAY_NAMES[dt.getUTCDay()]}${time}]`;
 };
 /** The date form of the time now. */
-export const nowForm = () => { const n = new Date(); return dateForm(n.getFullYear(), n.getMonth() + 1, n.getDate(), n.getHours(), n.getMinutes(), n.getSeconds()); };
+/** The time now, to the minute, as a date with a decimal day count (so now()-now() is 0. and date(now()) a decimal). */
+export const nowForm = () => { const n = new Date(); return { ...dateForm(n.getFullYear(), n.getMonth() + 1, n.getDate(), n.getHours(), n.getMinutes(), 0), fl: true }; };
 
 const same = (a, b, prec) => {
   if (a.k === 'q' && b.k === 'q') return [a, b, 'q'];
@@ -173,7 +174,7 @@ function radixNumber(sign, base, whole, part, prec) {
 
 const radixDigits = (n, base) => (n === 0n ? '0' : (() => { let s = ''; for (; n > 0n; n /= BigInt(base)) s = Number(n % BigInt(base)).toString(36).toUpperCase() + s; return s; })());
 /** A value in the base Calc is set to display (calc-number-radix): `16#FF`, `2#0.01`; a decimal keeps `digits` digits. */
-export function radixText(x, base, digits) {
+export function radixText(x, base, digits, fix = false) {
   const q = x.k === 'q' ? x : null;
   const v = q ?? toFloat(x, 40);
   const neg = sign(x) < 0;
@@ -186,9 +187,9 @@ export function radixText(x, base, digits) {
   if (rest === 0n && a.k === 'q') return `${neg ? '-' : ''}${base}#${radixDigits(whole, base)}`;
   let w = radixDigits(whole, base);
   let fr = '';
-  const room = Math.max(0, digits - (whole === 0n ? 0 : w.length));
+  const room = fix ? digits : Math.max(0, digits - (whole === 0n ? 0 : w.length));
   let kept = 0;
-  while (kept < room && rest !== 0n) { rest *= B; const dg = rest / d; fr += Number(dg).toString(36).toUpperCase(); rest %= d; if (whole !== 0n || dg !== 0n || kept > 0) kept++; }
+  while (kept < room && (rest !== 0n || fix)) { rest *= B; const dg = rest / d; fr += Number(dg).toString(36).toUpperCase(); rest %= d; if (fix || whole !== 0n || dg !== 0n || kept > 0) kept++; }
   if (rest * 2n >= d && rest !== 0n) {
     // round the last digit up
     let digs = [...(w + fr)].map((ch) => DIGIT(ch));
@@ -199,6 +200,7 @@ export function radixText(x, base, digits) {
     const extra = all.length - (w.length + fr.length);
     w = all.slice(0, w.length + extra); fr = all.slice(w.length);
   }
+  if (fix) return `${neg ? '-' : ''}${base}#${w}.${fr}`;
   fr = fr.replace(/0+$/, '');
   return `${neg ? '-' : ''}${base}#${w}${fr || a.k === 'f' && fr === '' && rest === 0n && whole >= 0n && false ? '' : ''}${fr ? `.${fr}` : '.'}`.replace(/\.$/, a.k === 'f' ? '.' : '');
 }
@@ -239,12 +241,14 @@ export function text(x, opts = DEFAULTS) {
   switch (x.k) {
     case 'q': if (opts.radix && opts.radix !== 10 && x.d === 1n) return radixText(x, opts.radix, opts.digits); return x.d === 1n ? x.n.toString() : `${x.n}:${x.d}`;
     case 'f': {
-      if (opts.mode === 'fix') return fixed(x, opts.digits);
+      if (opts.mode === 'fix') return opts.radix && opts.radix !== 10 ? radixText(x, opts.radix, opts.digits, true) : fixed(x, opts.digits);
       if (opts.mode === 'sci') return sci(x, opts.digits);
       if (opts.radix && opts.radix !== 10) return radixText(x, opts.radix, opts.digits);
       return floatText(x, opts.mode === 'eng' ? { ...opts, digits: opts.digits } : opts);
     }
     case 'v': return `[${x.items.map((i) => text(i, opts)).join(', ')}]`;
+    case 'x': return printTree(x.e);
+    case 'm': return `${text(x.a, opts)} mod ${text(x.n, opts)}`;
     case 'd': return dateText(x);
     default: return x.text;
   }
@@ -280,7 +284,7 @@ const trimZeros = (s) => (s.includes('.') ? s.replace(/0+$/, '').replace(/\.$/, 
 
 // ---- the expression language ----------------------------------------------
 
-const TOKEN = /\s*(?:([<[]\d{4}-\d\d-\d\d(?: [A-Za-z]+)?(?: \d\d:\d\d(?::\d\d)?)?[>\]])|(\d+#[0-9a-zA-Z]+(?:\.[0-9a-zA-Z]*)?|\d+:\d+(?![\d.eE]))|(\d*\.\d+(?:[eE][-+]?\d+)?|\d+\.?(?:[eE][-+]?\d+)?|\d+\.)|([A-Za-z_][A-Za-z_0-9]*)|(&&|\|\||==|!=|<=|>=|[-+*/^%(),<>!\[\]]))/y;
+const TOKEN = /\s*(?:([<[]\d{4}-\d\d-\d\d(?: [A-Za-z]+)?(?: \d\d:\d\d(?::\d\d)?)?[>\]])|(\d+#[0-9a-zA-Z]+(?:\.[0-9a-zA-Z]*)?|\d+:\d+(?![\d.eE]))|(\d*\.\d+(?:[eE][-+]?\d+)?|\d+\.?(?:[eE][-+]?\d+)?|\d+\.)|([A-Za-z_][A-Za-z_0-9]*)|(&&|\|\||==|!=|<=|>=|[-+*/^%(),<>!\[\]])|"((?:[^"\\]|\\.)*)")/y;
 
 function tokens(src) {
   const out = [];
@@ -290,7 +294,7 @@ function tokens(src) {
     TOKEN.lastIndex = i;
     const m = TOKEN.exec(src);
     if (!m) throw new Error('syntax');
-    out.push(m[1] ? { t: 'date', v: m[1] } : m[2] ? { t: 'num', v: m[2] } : m[3] ? { t: 'num', v: m[3] } : m[4] ? { t: 'id', v: m[4] } : { t: 'op', v: m[5] });
+    out.push(m[1] ? { t: 'date', v: m[1] } : m[2] ? { t: 'num', v: m[2] } : m[3] ? { t: 'num', v: m[3] } : m[4] ? { t: 'id', v: m[4] } : m[6] !== undefined ? { t: 'str', v: m[6] } : { t: 'op', v: m[5] });
     i = TOKEN.lastIndex;
   }
   return out;
@@ -299,7 +303,7 @@ function tokens(src) {
 const FUNCS = {
   sqrt: (a, p) => sqrt(a, p), abs: (a) => (sign(a) < 0 ? neg(a) : a), floor: (a, p) => floor(a, p), round: (a, p) => round(a, p),
   ceil: (a, p) => neg(floor(neg(a), p)), trunc: (a, p) => (sign(a) < 0 ? neg(floor(neg(a), p)) : floor(a, p)),
-  exp: (a, p) => fromNumber(Math.exp(toNumber(a)), p), ln: (a, p) => fromNumber(Math.log(toNumber(a)), p),
+  exp: (a, p) => (a.k === 'q' && a.n === 0n ? int(1) : fromNumber(Math.exp(toNumber(a)), p)), ln: (a, p) => (a.k === 'q' && a.d === 1n && a.n === 1n ? int(0) : fromNumber(Math.log(toNumber(a)), p)),
   log10: (a, p) => fromNumber(Math.log10(toNumber(a)), p),
   atan: (a, p) => fromNumber(Math.atan(toNumber(a)), p),
   deg: (a, p) => fromNumber((toNumber(a) * 180) / Math.PI, p), rad: (a, p) => fromNumber((toNumber(a) * Math.PI) / 180, p),
@@ -331,11 +335,90 @@ const VEC = {
 const bool = (b) => int(b ? 1 : 0);
 const numeric = (x) => x.k === 'q' || x.k === 'f';
 
+// ---- symbolic results: the simplifications Calc makes when an operand is a name ---------------------------
+
+const N = (v) => ({ t: 'n', v });
+const isN = (t) => t.t === 'n';
+const toTree = (v) => (v.k === 'x' ? v.e : v.k === 's' ? { t: 's', name: v.text } : N(v));
+const fromTree = (t) => (t.t === 'n' ? t.v : t.t === 's' ? { k: 's', text: t.name } : { k: 'x', e: t });
+const wrapIf = (c, t) => (c ? `(${printTree(t)})` : printTree(t));
+/** The text of a symbolic expression: a coefficient and its factors are written with a space, a power with ^. */
+function printTree(t) {
+  switch (t.t) {
+    case 'n': return text(t.v, DEFAULTS);
+    case 's': return t.name;
+    case 'add': return `${printTree(t.a)} + ${wrapIf(t.b.t === 'add' || t.b.t === 'sub', t.b)}`;
+    case 'sub': return `${printTree(t.a)} - ${wrapIf(t.b.t === 'add' || t.b.t === 'sub', t.b)}`;
+    case 'mul': return `${wrapIf(['add', 'sub', 'div'].includes(t.a.t), t.a)} ${wrapIf(['add', 'sub', 'div'].includes(t.b.t), t.b)}`;
+    case 'div': return `${wrapIf(t.a.t === 'add' || t.a.t === 'sub', t.a)} / ${wrapIf(['add', 'sub', 'mul', 'div'].includes(t.b.t), t.b)}`;
+    case 'pow': return `${wrapIf(!['s', 'fn'].includes(t.a.t) && !(t.a.t === 'n' && sign(t.a.v) >= 0), t.a)}^${wrapIf(!['s', 'fn'].includes(t.b.t) && !(t.b.t === 'n' && sign(t.b.v) >= 0), t.b)}`;
+    case 'neg': return `-${wrapIf(['add', 'sub'].includes(t.a.t), t.a)}`;
+    default: return `${t.name}(${t.args.map(printTree).join(', ')})`;
+  }
+}
+const sameTree = (a, b) => printTree(a) === printTree(b);
+const coef = (t) => (isN(t) ? [t.v, null] : t.t === 'mul' && isN(t.a) ? [t.a.v, t.b] : [int(1), t]);
+const isOne = (v, prec) => cmp(v, int(1), prec) === 0;
+
+function sAdd(a, b, prec) {
+  if (isN(a) && isN(b)) return N(add(a.v, b.v, prec));
+  if (isN(b) && isZero(b.v)) return a;
+  if (isN(a) && isZero(a.v)) return b;
+  if (a.t === 'add' && isN(a.b) && isN(b)) return sAdd(a.a, N(add(a.b.v, b.v, prec)), prec);
+  const [ca, ra] = coef(a); const [cb, rb] = coef(b);
+  if (ra && rb && sameTree(ra, rb)) return sMul(N(add(ca, cb, prec)), ra, prec);
+  return { t: 'add', a, b };
+}
+function sSub(a, b, prec) {
+  if (isN(a) && isN(b)) return N(sub(a.v, b.v, prec));
+  if (isN(b) && isZero(b.v)) return a;
+  if (isN(a) && isZero(a.v)) return sNeg(b, prec);
+  if (sameTree(a, b)) return N(int(0));
+  return { t: 'sub', a, b };
+}
+function sNeg(a, prec) {
+  if (isN(a)) return N(neg(a.v));
+  return a.t === 'neg' ? a.a : { t: 'neg', a };
+}
+function sMul(a, b, prec) {
+  if (isN(a) && isN(b)) return N(mul(a.v, b.v, prec));
+  if ((isN(a) && isZero(a.v)) || (isN(b) && isZero(b.v))) return N(int(0));
+  if (isN(a) && isOne(a.v, prec)) return b;
+  if (isN(b) && isOne(b.v, prec)) return a;
+  if (isN(b)) [a, b] = [b, a];
+  if (isN(a)) {
+    if (b.t === 'add') return sAdd(sMul(a, b.a, prec), sMul(a, b.b, prec), prec);
+    if (b.t === 'sub') return sSub(sMul(a, b.a, prec), sMul(a, b.b, prec), prec);
+    if (b.t === 'mul' && isN(b.a)) return sMul(N(mul(a.v, b.a.v, prec)), b.b, prec);
+    return { t: 'mul', a, b };
+  }
+  if (a.t === 'mul' && isN(a.a)) return sMul(a.a, sMul(a.b, b, prec), prec);
+  if (sameTree(a, b)) return sPow(a, N(int(2)), prec);
+  if (a.t === 'pow' && isN(a.b) && sameTree(a.a, b)) return sPow(a.a, N(add(a.b.v, int(1), prec)), prec);
+  if (b.t === 'pow' && isN(b.b) && sameTree(b.a, a)) return sPow(a, N(add(b.b.v, int(1), prec)), prec);
+  return { t: 'mul', a, b };
+}
+function sDiv(a, b, prec) {
+  if (isN(a) && isN(b)) return N(div(a.v, b.v, prec));
+  if (isN(b) && isOne(b.v, prec)) return a;
+  if (isN(a) && isZero(a.v)) return a;
+  if (sameTree(a, b)) return N(int(1));
+  if (isN(b) && a.t === 'add' && (isN(a.a) || isN(a.b))) return sAdd(sDiv(a.a, b, prec), sDiv(a.b, b, prec), prec);
+  return { t: 'div', a, b };
+}
+function sPow(a, b, prec) {
+  if (isN(b) && isZero(b.v)) return N(int(1));
+  if (isN(b) && isOne(b.v, prec)) return a;
+  if (isN(a) && isN(b)) return N(pow(a.v, b.v, prec));
+  return { t: 'pow', a, b };
+}
+const SYM = { '+': sAdd, '-': sSub, '*': sMul, '/': sDiv, '^': sPow };
+
 /**
  * Evaluates the text of a formula. `prec` is the working precision. Throws an Error('syntax') for what Calc cannot read.
  * @param {string} src @param {{ prec?: number }} [opts]
  */
-export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fractions = false } = {}) {
+export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fractions = false, symbolic = false } = {}) {
   const toks = tokens(src);
   let i = 0;
   const peek = () => toks[i];
@@ -344,14 +427,31 @@ export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fract
   const arith = (f, ...xs) => (xs.every(numeric) ? f(...xs, prec) : { k: 's', text: 'nan' });
   const binary = (op, a, b) => {
     if (a.k === 'd' || b.k === 'd') {
-      if (op === '-' && a.k === 'd' && b.k === 'd') return sub(a.v, b.v, prec);
-      if ((op === '+' || op === '-') && a.k === 'd' && numeric(b)) return { k: 'd', v: op === '+' ? add(a.v, b, prec) : sub(a.v, b, prec) };
-      if (op === '+' && numeric(a) && b.k === 'd') return { k: 'd', v: add(b.v, a, prec) };
+      if (op === '-' && a.k === 'd' && b.k === 'd') { const r = sub(a.v, b.v, prec); return a.fl || b.fl ? toFloat(r, prec) : r; }
+      if ((op === '+' || op === '-') && a.k === 'd' && numeric(b)) return { k: 'd', fl: a.fl, v: op === '+' ? add(a.v, b, prec) : sub(a.v, b, prec) };
+      if (op === '+' && numeric(a) && b.k === 'd') return { k: 'd', fl: b.fl, v: add(b.v, a, prec) };
       if (['<', '>', '<=', '>=', '==', '!='].includes(op) && a.k === b.k) return binary(op, a.v, b.v);
       return { k: 's', text: `${text(a)} ${op} ${text(b)}` };
     }
+    if (op === 'mod') {
+      if (!numeric(a) || !numeric(b) || isZero(b)) return { k: 's', text: `${text(a)} mod ${text(b)}` };
+      return { k: 'm', a: mod(a, b, prec), n: b };
+    }
+    if (a.k === 'm' || b.k === 'm') {
+      const m = a.k === 'm' ? a : b; const o = a.k === 'm' ? b : a;
+      const on = o.k === 'm' ? o.a : o;
+      if (!['+', '-', '*'].includes(op) || !numeric(on) || (o.k === 'm' && !numeric(o.n))) return { k: 's', text: `${text(a)} ${op} ${text(b)}` };
+      const r = a.k === 'm' ? binary(op, m.a, on) : binary(op, on, m.a);
+      return { k: 'm', a: mod(r, m.n, prec), n: m.n };
+    }
+    if (a.k === 'v' || b.k === 'v') {
+      if (a.k === 'v' && b.k === 'v' && a.items.length !== b.items.length) throw new Error('syntax');
+      const len = a.k === 'v' ? a.items.length : b.items.length;
+      return { k: 'v', items: Array.from({ length: len }, (_, j) => binary(op, a.k === 'v' ? a.items[j] : a, b.k === 'v' ? b.items[j] : b)) };
+    }
     if (!numeric(a) || !numeric(b)) {
-      if (a.k === 'v' || b.k === 'v') throw new Error('syntax');
+      if ((a.k === 's' && a.text === 'nan') || (b.k === 's' && b.text === 'nan')) return { k: 's', text: 'nan' }; // not a number stays not a number
+      if (SYM[op]) return fromTree(SYM[op](toTree(a), toTree(b), prec));
       return { k: 's', text: `${text(a)} ${op} ${text(b)}` };
     }
     switch (op) {
@@ -375,6 +475,7 @@ export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fract
       const d = /(\d{4})-(\d\d)-(\d\d)(?: [A-Za-z]+)?(?: (\d\d):(\d\d)(?::(\d\d))?)?/.exec(t.v);
       return dateForm(Number(d[1]), Number(d[2]), Number(d[3]), Number(d[4] ?? 0), Number(d[5] ?? 0), Number(d[6] ?? 0));
     }
+    if (t.t === 'str') return { k: 'v', items: [...t.v].map((c) => int(c.codePointAt(0))) };
     if (t.t === 'num') {
       const v = parseNumber(t.v, prec);
       if (!v) throw new Error('syntax');
@@ -393,9 +494,21 @@ export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fract
     return { k: 's', text: t.v };
   };
   const call = (name, args) => {
+    if (name === 'vlen' && args.length === 1 && args[0].k === 'v') return int(args[0].items.length);
+    if (name === 'ln' && args.length === 1 && args[0].k === 's' && args[0].text === 'e') return int(1);
+    if (name === 'mod' && args.length === 2 && numeric(args[0]) && numeric(args[1])) return mod(args[0], args[1], prec);
+    if (name === 'sqrt' && symbolic && args.length === 1 && numeric(args[0]) && !(FUNCS.sqrt(args[0], prec).k === 'q')) return { k: 's', text: `sqrt(${text(args[0])})` };
     if (VEC[name]) {
       const xs = flat(args);
-      if (!xs.every(numeric)) throw new Error('syntax');
+      if (!xs.every(numeric)) {
+        if (!xs.length) throw new Error('syntax');
+        if (name === 'vcount') return int(xs.length);
+        if (name === 'vsum') return xs.reduce((a, x) => binary('+', a, x));
+        if (name === 'vprod') return xs.reduce((a, x) => binary('*', a, x));
+        if (name === 'vmean') return binary('/', xs.reduce((a, x) => binary('+', a, x)), int(xs.length));
+        if (name === 'vmax' || name === 'vmin') return { k: 's', text: `${name === 'vmax' ? 'max' : 'min'}(${xs.map((x) => text(x)).join(', ')})` };
+        throw new Error('syntax');
+      }
       if (!xs.length) { if (name === 'vsum' || name === 'vcount') return int(0); if (name === 'vprod') return int(1); throw new Error('syntax'); }
       return VEC[name](xs, prec);
     }
@@ -403,7 +516,7 @@ export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fract
     if (FUNCS[name] && args.length === 1) return numeric(args[0]) ? FUNCS[name](args[0], prec) : { k: 's', text: `${name}(${text(args[0])})` };
     if ((name === 'min' || name === 'max') && args.length) { const xs = flat(args); return VEC[name === 'min' ? 'vmin' : 'vmax'](xs, prec); }
     if (name === 'date') {
-      if (args.length === 1 && args[0].k === 'd') return args[0].v.d === 1n ? int(args[0].v.n / args[0].v.d) : args[0].v;
+      if (args.length === 1 && args[0].k === 'd') return args[0].fl ? toFloat(args[0].v, prec) : args[0].v.d === 1n ? int(args[0].v.n / args[0].v.d) : args[0].v;
       if (args.length >= 3 && args.every((a) => a.k === 'q' && a.d === 1n)) return dateForm(...args.map((a) => Number(a.n)));
       throw new Error('syntax');
     }
@@ -411,9 +524,19 @@ export function evaluate(src, { prec = DEFAULTS.prec, angle = 'deg', frac: fract
     if (name === 'if' && args.length === 3) return isZero(args[0]) ? args[2] : args[1];
     return { k: 's', text: `${name}(${args.map((a) => text(a)).join(', ')})` };
   };
-  const unary = () => { if (eat('-')) return neg(unary()); if (eat('+')) return unary(); if (eat('!')) return bool(isZero(unary())); return power(); };
+  const unary = () => { if (eat('-')) { const a = unary(); return numeric(a) ? neg(a) : fromTree(sNeg(toTree(a), prec)); } if (eat('+')) return unary(); if (eat('!')) return bool(isZero(unary())); return power(); };
   const power = () => { const a = primary(); return eat('^') ? binary('^', a, unary()) : a; };
-  const mulDiv = level(['*', '/', '%'], unary);
+  const implicit = (t) => t && ((t.t === 'id' && t.v !== 'mod') || (t.t === 'op' && t.v === '(') || (t.t === 'num' && t.v.startsWith('.')));
+  const mulDiv = () => {
+    let a = unary();
+    for (;;) {
+      const t = peek();
+      if (t?.t === 'op' && ['*', '/', '%'].includes(t.v)) { i++; a = binary(t.v, a, unary()); }
+      else if (t?.t === 'id' && t.v === 'mod') { i++; a = binary('mod', a, unary()); }
+      else if (implicit(t)) a = binary('*', a, unary());
+      else return a;
+    }
+  };
   const sum = level(['+', '-'], mulDiv);
   const compare = level(['<', '>', '<=', '>=', '==', '!='], sum);
   const and = level(['&&'], compare);

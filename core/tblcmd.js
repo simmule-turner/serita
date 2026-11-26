@@ -39,19 +39,16 @@ export function formulasOf(text, line) {
 
 const dataRowNumber = (text, f, line) => {
   const lines = text.split('\n');
+  if (/^\s*\|\s*-/.test(lines[line])) return 0; // a horizontal line has no row to do
   let n = 0;
   for (let i = f.start; i <= line && i < f.end; i++) if (!/^\s*\|\s*-/.test(lines[i])) n++;
   return n;
 };
 
+/** Org's table commands use the first #+TBLFM: line of a table. */
 const applyAll = (text, f, opts) => {
-  let out = text;
-  for (const n of f.tblfm) {
-    const r = recalc(out, n, opts);
-    if (r.error) return r;
-    out = r.text;
-  }
-  return { text: out };
+  const r = recalc(text, f.tblfm[0], opts);
+  return r.error ? r : { text: r.text };
 };
 
 /**
@@ -66,7 +63,7 @@ export function recalculate(text, line, mode, opts = {}) {
     const r = recalc(text, line, opts);
     return r.error ? r : { text: r.text };
   }
-  if (f.tblfm.length === 0) return { text, error: 'No formula defined for this table' };
+  if (f.tblfm.length === 0) return { text };
   if (mode === 'row') {
     const r = applyAll(text, f, { ...opts, only: dataRowNumber(text, f, line) });
     return r.error ? r : { text: r.text, message: 'Re-applying formulas... done' };
@@ -79,10 +76,10 @@ export function recalculate(text, line, mode, opts = {}) {
     if (r.text === cur) return { text: cur, message: `Convergence after ${i} iterations` };
     cur = r.text;
   }
-  return { text: cur, message: `No convergence after ${MAX_ITERATIONS} iterations` };
+  return { text: cur, error: `No convergence after ${MAX_ITERATIONS} iterations` };
 }
 
-/** Recalculates every table that has a #+TBLFM: line (org-table-recalculate-buffer-tables). */
+/** Recalculates every table that has a #+TBLFM: line (org-table-recalculate-buffer-tables), silently. */
 export function recalculateBuffer(text, opts = {}) {
   let out = text;
   let count = 0;
@@ -96,7 +93,7 @@ export function recalculateBuffer(text, opts = {}) {
     out = r.text;
     count++;
   }
-  return { text: out, message: `${count} table${count === 1 ? '' : 's'} recalculated` };
+  return { text: out, count };
 }
 
 /**
@@ -120,4 +117,15 @@ export function setFormula(text, line, lhs, rhs) {
   const next = keep.length ? [`#+TBLFM: ${keep.join(' :: ')}`] : [];
   lines.splice(first, removed, ...next);
   return { text: lines.join('\n') };
+}
+
+/** C-c C-c in a field that starts with =: the expression becomes the column's formula and that row is calculated. Null when the field does not start with =. */
+export function evalFieldFormula(text, line, j) {
+  const f = formulaLines(text, line);
+  if (!f) return null;
+  const cells = text.split('\n')[line].trim().replace(/^\||\|$/g, '').split('|');
+  const m = /^=(?!=)(.*)$/.exec((cells[j] ?? '').trim());
+  if (!m || !m[1].trim()) return null;
+  const set = setFormula(text, line, `$${j + 1}`, m[1].trim());
+  return recalculate(set.text, line, 'row');
 }

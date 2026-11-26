@@ -1962,7 +1962,6 @@ function recalculateBuffer() {
   const r = tblcmd.recalculateBuffer(b.text);
   if (r.error) { message(r.error, true); return; }
   if (r.text !== b.text) session.apply(b.id, { text: r.text });
-  message(r.message);
 }
 
 /** Asks for a formula: the expression and its flags; undefined when cancelled, RESET or an empty answer remove it. */
@@ -2546,7 +2545,14 @@ const COMMANDS = {
   'sparse-tree-todo-keyword': () => sparse('todo-keyword'),
   'toggle-checkbox': () => {
     if (viewMode() === 'text' && /^[ \t]*#\+TBLFM:/i.test(currentBuffer().text.split('\n')[lineAt(cur.proj, editor.selectionStart)] ?? '') && formulaHere()) { recalculateCommand(); return; }
-    if (inTable()) { tableEdit(table.align); return; }
+    if (inTable()) {
+      // a field that starts with = is evaluated; any other field only aligns the table
+      const here = tableHere();
+      const col = /\$(\d+)/.exec(table.fieldInfo(currentBuffer().text, here.line, here.col) ?? '');
+      const r = col && tblcmd.evalFieldFormula(currentBuffer().text, here.line, Number(col[1]) - 1);
+      if (r) { tableEditAt(here.line, here.col, () => ({ text: r.text, line: here.line, col: here.col, error: r.error })); return; }
+      tableEdit(table.align); return;
+    }
     if (marks.length) { marks = []; paintOverlay(); message('Temporary highlights/overlays removed from current buffer'); return; }
     const at = editor.selectionStart;
     const col = at - lineOffset(currentBuffer().text, lineAt(cur.proj, at));

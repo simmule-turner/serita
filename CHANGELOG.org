@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.10.9
+Table formulas follow Emacs more closely, checked against 218 more Emacs cases. ~remote(name,@1$2)~ reads another table, a ~$~ row holds parameters, and C-c C-c in a field starting with ~=~ sets the column formula. Names Calc does not know are simplified as Calc does, with strings, ~mod~ and ~2x~ style products. C-c * works on any row, the table commands use the first ~#+TBLFM:~ line, and a formula that never settles reports it. Examples and README cover each.
+
 * 0.10.8
 Table formulas. A #+TBLFM: line under a table recalculates with C-c C-c, and C-c *, C-u C-c * and C-u C-u C-c * recalculate the row, the table, or until nothing changes. C-c = and C-u C-c = set a column or field formula, and the cell sheet's Recalculate and Formulas do the same in the Outline view. Arithmetic is exact, with fractions, other bases, dates and Lisp formulas. Keep files offline saves your GitHub and WebDAV files for offline use. Startup reads every file at once from the saved copy, and requests give up after 8 seconds. Fixes Refile in the Outline view and calendar holiday rows.
 

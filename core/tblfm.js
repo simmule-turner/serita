@@ -2,7 +2,7 @@
 // A formula is `target=expression;flags`. Targets: a column ($3), a field (@2$3), a range of fields (@2$3..@4$3) or of rows (@2..@4$3).
 // In an expression, $N @N @-N @<  @> @I.. $name stand for fields and a..b for a range; the expression itself goes to core/calc.js.
 
-import { editTable, tableAt } from './table.js';
+import { editTable, tableAt, tableView } from './table.js';
 import { evalLisp } from './tblisp.js';
 import { DEFAULTS, evaluate, fixed, fromNumber, parseNumber, text as calcText, toNumber } from './calc.js';
 
@@ -44,8 +44,18 @@ function model(grid, constants) {
   for (const i of data) {
     if (marks.get(i) === '!') grid[i].forEach((c, j) => { if (c) names.set(c, j + 1); });
   }
+  // a ^ row names the fields above it, a _ row the fields below it
+  const fields = new Map();
+  data.forEach((i, k) => {
+    const mark = marks.get(i);
+    const target = mark === '^' ? k : mark === '_' ? k + 2 : 0; // 1-based data row
+    if (target >= 1 && target <= data.length) grid[i].forEach((c, j) => { if (j > 0 && c) fields.set(c, { row: target, col: j + 1 }); });
+  });
+  // a $ row holds parameters, name=value
+  const params = new Map();
+  for (const i of data) if (marks.get(i) === '$') for (const c of grid[i]) { const eq = /^([A-Za-z_]\w*)=(.*)$/.exec(c.trim()); if (eq) params.set(eq[1], eq[2].trim()); }
   const columns = Math.max(0, ...data.map((i) => grid[i].length));
-  return { grid, data, rules, names, columns, constants };
+  return { grid, data, rules, names, fields, params, columns, constants };
 }
 
 /** The rows a column formula fills: the data rows below the first hline when there is one, leaving out marked rows. */
@@ -119,12 +129,46 @@ function fieldText(raw, flags) {
     if (d) { const secs = Number(d[2]) * 3600 + Number(d[3]) * 60 + Number(d[4] ?? 0); return d[1] === '-' ? `(-${secs})` : String(secs); }
     return parseNumber(v, DEFAULTS.prec) ? v : '0';
   }
+  if (flags.N && /^[-+]?\d+:\d/.test(v)) return /^[-+]?\d+/.exec(v)[0]; // a time reads as the number it starts with, not as a fraction
   if (parseNumber(v, DEFAULTS.prec)) return v.startsWith('-') ? `(${v})` : v;
   if (/^[<[]\d{4}-\d\d-\d\d(?: [A-Za-z]+)?(?: \d\d:\d\d(?::\d\d)?)?[>\]]$/.test(v)) return v;
-  return flags.N ? '0' : v;
+  if (flags.N) return /^[-+]?(?:\d+\.?\d*|\.\d+)/.exec(v)?.[0] ?? '0';
+  return v;
+}
+
+
+/** The table named by a #+NAME: line right above it, as a model; null when there is none. */
+function remoteModel(m, name) {
+  const lines = (m.text ?? '').split('\n');
+  const at = lines.findIndex((l) => /^[ \t]*#\+NAME:/i.test(l) && l.replace(/^[ \t]*#\+NAME:[ \t]*/i, '').trim() === name);
+  if (at < 0) return null;
+  const v = tableView(m.text, at + 1);
+  if (!v) return null;
+  return model(v.rows.map((r) => (r.rule ? null : r.cells)), m.constants);
+}
+
+/** Replaces remote(name, ref) by what the field or range of the other table stands for. */
+function expandRemote(m, rhs, row, col, one, many) {
+  if (/remote\(/.test(rhs) && rhs.replace(/remote\([^\s,()]+,[^\s()]*\)/g, '').includes('remote(')) throw new Failure('user-error', 'Bad remote reference');
+  return rhs.replace(/remote\(([^\s,()]+),([^\s()]*)\)/g, (whole, name, ref) => {
+    const r = remoteModel(m, name);
+    if (!r) throw new Failure('user-error', `Table ${name} not found`);
+    if (!ref.includes('@')) return one('0');
+    if (ref.includes('..')) {
+      const [a, b] = ref.split('..');
+      const from = parseRef(r, a, row, col, false); const to = parseRef(r, b, row, col, true);
+      const items = [];
+      for (let i = Math.min(from.row, to.row); i <= Math.max(from.row, to.row); i++) for (let j = Math.min(from.col, to.col); j <= Math.max(from.col, to.col); j++) items.push(cell(r, i, j));
+      return many(items);
+    }
+    const p = parseRef(r, ref, row, col, false);
+    return one(cell(r, p.row, p.col));
+  });
 }
 
 function substitute(m, rhs, row, col, flags) {
+  rhs = expandRemote(m, rhs, row, col, (raw) => { const t = fieldText(raw, flags); return t.startsWith('(') ? t : `(${t})`; },
+    (items) => `[${items.filter((x) => x.trim() !== '').map((x) => fieldText(x, flags)).join(', ')}]`);
   return rhs.replace(REF, (whole, a, b) => {
     if (b !== undefined || /\.\./.test(whole)) {
       const from = parseRef(m, a, row, col, false);
@@ -139,15 +183,21 @@ function substitute(m, rhs, row, col, flags) {
     if (/^\$(?![-+]?\d|[<>#0])/.test(a) && !/^@/.test(a)) {
       const n = a.slice(1);
       if (m.constants?.has(n)) return `(${m.constants.get(n)})`;
+      if (m.params.has(n)) return `(${m.params.get(n)})`;
+      if (m.fields.has(n)) { const f = m.fields.get(n); return fieldText(cell(m, f.row, f.col), flags); }
       if (!m.names.has(n)) return '(#ERROR)';
     }
     if (a === '$#') return String(col);
     if (a === '@#') return String(row);
     const p = parseRef(m, a, row, col, false);
     if (p.row === null) throw new Failure('user-error', 'Bad hline reference');
-    return fieldText(cell(m, p.row, p.col), flags);
+    const t = fieldText(cell(m, p.row, p.col), flags);
+    return t.startsWith('(') ? t : `(${t})`; // Org wraps what a field stands for, so $1.5 is $1 times .5
   });
 }
+
+const CONVERSION = '%[-+ 0#]*\\d*(?:\\.\\d+)?[dfegsixXo]';
+const FORMAT = new RegExp(`^[^%]*${CONVERSION}[^%]*$`);
 
 /** `;N;%.2f;f3` and the like: { N, E, L, T, t, U, format, mode, digits, prec }. */
 function parseFlags(spec) {
@@ -157,11 +207,15 @@ function parseFlags(spec) {
     if (part === '') continue;
     let k;
     if (part.startsWith('%')) {
-      if (!/^%[-+ 0#]*\d*(?:\.\d+)?[dfegsixXo]$/.test(part)) throw new Failure('error', 'Bad format');
+      if (!FORMAT.test(part)) throw new Failure('error', 'Bad format');
       flags.format = part;
     } else if ((k = /^([fsnp])(\d+)$/.exec(part))) {
       if (k[1] === 'p') flags.prec = Number(k[2]); else { flags.mode = { f: 'fix', s: 'sci', n: 'eng' }[k[1]]; flags.digits = Number(k[2]); }
-    } else for (const ch of part) if ('NELTtUDRFS'.includes(ch)) flags[ch] = true;
+    } else {
+      let rest = '';
+      for (const ch of part) if ('NELTtUDRFS'.includes(ch)) flags[ch] = true; else rest += ch;
+      if (rest) flags.format = rest; // Org hands what is left to format
+    }
   }
   return flags;
 }
@@ -175,9 +229,12 @@ function gFormat(x, p) {
 }
 
 /** printf for the numeric conversions a format flag can name. */
-function printf(spec, v) {
-  const m = /^%([-+ 0#]*)(\d*)(?:\.(\d+))?([dfegsixXo])$/.exec(spec);
-  const [, fl, width, precision, conv] = m;
+function printf(template, v) {
+  const at = template.indexOf('%');
+  if (at < 0) return template;
+  const m = new RegExp(`^(${CONVERSION.replace('%', '%').replace(/\(\?:/g, '(?:')})`).exec(template.slice(at));
+  const spec = m[1];
+  const [, fl, width, precision, conv] = /^%([-+ 0#]*)(\d*)(?:\.(\d+))?([dfegsixXo])$/.exec(spec);
   const x = toNumber(v);
   let body;
   if (conv === 'f') body = fixed(v, precision === undefined ? 6 : Number(precision));
@@ -196,12 +253,12 @@ function printf(spec, v) {
     else if (fl.includes('0') && /^[-+]?\d/.test(body)) { const s = /^[-+]/.test(body) ? body[0] : ''; body = s + body.slice(s.length).padStart(w - s.length, '0'); }
     else body = body.padStart(w);
   }
-  return body;
+  return template.slice(0, at) + body + template.slice(at + spec.length);
 }
 
 /** Seconds as hh:mm:ss (T), hh:mm (U) or decimal hours (t). */
 function duration(v, flags) {
-  if (flags.format || flags.N) return '#ERROR';
+  if ((flags.format && flags.format.includes('%')) || flags.N) return '#ERROR';
   const secs = toNumber(v);
   if (flags.t) return (secs / 3600).toFixed(2);
   const neg = secs < 0;
@@ -218,7 +275,8 @@ function runLisp(m, rhs, flags, row, col) {
     if (flags.N || flags.L) return parseNumber(v, DEFAULTS.prec) ? v : flags.N ? '0' : JSON.stringify(v);
     return JSON.stringify(v);
   };
-  const src = rhs.replace(REF, (whole, a, b) => {
+  const expanded = expandRemote(m, rhs, row, col, (raw) => lispField(raw), (items) => `(list ${items.map(lispField).join(' ')})`);
+  const src = expanded.replace(REF, (whole, a, b) => {
     if (b !== undefined) {
       const from = parseRef(m, a, row, col, false); const to = parseRef(m, b, row, col, true);
       if (from.row === null || to.row === null) return "'()";
@@ -240,10 +298,10 @@ function run(m, rhs, flags, row, col, opts) {
   const src = substitute(m, rhs, row, col, flags);
   if (src.includes('#ERROR')) return '#ERROR';
   let v;
-  try { v = evaluate(src, { prec: flags.prec ?? opts.prec ?? DEFAULTS.prec, angle: flags.R ? 'rad' : 'deg', frac: !!flags.F }); } catch (e) { if (e.message === 'syntax') return '#ERROR'; throw e; }
+  try { v = evaluate(src, { prec: flags.prec ?? opts.prec ?? DEFAULTS.prec, angle: flags.R ? 'rad' : 'deg', frac: !!flags.F, symbolic: !!flags.S }); } catch (e) { if (e.message === 'syntax') return '#ERROR'; throw e; }
   if (v.k === 'd' && (flags.T || flags.t || flags.U)) throw new Failure('error', 'wrong-type-argument');
   if (v.k !== 'q' && v.k !== 'f') return calcText(v);
-  if (flags.T || flags.t || flags.U) return duration(v, flags);
+  if (flags.T || flags.t || flags.U) return flags.format && !flags.format.includes('%') ? flags.format : duration(v, flags);
   if (flags.format) return printf(flags.format, v);
   return calcText(v, { ...DEFAULTS, radix: opts.radix, ...(flags.mode ? { mode: flags.mode, digits: flags.digits } : { ...(opts.mode ? { mode: opts.mode } : {}), digits: opts.digits ?? DEFAULTS.digits }) });
 }
@@ -275,6 +333,14 @@ function apply(m, f, rows, opts) {
     for (const row of rows) setCell(m, row, col, run(m, f.rhs, f.flags, row, col, opts));
     return;
   }
+  const plus = /^@\+I(?:\$(\d+))?$/.exec(lhs); // the row after the last horizontal line
+  if (plus) {
+    const row = (m.rules.at(-1) ?? 0) + 1;
+    if (row > m.data.length) throw new Failure('args-out-of-range', `Row ${row} is outside the table`);
+    setCell(m, row, Number(plus[1] ?? 1), run(m, f.rhs, f.flags, row, Number(plus[1] ?? 1), opts));
+    return;
+  }
+  if (/^@[^$]*\$[A-Za-z_]/.test(lhs)) return; // a field in a column named by a ! row is left alone
   const [a, b] = lhs.split('..');
   if (/^@[^$]*\.\.|^@[^$]*$/.test(lhs) === false && !/^@/.test(lhs)) throw new Failure('user-error', `Bad target ${lhs}`);
   let targets = [];
@@ -309,14 +375,16 @@ export function recalc(text, line, opts = {}) {
     const formulas = splitFormulas(lines[line]).map(parseFormula).filter(Boolean);
     const out = editTable(text, t.start, (grid) => {
       const m = model(grid, opts.constants);
+      m.text = text;
       const ordered = [...formulas].sort((a, b) => (a.lhs < b.lhs ? -1 : a.lhs > b.lhs ? 1 : 0));
-      const rows = opts.only ? [opts.only] : fillRows(m);
+      const rows = opts.only ? [opts.only] : opts.only === 0 ? [] : fillRows(m); // C-c * does its row whatever its mark or place
       for (const f of ordered) {
         if (isColumn(f.lhs)) apply(m, f, rows, opts);
-        else if (!opts.only) apply(m, f, rows, opts);
+        else if (opts.only == null) apply(m, f, rows, opts);
         else { const r = /^@(\d+)\$/.exec(f.lhs); if (r && Number(r[1]) === opts.only) apply(m, f, rows, opts); }
       }
-      return grid;
+      // a result holding | is two fields once the line is read again
+      return grid.map((r) => (r && r.some((c) => c.includes('|')) ? r.flatMap((c) => c.split('|').map((x) => x.trim())) : r));
     });
     return { text: out.text };
   } catch (e) {

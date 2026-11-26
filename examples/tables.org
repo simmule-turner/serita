@@ -68,3 +68,35 @@ C-c ? shows the row and column of the cell, such as @2$1. C-c + sums the numbers
 |---|
 | 3 |
 | 4 |
+
+* Names for columns and fields
+A row whose first field is ! names the columns below it, so $qty and $price stand for those columns. Rows marked # are the ones recalculated. A _ row names the fields below it and a ^ row the fields above it. ;E makes an empty field nan, so a total with a missing price shows nan instead of a wrong number.
+| ! | qty | price | total |
+|---+-----+-------+-------|
+| # |   2 |    10 |       |
+| # |   1 |       |       |
+#+TBLFM: $4=$qty*$price;E
+
+* Formulas: a field starting with =
+Type = and an expression in a field and press C-c C-c: the expression becomes the column's formula and the row is calculated. In the Outline view use Formulas, Add instead.
+| a | b | c         |
+|---+---+-----------|
+| 1 | 2 | = $1+$2   |
+| 3 | 4 |           |
+
+* Formulas: another table with remote
+remote(name,@row$col) reads a field of the table that has #+NAME: name above it; a range such as @1$1..@2$2 gives all its fields.
+#+NAME: prices
+| Coffee | 9.50 |
+| Tea    | 4.00 |
+
+| Cups | Cost |
+|------+------|
+|    3 |      |
+#+TBLFM: $2=$1*remote(prices,@1$2)
+
+* Formulas: parameters
+A row starting with $ holds name=value parameters; rows marked # are the ones recalculated. $rate stands for 10 here.
+| $ | rate=10 |       |
+| # |       3 |       |
+#+TBLFM: $3=$2*$rate

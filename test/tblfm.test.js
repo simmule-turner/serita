@@ -8,12 +8,9 @@ const cases = JSON.parse(readFileSync(new URL('./fixtures/emacs-tblfm.json', imp
 
 // What this does not do yet, by case id; each is checked to still differ, so finishing one means deleting its line here.
 const PENDING = {
-  'tf-edge-11': 'an unknown flag letter', 'tf-edge-18': '$1.5 read as a quirk of Org', 'tf-edge-19': 'string literals in Calc',
-  'tf-edge-28': 'the word mod', 'tf-edge-30': 'binary 0b literals', 'tf-edge-31': 'string arithmetic', 'tf-hl-09': 'hline targets such as @+I',
-  'tf-lisp-07': 'remote() and Lisp', 'tf-name-8': 'remote()', 'tf-text-02': 'the E flag', 'tf-text-04': 'symbolic sums of text', 'tf-text-05': 'symbolic means of text',
-  'dt-11': 'the time now', 'dt-13': 'now() minus now()', 'dt-26': 'symbolic pi', 'dt-35': 'symbolic mode', 'dt-37': 'symbolic e',
-  'mk-7': 'names from a ^ row', 'mk-8': 'remote()', 'mk-9': 'remote()', 'nm-cell-13': 'a number with _', 'nm-cell-14': 'a 0x literal',
-  'nm-fmt-26': 'a | inside a format', 'nm-radix-fix': 'f2 in another base', 'tm-22': 'T with a digit', 'tm-24': 'N on a time',
+  'dt-11': 'the time now', 'sy-now-0': 'the time now', 'sy-now-2': 'the time now', 'sy-now-3': 'the time now',
+  'nm-cell-13': 'a number with _', 'lit-c02': 'a number with _', 'lit-f02': 'a number with _', 'lit-c10': 'a number with a comma', 'lit-f10': 'a number with a comma',
+  'hl2-13': '@+I with a column formula', 'sy-pi-07': 'pi with the N flag',
 };
 
 for (const c of cases) {

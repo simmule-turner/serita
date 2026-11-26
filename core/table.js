@@ -453,7 +453,7 @@ export function fieldInfo(text, line, col) {
   if (!t) return null;
   let row = 0;
   for (let i = t.start; i <= line; i++) if (!t.rows[i - t.start].rule) row++;
-  const c = Math.max(0, fieldAt(t.lines[line], col)) + 1;
+  const c = fieldAt(t.lines[line], col) + 1; // before the first bar it is column 0, as Org counts
   let letters = '';
   for (let n = c; n > 0; n = Math.floor((n - 1) / 26)) letters = String.fromCharCode(65 + ((n - 1) % 26)) + letters;
   return `line @${row}, col $${c}, ref @${row}$${c} or ${letters}${row}`;
