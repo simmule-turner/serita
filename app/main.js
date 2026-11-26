@@ -1979,6 +1979,13 @@ async function recalculateSheet(line, col) {
   return true;
 }
 
+function iterateBuffer() {
+  const b = currentBuffer();
+  const r = tblcmd.iterateBuffer(b.text);
+  if (r.text !== b.text) session.apply(b.id, { text: r.text });
+  message(r.error ?? r.message, !!r.error);
+}
+
 function recalculateBuffer() {
   const b = currentBuffer();
   const r = tblcmd.recalculateBuffer(b.text);
@@ -2654,6 +2661,7 @@ const COMMANDS = {
   'table-edit-formulas': () => editFormulas(),
   'table-plot': () => plotTable(),
   'table-recalculate-buffer': () => recalculateBuffer(),
+  'table-iterate-buffer': () => iterateBuffer(),
   'keep-offline': () => offlineDialog(),
   'table-create': () => tableCreate(),
   'table-field-info': () => { const at = tableHere(); const i = at && table.fieldInfo(currentBuffer().text, at.line, at.col); message(i ?? 'Not in table', !i); },
@@ -3023,7 +3031,7 @@ const PALETTE = [
   ['promote', 'org-metaleft', 'Promote'], ['demote', 'org-metaright', 'Demote'], ['promote-subtree', 'org-shiftmetaleft', 'Promote subtree'], ['demote-subtree', 'org-shiftmetaright', 'Demote subtree'],
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
   ['insert-heading', 'org-insert-heading-respect-content', 'Insert heading after subtree'], ['insert-heading-here', 'org-meta-return', 'Insert heading here'],
-  ['table-align', 'org-table-align', 'Align table'], ['table-sort', 'org-table-sort-lines', 'Sort table lines'], ['table-blank-field', 'org-table-blank-field', 'Blank table field'], ['table-sum', 'org-table-sum', 'Sum table column'], ['keep-offline', 'serita-keep-files-offline', 'Keep files offline', true], ['table-recalculate', 'org-table-recalculate', 'Recalculate table formulas'], ['table-formula', 'org-table-eval-formula', 'Edit a table formula'], ['table-edit-formulas', 'org-table-edit-formulas', 'Edit all table formulas'], ['table-plot', 'org-plot/gnuplot', 'Plot table', true], ['table-toggle-numbers', 'org-table-toggle-coordinate-overlays', 'Show table row and column numbers'], ['table-toggle-debug', 'org-table-toggle-formula-debugger', 'Debug table formulas'], ['table-recalculate-buffer', 'org-table-recalculate-buffer-tables', 'Recalculate all tables', true], ['table-create', 'org-table-create-or-convert-from-region', 'Create table or convert text'],
+  ['table-align', 'org-table-align', 'Align table'], ['table-sort', 'org-table-sort-lines', 'Sort table lines'], ['table-blank-field', 'org-table-blank-field', 'Blank table field'], ['table-sum', 'org-table-sum', 'Sum table column'], ['keep-offline', 'serita-keep-files-offline', 'Keep files offline', true], ['table-recalculate', 'org-table-recalculate', 'Recalculate table formulas'], ['table-formula', 'org-table-eval-formula', 'Edit a table formula'], ['table-edit-formulas', 'org-table-edit-formulas', 'Edit all table formulas'], ['table-plot', 'org-plot/gnuplot', 'Plot table', true], ['table-toggle-numbers', 'org-table-toggle-coordinate-overlays', 'Show table row and column numbers'], ['table-toggle-debug', 'org-table-toggle-formula-debugger', 'Debug table formulas'], ['table-recalculate-buffer', 'org-table-recalculate-buffer-tables', 'Recalculate all tables', true], ['table-iterate-buffer', 'org-table-iterate-buffer-tables', 'Recalculate all tables until stable', true], ['table-create', 'org-table-create-or-convert-from-region', 'Create table or convert text'],
   ['table-transpose', 'org-table-transpose-table-at-point', 'Transpose table'], ['table-field-info', 'org-table-field-info', 'Show field coordinates'], ['table-hline', 'org-table-insert-hline', 'Insert horizontal line'],
   ['table-copy-down', 'org-table-copy-down', 'Copy field down'], ['table-next-row', 'org-table-next-row', 'Next row'],
   ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],

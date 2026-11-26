@@ -105,6 +105,17 @@ export function recalculateBuffer(text, opts = {}) {
   return { text: out, count };
 }
 
+/** org-table-iterate-buffer-tables: recalculates every table over and over until the buffer stops changing. */
+export function iterateBuffer(text, opts = {}) {
+  let cur = text;
+  for (let i = 1; i <= MAX_ITERATIONS; i++) {
+    const next = recalculateBuffer(cur, opts).text;
+    if (next === cur) return { text: cur, message: `Convergence after ${i} iterations` };
+    cur = next;
+  }
+  return { text: cur, error: `No convergence after ${MAX_ITERATIONS} iterations` };
+}
+
 /**
  * Sets, replaces or (with an empty rhs) removes the formula for `lhs`, keeping it with the table's #+TBLFM: line; a table without one gets a line after it.
  * `rhs` is the expression with its flags, as typed after the `=`.

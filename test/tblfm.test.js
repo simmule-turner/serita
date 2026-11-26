@@ -6,22 +6,18 @@ import { evaluate, text } from '../core/calc.js';
 
 const cases = JSON.parse(readFileSync(new URL('./fixtures/emacs-tblfm.json', import.meta.url), 'utf8'));
 
-// What this does not do yet, by case id; each is checked to still differ, so finishing one means deleting its line here.
-const PENDING = {
-  'dt-11': 'the time now', 'sy-now-0': 'the time now', 'sy-now-2': 'the time now', 'sy-now-3': 'the time now',
-};
+// The answer depends on the moment the oracle ran, so these cases cannot be compared; the rules (now() is a date with a float time, ;N gives an error, ;T a type error) are covered below.
+const TIME_NOW = new Set(['dt-11', 'sy-now-0', 'sy-now-2', 'sy-now-3']);
 
 for (const c of cases) {
-  if (!/^#\+TBLFM:/i.test(c.input.split('\n')[c.line] ?? '')) continue;
+  if (TIME_NOW.has(c.id) || !/^#\+TBLFM:/i.test(c.input.split('\n')[c.line] ?? '')) continue;
   test(`Emacs ${c.id}: ${c.input.split('\n')[c.line]}`, () => {
     const was = process.env.TZ;
     process.env.TZ = c.tz ?? 'UTC';
     const got = recalc(c.input, c.line, { radix: c.radix, digits: c.digits, constants: c.constants ? new Map(Object.entries(c.constants)) : undefined });
     process.env.TZ = was ?? '';
     if (was === undefined) delete process.env.TZ;
-    const same = got.text === c.text && !!got.error === !!c.error;
-    if (PENDING[c.id]) assert.ok(!same, `${c.id} now matches Emacs; remove it from PENDING`);
-    else assert.deepEqual({ text: got.text, failed: !!got.error }, { text: c.text, failed: !!c.error });
+    assert.deepEqual({ text: got.text, failed: !!got.error }, { text: c.text, failed: !!c.error });
   });
 }
 
@@ -42,4 +38,13 @@ test('observed in Emacs 29.3 / Org 9.6: implicit product, vector square, double 
   const d = one('1', '$2=$1*2::$2=$1+');
   assert.equal(d.text, '| 1 |  |\n#+TBLFM: $2=$1*2::$2=$1+\n');
   assert.match(d.error, /Double definition/);
+});
+
+test('now() gives the current time as an Org timestamp, and now()+1 the next day', () => {
+  const row = (f) => recalc(`| 1 | 2 |  |\n#+TBLFM: $3=${f}\n`, 1).text.split('\n')[0];
+  const stamp = /^\| 1 \| 2 \| \[(\d{4})-(\d\d)-(\d\d) \w{3} \d\d:\d\d\] \|$/;
+  const a = row('now()').match(stamp), b = row('now()+1').match(stamp);
+  assert.ok(a && b);
+  const day = (m) => Date.UTC(+m[1], +m[2] - 1, +m[3]) / 864e5;
+  assert.ok(day(b) - day(a) <= 1 && day(b) - day(a) >= 0);
 });

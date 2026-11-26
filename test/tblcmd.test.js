@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { recalculate, recalculateBuffer, setFormula, formulasOf, evalFieldFormula, editorText, installFormulas, historyText } from '../core/tblcmd.js';
+import { recalculate, recalculateBuffer, iterateBuffer, setFormula, formulasOf, evalFieldFormula, editorText, installFormulas, historyText } from '../core/tblcmd.js';
 
 const cases = JSON.parse(readFileSync(new URL('./fixtures/emacs-tblcmd.json', import.meta.url), 'utf8'));
 const MODE = { 'C-c *': 'row', 'C-u C-c *': 'all', 'C-u C-u C-c *': 'iterate' };
@@ -64,3 +64,13 @@ test('stopping the formula debugger keeps the fields before the one it stopped a
   assert.equal(r.text.split('\n')[3], '| 3 | 4 |   |');
   assert.equal(recalculate(t, 2, 'all', { trace: [], limit: 0 }).text, t);
 });
+
+const iterateCases = JSON.parse(readFileSync(new URL('./fixtures/emacs-iterate.json', import.meta.url), 'utf8'));
+for (const c of iterateCases) {
+  test(`Emacs ${c.id}: org-table-iterate-buffer-tables, ${c.question}`, () => {
+    const r = iterateBuffer(c.input);
+    assert.equal(r.text, c.text);
+    assert.equal(!!r.error, !!c.error);
+    assert.deepEqual(r.message ? [r.message] : [], c.texts);
+  });
+}

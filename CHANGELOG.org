@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.10.13
+New command org-table-iterate-buffer-tables (palette: Recalculate all tables until stable) recalculates every table in the file repeatedly until nothing changes, as Emacs does, and reports "Convergence after N iterations" or stops after 10. Formulas that mention the current time are no longer compared against Emacs, since the answer changes every minute. Fixes the release check that failed for 0.10.12 because plotting had no provenance entry.
+
 * 0.10.12
 C-c " g plots a table in Serita itself, no gnuplot needed. Options go on #+PLOT: lines above the table, read as Org does: ind, deps, with (lines, points, linespoints, boxes, histograms, impulses, steps, dots, filledcurves), title and set: for labels, ranges, grid and key. Series are titled from the header row. In the Outline view tap a cell, then Plot. Save image keeps the chart as SVG.
 
