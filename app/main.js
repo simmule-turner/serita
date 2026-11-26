@@ -36,6 +36,7 @@ import { duplicateLine, indentLine, killLine, killWholeLine, lineInfo, lineStart
 import { createKillRing } from '../core/killring.js';
 import * as table from '../core/table.js';
 import * as tblcmd from '../core/tblcmd.js';
+import * as plot from '../core/plot.js';
 import { lineAt, project, toFull, toShown, touchedFold } from '../core/projection.js';
 import { renderOutline } from './ui/outline-view.js';
 import { TEXT_KEYS, chordOf, createKeymap } from './ui/keys.js';
@@ -2012,6 +2013,27 @@ function applyFormula(line, col, lhs, body, place) {
   if (said) message(said);
 }
 
+/** C-c " g: the table's #+PLOT: chart in a sheet, with the image to save. */
+async function plotTable(line) {
+  const at = line === undefined ? tableHere() : { line };
+  if (!at) { message('Not in table', true); return; }
+  let model;
+  try { model = plot.plotModel(currentBuffer().text, at.line); } catch (e) { message(e.message, true); return; }
+  const svg = plot.plotSvg(model);
+  const v = await panel((sheet, close) => {
+    const box = h('div', { class: 'plot' });
+    box.innerHTML = svg;
+    put(sheet, h('h2', {}, model.title || 'Plot'), box,
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Close'), h('button', { class: 'primary', onclick: () => close('save') }, 'Save image')));
+  });
+  if (v !== 'save') return;
+  const url = URL.createObjectURL(new Blob([plot.plotSvg(model, { width: 640, height: 440, titleInside: true })], { type: 'image/svg+xml' }));
+  const a = h('a', { href: url, download: `${(model.title || 'plot').replace(/[^\w-]+/g, '-')}.svg` });
+  document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  message('Saved the plot as an SVG image');
+}
+
 /** C-c ' : all of the table's formulas in one sheet. */
 async function editFormulas(line) {
   const at = line === undefined ? tableHere() : { line };
@@ -2095,11 +2117,13 @@ async function cellSheet(line, j) {
           h('button', { class: 'item', onclick: () => close('column') }, h('span', {}, 'Column'), h('span', { class: 'meta' }, '▾')),
           h('button', { class: 'item', onclick: () => close('sort') }, h('span', {}, 'Sort'), h('span', { class: 'meta' }, '▾')),
           h('button', { class: 'item', onclick: () => close('recalculate') }, h('span', {}, 'Recalculate'), h('span', { class: 'meta' }, '▾')),
+          h('button', { class: 'item', onclick: () => close('plot') }, h('span', {}, 'Plot')),
           h('button', { class: 'item', onclick: () => close('formulas') }, h('span', {}, 'Formulas'), h('span', { class: 'meta' }, formulaCount(b.text, line)))),
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Close')));
     });
     if (what === undefined) return;
     if (what === 'recalculate') { if (await recalculateSheet(line, at(), 'outline')) return; continue; }
+    if (what === 'plot') { await plotTable(line); if (dismissed) return; continue; }
     if (what === 'formulas') { if (await formulasSheet(line, j, rowNo)) return; continue; }
     if (what === 'edit') {
       const v2 = await askText({ prompt: 'Cell:', title: `Edit ${columnName(j)}${rowNo}`, value, ok: 'Save' });
@@ -2628,6 +2652,7 @@ const COMMANDS = {
   'table-toggle-numbers': () => { if (!tableHere()) { message('Not in table', true); return; } tableNumbers = !tableNumbers; message(`Tables Row/Column numbers display turned ${tableNumbers ? 'on' : 'off'}`); render(); },
   'table-toggle-debug': () => { formulaDebug = !formulaDebug; message(`Formula debugging has been turned ${formulaDebug ? 'on' : 'off'}`); },
   'table-edit-formulas': () => editFormulas(),
+  'table-plot': () => plotTable(),
   'table-recalculate-buffer': () => recalculateBuffer(),
   'keep-offline': () => offlineDialog(),
   'table-create': () => tableCreate(),
@@ -2998,7 +3023,7 @@ const PALETTE = [
   ['promote', 'org-metaleft', 'Promote'], ['demote', 'org-metaright', 'Demote'], ['promote-subtree', 'org-shiftmetaleft', 'Promote subtree'], ['demote-subtree', 'org-shiftmetaright', 'Demote subtree'],
   ['move-up', 'org-metaup', 'Move up'], ['move-down', 'org-metadown', 'Move down'],
   ['insert-heading', 'org-insert-heading-respect-content', 'Insert heading after subtree'], ['insert-heading-here', 'org-meta-return', 'Insert heading here'],
-  ['table-align', 'org-table-align', 'Align table'], ['table-sort', 'org-table-sort-lines', 'Sort table lines'], ['table-blank-field', 'org-table-blank-field', 'Blank table field'], ['table-sum', 'org-table-sum', 'Sum table column'], ['keep-offline', 'serita-keep-files-offline', 'Keep files offline', true], ['table-recalculate', 'org-table-recalculate', 'Recalculate table formulas'], ['table-formula', 'org-table-eval-formula', 'Edit a table formula'], ['table-edit-formulas', 'org-table-edit-formulas', 'Edit all table formulas'], ['table-toggle-numbers', 'org-table-toggle-coordinate-overlays', 'Show table row and column numbers'], ['table-toggle-debug', 'org-table-toggle-formula-debugger', 'Debug table formulas'], ['table-recalculate-buffer', 'org-table-recalculate-buffer-tables', 'Recalculate all tables', true], ['table-create', 'org-table-create-or-convert-from-region', 'Create table or convert text'],
+  ['table-align', 'org-table-align', 'Align table'], ['table-sort', 'org-table-sort-lines', 'Sort table lines'], ['table-blank-field', 'org-table-blank-field', 'Blank table field'], ['table-sum', 'org-table-sum', 'Sum table column'], ['keep-offline', 'serita-keep-files-offline', 'Keep files offline', true], ['table-recalculate', 'org-table-recalculate', 'Recalculate table formulas'], ['table-formula', 'org-table-eval-formula', 'Edit a table formula'], ['table-edit-formulas', 'org-table-edit-formulas', 'Edit all table formulas'], ['table-plot', 'org-plot/gnuplot', 'Plot table', true], ['table-toggle-numbers', 'org-table-toggle-coordinate-overlays', 'Show table row and column numbers'], ['table-toggle-debug', 'org-table-toggle-formula-debugger', 'Debug table formulas'], ['table-recalculate-buffer', 'org-table-recalculate-buffer-tables', 'Recalculate all tables', true], ['table-create', 'org-table-create-or-convert-from-region', 'Create table or convert text'],
   ['table-transpose', 'org-table-transpose-table-at-point', 'Transpose table'], ['table-field-info', 'org-table-field-info', 'Show field coordinates'], ['table-hline', 'org-table-insert-hline', 'Insert horizontal line'],
   ['table-copy-down', 'org-table-copy-down', 'Copy field down'], ['table-next-row', 'org-table-next-row', 'Next row'],
   ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],

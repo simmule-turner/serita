@@ -100,3 +100,21 @@ A row starting with $ holds name=value parameters; rows marked # are the ones re
 | $ | rate=10 |       |
 | # |       3 |       |
 #+TBLFM: $3=$2*$rate
+
+** Plot a table
+C-c " g plots the table at the cursor (in the Outline view: tap a cell, then Plot). Options go on a #+PLOT: line directly above the table. The first row above a rule gives the series names.
+
+#+PLOT: title:"Sales by month" ind:1 deps:(2 3) with:linespoints set:("ylabel 'units'" "grid")
+| month | north | south |
+|-------+-------+-------|
+|     1 |     2 |     3 |
+|     2 |     4 |     5 |
+|     3 |     6 |     7 |
+
+Text in the first column becomes the labels along the bottom, and bars read well with with:histograms.
+
+#+PLOT: title:"Units" ind:1 deps:(2) with:histograms
+| fruit  | units |
+|--------+-------|
+| apples |     5 |
+| pears  |     3 |

@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.10.12
+C-c " g plots a table in Serita itself, no gnuplot needed. Options go on #+PLOT: lines above the table, read as Org does: ind, deps, with (lines, points, linespoints, boxes, histograms, impulses, steps, dots, filledcurves), title and set: for labels, ranges, grid and key. Series are titled from the header row. In the Outline view tap a cell, then Plot. Save image keeps the chart as SVG.
+
 * 0.10.11
 C-c { now steps through a recalculation: for each field a sheet shows how its formula was read and calculated, and you Continue or Stop (Stop keeps the fields already done). C-c } labels horizontal lines with their number and the column numbers. C-c ' lists formulas in Emacs's order. A formula defined twice, a range past the last column, ~1 2~ as a product and ~[1,5]^2~ now behave as in Emacs.
 

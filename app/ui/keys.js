@@ -88,6 +88,7 @@ export const TEXT_KEYS = Object.freeze({
   'C-c *': 'table-recalculate',
   'C-c =': 'table-formula',
   "C-c '": 'table-edit-formulas',
+  'C-c " g': 'table-plot',
   'C-c }': 'table-toggle-numbers',
   'C-c {': 'table-toggle-debug',
   'C-c +': 'table-sum',

@@ -1,0 +1,198 @@
+[
+{
+"id": "p8-00",
+"input": "#+PLOT: \n| x | a | b |\n|---+---+---|\n| 1 | 2 | 3 |\n| 2 | 4 | 5 |\n| 3 | 6 | 7 |\n",
+"titles": [
+"x",
+"a",
+"b"
+],
+"with": [
+"lines",
+"lines",
+"lines"
+],
+"sets": []
+},
+{
+"id": "p8-02",
+"input": "#+PLOT: ind:1 deps:(2 3)\n| x | a | b |\n|---+---+---|\n| 1 | 2 | 3 |\n| 2 | 4 | 5 |\n| 3 | 6 | 7 |\n",
+"titles": [
+"a",
+"b"
+],
+"with": [
+"lines",
+"lines"
+],
+"sets": []
+},
+{
+"id": "p8-03",
+"input": "#+PLOT: ind:1 deps:(3)\n| x | a | b |\n|---+---+---|\n| 1 | 2 | 3 |\n| 2 | 4 | 5 |\n| 3 | 6 | 7 |\n",
+"titles": [
+"b"
+],
+"with": [
+"lines"
+],
+"sets": []
+},
+{
+"id": "p8-04",
+"input": "#+PLOT: deps:(2 3)\n| x | a | b |\n|---+---+---|\n| 1 | 2 | 3 |\n| 2 | 4 | 5 |\n| 3 | 6 | 7 |\n",
+"titles": [
+"a",
+"b"
+],
+"with": [
+"lines",
+"lines"
+],
+"sets": []
+},
+{
+"id": "p8-10",
+"input": "#+PLOT: ind:1 deps:(2) with:lines\n| x | a | b |\n|---+---+---|\n| 1 | 2 | 3 |\n| 2 | 4 | 5 |\n| 3 | 6 | 7 |\n",
+"titles": [
+"a"
+],
+"with": [
+"lines"
+],
+"sets": []
+},
+{
+"id": "p8-14",
+"input": "#+PLOT: ind:1 deps:(2) with:histograms\n| x | a | b |\n|---+---+---|\n| 1 | 2 | 3 |\n| 2 | 4 | 5 |\n| 3 | 6 | 7 |\n",
+"titles": [
+"a"
+],
+"with": [
+"histograms"
+],
+"sets": []
+},
+{
+"id": "p8-20",
+"input": "#+PLOT: ind:1 deps:(2 3) labels:(\"A\" \"B\")\n| x | a | b |\n|---+---+---|\n| 1 | 2 | 3 |\n| 2 | 4 | 5 |\n| 3 | 6 | 7 |\n",
+"titles": [
+"a",
+"b"
+],
+"with": [
+"lines",
+"lines"
+],
+"sets": []
+},
+{
+"id": "p8-21",
+"input": "#+PLOT: ind:1 deps:(2 3) labels:(\"X\" \"A\" \"B\")\n| x | a | b |\n|---+---+---|\n| 1 | 2 | 3 |\n| 2 | 4 | 5 |\n| 3 | 6 | 7 |\n",
+"titles": [
+"a",
+"b"
+],
+"with": [
+"lines",
+"lines"
+],
+"sets": []
+},
+{
+"id": "p8-22",
+"input": "#+PLOT: ind:1 deps:(2) set:\"xlabel 'month'\"\n| x | a | b |\n|---+---+---|\n| 1 | 2 | 3 |\n| 2 | 4 | 5 |\n| 3 | 6 | 7 |\n",
+"titles": [
+"a"
+],
+"with": [
+"lines"
+],
+"sets": [
+"xlabel 'month'"
+]
+},
+{
+"id": "p8-23",
+"input": "#+PLOT: ind:1 deps:(2) set:(\"grid\" \"key off\")\n| x | a | b |\n|---+---+---|\n| 1 | 2 | 3 |\n| 2 | 4 | 5 |\n| 3 | 6 | 7 |\n",
+"titles": [
+"a"
+],
+"with": [
+"lines"
+],
+"sets": [
+"(grid key off)"
+]
+},
+{
+"id": "p8-24",
+"input": "#+PLOT: ind:1 deps:(2) set:\"yrange [0:10]\"\n| x | a | b |\n|---+---+---|\n| 1 | 2 | 3 |\n| 2 | 4 | 5 |\n| 3 | 6 | 7 |\n",
+"titles": [
+"a"
+],
+"with": [
+"lines"
+],
+"sets": [
+"yrange [0:10]"
+]
+},
+{
+"id": "p8-26",
+"input": "#+PLOT: ind:1 deps:(2) unset:\"grid\"\n| x | a | b |\n|---+---+---|\n| 1 | 2 | 3 |\n| 2 | 4 | 5 |\n| 3 | 6 | 7 |\n",
+"titles": [
+"a"
+],
+"with": [
+"lines"
+],
+"sets": [
+"grid"
+]
+},
+{
+"id": "p8-27",
+"input": "#+PLOT: ind:1 deps:(2) ymin:0 ymax:10\n| x | a | b |\n|---+---+---|\n| 1 | 2 | 3 |\n| 2 | 4 | 5 |\n| 3 | 6 | 7 |\n",
+"titles": [
+"a"
+],
+"with": [
+"lines"
+],
+"sets": []
+},
+{
+"id": "p8-31",
+"input": "#+PLOT: ind:1 deps:(2)\n| m | v |\n|---+---|\n| Jan | 2 |\n| Feb | 4 |\n",
+"titles": [
+"v"
+],
+"with": [
+"lines"
+],
+"sets": []
+},
+{
+"id": "p8-33",
+"input": "#+PLOT: ind:1 deps:(2)\n| 1 | 2 |\n| 2 | 4 |\n",
+"titles": [
+"2"
+],
+"with": [
+"lines"
+],
+"sets": []
+},
+{
+"id": "p8-34",
+"input": "#+PLOT: ind:1 deps:(2) xticlabels:1\n| x | a | b |\n|---+---+---|\n| 1 | 2 | 3 |\n| 2 | 4 | 5 |\n| 3 | 6 | 7 |\n",
+"titles": [
+"a"
+],
+"with": [
+"lines"
+],
+"sets": []
+}
+]
