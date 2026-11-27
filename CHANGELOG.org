@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.7
+The extra menu is now a floating ☰ button at the bottom right, opposite Back, and Menu is as it was. A menu row that goes to a heading with org-find-olp finds it in the file as it is open, so unsaved edits no longer shift the line, and it stays in the Outline view and scrolls the heading into view instead of switching to Text.
+
 * 0.11.6
 An extra menu: an easy-menu-define form in the init file, valid in Emacs too, shows at the top of Menu, above More. Capture gains template groups, running a template by key, date and week trees (file+datetree, file+weektree, file+olp+datetree and the +prompt forms) and :clock-in with :clock-keep and :clock-resume. Table export turns Org markup in cells into LaTeX, HTML, Texinfo and Unicode forms, with the full entity table. The Outline view shows subtree rows to cut, copy and paste, and format-time-string in your own functions uses local time.
 

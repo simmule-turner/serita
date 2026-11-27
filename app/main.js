@@ -261,6 +261,7 @@ function render() {
   $('outline').hidden = mode !== 'outline';
   $('keyrow').hidden = !(mode === 'text' && emacsKeys() && shown);
   showBack();
+  showExtra();
   // With the key row shown, tapping the text does not raise the on-screen keyboard; the keyboard button does.
   editor.inputMode = $('keyrow').hidden || softKeyboard ? 'text' : 'none';
   editor.disabled = !shown;
@@ -1115,7 +1116,7 @@ $('btn-view').addEventListener('click', async () => {
   else if (what === 'calendar') await calendarScreen();
   else if (what) setView(what);
 });
-/** The menu without an extra menu: Commands, Capture and Settings. With one, it is what "More" shows. */
+/** The Menu button: Commands, Capture and Settings. */
 async function builtinMenu() {
   const what = await choose(null, [
     waiting ? { label: 'Restart to update', meta: `${VERSION} to ${waiting.version}`, value: 'restart' } : null,
@@ -1146,9 +1147,8 @@ function menuCondition(c) {
   return undefined;
 }
 
-/** The sheet for one level of the extra menu: its rows, separators and submenus. Returns what was chosen: a row, a submenu, MORE or undefined. */
-const MORE = Symbol('more');
-function menuLevel(title, rows, { more = false } = {}) {
+/** The sheet for one level of the extra menu: its rows, separators and submenus. Returns what was chosen: a row, a submenu or undefined. */
+function menuLevel(title, rows) {
   const items = [];
   for (const r of rows) {
     if (r.kind === 'separator') { if (items.length && !items[items.length - 1].separator) items.push({ separator: true }); }
@@ -1160,7 +1160,6 @@ function menuLevel(title, rows, { more = false } = {}) {
     }
   }
   while (items.length && items[items.length - 1].separator) items.pop();
-  if (more) items.push({ separator: true }, { label: 'More', meta: '›', value: MORE });
   return choose(title, items, { back: title ? '‹ Back' : null });
 }
 
@@ -1191,7 +1190,9 @@ async function runMenuCallback(row, menu) {
           return;
         } catch (e) {
           if (!(e instanceof NeedFile) || tries > 20) throw e;
-          const f = await app.storage.read(e.file);
+          // the file as it is open, with edits not yet saved, so the line found is the line shown
+          const open = session.state().buffers.find((b) => bufferName(b) === e.file);
+          const f = open ?? (await app.storage.read(e.file));
           if (!f) throw new Error(`${e.file} does not exist`);
           files.set(e.file, f.text);
         }
@@ -1204,20 +1205,27 @@ async function runMenuCallback(row, menu) {
 async function visitOffset(name, offset) {
   const text = (session.state().buffers.find((b) => bufferName(b) === name)?.text) ?? (await app.storage.read(name))?.text ?? '';
   const line = text.slice(0, offset).split('\n').length - 1;
-  await visitLine(name, line);
+  await visitLine(name, line, { keepView: true });
 }
 
-$('btn-menu').addEventListener('click', async () => {
+$('btn-menu').addEventListener('click', () => builtinMenu());
+
+/** The floating Extra button, at the right as Back is at the left, is there when the init file defines a menu. */
+function showExtra() {
+  const x = extraMenu();
+  $('extra').hidden = !x?.items;
+}
+$('extra').addEventListener('mousedown', (e) => e.preventDefault()); // an open keyboard and the cursor stay as they are
+$('extra').addEventListener('click', async () => {
   const x = extraMenu();
   if (x?.error) message(`Extra menu: ${x.error.message}`, true);
-  if (!x?.items) { await builtinMenu(); return; }
+  if (!x?.items) return;
   const trail = [];
   for (;;) {
     const level = trail.length ? trail[trail.length - 1] : null;
-    const pick = await menuLevel(level?.label ?? null, level ? level.items : x.items, { more: !level });
+    const pick = await menuLevel(level?.label ?? null, level ? level.items : x.items);
     if (pick === BACK) { trail.pop(); continue; }
     if (pick === undefined) return;
-    if (pick === MORE) { await builtinMenu(); return; }
     if (pick.kind === 'submenu') { trail.push(pick); continue; }
     await runMenuCallback(pick, x);
     return;
@@ -1386,18 +1394,24 @@ async function bufferFor(name) {
 let lastRefile = null;
 
 /** Takes the buffer shown to the line of a heading, as visiting it does. */
-async function visitLine(name, line) {
+async function visitLine(name, line, { keepView = false } = {}) {
   const here = currentBuffer();
   const x = bufferName(here) === name ? here : await bufferFor(name);
   if (!x) { failure(new Error(`${name} does not exist`)); return false; }
   leaveHere();
   session.select(x.id);
-  setView('text');
+  const outline = keepView && viewMode() === 'outline';
+  if (!outline) setView('text');
   // as Emacs does when it goes to a refile target: the folds that hide it open
   const b = currentBuffer();
   const opened = reveal(analyze(b.text).foldables, b.folds, Math.max(0, line));
   if (JSON.stringify(opened) !== JSON.stringify(b.folds)) session.setFolds(b.id, opened);
   placeCursor(Math.max(0, line));
+  // The Outline view stays: its row for the heading is brought into view
+  if (outline) {
+    await new Promise((r) => setTimeout(r, 0));
+    $('outline').querySelector(`.ol-head[data-line="${Math.max(0, line)}"]`)?.scrollIntoView({ block: 'center' });
+  }
   return true;
 }
 

@@ -87,7 +87,7 @@ Settings, Emacs, Init file names a Lisp file that is run at startup and by Reloa
 #+end_src
 
 *** Extra menu
-An ~easy-menu-define~ form in the init file is a menu at the top of Menu, above More. A row names a command, a capture or an agenda, or a function you defined; ~"---"~ is a separator and a list is a submenu. In Emacs the same form adds a menu to the menu bar.
+An ~easy-menu-define~ form in the init file is a menu behind the ☰ button at the bottom right, opposite Back; Menu is unchanged. A row names a command, a capture or an agenda, or a function you defined; ~"---"~ is a separator and a list is a submenu. In Emacs the same form adds a menu to the menu bar.
 #+begin_src emacs-lisp
 (easy-menu-define my-menu global-map "My menu"
   '("My menu"

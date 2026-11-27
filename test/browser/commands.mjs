@@ -612,22 +612,47 @@ ok((await sel()) === '0-0' && (await text()) === '* Alpha\n* Gamma\n** Beta\nbod
   await p3.reload();
   await p3.getByRole('button', { name: 'Run', exact: true }).click();
   await p3.waitForFunction(() => document.getElementById('message').textContent.startsWith('Init file: 1 file'));
+  ok(await p3.locator('#extra').isVisible(), 'the Extra button is shown at the right when the init file defines a menu');
+  const ex = await p3.locator('#extra').boundingBox();
+  ok(ex.x + ex.width > 393 - 20 && ex.y > 600, 'the Extra button is at the bottom right');
   await p3.click('#btn-menu');
-  ok((await p3.locator('.sheet .item').allTextContents()).join('|') === 'Journal|Sub›|More›', 'the extra menu shows its rows, then More');
-  await p3.locator('.sheet .item', { hasText: 'More' }).click();
-  ok((await p3.locator('.sheet .item').allTextContents()).join('|') === 'Commands|Capture|Settings', 'More shows the built-in menu as before');
+  ok((await p3.locator('.sheet .item').allTextContents()).join('|') === 'Commands|Capture|Settings', 'the Menu button shows the built-in menu as before');
   await p3.keyboard.press('Escape');
-  await p3.click('#btn-menu'); await p3.locator('.sheet .item', { hasText: 'Sub' }).click();
+  await p3.click('#extra');
+  ok((await p3.locator('.sheet .item').allTextContents()).join('|') === 'Journal|Sub›', 'the extra menu shows its rows');
+  await p3.locator('.sheet .item', { hasText: 'Sub' }).click();
   ok((await p3.locator('.sheet .item').allTextContents()).join('|') === 'Cal', 'a submenu opens its rows');
   await p3.keyboard.press('Escape');
-  await p3.click('#btn-menu'); await p3.locator('.sheet .item', { hasText: 'Journal' }).click();
+  await p3.click('#extra'); await p3.locator('.sheet .item', { hasText: 'Journal' }).click();
   ok((await p3.locator('.sheet h2').first().textContent()).startsWith('Capture:'), 'a row with (org-capture nil "z") opens that template without the list');
   await p3.keyboard.press('Escape');
-  await p3.click('#btn-menu'); await p3.locator('.sheet .item', { hasText: 'More' }).click(); await p3.getByRole('button', { name: 'Capture', exact: true }).click();
+  await p3.click('#btn-menu'); await p3.getByRole('button', { name: 'Capture', exact: true }).click();
   ok((await p3.locator('.sheet .item').allTextContents()).join('|') === 'w  Work›|z  Zedz.org ›', 'the capture list shows the group and the template');
   await p3.keyboard.press('w');
   ok((await p3.locator('.sheet h2').first().textContent()) === 'Capture w' && (await p3.locator('.sheet .item').count()) === 1, 'typing a group key opens the entries under it');
   await p3.close();
+}
+{
+  // An extra-menu row that goes to a heading keeps the Outline view and brings that heading into view
+  const p4 = await (await browser.newContext({ viewport: { width: 393, height: 500 } })).newPage();
+  await p4.goto(`${base}/`); await p4.waitForSelector('.tab.current');
+  const initText = `(defun go (file path) (find-file file) (goto-char (org-find-olp (cons file path))))\n(easy-menu-define m nil "Menu" '("Menu" ["Current" (go "local:j.org" (list "Bag" "Track" (format-time-string "%Y-%m")))]))\n`;
+  const filler = Array.from({ length: 40 }, (_, i) => `* Filler ${i}\ntext\n`).join('');
+  const now = new Date(); const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  const journal = `${filler}* Bag\n** Track\n*** ${ym}\ntarget body\n*** 1999-01\n`;
+  await p4.evaluate(async ([init, j]) => {
+    await new Promise((res, rej) => { const r = indexedDB.open('serita-local', 1); r.onsuccess = () => { const x = r.result.transaction('files', 'readwrite'); x.objectStore('files').put({ text: init, version: 'v1' }, 'init.el'); x.objectStore('files').put({ text: j, version: 'v1' }, 'j.org'); x.oncomplete = res; x.onerror = rej; }; r.onerror = rej; });
+    localStorage.setItem('serita.settings', JSON.stringify({ 'serita-init-file': 'local:init.el', 'view.mode': 'outline' }));
+  }, [initText, journal]);
+  await p4.reload();
+  await p4.getByRole('button', { name: 'Run', exact: true }).click();
+  await p4.waitForFunction(() => document.getElementById('message').textContent.startsWith('Init file: 1 file'));
+  await p4.click('#extra'); await p4.locator('.sheet .item', { hasText: 'Current' }).click();
+  await p4.waitForSelector(`.ol-head:has-text("${ym}")`);
+  ok(await p4.locator('#outline').isVisible(), 'a row that goes to a heading keeps the Outline view');
+  const box = await p4.locator(`.ol-head:has-text("${ym}")`).boundingBox();
+  ok(box && box.y > 0 && box.y < 500, 'the heading the row finds is in view');
+  await p4.close();
 }
 ok(errors.length === 0, `no page errors ${errors.join('; ')}`);
 await close();
