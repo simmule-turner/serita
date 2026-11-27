@@ -3712,7 +3712,7 @@ function runChord(chord, event, fromRow) {
     if (!VERTICAL.has(r.command)) goal = null;
     invoke(r.command);
     if ($('message').classList.contains('error')) beep();
-  } else if (r.kind === 'prefix') { event.preventDefault(); message(r.echo); }
+  } else if (r.kind === 'prefix') { event.preventDefault(); const a = argLabel(argState); message(a ? `${a} ${r.echo}` : r.echo); } // C-2 C-c- keeps the argument in the echo, as Emacs does
   else if (r.echo) { event.preventDefault(); message(r.echo, true); beep(); }
   else if (fromRow) { event.preventDefault(); message(`${chord} is undefined`, true); beep(); }
 }
@@ -3740,6 +3740,14 @@ function moveCursor(key, extend) {
 const TABLE_ONLY = new Set(['RET', 'S-RET', 'M-S-<up>', 'M-S-<down>', 'C-c RET', 'C-c ?']);
 const HEADING_ONLY = new Set(['S-<up>', 'S-<down>', 'S-<left>', 'S-<right>']);
 const SOFT_KEYS = ['Unidentified', 'Process'];
+/** S-left and S-right where Org has no use for them (not on a heading, a timestamp or an item line) select nothing unless org-support-shift-select is on, as in Emacs. */
+function shiftSelectRefused(chord) {
+  if ((chord !== 'S-<left>' && chord !== 'S-<right>') || setting('org-support-shift-select') === 't') return false;
+  if (kindAtCursor().kind === 'heading' || stampAt(currentBuffer().text, cursorOffset()) || lists.onItemLine(currentBuffer().text, listPoint().line)) return false;
+  message('To use shift-selection with Org mode, customize ‘org-support-shift-select’', true);
+  beep();
+  return true;
+}
 const MODIFIER_KEYS = ['Control', 'Alt', 'Meta', 'Shift'];
 
 editor.addEventListener('keydown', (e) => {
@@ -3756,6 +3764,7 @@ editor.addEventListener('keydown', (e) => {
   }
   if (chord === 'RET' && keymap.pending() === '' && editor.value[editor.selectionStart] === undefined) return;
   if (chord === 'RET' && keymap.pending() === '' && editor.value[editor.selectionStart] === '\n') return; // at the end of the line RET stays a newline
+  if (shiftSelectRefused(chord)) { e.preventDefault(); return; }
   if (HEADING_ONLY.has(chord) && kindAtCursor().kind !== 'heading' && !stampAt(currentBuffer().text, cursorOffset()) && !((chord === 'S-<left>' || chord === 'S-<right>') && lists.onItemLine(currentBuffer().text, listPoint().line))) return; // elsewhere the arrows select, as usual
   if ((chord === 'C-c' || chord === 'C-x' || chord === 'C-v') && !held.ctrl && keymap.pending() === '') return; // a keyboard's own C-c, C-x and C-v stay copy, cut and paste; the prefixes come from the key row
   if (chord) runChord(chord, e, fromRow);
@@ -3838,6 +3847,7 @@ const keyRow = createKeyRow({
     }
     const chord = chordOf({ key, ...mods });
     // Shift and an arrow from the key row: on a heading, or up and down on a timestamp, they are the Org keys, as from a keyboard.
+    if (plainArrow && shiftSelectRefused(chord)) return;
     if (plainArrow && !(HEADING_ONLY.has(chord) && (kindAtCursor().kind === 'heading' || stampAt(currentBuffer().text, cursorOffset()) || ((chord === 'S-<left>' || chord === 'S-<right>') && lists.onItemLine(currentBuffer().text, listPoint().line))))) { moveCursor(key, true); return; }
     if (chord) runChord(chord, { preventDefault() {} }, true);
   },

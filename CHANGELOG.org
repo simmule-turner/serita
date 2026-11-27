@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.16
+Closer to Emacs with the keys. S-left and S-right off a heading, a timestamp and a list item select nothing and say how to turn shift-selection on, the org-support-shift-select setting (t in the settings file); a prefix such as C-2 stays in the echo area while C-c waits for its next key.
+
 * 0.11.15
 The Outline date sheet on a task that already has a date: Today now picks today's date (it picked the task's date), the day marked as today is today, and tapping Set with the keyboard up no longer lands on a calendar day when the keyboard drops away.
 

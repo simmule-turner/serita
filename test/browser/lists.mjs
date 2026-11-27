@@ -77,6 +77,17 @@ await page.locator('#keyrow button', { hasText: 'Shift' }).click();
 await page.locator('#keyrow button', { hasText: '→' }).click();
 ok((await text()) === '* H\n- one\n    + A child item\n    + Another child\n' && (await page.evaluate(() => { const e = document.getElementById('editor'); return e.selectionStart === e.selectionEnd; })), 'the key row Shift and → change the bullet of a nested item and do not select');
 
+// C-2 C-c - picks the kind of bullet, typed as an on-screen keyboard does (text input with the key row's Ctrl held)
+await at('* H\n- one\n- two\n', 2, 3);
+const softCtrl = async (k) => { await page.locator('#keyrow button', { hasText: 'Ctrl' }).click(); await page.keyboard.insertText(k); };
+await softCtrl('2');
+const echo1 = await page.locator('#message').textContent();
+await softCtrl('c');
+const echo2 = await page.locator('#message').textContent();
+await page.keyboard.insertText('-');
+ok(echo1 === 'C-2-' && echo2 === 'C-2 C-c-', `the echo area shows C-2- and then C-2 C-c- (${echo1} / ${echo2})`);
+ok((await text()) === '* H\n1. one\n2. two\n', 'C-2 C-c - typed on the on-screen keyboard picks the bullet');
+
 // Bold over two lines shows its closing marker once in the Outline view
 await at('* H\nsome *bold\ntext* end\n', 1);
 await page.click('#btn-view'); await sheet.getByRole('button', { name: 'Outline', exact: true }).click();

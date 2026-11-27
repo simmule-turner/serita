@@ -50,6 +50,7 @@ const SIMPLE = {
   'org-log-repeat': ['org-log-repeat', word],
   'org-log-done': ['org-log-done', word],
   'org-log-reschedule': ['org-log-reschedule', word],
+  'org-support-shift-select': ['org-support-shift-select', bool],
   'org-log-redeadline': ['org-log-redeadline', word],
   'org-link-abbrev-alist': ['org-link-abbrev-alist', (v) => (v === null ? '' : printLisp(v))],
   'org-link-search-must-match-exact-headline': ['org-link-search-must-match-exact-headline', word],

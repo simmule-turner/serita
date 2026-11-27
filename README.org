@@ -43,7 +43,7 @@ Settings, Emacs, Emacs keys, turns on these keys in the Text view:
 - M-x :: runs a command by name. Type any words of the label or name; TAB completes, RET runs.
 - C-c C-c :: toggles the checkbox on the line; on a ~[/]~ or ~[%]~ cookie it recounts it.
 - M-RET, M-S-RET :: on a list item, start a new item (M-S-RET with a checkbox): above the item when the cursor is at the start of its text, otherwise the line breaks at the cursor and the rest becomes the new item. Numbered lists renumber.
-- RET :: in the text of a list item (Emacs keys on), breaks the line and indents the new one to the item's text. S-LEFT and S-RIGHT anywhere on an item's first line change the list's bullet as C-c - does.
+- RET :: in the text of a list item (Emacs keys on), breaks the line and indents the new one to the item's text. S-LEFT and S-RIGHT anywhere on an item's first line change the list's bullet as C-c - does; elsewhere off a heading and a timestamp they select nothing and say so, unless ~org-support-shift-select~ is ~t~ in the settings file.
 - C-c - :: on a list item, changes the bullet of the whole list to the next kind (-, +, 1., 1)); a number prefix picks the kind (0 is -, 1 is +, and so on; an indented list also has *). On a line of text or a heading, or on selected lines, it makes items.
 - C-c * :: turns an item or a line of text into a heading one level below the heading above, and a heading into text.
 - C-c ^ :: sorts the list the cursor is in: alphabetically, numerically, by time or by checkbox; a capital letter reverses. In a table it sorts the lines.

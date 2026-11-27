@@ -13,6 +13,7 @@ await page.waitForSelector('.tab.current');
 const sheet = page.locator('.sheet');
 const btn = (n) => sheet.getByRole('button', { name: n, exact: true });
 await page.click('#btn-menu'); await btn('Settings').click(); await btn(/28 settings/).click(); await btn(/Emacs keys/).click(); await btn('‹ Settings').click(); await btn('Close').click();
+const setting = async (v) => { await page.evaluate((x) => localStorage.setItem('serita.settings', JSON.stringify(x)), v); await page.reload(); await page.waitForSelector('.tab.current'); };
 const at = async (text, line) => {
   await page.fill('#editor', text);
   await page.evaluate((l) => { const e = document.getElementById('editor'); const o = e.value.split('\n').slice(0, l - 1).reduce((n, s) => n + s.length + 1, 0); e.focus(); e.setSelectionRange(o, o); }, line);
@@ -33,7 +34,11 @@ ok((await text()) === '#+TODO: TODO NEXT | DONE\n* NEXT A\n', 'S-left goes back 
 await at('* A\nbody\n', 2); await ctrl('c'); await ctrl('t');
 ok((await text()) === '* TODO A\nbody\n', 'C-c C-t on a body line changes its heading');
 await at('abc\n', 1); await page.keyboard.press('Shift+ArrowRight');
-ok(await page.evaluate(() => document.getElementById('editor').selectionEnd === 1), 'off a heading S-right still selects');
+ok(await page.evaluate(() => document.getElementById('editor').selectionEnd === 0) && (await page.locator('#message').textContent()).includes('org-support-shift-select'), 'off a heading, a stamp and an item S-right selects nothing and says how to turn it on (Emacs: li4-sel-*)');
+await setting({ 'view.emacsKeys': 'true', 'org-support-shift-select': 't' });
+await at('abc\n', 1); await page.keyboard.press('Shift+ArrowRight');
+ok(await page.evaluate(() => document.getElementById('editor').selectionEnd === 1), 'with org-support-shift-select on, S-right selects');
+await setting({ 'view.emacsKeys': 'true' });
 
 // Priority prompt (pri-set, pri-clear)
 await at('* TODO A\n', 1); await ctrl('c'); await page.keyboard.press(',');
