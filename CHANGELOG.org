@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.10
+The same features as 0.11.9, with the provenance record complete for the new list and logging tests so the release checks pass.
+
 * 0.11.9
 Lists, logging and links as in Emacs. M-RET, C-c -, C-c ^ and RET work on plain lists. Finishing a task can stamp CLOSED and ask for a closing note, new schedules and deadlines can leave a log line, keywords such as WAIT(w@/!) log state changes, and C-c C-z adds a note. Sparse trees take match expressions and multi-line regexps, emphasis runs over line breaks, radio targets turn matching words into links, typed dates take ++ and week numbers, and the Views, Filter and Act sheets open over the agenda.
 

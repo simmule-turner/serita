@@ -225,8 +225,8 @@ A separate repository holds questions (case files written by us) and results rec
 ### `test/datetree2.test.js`, `test/recalc-marks.test.js`, `test/fixtures/emacs-datetree2.json`, `test/fixtures/emacs-recalc-marks.json`
 - Written from: the Org manual's description of date and week trees and of recalculation marks, and observed Emacs 30.1 results with Org 9.7.11 for ISO-year week trees, month trees, prompted dates, and which rows a recalculation covers (conformance v0.1.68 and v0.1.69). No other project's code was consulted.
 
-### `core/lists.js`, `test/lists.test.js`, `test/fixtures/emacs-lists.json`, `test/fixtures/emacs-paste-subtree.json`
+### `core/lists.js`, `test/lists.test.js`, `test/lists2.test.js`, `test/browser/lists.mjs`, `test/fixtures/emacs-lists.json`, `test/fixtures/emacs-lists2.json`, `test/fixtures/emacs-paste-subtree.json`
 - Written from: the Org manual's chapter on plain lists (items, bullets, numbering, checkboxes, sorting) and observed Emacs 30.1 results with Org 9.7.11 for M-RET, M-S-RET, C-c -, org-toggle-item, org-toggle-heading, org-toggle-checkbox with prefix arguments, org-sort-list, list repair, item moves and indents, and org-paste-subtree with prefix arguments (conformance v0.1.73). No other project's code was consulted.
 
-### `core/lists.js` (logging), `core/timestamp.js` (addLogEntry, parseDate)
+### `test/logbook.test.js`, `test/browser/logging.mjs`, `test/fixtures/emacs-logging.json`
 - Logging, radio targets, multi-line emphasis, typed dates and list details were written from observed Emacs 30.1 results (conformance v0.1.74 and v0.1.75: lg-*, rt-*, me-*, dq-*, li2-*); no Emacs or Org source was read.
