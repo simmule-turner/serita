@@ -24,7 +24,7 @@ test('C-c is a prefix; C-c C-t runs the TODO command', () => {
 test('a key with no binding after a prefix says so, and C-g quits', () => {
   const k = createKeymap(TEXT_KEYS);
   k.press('C-c');
-  assert.deepEqual(k.press('C-z'), { kind: 'none', echo: 'C-c C-z is undefined' });
+  assert.deepEqual(k.press('C-y'), { kind: 'none', echo: 'C-c C-y is undefined' });
   k.press('C-c');
   assert.deepEqual(k.press('C-g'), { kind: 'none', echo: 'Quit' });
   assert.deepEqual(k.press('C-q'), { kind: 'none' });

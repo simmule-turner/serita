@@ -13,16 +13,22 @@ import { parse, DEFAULT_TODO } from './parse.js';
  */
 export function todoOptions(text) {
   const sequences = [];
+  const marks = {};
   for (const m of text.matchAll(/^[ \t]*#\+(?:SEQ_TODO|TYP_TODO|TODO):[ \t]*(.*)$/gim)) {
     const words = m[1].trim().split(/\s+/).filter(Boolean);
     const bar = words.indexOf('|');
     const clean = (w) => w.replace(/\(.*\)$/, '');
+    for (const w of words) {
+      // WORD(key@/!): what is logged on entering the state (before the /) and on leaving it (after): @ asks for a note, ! records the time
+      const m = /^(.+?)\((?:[^@!/)]*)([@!])?(?:\/([@!])?)?\)$/.exec(w);
+      if (m && (m[2] || m[3])) marks[m[1]] = { enter: { '@': 'note', '!': 'time' }[m[2]] ?? null, leave: { '@': 'note', '!': 'time' }[m[3]] ?? null };
+    }
     const open = (bar === -1 ? words.slice(0, -1) : words.slice(0, bar)).map(clean);
     const done = (bar === -1 ? words.slice(-1) : words.slice(bar + 1)).map(clean);
     if (open.length + done.length > 0) sequences.push({ open, done });
   }
   if (sequences.length === 0) sequences.push({ open: [...DEFAULT_TODO.open], done: [...DEFAULT_TODO.done] });
-  return { sequences, open: sequences.flatMap((s) => s.open), done: sequences.flatMap((s) => s.done) };
+  return { sequences, marks, open: sequences.flatMap((s) => s.open), done: sequences.flatMap((s) => s.done) };
 }
 
 /**

@@ -4,7 +4,11 @@
 import { analyze, ellipsisLines, hiddenLines } from '../../core/outline.js';
 import { tableView } from '../../core/table.js';
 import { h } from './dom.js';
-import { inlineNodes } from './inline.js';
+import { inlineNodes, emphasisOf } from './inline.js';
+import { radioNames } from '../../core/links.js';
+
+/** A line's emphasis spans for the part of it that starts at `base` (the text after a checkbox). */
+const shift = (list = [], base) => list.map((e) => ({ ...e, start: Math.max(0, e.start - base), end: e.end - base, inner: e.inner.map((x) => Math.max(0, x - base)) })).filter((e) => e.end > 0);
 
 const CHECKBOX = /^([ \t]*(?:[-+*]|\d+[.)])[ \t]+(?:\[@\d+\][ \t]+)?)\[([ X-])\](.*)$/s;
 
@@ -19,6 +23,8 @@ export function renderOutline(root, { text, folds, hideStars, indent = false, ta
   const dots = ellipsisLines(foldables, folds);
   const itemAt = new Map([...items, ...drawers].map((x) => [x.line, x]));
   const headAt = new Map(heads.map((x) => [x.line, x]));
+  const radios = on.link ? radioNames(text) : [];
+  const spans = on.link ? emphasisOf(text) : new Map();
   const rows = [];
   let level = 0;
   let tableEnd = 0;
@@ -39,14 +45,14 @@ export function renderOutline(root, { text, folds, hideStars, indent = false, ta
         h('button', { class: 'chev', 'aria-label': folds[line] ? 'Show' : 'Hide', onclick: () => on.cycle(line) }, hasContent ? (folds[line] ? '▸' : '▾') : ''),
         h('span', { class: 'stars' }, indent ? `${' '.repeat((hd.level - 1) * 2)}*` : hideStars ? `${' '.repeat(hd.level - 1)}*` : '*'.repeat(hd.level)),
         hd.todo === null ? null : h('button', { class: `st ${isDone ? 'done' : 'todo'}`, onclick: () => on.todo(line) }, hd.todo),
-        h('button', { class: 'title', onclick: () => on.actions(line) }, (hd.priority ? `[#${hd.priority}] ` : ''), ...(on.link ? inlineNodes(hd.title, (c) => on.link(line, c), Math.max(0, node.line.text.indexOf(hd.title, hd.level))) : [hd.title])),
+        h('button', { class: 'title', onclick: () => on.actions(line) }, (hd.priority ? `[#${hd.priority}] ` : ''), ...(on.link ? inlineNodes(hd.title, (c) => on.link(line, c), Math.max(0, node.line.text.indexOf(hd.title, hd.level)), undefined, radios) : [hd.title])),
         hd.tags.length ? h('span', { class: 'tags' }, `:${hd.tags.join(':')}:`) : null,
         dots.has(line) ? h('span', { class: 'dots' }, '…') : null));
       return;
     }
     const raw = node.line.text;
     const plainLine = node.type === 'text' || node.type === 'list-item';
-    const rich = (str, base) => (on.link && plainLine ? inlineNodes(str, (c) => on.link(line, c), base) : [str]);
+    const rich = (str, base) => (on.link && plainLine ? inlineNodes(str, (c) => on.link(line, c), base, base === 0 ? (spans.get(line) ?? []) : shift(spans.get(line), base), radios) : [str]);
     const m = CHECKBOX.exec(raw);
     const it = itemAt.get(line);
     const chev = it && it.end > it.line + 1 ? h('button', { class: 'ichev', 'aria-label': folds[line] ? 'Show' : 'Hide', onclick: () => on.cycle(line) }, folds[line] ? '▸' : '▾') : null;

@@ -14,6 +14,10 @@ With the cursor elsewhere on a line or in an entry, C-c C-o takes the link there
 
 A target for the link above: <<some target>>
 
+A radio target: <<<Serita>>>. Every word serita in this file is now a link to it.
+
+Run a Lisp expression (asks first): [[elisp:(+ 1 2)][add]]. A shell link asks first, then says a browser cannot run it: [[shell:echo hi][echo]]
+
 * Footnotes and emphasis
 :PROPERTIES:
 :CUSTOM_ID: intro

@@ -19,3 +19,21 @@ C-c C-x C-w cuts the subtree at the cursor, C-c C-x M-w copies it, and C-c C-x C
 - A list item folds like a heading: TAB on it.
   - A child item
   - Another child
+* Lists
+Put the cursor on an item and try the keys. M-RET adds an item, M-S-RET one with a checkbox, and C-c - cycles the bullet. M-up and M-down move an item, M-right and M-left change its level, and C-c ^ sorts the list.
+- pear
+- apple
+  - core
+  - seeds
+- fig
+1. first
+2. second
+3. third
+- [ ] buy milk
+- [X] call the bank
+Select the next two lines and press C-c - to make them items.
+a line of text
+another line of text
+
+* Notes and logging
+C-c C-z on this heading asks for a note and files it under the heading as "Note taken on [time]". With org-log-done set to note in the settings file, finishing a TODO adds CLOSED: and a closing note.

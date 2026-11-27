@@ -1,6 +1,6 @@
 // Offline cache. The version below must equal package.json's version (a test checks this),
 // so every release gets a new cache and replaces the old one.
-const VERSION = '0.11.8';
+const VERSION = '0.11.9';
 const CACHE = `serita-${VERSION}`;
 const FILES = [
   './',
@@ -96,6 +96,7 @@ const FILES = [
   'core/datetree.js',
   'core/emphasis.js',
   'core/emphasize.js',
+  'core/lists.js',
   'core/footnote.js',
   'core/links.js',
   'core/extra-menu.js',

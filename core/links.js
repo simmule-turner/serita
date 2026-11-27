@@ -3,6 +3,7 @@
 // o2-*, en-*, sl-*, ij-*, ls-*); no Emacs or Org source was read.
 
 import { analyze } from './outline.js';
+import { scanEmphasis } from './emphasis.js';
 import { propertiesOf, setProperty } from './properties.js';
 
 /** The link types Emacs 30.1 knows with no extra packages (org-link-types). */
@@ -61,8 +62,47 @@ function fileParts(type, rest) {
 const PLAIN_TYPES = LINK_TYPES.filter((t) => t !== 'file+sys' && t !== 'file+emacs').map((t) => t.replace(/[+.]/g, '\\$&')).join('|');
 const PLAIN = new RegExp(`^(${PLAIN_TYPES}):((?:[^\\s<>()\\[\\]]|\\([^\\s<>()]*\\))+)`);
 
-/** Every link, target and footnote reference in a line: { start, end, kind, ... }; `end` is just after the last character. */
-export function scanLine(line) {
+/** The names of the radio targets in a text, lowercased with runs of space made one. */
+export const radioNames = (text) => [...new Set(text.split('\n').flatMap((l) => scanLine(l).filter((o) => o.kind === 'radio').map((o) => o.name.replace(/\s+/g, ' ').toLowerCase())))];
+
+/** The lines of a text whose words may be radio links: text, list items, headings and tables, not blocks, drawers, keywords or comments. */
+export function radioLineSet(text) {
+  const ok = new Set(['text', 'headline', 'list-item', 'table-row']);
+  return new Set(analyze(text).nodes.flatMap((n, i) => (ok.has(n.type) ? [i] : [])));
+}
+
+/** Where the text of a line matches a radio target (case folded, whole words): { start, end, kind: 'radio-link', name }, outside other objects. */
+function radioLinks(line, names, taken) {
+  const out = [];
+  const order = [...names].sort((a, b) => b.length - a.length);
+  let i = 0;
+  while (i < line.length) {
+    const t = taken.find((o) => i >= o.start && i < o.end);
+    if (t) { i = t.end; continue; }
+    if (i > 0 && /[\p{L}\p{N}]/u.test(line[i - 1])) { i++; continue; }
+    const hit = order.find((n) => {
+      const m = new RegExp(`^${n.split(' ').map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+')}(?![\\p{L}\\p{N}])`, 'iu').exec(line.slice(i));
+      return m && !taken.some((o) => o.start < i + m[0].length && o.end > i);
+    });
+    if (hit) {
+      const m = new RegExp(`^${hit.split(' ').map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+')}`, 'iu').exec(line.slice(i));
+      out.push({ start: i, end: i + m[0].length, kind: 'radio-link', name: hit });
+      i += m[0].length;
+    } else i++;
+  }
+  return out;
+}
+
+/** Every link, target and footnote reference in a line: { start, end, kind, ... }; `end` is just after the last character. `radios` are radio target names (radioNames). */
+export function scanLine(line, radios = []) {
+  const out = scanObjects(line);
+  if (radios.length === 0) return out;
+  // verbatim and code are not parsed for links
+  const literal = scanEmphasis(line, []).filter((e) => e.kind === 'verbatim' || e.kind === 'code').map((e) => ({ start: e.start, end: e.end }));
+  return [...out, ...radioLinks(line, radios, [...out.filter((o) => o.kind !== 'footnote'), ...literal])].sort((a, b) => a.start - b.start);
+}
+
+function scanObjects(line) {
   const out = [];
   let i = 0;
   while (i < line.length) {
@@ -92,7 +132,7 @@ export function scanLine(line) {
 }
 
 /** The link, target or reference whose characters include `col`, or null. */
-export const objectAt = (line, col) => scanLine(line).find((o) => col >= o.start && col < o.end) ?? null;
+export const objectAt = (line, col, radios = []) => scanLine(line, radios).find((o) => col >= o.start && col < o.end) ?? null;
 
 /** The heading entry text range [from, to) of the lines around `line`: from its heading to the next heading of any level. */
 export function entryRange(lines, line) {
@@ -104,9 +144,9 @@ export function entryRange(lines, line) {
 }
 
 /** The links (not targets) in the lines [from, to): { line, ...link }. */
-export function linksIn(lines, from, to) {
+export function linksIn(lines, from, to, radios = [], lineOk = null) {
   const out = [];
-  for (let l = from; l < to; l++) for (const o of scanLine(lines[l] ?? '')) if (['bracket', 'angle', 'plain'].includes(o.kind)) out.push({ line: l, ...o });
+  for (let l = from; l < to; l++) for (const o of scanLine(lines[l] ?? '', lineOk === null || lineOk.has(l) ? radios : [])) if (['bracket', 'angle', 'plain'].includes(o.kind)) out.push({ line: l, ...o });
   return out;
 }
 
@@ -119,6 +159,12 @@ const titleMatches = (h, s) => norm(h.title) === norm(s) || norm(h.title.replace
  * or { error }.
  * `mustMatch` is org-link-search-must-match-exact-headline: 'query-to-create', true or false.
  */
+export function radioTarget(text, name) {
+  const lines = text.split('\n');
+  for (let l = 0; l < lines.length; l++) for (const o of scanLine(lines[l])) if (o.kind === 'radio' && norm(o.name) === norm(name)) return { line: l, col: o.start };
+  return null;
+}
+
 export function search(text, option, { mustMatch = 'query-to-create' } = {}) {
   const lines = text.split('\n');
   if (option === undefined || option === '') return { line: null };
@@ -174,12 +220,15 @@ export function findId(text, id) {
  */
 export function atPoint(text, line, col) {
   const lines = text.split('\n');
-  const here = scanLine(lines[line] ?? '');
-  const hit = here.find((o) => col >= o.start && col < o.end);
+  const radios = radioNames(text);
+  const lineOk = radioLineSet(text);
+  const here = scanLine(lines[line] ?? '', lineOk.has(line) ? radios : []);
+  // a target is not a link: on one the entry's links are offered, as when the cursor is elsewhere
+  const hit = here.find((o) => col >= o.start && col < o.end && o.kind !== 'target' && o.kind !== 'radio');
   if (hit) return { object: { line, ...hit } };
   if (here.some((o) => o.end === col && ['bracket', 'angle', 'plain', 'footnote'].includes(o.kind))) return { error: 'No link found' };
   const [from, to] = entryRange(lines, line);
-  const found = linksIn(lines, from, to);
+  const found = linksIn(lines, from, to, radios, lineOk);
   if (found.length === 0) return { none: 'No links' };
   return found.length === 1 ? { object: found[0] } : { choose: found };
 }

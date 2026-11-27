@@ -69,10 +69,11 @@ export function shiftStamp(text, offset, dir, { sideways = false } = {}) {
  * 5 dec, dec, a day number, a weekday (the next one), +3d, -1w, +2m, +1y, +fri, -fri, and a time (14:30, 2pm, 10:00-11:30). A date that has gone
  * by this year means next year; words Org does not know are skipped. Empty keeps the default.
  * @param {string} input
- * @param {Date} base the default date (a UTC date)
+ * @param {Date} base the default date (a UTC date); `+3d` counts from `today`, `++3d` from the default (observed, dq-*)
+ * @param {Date} [today] the current date, a UTC date
  * @returns {{ date: Date, time: boolean }}
  */
-export function parseDate(input, base) {
+export function parseDate(input, base, today = base) {
   let rest = input.trim().toLowerCase();
   let time = null;
   let until = null;
@@ -90,19 +91,23 @@ export function parseDate(input, base) {
   let mo = null;
   let d = null;
   let wd = -1;
+  let week = null;
+  let iso = false;
   let m;
   // Words Org does not know (tomorrow, next, now) are skipped, so a prompt with only those keeps the default date.
   for (const w of rest.split(/\s+/).filter(Boolean)) {
     if (w === '.' || w === 'today') continue;
     if ((m = /^\+{1,2}(\d*)([dwmy]|[a-z]{3,})?$/.exec(w)) || (m = /^(-)(\d*)([dwmy]|[a-z]{3,})?$/.exec(w))) {
       const minus = w[0] === '-';
+      const from = !minus && w.startsWith('++') ? base : today;
       const [num, unit] = m.length === 3 ? [m[1], m[2]] : [m[2], m[3]];
       const n = (num === '' ? 1 : +num) * (minus ? -1 : 1);
       const u = unit && unit.length === 1 ? unit : unit ? null : 'd';
-      if (u === 'd') date = utc(b.y, b.m, b.d + n);
-      else if (u === 'w') date = utc(b.y, b.m, b.d + 7 * n);
-      else if (u === 'm') date = utc(b.y, b.m + n, b.d);
-      else if (u === 'y') date = utc(b.y + n, b.m, b.d);
+      const f = parts(from);
+      if (u === 'd') date = utc(f.y, f.m, f.d + n);
+      else if (u === 'w') date = utc(f.y, f.m, f.d + 7 * n);
+      else if (u === 'm') date = utc(f.y, f.m + n, f.d);
+      else if (u === 'y') date = utc(f.y + n, f.m, f.d);
       else if (weekday(unit) >= 0) {
         // +fri is the next Friday after the default date, -fri the last one before it; a number counts them.
         const step = minus ? -1 : 1;
@@ -110,14 +115,21 @@ export function parseDate(input, base) {
         date = utc(b.y, b.m, b.d);
         while (left > 0) { date = utc(date.getUTCFullYear(), date.getUTCMonth() + 1, date.getUTCDate() + step); if (date.getUTCDay() === weekday(unit)) left--; }
       }
-    } else if ((m = /^(\d{2,4})-(\d{1,2})-(\d{1,2})$/.exec(w))) { y = year2(m[1]); mo = +m[2]; d = +m[3]; }
+    } else if ((m = /^w(\d{1,2})$/.exec(w))) week = +m[1];
+    else if ((m = /^(\d{2,4})-(\d{1,2})-(\d{1,2})$/.exec(w))) { y = year2(m[1]); mo = +m[2]; d = +m[3]; iso = true; }
     else if ((m = /^(\d{1,2})[-/](\d{1,2})$/.exec(w))) { mo = +m[1]; d = +m[2]; }
     else if ((m = /^(\d{1,2})\.(\d{1,2})\.(\d{2,4})$/.exec(w))) { d = +m[1]; mo = +m[2]; y = year2(m[3]); }
     else if ((m = /^(\d{1,2})\.(\d{1,2})$/.exec(w))) { d = +m[1]; mo = +m[2]; }
     else if (/^\d{4}$/.test(w)) y = +w;
-    else if (/^\d{1,2}$/.test(w)) d = +w;
+    else if (/^\d{1,2}$/.test(w)) { if (!iso) d = +w; }
     else if (month(w)) mo = month(w);
     else if (weekday(w) >= 0) wd = weekday(w);
+  }
+  if (date === null && week !== null) {
+    // ISO week: the Monday of week n of the year (the default year when none is typed)
+    const year = y ?? b.y;
+    const jan4 = utc(year, 1, 4);
+    date = utc(year, 1, 4 - ((jan4.getUTCDay() + 6) % 7) + 7 * (week - 1));
   }
   if (date === null) {
     const today = utc(b.y, b.m, b.d);
@@ -181,7 +193,7 @@ export function nextRepeat(date, spec, now) {
 }
 
 const quote = (s) => `"${s}"`;
-const logLine = (to, from, now) => `- State ${quote(to).padEnd(12)} from ${quote(from).padEnd(12)} ${formatStamp(now, { time: true, active: false })}`;
+export const logLine = (to, from, now) => `- State ${quote(to).padEnd(12)} from ${quote(from).padEnd(12)} ${formatStamp(now, { time: true, active: false })}`;
 
 /**
  * Finishing a repeating task: every active timestamp with a repeater in the entry (up to the next heading) moves to its next date, the state
@@ -215,20 +227,46 @@ export function completeRepeat({ text, line, from, to, reopen, now, drawer = nul
   if (!log) return { text: out, line };
   out = setProperty(out, line, 'LAST_REPEAT', formatStamp(now, { time: true, active: false })).text;
   // The log line goes after the properties drawer, or inside the log drawer (org-log-into-drawer) that follows it.
-  const after = splitLines(out);
+  if (note === null) return { text: out, line };
+  return { text: addLogEntry(out, line, { heading: logLine(to, from, now).slice(2), note, drawer, bare: note !== undefined }), line };
+}
+
+/**
+ * Adds a log entry `- heading` (with the note under it) to the entry at `line`: after the planning line and the properties drawer, or in the
+ * drawer `drawer` (made when it is missing; the newest entry first). An empty note adds the heading alone. `bare` leaves the end of the
+ * text without a line end when the entry is its last line.
+ */
+export function addLogEntry(text, line, { heading, note, drawer = null, bare = false }) {
+  const after = splitLines(text);
   let at = line + 1;
-  if (/^\s*(?:CLOSED|DEADLINE|SCHEDULED):/.test(after[at].text)) at++;
+  if (/^\s*(?:CLOSED|DEADLINE|SCHEDULED):/.test(after[at]?.text ?? '')) at++;
   if (/^\s*:PROPERTIES:/i.test(after[at]?.text ?? '')) while (!/^\s*:END:/i.test(after[at].text)) at++;
   const insertAt = /^\s*:END:/i.test(after[at]?.text ?? '') ? at + 1 : at;
   if (after[insertAt - 1] && after[insertAt - 1].eol === '') after[insertAt - 1] = { ...after[insertAt - 1], eol: '\n' };
-  // org-log-repeat note: `note` is the text typed (a string; empty adds the line alone), or null when the note was cancelled, which adds no line.
-  const noteLines = typeof note === 'string' && note.trim() !== '' ? ` \\\\\n${note.replace(/\n+$/, '').split('\n').map((l) => `  ${l}`).join('\n')}` : '';
-  // Emacs stores a note without a line end when it goes at the very end of the file.
-  const entry = { text: logLine(to, from, now) + noteLines, eol: note !== undefined && drawer === null && insertAt >= after.length ? '' : '\n' };
-  if (note === null) return { text: out, line };
+  const noteLines = typeof note === 'string' && note.trim() !== '' ? ` \\\\\n${note.replace(/\n+$/, '').split('\n').map((l) => (l === '' ? '' : `  ${l}`)).join('\n')}` : '';
+  const entry = { text: `- ${heading}${noteLines}`, eol: bare && drawer === null && insertAt >= after.length ? '' : '\n' };
   const open = drawer === null ? -1 : after.findIndex((l, i) => i >= insertAt && l.text.trim().toUpperCase() === `:${drawer.toUpperCase()}:`);
   if (drawer === null) after.splice(insertAt, 0, entry);
   else if (open >= 0 && open === insertAt) after.splice(open + 1, 0, entry);
   else after.splice(insertAt, 0, { text: `:${drawer}:`, eol: '\n' }, entry, { text: ':END:', eol: '\n' });
-  return { text: after.map((l) => l.text + l.eol).join(''), line };
+  return after.map((l) => l.text + l.eol).join('');
+}
+
+/** The entry's CLOSED stamp removed (and the planning line with it when nothing else is on it). */
+export function dropClosed(text, line) {
+  const lines = splitLines(text);
+  if (!/^\s*CLOSED:/.test(lines[line + 1]?.text ?? '')) return text;
+  const rest = lines[line + 1].text.replace(/CLOSED: *\[[^\]]*\] */, '').trimEnd();
+  if (rest.trim() === '') lines.splice(line + 1, 1); else lines[line + 1] = { ...lines[line + 1], text: rest };
+  return lines.map((l) => l.text + l.eol).join('');
+}
+
+/** The entry's CLOSED stamp set to `now`. */
+export const setClosed = (text, line, now) => setPlanning(text, line, 'CLOSED', formatStamp(now, { time: true, active: false })).text;
+
+/** The date an entry's planning stamp has (its text, as an inactive stamp with its weekday and time), or null. */
+export function planningStamp(text, line, keyword) {
+  const l = splitLines(text)[line + 1]?.text ?? '';
+  const m = new RegExp(`${keyword}:\\s*[<[]([^>\\]]*)[>\\]]`).exec(/^\s*(?:CLOSED|DEADLINE|SCHEDULED):/.test(l) ? l : '');
+  return m ? `[${m[1]}]` : null;
 }

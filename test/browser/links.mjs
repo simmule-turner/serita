@@ -63,7 +63,9 @@ await page.click('#btn-view'); await btn('Outline').click();
 const link = page.locator('#outline .ol-link', { hasText: 'see Beta' });
 ok((await link.count()) === 1 && (await page.locator('#outline b', { hasText: '*bold*' }).count()) === 1, 'the Outline shows the description and the bold text');
 await link.click();
-ok((await page.locator('#outline .ol-head[data-line="2"]').count()) === 1, 'a tap on the link goes to the heading');
+await page.waitForTimeout(200);
+ok((await page.locator('#outline .ol-head.flash[data-line="2"]').count()) === 1, 'a tap on the link brings the heading into view and marks it');
+await page.evaluate(() => {});
 
 ok(errors.length === 0, `no page errors ${errors.join('; ')}`);
 await close();

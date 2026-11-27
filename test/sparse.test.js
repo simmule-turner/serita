@@ -51,3 +51,17 @@ test('what a sparse tree highlights: the matched text, or the TODO keyword', () 
   assert.deepEqual(sparseTree(text, a, { kind: 'todo' }).ranges, [{ line: 0, from: 2, to: 6 }]);
   assert.deepEqual(sparseTree(text, a, { kind: 'match', arg: 'work' }).ranges, []);
 });
+
+// Match expressions and regexps over lines, from Emacs 30.1 (conformance v0.1.74, ms-* and sd-occur-*).
+{
+  const more = JSON.parse(readFileSync(new URL('./fixtures/emacs-sparse-match.json', import.meta.url), 'utf8'));
+  for (const c of more) {
+    test(`Emacs sparse tree ${c.id}`, () => {
+      const a = analyze(c.input);
+      if (c.error) { assert.throws(() => sparseTree(c.input, a, { kind: c.kind, arg: c.arg })); return; }
+      const { folds } = sparseTree(c.input, a, { kind: c.kind, arg: c.arg });
+      const hidden = hiddenLines(a.foldables, folds);
+      assert.deepEqual(c.visible.map((_, i) => !hidden.has(i)).slice(0, -1), c.visible.slice(0, -1));
+    });
+  }
+}

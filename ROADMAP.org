@@ -56,6 +56,6 @@ Planned work only. Phase order is in SPEC.md section 12.
 * Later: links and markup
 - Emphasis over a line break shows unstyled; Emacs finds it across line breaks.
 - The Text view underlines links and marks code, strike-through and underline, but cannot show bold or italic without moving letters; a later layer could.
-- Radio targets (<<<name>>>) and plain targets as link destinations, ~shell:~ links, and link types that need other programs (info, gnus, rmail, bbdb, w3m).
+- Link types that need other programs (info, gnus, rmail, bbdb, w3m).
 - ~id:~ links look in the open files and the agenda files; Emacs keeps a database of every file it has seen.
 - Link completion of headings and files at the C-c C-l prompt.

@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.9
+Lists, logging and links as in Emacs. M-RET, C-c -, C-c ^ and RET work on plain lists. Finishing a task can stamp CLOSED and ask for a closing note, new schedules and deadlines can leave a log line, keywords such as WAIT(w@/!) log state changes, and C-c C-z adds a note. Sparse trees take match expressions and multi-line regexps, emphasis runs over line breaks, radio targets turn matching words into links, typed dates take ++ and week numbers, and the Views, Filter and Act sheets open over the agenda.
+
 * 0.11.8
 Links, footnotes and emphasis. C-c C-o follows a link (headings, custom IDs, text, files with ::search, ids, URLs), C-c l stores one, C-c C-l inserts or edits one, C-c C-x f adds, jumps to, sorts, renumbers, normalizes or deletes footnotes, and C-c C-x C-f wraps the selection in a marker; the Outline view shows links by their description and emphasis styled. Also: C-# keeps the cursor in the table, week trees use the ISO year, capture has :tree-type month, and a row marked # recalculates when you leave it.
 

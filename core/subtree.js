@@ -56,11 +56,11 @@ export function cutSubtree(text, line, count = 1) {
  * org-paste-subtree: inserts `killed` as a heading and its subtree. At the start of a heading it goes before that heading, at that
  * heading's level. Elsewhere it goes at the end of the entry the cursor is in, before its first child, at the level of that child (or of
  * the entry when it has none). Before the first heading it goes before that heading. `after` (C-u) puts it after the whole subtree at the
- * same level. `level` (a numeric prefix) sets the level instead.
+ * same level. `child` (C-u C-u) puts it after the whole subtree as a child of that heading. `level` (a numeric prefix) sets the level instead.
  * @param {number} line the cursor's line (0-based) @param {number} col the cursor's column
  * @returns {{ text: string, line: number }} the new text and the line where the pasted text starts
  */
-export function pasteSubtree(text, line, col, killed, { level, after = false, column = DEFAULT_TAGS_COLUMN } = {}) {
+export function pasteSubtree(text, line, col, killed, { level, after = false, child = false, column = DEFAULT_TAGS_COLUMN } = {}) {
   if (killed === undefined) throw new Error('Kill ring is empty');
   if (!STARS.test(killed)) throw new Error('The kill is not a (set of) tree(s)');
   const a = analyze(text);
@@ -68,6 +68,7 @@ export function pasteSubtree(text, line, col, killed, { level, after = false, co
   const h = headAt(a, line);
   let at; let into;
   if (!h) { const first = a.heads[0]; at = first ? first.line : lines.length; into = first?.level ?? 1; }
+  else if (child) { at = h.end; into = h.level + 1; }
   else if (after) { at = h.end; into = h.level; }
   else if (h.line === line && col === 0) { at = line; into = h.level; }
   else { at = h.bodyEnd; into = h.children[0]?.level ?? h.level; }

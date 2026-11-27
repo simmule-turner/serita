@@ -1,0 +1,530 @@
+[
+ {
+  "id": "li2-cminus-box",
+  "input": "* H\n- [ ] one\n- [X] two\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n+ [ ] one\n+ [X] two\n",
+  "at": [
+   2,
+   3
+  ]
+ },
+ {
+  "id": "li2-cminus-desc",
+  "input": "* H\n- a :: b\n- c :: d\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n+ a :: b\n+ c :: d\n",
+  "at": [
+   2,
+   3
+  ]
+ },
+ {
+  "id": "li2-cminus-ord-box",
+  "input": "* H\n1. [ ] one\n2. [X] two\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n1) [ ] one\n2) [X] two\n",
+  "at": [
+   2,
+   3
+  ]
+ },
+ {
+  "id": "li2-cminus-sub",
+  "input": "* H\n- one\n  - sub a\n  - sub b\n- two\n- three\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  + sub a\n  + sub b\n- two\n- three\n",
+  "at": [
+   3,
+   5
+  ]
+ },
+ {
+  "id": "li2-mret-box-before",
+  "input": "* H\n- [ ] one\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- \n- [ ] one\n",
+  "at": [
+   2,
+   2
+  ]
+ },
+ {
+  "id": "li2-mret-box-mid",
+  "input": "* H\n- [ ] one two\n",
+  "line": 2,
+  "col": 9,
+  "output": "* H\n- [ ] one\n- two\n",
+  "at": [
+   3,
+   2
+  ]
+ },
+ {
+  "id": "li2-mret-box",
+  "input": "* H\n- [ ] one\n- [X] two\n",
+  "line": 2,
+  "col": 10,
+  "output": "* H\n- [ ] one\n- \n- [X] two\n",
+  "at": [
+   3,
+   2
+  ]
+ },
+ {
+  "id": "li2-mret-desc-mid",
+  "input": "* H\n- term :: text\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n-  :: \n- term :: text\n",
+  "at": [
+   2,
+   2
+  ]
+ },
+ {
+  "id": "li2-mret-desc",
+  "input": "* H\n- a :: b\n- c :: d\n",
+  "line": 2,
+  "col": 8,
+  "output": "* H\n- a :: b\n-  :: \n- c :: d\n",
+  "at": [
+   3,
+   2
+  ]
+ },
+ {
+  "id": "li2-mret-eol-children",
+  "input": "* H\n- one\n  - sub a\n  - sub b\n- two\n- three\n",
+  "line": 2,
+  "col": 5,
+  "output": "* H\n- one\n- \n  - sub a\n  - sub b\n- two\n- three\n",
+  "at": [
+   3,
+   2
+  ]
+ },
+ {
+  "id": "li2-mret-eol-sub",
+  "input": "* H\n- one\n  - sub a\n  - sub b\n- two\n- three\n",
+  "line": 4,
+  "col": 9,
+  "output": "* H\n- one\n  - sub a\n  - sub b\n  - \n- two\n- three\n",
+  "at": [
+   5,
+   4
+  ]
+ },
+ {
+  "id": "li2-mret-indent",
+  "input": "* H\n  - one\n  - two\n",
+  "line": 2,
+  "col": 7,
+  "output": "* H\n  - one\n  - \n  - two\n",
+  "at": [
+   3,
+   4
+  ]
+ },
+ {
+  "id": "li2-mret-mid-children",
+  "input": "* H\n- one\n  - sub a\n  - sub b\n- two\n- three\n",
+  "line": 2,
+  "col": 2,
+  "output": "* H\n- \n- one\n  - sub a\n  - sub b\n- two\n- three\n",
+  "at": [
+   2,
+   2
+  ]
+ },
+ {
+  "id": "li2-mret-ord-sub",
+  "input": "* H\n1. one\n   1. a\n   2. b\n2. two\n",
+  "line": 4,
+  "col": 8,
+  "output": "* H\n1. one\n   1. a\n   2. b\n   3. \n2. two\n",
+  "at": [
+   5,
+   6
+  ]
+ },
+ {
+  "id": "li2-mret-text-first",
+  "input": "* H\n- one\n  more\n- two\n",
+  "line": 2,
+  "col": 5,
+  "output": "* H\n- one\n- \n  more\n- two\n",
+  "at": [
+   3,
+   2
+  ]
+ },
+ {
+  "id": "li2-mret-two-lines",
+  "input": "* H\n- one\n  more\n- two\n",
+  "line": 3,
+  "col": 6,
+  "output": "* H\n- one\n  more\n- \n- two\n",
+  "at": [
+   4,
+   2
+  ]
+ },
+ {
+  "id": "li2-msret-box",
+  "input": "* H\n- [ ] one\n- two\n",
+  "line": 2,
+  "col": 10,
+  "output": "* H\n- [ ] one\n- [ ] \n- two\n",
+  "at": [
+   3,
+   6
+  ]
+ },
+ {
+  "id": "li2-msret-c4",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 5,
+  "output": "* H\n- one\n- [ ] \n- two\n",
+  "at": [
+   3,
+   6
+  ]
+ },
+ {
+  "id": "li2-msret-mid",
+  "input": "* H\n- one two\n",
+  "line": 2,
+  "col": 6,
+  "output": "* H\n- one\n- [ ] two\n",
+  "at": [
+   3,
+   6
+  ]
+ },
+ {
+  "id": "li2-msret-ord",
+  "input": "* H\n1. one\n2. two\n",
+  "line": 2,
+  "col": 6,
+  "output": "* H\n1. one\n2. [ ] \n3. two\n",
+  "at": [
+   3,
+   7
+  ]
+ },
+ {
+  "id": "li2-ret-box",
+  "input": "* H\n- [ ] one\n",
+  "line": 2,
+  "col": 10,
+  "output": "* H\n- [ ] one\n  \n",
+  "at": [
+   3,
+   2
+  ]
+ },
+ {
+  "id": "li2-ret-empty",
+  "input": "* H\n- one\n- \n",
+  "line": 3,
+  "col": 2,
+  "output": "* H\n- one\n-\n  \n",
+  "at": [
+   4,
+   2
+  ]
+ },
+ {
+  "id": "li2-ret-indent",
+  "input": "* H\n- one\n",
+  "line": 2,
+  "col": 5,
+  "output": "* H\n- one\n  \n",
+  "at": [
+   3,
+   2
+  ]
+ },
+ {
+  "id": "li2-ret-mid",
+  "input": "* H\n- one two\n",
+  "line": 2,
+  "col": 5,
+  "output": "* H\n- one\n   two\n",
+  "at": [
+   3,
+   2
+  ]
+ },
+ {
+  "id": "li2-ret-ord",
+  "input": "* H\n1. one\n",
+  "line": 2,
+  "col": 6,
+  "output": "* H\n1. one\n   \n",
+  "at": [
+   3,
+   3
+  ]
+ },
+ {
+  "id": "li2-ret",
+  "input": "* H\n- one\n",
+  "line": 2,
+  "col": 5,
+  "output": "* H\n- one\n\n",
+  "at": [
+   3,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-A-box",
+  "input": "* H\n- [X] pear 2\n- [ ] apple 10\n- [-] fig 1\n- [ ] Banana 3\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- [X] pear 2\n- [-] fig 1\n- [ ] Banana 3\n- [ ] apple 10\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-N-box",
+  "input": "* H\n- [X] pear 2\n- [ ] apple 10\n- [-] fig 1\n- [ ] Banana 3\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- [X] pear 2\n- [ ] apple 10\n- [-] fig 1\n- [ ] Banana 3\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-T-box",
+  "input": "* H\n- [X] pear 2\n- [ ] apple 10\n- [-] fig 1\n- [ ] Banana 3\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- [X] pear 2\n- [ ] apple 10\n- [-] fig 1\n- [ ] Banana 3\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-X-box",
+  "input": "* H\n- [X] pear 2\n- [ ] apple 10\n- [-] fig 1\n- [ ] Banana 3\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- [X] pear 2\n- [-] fig 1\n- [ ] apple 10\n- [ ] Banana 3\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-a-body",
+  "input": "* H\n- pear\n  x\n- apple\n  y\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- apple\n  y\n- pear\n  x\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-a-box",
+  "input": "* H\n- [X] pear 2\n- [ ] apple 10\n- [-] fig 1\n- [ ] Banana 3\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- [ ] apple 10\n- [ ] Banana 3\n- [-] fig 1\n- [X] pear 2\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-a-cursor",
+  "input": "* H\n- pear\n- apple\n- fig\n",
+  "line": 4,
+  "col": 3,
+  "output": "* H\n- apple\n- fig\n- pear\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-a-cursor2",
+  "input": "* H\n- pear\n- apple\n- fig\n",
+  "line": 2,
+  "col": 6,
+  "output": "* H\n- apple\n- fig\n- pear\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-a-ord",
+  "input": "* H\n1. pear\n2. apple\n3. fig\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n1. apple\n2. fig\n3. pear\n",
+  "at": [
+   2,
+   3
+  ]
+ },
+ {
+  "id": "li2-sort-desc",
+  "input": "* H\n- b :: x\n- a :: y\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- a :: y\n- b :: x\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-n-box",
+  "input": "* H\n- [X] pear 2\n- [ ] apple 10\n- [-] fig 1\n- [ ] Banana 3\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- [X] pear 2\n- [ ] apple 10\n- [-] fig 1\n- [ ] Banana 3\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-n-none",
+  "input": "* H\n- pear\n- apple\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- pear\n- apple\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-region",
+  "input": "* H\n- c\n- b\n- a\n",
+  "line": 2,
+  "col": 0,
+  "output": "* H\n- a\n- b\n- c\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-sub",
+  "input": "* H\n- one\n  - sub z\n  - sub b\n- two\n- three\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  - sub b\n  - sub z\n- two\n- three\n",
+  "at": [
+   3,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-t-box",
+  "input": "* H\n- [X] pear 2\n- [ ] apple 10\n- [-] fig 1\n- [ ] Banana 3\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- [X] pear 2\n- [ ] apple 10\n- [-] fig 1\n- [ ] Banana 3\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-t-none",
+  "input": "* H\n- pear\n- apple\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- pear\n- apple\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-t",
+  "input": "* H\n- b <2026-12-01 Tue>\n- a <2026-11-01 Sun>\n- c [2026-11-15 Sun]\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- a <2026-11-01 Sun>\n- c [2026-11-15 Sun]\n- b <2026-12-01 Tue>\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-sort-x-box",
+  "input": "* H\n- [X] pear 2\n- [ ] apple 10\n- [-] fig 1\n- [ ] Banana 3\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- [ ] apple 10\n- [ ] Banana 3\n- [-] fig 1\n- [X] pear 2\n",
+  "at": [
+   2,
+   0
+  ]
+ },
+ {
+  "id": "li2-tg-box-c16",
+  "input": "* H\n- [ ] one\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- [-] one\n",
+  "at": [
+   2,
+   2
+  ]
+ },
+ {
+  "id": "li2-tg-box-c4",
+  "input": "* H\n- [ ] one\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- one\n",
+  "at": [
+   2,
+   1
+  ]
+ },
+ {
+  "id": "li2-tg-box-c4b",
+  "input": "* H\n- [X] one\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- one\n",
+  "at": [
+   2,
+   1
+  ]
+ },
+ {
+  "id": "li2-tg-none-c4",
+  "input": "* H\n- one\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- [ ] one\n",
+  "at": [
+   2,
+   7
+  ]
+ }
+]

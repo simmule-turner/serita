@@ -11,3 +11,16 @@ test('emphasis in a line is found as Emacs finds it', () => {
     assert.deepEqual(got, c.found.map(([k, t]) => `${k}:${t}`).sort(), JSON.stringify(c.line));
   }
 });
+
+import { emphasisByLine } from '../core/emphasis.js';
+import { analyze } from '../core/outline.js';
+test('emphasis runs over lines of one paragraph (Emacs 30.1, me-*)', () => {
+  const by = (t) => emphasisByLine(analyze(t).nodes);
+  const a = by('*a\nb*\n');
+  assert.equal(a.get(0)[0].open, true);
+  assert.equal(a.get(0)[0].close, false);
+  assert.equal(a.get(1)[0].close, true);
+  assert.equal(by('*a\n\nb*\n').size, 0);
+  assert.equal(by('- x *a\nb*\n').size, 0);
+  assert.equal(by('- x *a\n  b*\n').size, 2);
+});

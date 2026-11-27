@@ -123,3 +123,13 @@ test('C-c l makes an id link when org-id-link-to-org-use-id says so', () => {
   assert.equal(made.text, '* Alpha\n:PROPERTIES:\n:ID:       u-2\n:END:\ntext\n');
   assert.equal(store('* Alpha\ntext\n', 0, 'f.org', { useId: 'use-existing' }).link, 'file:f.org::*Alpha');
 });
+
+import { radioNames, scanLine as scan2, radioTarget as rt2 } from '../core/links.js';
+test('radio targets make matching words links (Emacs 30.1, tg-radio-*)', () => {
+  const t = '* A\n<<<rad one>>>\n* B\nuse rad one and Rad One there, radius, [[rad one]] and *rad one*\n';
+  const names = radioNames(t);
+  assert.deepEqual(names, ['rad one']);
+  const kinds = scan2(t.split('\n')[3], names).map((o) => o.kind);
+  assert.deepEqual(kinds, ['radio-link', 'radio-link', 'bracket', 'radio-link']);
+  assert.deepEqual(rt2(t, 'RAD  one'), { line: 1, col: 0 });
+});

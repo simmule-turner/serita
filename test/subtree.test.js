@@ -43,3 +43,13 @@ for (const c of cases) {
     assert.equal(r.line + 1, c.point.line);
   });
 }
+
+// org-paste-subtree with no argument, a number, C-u and C-u C-u after a cut (Emacs 30.1, conformance v0.1.73).
+const pastes = JSON.parse(readFileSync(new URL('./fixtures/emacs-paste-subtree.json', import.meta.url), 'utf8'));
+for (const c of pastes) {
+  test(`org-paste-subtree ${c.id}`, () => {
+    const k = cutSubtree(c.input, c.cut, 1);
+    const opts = c.arg === "'(4)" ? { after: true } : c.arg === "'(16)" ? { child: true } : /^\d+$/.test(c.arg) ? { level: +c.arg } : {};
+    assert.equal(pasteSubtree(k.text, c.line, c.col, k.killed, opts).text, c.text);
+  });
+}

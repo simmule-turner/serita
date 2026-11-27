@@ -140,3 +140,15 @@ test('a repeat with a note adds the note under the log line, an empty note only 
   assert.equal(completeRepeat({ ...o, note: null }).text, head);
   assert.equal(completeRepeat({ ...o, note: 'n1', drawer: 'LOGBOOK' }).text, `${head}:LOGBOOK:\n${line} \\\\\n  n1\n:END:\n`);
 });
+
+import { parseDate as pd2 } from '../core/timestamp.js';
+test('typed dates: + counts from today, ++ from the default, weeks, a number after a full date (Emacs 30.1, dq-*)', () => {
+  const def = new Date(Date.UTC(2026, 10, 26));
+  const today = new Date(Date.UTC(2026, 10, 27));
+  const iso = (r) => r.date.toISOString().slice(0, 10);
+  assert.equal(iso(pd2('+1w', def, today)), '2026-12-04');
+  assert.equal(iso(pd2('++1w', def, today)), '2026-12-03');
+  assert.equal(iso(pd2('w5', def, today)), '2026-01-26');
+  assert.equal(iso(pd2('2027 w3', def, today)), '2027-01-18');
+  assert.equal(iso(pd2('2026-12-01 10', def, today)), '2026-12-01');
+});

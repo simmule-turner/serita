@@ -4,6 +4,7 @@
 
 import { splitLines, TAGS } from './parse.js';
 import { analyze } from './outline.js';
+import { repair } from './lists.js';
 
 const join = (lines) => lines.map((l) => l.text + l.eol).join('');
 const same = (n) => n;
@@ -194,7 +195,7 @@ function withCookie(text, done, total) {
  * Turns a checkbox on or off: [ ] and [-] become [X], [X] becomes [ ]. The checkboxes of the items above it, and the
  * cookies ([2/4], [50%]) of those items and of the heading, are brought up to date. Returns null when the line has no checkbox.
  */
-export function toggleCheckbox(text, line) {
+export function toggleCheckbox(text, line, { lenient = false } = {}) {
   const a = analyze(text);
   const lines = splitLines(text);
   const item = a.items.find((x) => x.line === line);
@@ -203,8 +204,9 @@ export function toggleCheckbox(text, line) {
   const set = (n, patch) => { lines[n] = { ...lines[n], text: patch(lines[n].text) }; };
   const kids = item.children.filter((c) => CHECKBOX.test(lines[c.line].text));
   if (kids.length) {
+    // C-c C-c refuses a partly checked item; org-toggle-checkbox just sets its box from the ones below
+    if (m[2] === '-' && !lenient) throw new Error('Cannot toggle an item with unfinished sub-items');
     // C-c C-c on an item with checkboxes below it sets its box from them; a partly checked item cannot be switched
-    if (m[2] === '-') throw new Error('Cannot toggle an item with unfinished sub-items');
     const done = kids.filter((c) => CHECKBOX.exec(lines[c.line].text)[2] === 'X').length;
     const open = kids.filter((c) => CHECKBOX.exec(lines[c.line].text)[2] === '-').length;
     set(line, (t) => t.replace(CHECKBOX, (all, pre) => `${pre}${done === kids.length ? 'X' : done === 0 && open === 0 ? ' ' : '-'}]`));
@@ -248,16 +250,10 @@ export function moveItem(text, line, dir) {
   const other = neighbor(a.items, lines, it, dir);
   if (!other) throw new Error('Cannot move the item further');
   const [first, second] = dir < 0 ? [other, it] : [it, other];
-  const num = (n) => /^([ \t]*)(\d+)([.)])/.exec(lines[n].text);
-  const n1 = num(first.line);
-  const n2 = num(second.line);
-  if (n1 && n2) {
-    const renumber = (n, m, v) => { lines[n] = { ...lines[n], text: lines[n].text.replace(/^([ \t]*)\d+/, `$1${v}`) }; return m; };
-    renumber(first.line, n1, n2[2]);
-    renumber(second.line, n2, n1[2]);
-  }
   const r = swapBlocks(lines, { from: first.line, to: first.end }, { from: second.line, to: second.end });
-  return { text: join(r.lines), line: dir < 0 ? r.secondAt : r.firstAt, remap: r.remap };
+  const at = dir < 0 ? r.secondAt : r.firstAt;
+  const fixed = repair(join(r.lines), at);
+  return { text: fixed.text ?? join(r.lines), line: at, remap: r.remap };
 }
 
 /**
@@ -284,7 +280,8 @@ export function indentItem(text, line, delta, withChildren) {
     if (t.trim() === '') continue;
     lines[n] = { ...lines[n], text: d > 0 ? ' '.repeat(d) + t : t.slice(Math.min(-d, indentOf(t))) };
   }
-  return { text: join(lines), line, remap: same };
+  const fixed = repair(join(lines), line);
+  return { text: fixed.text ?? join(lines), line, remap: same };
 }
 
 const indentOf = (s) => s.match(/^[ \t]*/)[0].length;

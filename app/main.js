@@ -26,13 +26,14 @@ import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../cor
 import { DEFAULT_FORMATS, parseAgendaSettings, phoneCells, phoneColumns } from '../core/prefix.js';
 import { parseExtraMenu } from '../core/extra-menu.js';
 import { cutSubtree, subtreeAt, pasteSubtree } from '../core/subtree.js';
+import * as lists from '../core/lists.js';
 import { NONE as NO_ARG, argLabel, argValue, pressDigit, pressU } from '../core/universal.js';
 import { agenda, searchView, tagsView, todoList } from '../core/agenda.js';
 import { filterActive, filterLabel, noFilter, parseEffort, parseSigned } from '../core/agenda-filter.js';
 import { holidayList } from '../core/holidays.js';
 import { startReplace } from '../core/replace.js';
 import { sparseTree } from '../core/sparse.js';
-import { completeRepeat, formatStamp, insertStamp, parseDate, setPlanning, shiftStamp, stampAt } from '../core/timestamp.js';
+import { addLogEntry, completeRepeat, dropClosed, formatStamp, logLine, planningStamp, setClosed, insertStamp, parseDate, setPlanning, shiftStamp, stampAt } from '../core/timestamp.js';
 import { createMinibuffer } from './ui/minibuffer.js';
 import { duplicateLine, indentLine, killLine, killWholeLine, lineInfo, lineStart, moveLine } from '../core/lines.js';
 import { createKillRing } from '../core/killring.js';
@@ -47,7 +48,8 @@ import { renderOutline } from './ui/outline-view.js';
 import { TEXT_KEYS, chordOf, createKeymap } from './ui/keys.js';
 import { createHistory } from './ui/history.js';
 import { createLinkCommands } from './ui/linkcmds.js';
-import { decorations } from './ui/inline.js';
+import { decorations, emphasisOf } from './ui/inline.js';
+import { radioLineSet, radioNames } from '../core/links.js';
 import { readForms } from '../core/lisp-read.js';
 import { createKeyRow } from './ui/keyrow.js';
 import { followViewport } from './ui/viewport.js';
@@ -120,9 +122,14 @@ const tagsColumn = () => { const n = Number(setting('org.tagsColumn')); return N
 const keyLogOn = () => setting('view.keyLog') === 'true';
 const beepOn = () => setting('view.beep') !== 'false';
 /** org-log-into-drawer: the drawer's name, or null for none. org-log-repeat: on (time) unless set off. */
-const logDrawer = () => setting('org-log-into-drawer') || null;
+const logDrawer = (text, line) => (text !== undefined && propertiesOf(text, line).find(([k]) => k.toUpperCase() === 'LOG_INTO_DRAWER')?.[1]) || setting('org-log-into-drawer') || null;
 const logRepeatMode = () => (setting('org-log-repeat') === 'nil' ? 'off' : setting('org-log-repeat') === 'note' ? 'note' : 'time');
 const logRepeatOn = () => logRepeatMode() !== 'off';
+/** What a change of TODO state logs through the markers of its keywords (WAIT(w@/!)): the new state's enter mark, else the old state's leave mark. */
+const stateMark = (marks, from, to) => marks[to]?.enter ?? marks[from]?.leave ?? null;
+/** org-log-done, org-log-reschedule and org-log-redeadline: off, a time stamp, or a note. */
+const logMode = (name) => (['time', 'note'].includes(setting(name)) ? setting(name) : 'off');
+const logDoneMode = () => logMode('org-log-done');
 const restoreOn = () => setting('session.restore') !== 'false';
 const lineNumbers = () => setting('view.lineNumbers') === 'true';
 const wrapOn = () => setting('view.wrap') !== 'false';
@@ -162,7 +169,7 @@ function panel(build) {
     if (dismissed) { resolve(undefined); return; }
     const scrim = h('div', { class: 'scrim' });
     const sheet = h('div', { class: 'sheet', role: 'dialog' });
-    const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); close(undefined); } };
+    const onKey = (e) => { if (e.key === 'Escape' && $('layer').lastElementChild === sheet) { e.stopPropagation(); close(undefined); } };
     function close(value) {
       scrim.remove(); sheet.remove();
       document.removeEventListener('keydown', onKey, true);
@@ -313,11 +320,14 @@ let hit = null;
 let marks = []; // what a sparse tree matched ({ line, from, to } in the real text), shown in the highlight color until C-c C-c
 function paintOverlay() {
   const hl = $('hl');
-  if (!cur || editor.hidden || (!hit && marks.length === 0 && !lineNumbers() && !/\[\[|(^|[\s(])[*/_+=~][^\s*/_+=~]/m.test(editor.value))) { hl.replaceChildren(); return; }
+  if (!cur || editor.hidden || (!hit && marks.length === 0 && !lineNumbers() && !/\[\[|<<<|(^|[\s(])[*/_+=~][^\s*/_+=~]/m.test(editor.value))) { hl.replaceChildren(); return; }
   hl.style.width = `${editor.clientWidth}px`;
   let at = 0;
   let number = 0;
-  hl.replaceChildren(...editor.value.split('\n').map((text) => {
+  const emph = emphasisOf(editor.value);
+  const radios = radioNames(editor.value);
+  const radioOk = radioLineSet(editor.value);
+  hl.replaceChildren(...editor.value.split('\n').map((text, row) => {
     const start = at;
     at += text.length + 1;
     number = start === editor.value.length && number > 0 ? number + 1 : lineAt(cur.proj, start) + 1;
@@ -338,7 +348,7 @@ function paintOverlay() {
       }
     }
     if (kids.length === 1 && typeof kids[0] === 'string') {
-      const d = decorations(text);
+      const d = decorations(text, emph.get(row) ?? [], radioOk.has(row) ? radios : []);
       if (d.length) {
         const cut = [...new Set([0, text.length, ...d.flatMap((x) => [x.from, x.to])])].sort((a, b) => a - b);
         kids.splice(0, 1, ...cut.slice(0, -1).map((a, i) => { const z = cut[i + 1]; const cls = d.filter((x) => x.from <= a && x.to >= z).map((x) => x.cls).join(' '); return cls ? h('span', { class: cls }, text.slice(a, z)) : text.slice(a, z); }));
@@ -678,11 +688,11 @@ async function sparse(kind, preset) {
   if (kind !== 'todo' && preset === undefined) {
     const ask = {
       regexp: { prompt: 'Regexp:', title: 'Show matching lines', help: 'Shows the lines that match an Emacs regexp, and the headings above them.' },
-      match: { prompt: 'Match:', title: 'Show matching headings', help: 'Tags such as work+urgent-home or work|home, then / and TODO keywords, or Effort="5h" and LEVEL=2.' },
+      match: { prompt: 'Match:', title: 'Show matching headings', help: 'Tags such as work+urgent-home, work|home or {regexp}, then / and TODO keywords, or Effort="5h", PRIORITY="A" and LEVEL=2.' },
       'todo-keyword': { prompt: 'Keyword (or KWD1|KWD2|...):', title: 'Show entries with a TODO keyword', help: 'One or more keywords, separated by |.' },
     }[kind];
     arg = await askText({ ...ask, ok: 'Show' });
-    if (arg === undefined || arg === '') return;
+    if (arg === undefined || (arg === '' && kind === 'todo-keyword')) return;
   }
   const b = currentBuffer();
   let r;
@@ -1773,6 +1783,16 @@ function sidewaysSwipe(onSwipe) {
   };
 }
 
+/** The Views sheet over the agenda: the view to show ({ kind, match?, words? }), or undefined when cancelled. */
+async function pickView() {
+  const kind = await choose('Views', [{ label: 'Agenda', value: 'agenda' }, { label: 'TODO list', value: 'todo' }, { label: 'Tags', value: 'tags' }, { label: 'Search', value: 'search' }]);
+  if (!kind) return undefined;
+  if (kind !== 'tags' && kind !== 'search') return { kind };
+  const text = await askText({ prompt: kind === 'tags' ? 'Match:' : 'Search words:', title: kind === 'tags' ? 'Show headings by tag' : 'Search headings', help: kind === 'tags' ? 'Tags such as work+urgent or work|home, then / and TODO keywords.' : 'Words that must all appear in a heading and its text.', ok: 'Show' });
+  if (text === undefined || text === '') return undefined;
+  return kind === 'tags' ? { kind, match: text } : { kind, words: text };
+}
+
 /** The agenda over the agenda files: a full screen of rows for the dates, the TODO list, tags or a search. Tapping a row goes to that heading. */
 async function agendaScreen(loaded = null) {
   agendaState.anchor ??= todayDate();
@@ -1781,6 +1801,7 @@ async function agendaScreen(loaded = null) {
   let diary = loaded?.diary ?? await diaryData();
   for (;;) {
     const st = agendaState;
+    dismissed = false; // an [x] on a sheet opened from the agenda ends that sheet's chain, not the agenda
     let view;
     try {
       view = st.kind === 'todo' ? todoList(files, { keyword: st.keyword, filter: st.filter, prefix: prefixOpts() }) : st.kind === 'tags' ? tagsView(files, { match: st.match, filter: st.filter, prefix: prefixOpts() }) : st.kind === 'search' ? searchView(files, { words: st.words, filter: st.filter, prefix: prefixOpts() })
@@ -1798,7 +1819,7 @@ async function agendaScreen(loaded = null) {
         };
         document.addEventListener('keydown', onMoveKey, true);
       }
-      const counter = h('button', { class: 'primary', onclick: () => close({ act: true }) }, '');
+      const counter = h('button', { class: 'primary', onclick: async () => { if (await bulkAction(st, files, view)) close({ acted: true }); } }, '');
       const count = () => { counter.textContent = `Act on ${st.marked.size}`; counter.disabled = st.marked.size === 0; };
       const all = view.days ? view.days.flatMap((d) => d.entries) : view.entries;
       const cols = phoneColumns(prefixOpts().formats[st.kind], all, prefixOpts().icons);
@@ -1822,29 +1843,22 @@ async function agendaScreen(loaded = null) {
         st.kind === 'agenda' ? h('div', { class: 'abar' }, ...SPANS.map(([v, l]) => h('button', { class: st.span === v ? 'primary' : '', onclick: () => close({ span: v }) }, l))) : null,
         h('div', { class: 'abar' },
           ...(st.marking ? [h('button', { onclick: () => close({ markAll: true }) }, 'All'), h('button', { onclick: () => close({ markNone: true }) }, 'None'), counter, h('button', { onclick: () => close({ marking: false }) }, 'Done')]
-            : [h('button', { onclick: () => close({ filter: true }) }, filterActive(st.filter) ? 'Filter ●' : 'Filter'), h('button', { onclick: () => close({ marking: true }) }, 'Mark'),
-              h('button', { onclick: () => close({ views: true }) }, 'Views'), h('button', { onclick: () => close(undefined) }, 'Close')])));
+            : [h('button', { onclick: async () => { if (await agendaFilterDialog(st)) close({ refresh: true }); } }, filterActive(st.filter) ? 'Filter ●' : 'Filter'), h('button', { onclick: () => close({ marking: true }) }, 'Mark'),
+              h('button', { onclick: async () => { const pick = await pickView(); if (pick) close({ view: pick }); } }, 'Views'), h('button', { onclick: () => close(undefined) }, 'Close')])));
       count();
     });
     if (onMoveKey) document.removeEventListener('keydown', onMoveKey, true);
     if (!act) return;
     if (act.today) agendaToday();
     else if (act.move) agendaMove(act.move);
-    else if (act.filter) await agendaFilterDialog(st);
+    else if (act.refresh) { /* the filter changed; the loop draws it again */ }
     else if (act.marking !== undefined) { st.marking = act.marking; if (!act.marking) st.marked.clear(); }
     else if (act.markNone) st.marked.clear();
     else if (act.markAll) for (const e of view.days ? view.days.flatMap((d) => d.entries) : view.entries) st.marked.add(entryKey(e));
-    else if (act.act) { await bulkAction(st, files, view); st.marked.clear(); st.marking = false; try { files = await agendaSources(); diary = await diaryData(); } catch (e) { failure(e); return; } }
+    else if (act.acted) { st.marked.clear(); st.marking = false; try { files = await agendaSources(); diary = await diaryData(); } catch (e) { failure(e); return; } }
     else if (act.span) { st.span = act.span; if (weekly(act.span)) st.anchor = mondayOf(st.anchor); }
-    else if (act.views) {
-      const v = await choose('Views', [{ label: 'Agenda', value: 'agenda' }, { label: 'TODO list', value: 'todo' }, { label: 'Tags', value: 'tags' }, { label: 'Search', value: 'search' }]);
-      if (v === 'tags' || v === 'search') {
-        const text = await askText({ prompt: v === 'tags' ? 'Match:' : 'Search words:', title: v === 'tags' ? 'Show headings by tag' : 'Search headings', help: v === 'tags' ? 'Tags such as work+urgent or work|home, then / and TODO keywords.' : 'Words that must all appear in a heading and its text.', ok: 'Show' });
-        if (text === undefined || text === '') continue;
-        if (v === 'tags') st.match = text; else st.words = text;
-      }
-      if (v) { st.kind = v; st.keyword = null; }
-    } else if (act.jump) {
+    else if (act.view) { st.kind = act.view.kind; st.keyword = null; if (act.view.match !== undefined) st.match = act.view.match; if (act.view.words !== undefined) st.words = act.view.words; }
+    else if (act.jump) {
       await jumpTo(files, act.jump, 'agenda');
       return;
     }
@@ -1930,13 +1944,13 @@ async function agendaFilterDialog(st) {
     { label: 'Effort', meta: f.effort ? `${f.effort.op}${f.effort.minutes} min` : null, value: 'effort' }, { label: 'Regexp', meta: filterLabel({ ...noFilter(), regexp: f.regexp }) || null, value: 'regexp' },
     ...(filterActive(f) ? [{ label: 'Clear all filters', value: 'clear' }] : []),
   ]);
-  if (v === undefined) return;
-  if (v === 'clear') { st.filter = noFilter(); return; }
+  if (v === undefined) return false;
+  if (v === 'clear') { st.filter = noFilter(); return true; }
   const help = { tags: 'Tags to keep (+work) or hide (-home), separated by spaces. Empty removes the tag filter.', category: 'A category to keep (+calls) or hide (-calls).',
     effort: 'An effort limit such as <1:00, >0:30 or =2:00. Empty removes it.', regexp: 'An Emacs regexp the line must match (+rent) or must not match (-rent).' }[v];
   const typed = await askText({ prompt: `${v === 'tags' ? 'Tag' : v === 'category' ? 'Category' : v === 'effort' ? 'Effort' : 'Regexp'}:`, title: `Filter by ${v === 'tags' ? 'tag' : v}`, help, ok: 'Filter' });
-  if (typed === undefined) return;
-  try { st.filter = { ...f, [v]: v === 'effort' ? (typed.trim() ? parseEffort(typed) : null) : parseSigned(typed) }; } catch (e) { failure(e); }
+  if (typed === undefined) return false;
+  try { st.filter = { ...f, [v]: v === 'effort' ? (typed.trim() ? parseEffort(typed) : null) : parseSigned(typed) }; return true; } catch (e) { failure(e); return false; }
 }
 
 /** The actions on the marked entries (Emacs: B): each is done to every entry in the order marked, and the rest of the lines are kept in step. */
@@ -1944,31 +1958,31 @@ async function bulkAction(st, files, view) {
   const all = view.days ? view.days.flatMap((d) => d.entries) : view.entries;
   const byKey = new Map(all.map((e) => [entryKey(e), e]));
   const marked = [...st.marked].map((k) => byKey.get(k)).filter((e) => e && !e.diary && e.kind !== 'sexp');
-  if (!marked.length) return;
+  if (!marked.length) return false;
   const words = [...new Set(files.flatMap((f) => { const a = analyze(f.text); return [...a.todo.open, ...a.todo.done]; }))];
   const what = await choose(`${marked.length} marked`, [
     { label: 'TODO state', value: 'todo' }, { label: 'Add tag', value: 'tag+' }, { label: 'Remove tag', value: 'tag-' }, { label: 'Priority', value: 'priority' },
     { label: 'Schedule', value: 'schedule' }, { label: 'Deadline', value: 'deadline' }, { label: 'Archive', value: 'archive' },
   ]);
-  if (what === undefined) return;
+  if (what === undefined) return false;
   let edit;
   if (what === 'todo') {
     const state = await choose('TODO state', [...words.map((w) => ({ label: w, value: w })), { label: 'None', value: '' }]);
-    if (state === undefined) return;
+    if (state === undefined) return false;
     edit = (t, l) => { let cur = t; for (let i = 0; i < 30; i++) { const hd = analyze(cur).heads.find((x) => x.line === l); if ((hd?.todo ?? '') === state) break; cur = cycleTodo(cur, l, 1, tagsColumn()).text; } return { text: cur }; };
   } else if (what === 'tag+' || what === 'tag-') {
     const typed = await askText({ prompt: 'Tag:', title: what === 'tag+' ? 'Add tag' : 'Remove tag', ok: 'Set' });
-    if (typed === undefined || !typed.trim()) return;
+    if (typed === undefined || !typed.trim()) return false;
     const tag = typed.trim();
-    if (!/^[\p{L}\p{N}_@#%]+$/u.test(tag)) { message('Tags can have letters, digits and _ @ # %', true); return; }
+    if (!/^[\p{L}\p{N}_@#%]+$/u.test(tag)) { message('Tags can have letters, digits and _ @ # %', true); return false; }
     edit = (t, l) => { const tags = analyze(t).heads.find((x) => x.line === l).tags; return setTags(t, l, what === 'tag+' ? [...new Set([...tags, tag])] : tags.filter((x) => x !== tag), tagsColumn()); };
   } else if (what === 'priority') {
     const p = await choose('Priority', [...['A', 'B', 'C'].map((x) => ({ label: x, value: x })), { label: 'None', value: '' }]);
-    if (p === undefined) return;
+    if (p === undefined) return false;
     edit = (t, l) => setPriority(t, l, p === '' ? null : p, tagsColumn());
   } else if (what === 'schedule' || what === 'deadline') {
     const stamp = await askStamp(what === 'schedule' ? 'SCHEDULED' : 'DEADLINE');
-    if (stamp === null) return;
+    if (stamp === null) return false;
     edit = (t, l) => setPlanning(t, l, what === 'schedule' ? 'SCHEDULED' : 'DEADLINE', stamp);
   }
   const pending = marked.map((e) => ({ file: e.file, line: e.line }));
@@ -2000,6 +2014,7 @@ async function bulkAction(st, files, view) {
   }
   for (const c of created) { const b = await bufferFor(c.file); if (b) session.apply(b.id, { text: c.text }); else session.createFile(c.file, c.text); }
   message(`Acted on ${done} entries`);
+  return true;
 }
 
 // ---- Structure commands, the Outline view's taps, and the Emacs keys ------------------------------------
@@ -2115,8 +2130,55 @@ function subtreePaste() {
   const p = cursorOffset();
   const before = currentBuffer().text.slice(0, p);
   const line = before.split('\n').length - 1;
-  const r = runEdit((t) => { const x = pasteSubtree(t, line, p - (before.lastIndexOf('\n') + 1), killRing.get(), { level: arg?.num > 0 ? arg.num : undefined, after: arg?.list === 4, column: tagsColumn() }); return { text: x.text, line: x.line }; });
+  const r = runEdit((t) => { const x = pasteSubtree(t, line, p - (before.lastIndexOf('\n') + 1), killRing.get(), { level: arg?.num > 0 ? arg.num : undefined, after: arg?.list === 4, child: arg?.list === 16, column: tagsColumn() }); return { text: x.text, line: x.line }; });
   if (r && viewMode() === 'text') placeOffset(lineStart(r.text, r.line + 1));
+}
+
+/** The cursor as a line and column of the text, and the lines a selection covers (the Outline view has the focused line and no column). */
+function listPoint() {
+  const text = currentBuffer().text;
+  if (viewMode() !== 'text') return { line: kindAtCursor().line, col: 0, region: null };
+  const at = cursorOffset();
+  const upTo = (o) => text.slice(0, o).split('\n').length - 1;
+  const line = upTo(at);
+  let region = null;
+  if (editor.selectionStart !== editor.selectionEnd) {
+    const from = toFull(cur.proj, editor.selectionStart);
+    const to = toFull(cur.proj, editor.selectionEnd);
+    region = [upTo(from), upTo(to) + (to === lineOffset(text, upTo(to)) ? 0 : 1)];
+  }
+  return { line, col: at - lineOffset(text, line), region };
+}
+
+/** Runs a list edit from core/lists.js at the cursor and puts the cursor where it says. Returns the result, or null when there was none. */
+function listEdit(fn) {
+  const b = currentBuffer();
+  const p = listPoint();
+  const r = fn(b.text, p.line, p.col, p.region);
+  if (!r) return null;
+  if (r.error) { message(r.error, true); return null; }
+  lastCycle = null;
+  session.apply(b.id, { text: r.text });
+  if (r.messages) message(r.messages[r.messages.length - 1]);
+  if (viewMode() === 'text') placeOffset(lineOffset(r.text, r.line) + r.col);
+  return r;
+}
+
+const inItem = () => { const l = listPoint().line; return cur.a.items.some((x) => x.line <= l && l < x.end); };
+
+/** C-c -: a table gets a rule; on a list item the bullet changes (a number picks the kind); text and headings become items. */
+function ctrlCMinus() {
+  if (inTable()) { COMMANDS['table-hline'](); return; }
+  const which = arg?.num !== undefined ? arg.num : arg?.list ? 'previous' : undefined;
+  listEdit((t, l, c, region) => lists.ctrlCMinus(t, l, c, { region, which }));
+}
+
+/** C-c ^: sorts the table lines, or the list the cursor is in; a key picks how (a capital reverses). */
+async function sortHere() {
+  if (inTable()) { COMMANDS['table-sort'](); return; }
+  if (!inItem()) { message('Not at a table or list item', true); return; }
+  const key = await choose('Sort plain list', [['a', 'Alphabetically'], ['n', 'Numerically'], ['t', 'By time'], ['x', 'By checkbox'], ['A', 'Alphabetically, reversed'], ['N', 'Numerically, reversed'], ['T', 'By time, reversed'], ['X', 'By checkbox, reversed']].map(([k, label]) => ({ label, value: k, key: k })));
+  if (key) listEdit((t, l) => lists.sortList(t, l, key));
 }
 
 /** The same at the cursor. */
@@ -2581,10 +2643,10 @@ function sayPriority(line) {
 }
 
 /** The note asked for when a repeating task is finished (org-log-repeat note): its text, or null when cancelled. */
-function askNote(from, to) {
+function askNote(from, to, text = `Insert note for state change from "${from}" to "${to}".`) {
   return panel((sheet, close) => {
     const input = h('textarea', { rows: '6', autocapitalize: 'sentences', 'aria-label': 'Note' });
-    put(sheet, h('h2', {}, 'Insert note'), h('p', {}, `Insert note for state change from "${from}" to "${to}".`), input,
+    put(sheet, h('h2', {}, 'Insert note'), h('p', {}, text), input,
       h('div', { class: 'row' }, h('button', { onclick: () => close(null) }, 'Skip'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
     input.focus();
   }).then((v) => (v === undefined ? null : v));
@@ -2593,36 +2655,65 @@ function askNote(from, to) {
 /** Changes the TODO state of the enclosing heading and says the new state. */
 async function todoStep(dir) {
   const a = arg;
+  // S-LEFT and S-RIGHT on a list bullet change the list's bullet
+  if (viewMode() === 'text' && !a) { const p = listPoint(); if (lists.onBullet(currentBuffer().text, p.line, p.col)) { listEdit((t, l, c) => lists.ctrlCMinus(t, l, c, { which: dir < 0 ? 'previous' : undefined })); return; } }
   if (a?.list === 4) { message('Logging a state-change note is not supported', true); return; }
   const said = [];
   let same = false;
+  let noted = false;
+  let startState = null;
   // org-log-repeat note: when finishing a repeating task, the note is asked for first
   let note;
-  if (logRepeatMode() === 'note') {
+  let kwNote;
+  if (logRepeatMode() === 'note' || logDoneMode() === 'note' || Object.keys(analyze(currentBuffer().text).todo.marks).length) {
     const hd = enclosingHead();
     try {
       const t = currentBuffer().text;
       const before = analyze(t);
       const from = before.heads.find((x) => x.line === hd?.line)?.todo ?? null;
       const c = hd ? cycleTodo(t, hd.line, dir, tagsColumn()) : null;
-      if (c?.state && before.todo.done.includes(c.state) && completeRepeat({ text: c.text, line: hd.line, from: from ?? '', to: c.state, reopen: before.todo.open[0], now: localNow() }))
-        note = await askNote(from ?? '', c.state);
+      if (c?.state && before.todo.done.includes(c.state) && !before.todo.done.includes(from)) {
+        const repeats = completeRepeat({ text: c.text, line: hd.line, from: from ?? '', to: c.state, reopen: before.todo.open[0], now: localNow() });
+        if (repeats && logRepeatMode() === 'note') note = await askNote(from ?? '', c.state);
+        else if (!repeats && logDoneMode() === 'note') note = await askNote(from ?? '', c.state, `Insert closing note for "${c.state}".`);
+      }
+      if (c?.state && c.state !== from && stateMark(before.todo.marks, from, c.state) === 'note') kwNote = await askNote(from ?? '', c.state);
     } catch { /* the plain path reports it */ }
   }
   const r = onEnclosingHeading((t, l) => {
+    const out = step(t, l);
+    if (said.length || same || !out.state || out.state === startState) return out;
+    const m = stateMark(analyze(t).todo.marks, startState, out.state);
+    if (!m) return out;
+    if (m === 'note') noted = typeof kwNote === 'string' || noted;
+    if (m === 'note' && kwNote === null) return out;
+    return { ...out, text: addLogEntry(out.text, l, { heading: logLine(out.state, startState ?? '', localNow()).slice(2), note: m === 'note' ? kwNote : undefined, drawer: logDrawer(out.text, l), bare: true }) };
+  });
+  function step(t, l) {
     const before = analyze(t);
     const from = before.heads.find((x) => x.line === l)?.todo ?? null;
+    startState = from;
     const to = todoTarget(a, before.todo, from);
     const c = cycleTodo(t, l, dir, tagsColumn(), to);
     if (to !== undefined && c.state === from) { same = true; return c; }
-    if (!c.state || !before.todo.done.includes(c.state)) return c;
+    const fromDone = from !== null && before.todo.done.includes(from);
+    // org-log-done time or note: leaving a done state takes the CLOSED stamp away
+    if (!c.state || !before.todo.done.includes(c.state)) return logDoneMode() !== 'off' && fromDone ? { ...c, text: dropClosed(c.text, l) } : c;
+    if (fromDone) return c;
     // Finishing a repeating task: the date moves on and the task is open again
     const rep = completeRepeat({ text: c.text, line: l, from: from ?? '', to: c.state, reopen: before.todo.open[0], now: localNow(), drawer: logDrawer(), log: logRepeatOn(), note });
-    if (!rep) return c;
+    if (!rep) {
+      if (logDoneMode() === 'off') return c;
+      // org-log-done: the CLOSED stamp, and for a note the closing note under it
+      let t = setClosed(c.text, l, localNow());
+      if (typeof note === 'string') { t = addLogEntry(t, l, { heading: `CLOSING NOTE ${formatStamp(localNow(), { time: true, active: false })}`, note, drawer: logDrawer(c.text, l), bare: true }); noted = true; }
+      return { ...c, text: t };
+    }
     said.push(`TODO state changed to ${c.state}`, `TODO state changed to ${before.todo.open[0]}`);
     return { ...c, text: rep.text, state: null };
-  });
-  if (said.length) message(said.at(-1));
+  }
+  if (noted) message('Note stored');
+  else if (said.length) message(said.at(-1));
   else if (same) message(`TODO state was already ${r?.state ?? ''}`);
   else if (r && (r.state || a)) message(`TODO state changed to ${r.state ?? ''}`);
   if (a?.list === 16) {
@@ -2647,7 +2738,7 @@ function askDateSheet({ label, base, active, canToggle }) {
     const input = h('input', { autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Date', placeholder: dayOf(base) });
     let shown = { y: base.getUTCFullYear(), m: base.getUTCMonth() + 1 };
     let isActive = active;
-    const read = () => { try { return parseDate(input.value, base); } catch { return null; } };
+    const read = () => { try { return parseDate(input.value, base, todayDate()); } catch { return null; } };
     const write = (d, time, until) => { input.value = `${iso(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate())}${time ? ` ${two(time[0])}:${two(time[1])}${until ? `-${until}` : ''}` : ''}`; follow(); draw(); };
     const parsed = () => { const r = read(); return r && { date: r.date, time: r.time ? [r.date.getUTCHours(), r.date.getUTCMinutes()] : null, until: r.until }; };
     const follow = () => { const p = input.value.trim() === '' ? null : parsed(); if (p) shown = { y: p.date.getUTCFullYear(), m: p.date.getUTCMonth() + 1 }; };
@@ -2707,7 +2798,7 @@ async function askStamp(label, active = true, canToggle = false) {
     typed = got.typed; active = got.active;
   }
   if (typed === undefined) return null;
-  try { const d = parseDate(typed, base); return formatStamp(d.date, { time: d.time, until: d.until, active }); } catch (e) { failure(e); return null; }
+  try { const d = parseDate(typed, base, todayDate()); return formatStamp(d.date, { time: d.time, until: d.until, active }); } catch (e) { failure(e); return null; }
 }
 
 /** S-up and S-down: on a timestamp they change the part under the cursor; elsewhere they are the priority keys. */
@@ -2826,8 +2917,20 @@ async function planHere(keyword, label, said, hd = enclosingHead()) {
   if (!hd) { message('Not at a heading'); return; }
   const stamp = await askStamp(label);
   if (stamp === null) return;
-  runEdit((t) => setPlanning(t, hd.line, keyword, stamp));
+  // org-log-reschedule and org-log-redeadline: changing a date that was set leaves a line saying so
+  const mode = logMode(keyword === 'SCHEDULED' ? 'org-log-reschedule' : 'org-log-redeadline');
+  const old = mode === 'off' ? null : planningStamp(currentBuffer().text, hd.line, keyword);
+  const what = keyword === 'SCHEDULED' ? 'Rescheduled from' : 'New deadline from';
+  const changed = old !== null && old !== `[${stamp.slice(1, -1)}]`;
+  const note = changed && mode === 'note' ? await askNote('', '', `Insert note for ${what.toLowerCase().replace(' from', '')}.`) : undefined;
+  runEdit((t) => {
+    const r = setPlanning(t, hd.line, keyword, stamp);
+    if (!changed || note === null) return r;
+    const at = formatStamp(localNow(), { time: true, active: false });
+    return { ...r, text: addLogEntry(r.text, hd.line, { heading: `${what} "${old}" on ${at}`, note, drawer: logDrawer(r.text, hd.line), bare: true }) };
+  });
   message(`${said} ${stamp}`);
+  if (typeof note === 'string') message('Note stored');
 }
 
 /** Adds a timestamp at the end of the heading's own text, as a new body line. */
@@ -2894,7 +2997,13 @@ const links = createLinkCommands({
   offset: () => cursorOffset(),
   selection: () => (viewMode() === 'text' && editor.selectionStart !== editor.selectionEnd ? { from: toFull(cur.proj, editor.selectionStart), to: toFull(cur.proj, editor.selectionEnd) } : null),
   apply: (text) => { lastCycle = null; session.apply(currentBuffer().id, { text }); },
-  place: (offset) => { if (viewMode() === 'text') placeOffset(offset); },
+  place: (offset) => {
+    if (viewMode() === 'text') { placeOffset(offset); return; }
+    // The Outline view has no cursor: the heading the place is under is brought into view
+    const line = currentBuffer().text.slice(0, offset).split('\n').length - 1;
+    const head = analyze(currentBuffer().text).heads.filter((x) => x.line <= line).pop();
+    if (head) setTimeout(() => { const row = $('outline').querySelector(`.ol-head[data-line="${head.line}"]`); row?.scrollIntoView({ block: 'center' }); row?.classList.add('flash'); setTimeout(() => row?.classList.remove('flash'), 1200); }, 0);
+  },
   leave: () => leaveHere(),
   reveal: (line) => { const b = currentBuffer(); const opened = reveal(analyze(b.text).foldables, b.folds, Math.max(0, line)); if (JSON.stringify(opened) !== JSON.stringify(b.folds)) session.setFolds(b.id, opened); },
   ask: (o) => askText(o),
@@ -3017,15 +3126,34 @@ const COMMANDS = {
       tableEditAuto(table.align); return;
     }
     if (marks.length) { marks = []; paintOverlay(); message('Temporary highlights/overlays removed from current buffer'); return; }
+    if (arg?.list && inItem()) { listEdit((t, l, c, region) => lists.boxCommand(t, l, c, { list: arg.list >= 16 ? 16 : 4, region })); return; }
     const at = editor.selectionStart;
     const col = at - lineOffset(currentBuffer().text, lineAt(cur.proj, at));
+    const here = kindAtCursor();
+    if (here.kind === 'item' && !/^[ \t]*(?:[-+*]|\d+[.)])[ \t]+(?:\[@\d+\][ \t]+)?\[[ X-]\]/.test(currentBuffer().text.split('\n')[here.line]) && !updateCookieAt(currentBuffer().text, here.line, col)) { listEdit(lists.repair); return; }
     const r = runEdit((t) => updateCookieAt(t, lineAt(cur.proj, at), col) ?? toggleCheckbox(t, kindAtCursor().line));
     if (!r) message('Nothing to do here'); else if (r.col !== undefined) placeOffset(lineOffset(r.text, r.line) + r.col);
   },
   'insert-heading-here': () => {
     // C-u puts the heading after the subtree at point, C-u C-u at the end of the tree above it
     if (arg?.list) { insertHeadingAfterSubtree(arg.list >= 16); return; }
-    if (inTable()) { tableEdit(table.splitField); return; } const r = runEdit((t) => insertHeadingHere(t, cursorOffset())); if (r) placeOffset(r.pos); },
+    if (inTable()) { tableEdit(table.splitField); return; }
+    if (inItem() && listEdit((t, l, c) => lists.insertItem(t, l, c))) return;
+    const r = runEdit((t) => insertHeadingHere(t, cursorOffset())); if (r) placeOffset(r.pos); },
+  'insert-todo-item': () => { if (!inItem()) { message('Not at a list item', true); return; } listEdit((t, l, c) => lists.insertItem(t, l, c, { box: true })); },
+  'ctrl-c-minus': () => ctrlCMinus(),
+  'add-note': async () => {
+    const hd = enclosingHead();
+    if (!hd) { message('Not at a heading'); return; }
+    const note = await askNote('', '', 'Insert note.');
+    if (note === null) return;
+    const at = formatStamp(localNow(), { time: true, active: false });
+    runEdit((t) => ({ text: addLogEntry(t, hd.line, { heading: `Note taken on ${at}`, note, drawer: logDrawer(t, hd.line), bare: true }), line: hd.line }));
+    message('Note stored');
+  },
+  'ctrl-c-star': () => { if (inTable()) COMMANDS['table-recalculate'](); else listEdit(lists.toggleHeading); },
+  'sort': () => sortHere(),
+  'list-repair': () => { if (!inItem()) { message('Not at a list item', true); return; } listEdit(lists.repair); },
   'unsent-saves': () => sendQueued(true),
   'table-next-row': () => tableEditAuto(table.nextRow),
   'table-copy-down': () => tableEdit(table.copyDown),
@@ -3453,7 +3581,7 @@ const PALETTE = [
   ['table-align', 'org-table-align', 'Align table'], ['table-sort', 'org-table-sort-lines', 'Sort table lines'], ['table-blank-field', 'org-table-blank-field', 'Blank table field'], ['table-sum', 'org-table-sum', 'Sum table column'], ['keep-offline', 'serita-keep-files-offline', 'Keep files offline', true], ['table-recalculate', 'org-table-recalculate', 'Recalculate table formulas'], ['table-formula', 'org-table-eval-formula', 'Edit a table formula'], ['table-edit-formulas', 'org-table-edit-formulas', 'Edit all table formulas'], ['table-plot', 'org-plot/gnuplot', 'Plot table', true], ['table-toggle-numbers', 'org-table-toggle-coordinate-overlays', 'Show table row and column numbers'], ['table-toggle-debug', 'org-table-toggle-formula-debugger', 'Debug table formulas'], ['table-recalculate-buffer', 'org-table-recalculate-buffer-tables', 'Recalculate all tables', true], ['table-iterate-buffer', 'org-table-iterate-buffer-tables', 'Recalculate all tables until stable', true], ['table-create', 'org-table-create-or-convert-from-region', 'Create table or convert text'], ['init-reload', 'serita-reload-init-file', 'Reload init file', true], ['table-delete-row', 'org-table-kill-row', 'Delete table row'], ['table-insert-row', 'org-table-insert-row', 'Insert table row'], ['table-hline-and-move', 'org-table-hline-and-move', 'Add table rule and move below'], ['table-move-row-up', 'org-table-move-row-up', 'Move table row up'], ['table-move-row-down', 'org-table-move-row-down', 'Move table row down'], ['table-delete-column', 'org-table-delete-column', 'Delete table column'], ['table-insert-column', 'org-table-insert-column', 'Insert table column'], ['table-move-column-left', 'org-table-move-column-left', 'Move table column left'], ['table-move-column-right', 'org-table-move-column-right', 'Move table column right'], ['table-export', 'org-table-export', 'Export table'], ['table-import', 'org-table-import', 'Import table text'], ['table-copy-region', 'org-table-copy-region', 'Copy table cells'], ['table-cut-region', 'org-table-cut-region', 'Cut table cells'], ['table-paste-rectangle', 'org-table-paste-rectangle', 'Paste table cells'], ['table-rotate-recalc-marks', 'org-table-rotate-recalc-marks', 'Rotate recalculation mark'],
   ['table-transpose', 'org-table-transpose-table-at-point', 'Transpose table'], ['table-field-info', 'org-table-field-info', 'Show field coordinates'], ['table-hline', 'org-table-insert-hline', 'Insert horizontal line'],
   ['table-copy-down', 'org-table-copy-down', 'Copy field down'], ['table-next-row', 'org-table-next-row', 'Next row'],
-  ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],
+  ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['insert-todo-item', 'org-insert-todo-heading', 'Insert list item with checkbox'], ['ctrl-c-minus', 'org-ctrl-c-minus', 'Change list bullet or make list item'], ['ctrl-c-star', 'org-ctrl-c-star', 'Toggle heading'], ['sort', 'org-sort', 'Sort table or list'], ['add-note', 'org-add-note', 'Add a note to the entry'], ['list-repair', 'org-list-repair', 'Repair list numbering'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],
   ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true], ['open-link', 'org-open-at-point', 'Open link', true], ['store-link', 'org-store-link', 'Store link', true], ['insert-link', 'org-insert-link', 'Insert link', true], ['footnote', 'org-footnote-action', 'Footnote', true], ['emphasize', 'org-emphasize', 'Emphasize', true], ['effort', 'org-set-effort', 'Set effort'], ['capture', 'org-capture', 'Capture', true], ['refile', 'org-refile', 'Refile', true], ['refile-copy', 'org-refile-copy', 'Refile and keep'], ['refile-cache-clear', 'org-refile-cache-clear', 'Clear refile cache', true], ['archive-subtree', 'org-archive-subtree', 'Archive'], ['archive-sibling', 'org-archive-to-archive-sibling', 'Archive to sibling'], ['archive-tag', 'org-toggle-archive-tag', 'Toggle archive tag'], ['clock-in', 'org-clock-in', 'Clock in'], ['clock-out', 'org-clock-out', 'Clock out'], ['clock-cancel', 'org-clock-cancel', 'Cancel clock'], ['agenda-file-add', 'org-agenda-file-to-front', 'Add file to agenda files', true], ['agenda-file-remove', 'org-remove-file', 'Remove file from agenda files', true],
   ['undo', 'undo', 'Undo', true], ['redo', 'undo-redo', 'Redo', true],
   ['select-all', 'mark-whole-buffer', 'Select all'], ['kill-line', 'kill-line', 'Cut to end of line'], ['kill-whole-line', 'kill-whole-line', 'Cut whole line'], ['yank', 'yank', 'Paste'],
@@ -3605,7 +3733,7 @@ function moveCursor(key, extend) {
   renderModeLine();
 }
 
-const TABLE_ONLY = new Set(['RET', 'S-RET', 'M-S-<up>', 'M-S-<down>', 'C-c -', 'C-c RET', 'C-c ?']);
+const TABLE_ONLY = new Set(['RET', 'S-RET', 'M-S-<up>', 'M-S-<down>', 'C-c RET', 'C-c ?']);
 const HEADING_ONLY = new Set(['S-<up>', 'S-<down>', 'S-<left>', 'S-<right>']);
 const SOFT_KEYS = ['Unidentified', 'Process'];
 const MODIFIER_KEYS = ['Control', 'Alt', 'Meta', 'Shift'];
@@ -3618,7 +3746,10 @@ editor.addEventListener('keydown', (e) => {
   const held = keyRow.sticky();
   const fromRow = held.ctrl || held.meta || held.shift;
   const chord = chordOf({ key: e.key, ctrl: e.ctrlKey || held.ctrl, meta: e.altKey || e.metaKey || held.meta, shift: e.shiftKey || held.shift });
-  if (keymap.pending() === '' && TABLE_ONLY.has(chord) && !inTable()) return; // elsewhere these keys do what they always did
+  if (keymap.pending() === '' && TABLE_ONLY.has(chord) && !inTable()) { // elsewhere these keys do what they always did, but RET in an item's text indents the new line
+    if (chord === 'RET' && !held.ctrl && !held.meta && listEdit(lists.returnInItem)) e.preventDefault();
+    return;
+  }
   if (chord === 'RET' && keymap.pending() === '' && editor.value[editor.selectionStart] === undefined) return;
   if (chord === 'RET' && keymap.pending() === '' && editor.value[editor.selectionStart] === '\n') return; // at the end of the line RET stays a newline
   if (HEADING_ONLY.has(chord) && kindAtCursor().kind !== 'heading' && !stampAt(currentBuffer().text, cursorOffset())) return; // elsewhere the arrows select, as usual

@@ -1,0 +1,142 @@
+[
+ {
+  "id": "pp-c16-blank",
+  "input": "* One\n** Child A\ntext a\n** Child B\n\n* Two\n\ntext two\n* Three\n",
+  "cut": 1,
+  "line": 3,
+  "col": 0,
+  "arg": "'(16)",
+  "text": "* One\n** Child B\n\n* Two\n\ntext two\n** Child A\ntext a\n* Three\n",
+  "point": 12
+ },
+ {
+  "id": "pp-c16-body",
+  "input": "* One\n** Child A\ntext a\n** Child B\ntext b\n* Two\ntext two\n* Three\n",
+  "cut": 1,
+  "line": 4,
+  "col": 2,
+  "arg": "'(16)",
+  "text": "* One\n** Child B\ntext b\n* Two\ntext two\n** Child A\ntext a\n* Three\n",
+  "point": 11
+ },
+ {
+  "id": "pp-c16-child",
+  "input": "* One\n** Child A\ntext a\n** Child B\ntext b\n* Two\ntext two\n* Three\n",
+  "cut": 3,
+  "line": 1,
+  "col": 0,
+  "arg": "'(16)",
+  "text": "* One\n** Child A\ntext a\n*** Child B\ntext b\n* Two\ntext two\n* Three\n",
+  "point": 11
+ },
+ {
+  "id": "pp-c16-head",
+  "input": "* One\n** Child A\ntext a\n** Child B\ntext b\n* Two\ntext two\n* Three\n",
+  "cut": 1,
+  "line": 3,
+  "col": 0,
+  "arg": "'(16)",
+  "text": "* One\n** Child B\ntext b\n* Two\ntext two\n** Child A\ntext a\n* Three\n",
+  "point": 11
+ },
+ {
+  "id": "pp-c16-last",
+  "input": "* One\n** Child A\ntext a\n** Child B\ntext b\n* Two\ntext two\n* Three\n",
+  "cut": 1,
+  "line": 4,
+  "col": 0,
+  "arg": "'(16)",
+  "text": "* One\n** Child B\ntext b\n* Two\ntext two\n** Child A\ntext a\n* Three\n",
+  "point": 11
+ },
+ {
+  "id": "pp-c4-body",
+  "input": "* One\n** Child A\ntext a\n** Child B\ntext b\n* Two\ntext two\n* Three\n",
+  "cut": 1,
+  "line": 4,
+  "col": 2,
+  "arg": "'(4)",
+  "text": "* One\n** Child B\ntext b\n* Two\ntext two\n* Child A\ntext a\n* Three\n",
+  "point": 11
+ },
+ {
+  "id": "pp-c4-end",
+  "input": "* One\n** Child A\ntext a\n** Child B\ntext b\n* Two\ntext two\n* Three\ntail",
+  "cut": 1,
+  "line": 5,
+  "col": 0,
+  "arg": "'(4)",
+  "text": "* One\n** Child B\ntext b\n* Two\ntext two\n* Three\ntail\n* Child A\ntext a\n",
+  "point": 12
+ },
+ {
+  "id": "pp-c4-head",
+  "input": "* One\n** Child A\ntext a\n** Child B\ntext b\n* Two\ntext two\n* Three\n",
+  "cut": 1,
+  "line": 3,
+  "col": 0,
+  "arg": "'(4)",
+  "text": "* One\n** Child B\ntext b\n* Two\ntext two\n* Child A\ntext a\n* Three\n",
+  "point": 11
+ },
+ {
+  "id": "pp-n1-body",
+  "input": "* One\n** Child A\ntext a\n** Child B\ntext b\n* Two\ntext two\n* Three\n",
+  "cut": 1,
+  "line": 4,
+  "col": 2,
+  "arg": "1",
+  "text": "* One\n** Child B\ntext b\n* Two\ntext two\n* Child A\ntext a\n* Three\n",
+  "point": 11
+ },
+ {
+  "id": "pp-n1-head",
+  "input": "* One\n** Child A\ntext a\n** Child B\ntext b\n* Two\ntext two\n* Three\n",
+  "cut": 1,
+  "line": 3,
+  "col": 0,
+  "arg": "1",
+  "text": "* One\n** Child B\ntext b\n* Child A\ntext a\n* Two\ntext two\n* Three\n",
+  "point": 11
+ },
+ {
+  "id": "pp-n2-body",
+  "input": "* One\n** Child A\ntext a\n** Child B\ntext b\n* Two\ntext two\n* Three\n",
+  "cut": 1,
+  "line": 4,
+  "col": 2,
+  "arg": "2",
+  "text": "* One\n** Child B\ntext b\n* Two\ntext two\n** Child A\ntext a\n* Three\n",
+  "point": 11
+ },
+ {
+  "id": "pp-n2-head",
+  "input": "* One\n** Child A\ntext a\n** Child B\ntext b\n* Two\ntext two\n* Three\n",
+  "cut": 1,
+  "line": 3,
+  "col": 0,
+  "arg": "2",
+  "text": "* One\n** Child B\ntext b\n** Child A\ntext a\n* Two\ntext two\n* Three\n",
+  "point": 11
+ },
+ {
+  "id": "pp-none-body",
+  "input": "* One\n** Child A\ntext a\n** Child B\ntext b\n* Two\ntext two\n* Three\n",
+  "cut": 1,
+  "line": 4,
+  "col": 2,
+  "arg": "nil",
+  "text": "* One\n** Child B\ntext b\n* Two\ntext two\n* Child A\ntext a\n* Three\n",
+  "point": 11
+ },
+ {
+  "id": "pp-none-head",
+  "input": "* One\n** Child A\ntext a\n** Child B\ntext b\n* Two\ntext two\n* Three\n",
+  "cut": 1,
+  "line": 3,
+  "col": 0,
+  "arg": "nil",
+  "text": "* One\n** Child B\ntext b\n* Child A\ntext a\n* Two\ntext two\n* Three\n",
+  "point": 11
+ }
+]

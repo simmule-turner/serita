@@ -1,0 +1,763 @@
+{
+ "li-align": {
+  "input": "* H\n9. a\n10. b\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n1. a\n2. b\n",
+  "pt": [
+   2,
+   3
+  ],
+  "error": false
+ },
+ "li-cbullet": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n+ one\n+ two\n+ three\n",
+  "pt": [
+   2,
+   3
+  ],
+  "error": false
+ },
+ "li-cbullet-arg": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n1. one\n2. two\n3. three\n",
+  "pt": [
+   2,
+   4
+  ],
+  "error": false
+ },
+ "li-cbullet-prev": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n1) one\n2) two\n3) three\n",
+  "pt": [
+   2,
+   4
+  ],
+  "error": false
+ },
+ "li-cbullet-whole": {
+  "input": "* H\n- one\n  - sub\n- two\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n+ one\n  - sub\n+ two\n",
+  "pt": [
+   2,
+   3
+  ],
+  "error": false
+ },
+ "li-cc-c16": {
+  "input": "* H\n- [ ] one\n- two\n",
+  "line": 3,
+  "col": 3,
+  "text": "* H\n- [ ] one\n- [-] two\n",
+  "pt": [
+   3,
+   7
+  ],
+  "error": false
+ },
+ "li-cc-c4": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- [ ] one\n- two\n- three\n",
+  "pt": [
+   2,
+   7
+  ],
+  "error": false
+ },
+ "li-cc-ord": {
+  "input": "* H\n1. a\n5. b\n9. c\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n1. a\n2. b\n3. c\n",
+  "pt": [
+   2,
+   3
+  ],
+  "error": false
+ },
+ "li-cminus-blank": {
+  "input": "* H\n\ntext\n",
+  "line": 2,
+  "col": 0,
+  "text": "* H\n\ntext\n",
+  "pt": [
+   2,
+   0
+  ],
+  "error": false
+ },
+ "li-cminus-heading": {
+  "input": "* H\n",
+  "line": 1,
+  "col": 1,
+  "text": "- H\n",
+  "pt": [
+   1,
+   0
+  ],
+  "error": false
+ },
+ "li-cminus-ord": {
+  "input": "* H\n1. one\n2. two\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n1) one\n2) two\n",
+  "pt": [
+   2,
+   3
+  ],
+  "error": false
+ },
+ "li-cminus-region": {
+  "input": "* H\na\nb\nc\n",
+  "line": 2,
+  "col": 0,
+  "text": "* H\n- a\n- b\n- c\n",
+  "pt": [
+   5,
+   0
+  ],
+  "error": false
+ },
+ "li-cminus-text": {
+  "input": "* H\nplain text\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- plain text\n",
+  "pt": [
+   2,
+   5
+  ],
+  "error": false
+ },
+ "li-heading": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n** one\n- two\n- three\n",
+  "pt": [
+   2,
+   0
+  ],
+  "error": false
+ },
+ "li-heading-back": {
+  "input": "* H\n** sub\n",
+  "line": 2,
+  "col": 0,
+  "text": "* H\nsub\n",
+  "pt": [
+   2,
+   0
+  ],
+  "error": false
+ },
+ "li-heading-text": {
+  "input": "* H\nplain\n",
+  "line": 2,
+  "col": 2,
+  "text": "* H\n** plain\n",
+  "pt": [
+   2,
+   5
+  ],
+  "error": false
+ },
+ "li-indent": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 3,
+  "col": 3,
+  "text": "* H\n- one\n  - two\n- three\n",
+  "pt": [
+   3,
+   5
+  ],
+  "error": false
+ },
+ "li-indent-ord": {
+  "input": "* H\n1. a\n2. b\n3. c\n",
+  "line": 3,
+  "col": 3,
+  "text": "* H\n1. a\n   1. b\n2. c\n",
+  "pt": [
+   3,
+   6
+  ],
+  "error": false
+ },
+ "li-mdown": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- two\n- one\n- three\n",
+  "pt": [
+   3,
+   3
+  ],
+  "error": false
+ },
+ "li-mdown-last": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 4,
+  "col": 3,
+  "text": "* H\n- one\n- two\n- three\n",
+  "pt": null,
+  "error": true
+ },
+ "li-mdown-sub": {
+  "input": "* H\n- a\n  - a1\n- b\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- b\n- a\n  - a1\n",
+  "pt": [
+   3,
+   3
+  ],
+  "error": false
+ },
+ "li-mk-item": {
+  "input": "* H\nplain\n",
+  "line": 2,
+  "col": 2,
+  "text": "* H\n- plain\n",
+  "pt": [
+   2,
+   4
+  ],
+  "error": false
+ },
+ "li-mk-item-c4": {
+  "input": "* H\nplain\n",
+  "line": 2,
+  "col": 2,
+  "text": "* H\n- plain\n",
+  "pt": [
+   2,
+   4
+  ],
+  "error": false
+ },
+ "li-mk-item-region": {
+  "input": "* H\na\nb\n",
+  "line": 2,
+  "col": 0,
+  "text": "* H\n- a\n- b\n",
+  "pt": [
+   4,
+   0
+  ],
+  "error": false
+ },
+ "li-mret-bol": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 3,
+  "col": 0,
+  "text": "* H\n- one\n- \n- two\n- three\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false
+ },
+ "li-mret-box": {
+  "input": "* H\n- [ ] one\n- [X] two\n",
+  "line": 3,
+  "col": 10,
+  "text": "* H\n- [ ] one\n- [X] two\n- \n",
+  "pt": [
+   4,
+   2
+  ],
+  "error": false
+ },
+ "li-mret-box-mid": {
+  "input": "* H\n- [X] one two\n",
+  "line": 2,
+  "col": 9,
+  "text": "* H\n- [X] one\n- two\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false
+ },
+ "li-mret-desc": {
+  "input": "* H\n- term :: text\n",
+  "line": 2,
+  "col": 10,
+  "text": "* H\n- term ::\n-  :: text\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false
+ },
+ "li-mret-empty": {
+  "input": "* H\n- one\n- \n",
+  "line": 3,
+  "col": 2,
+  "text": "* H\n- one\n- \n- \n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false
+ },
+ "li-mret-end": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 3,
+  "col": 5,
+  "text": "* H\n- one\n- two\n- \n- three\n",
+  "pt": [
+   4,
+   2
+  ],
+  "error": false
+ },
+ "li-mret-mid": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 3,
+  "col": 2,
+  "text": "* H\n- one\n- \n- two\n- three\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false
+ },
+ "li-mret-multi": {
+  "input": "* H\n- one\n  more\n- two\n",
+  "line": 2,
+  "col": 5,
+  "text": "* H\n- one\n- \n  more\n- two\n",
+  "pt": [
+   3,
+   2
+  ],
+  "error": false
+ },
+ "li-mret-multi-b": {
+  "input": "* H\n- one\n  more\n- two\n",
+  "line": 3,
+  "col": 6,
+  "text": "* H\n- one\n  more\n- \n- two\n",
+  "pt": [
+   4,
+   2
+  ],
+  "error": false
+ },
+ "li-mret-nested": {
+  "input": "* H\n- one\n  - sub\n  - sub2\n- two\n",
+  "line": 3,
+  "col": 7,
+  "text": "* H\n- one\n  - sub\n  - \n  - sub2\n- two\n",
+  "pt": [
+   4,
+   4
+  ],
+  "error": false
+ },
+ "li-mret-ord": {
+  "input": "* H\n1. one\n2. two\n3. three\n",
+  "line": 3,
+  "col": 6,
+  "text": "* H\n1. one\n2. two\n3. \n4. three\n",
+  "pt": [
+   4,
+   3
+  ],
+  "error": false
+ },
+ "li-mret-ord-paren": {
+  "input": "* H\n1) one\n2) two\n",
+  "line": 2,
+  "col": 6,
+  "text": "* H\n1) one\n2) \n3) two\n",
+  "pt": [
+   3,
+   3
+  ],
+  "error": false
+ },
+ "li-ms-left": {
+  "input": "* H\n- a\n  - a1\n    - a2\n- b\n",
+  "line": 3,
+  "col": 5,
+  "text": "* H\n- a\n- a1\n  - a2\n- b\n",
+  "pt": [
+   3,
+   3
+  ],
+  "error": false
+ },
+ "li-ms-right": {
+  "input": "* H\n- a\n  - a1\n- b\n",
+  "line": 3,
+  "col": 3,
+  "text": "* H\n- a\n  - a1\n- b\n",
+  "pt": null,
+  "error": true
+ },
+ "li-msret": {
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 5,
+  "text": "* H\n- one\n- [ ] \n- two\n",
+  "pt": [
+   3,
+   6
+  ],
+  "error": false
+ },
+ "li-msret-box": {
+  "input": "* H\n- [ ] one\n",
+  "line": 2,
+  "col": 9,
+  "text": "* H\n- [ ] one\n- [ ] \n",
+  "pt": [
+   3,
+   6
+  ],
+  "error": false
+ },
+ "li-mup": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 3,
+  "col": 3,
+  "text": "* H\n- two\n- one\n- three\n",
+  "pt": [
+   2,
+   3
+  ],
+  "error": false
+ },
+ "li-mup-ord": {
+  "input": "* H\n1. a\n2. b\n3. c\n",
+  "line": 3,
+  "col": 3,
+  "text": "* H\n1. b\n2. a\n3. c\n",
+  "pt": [
+   2,
+   3
+  ],
+  "error": false
+ },
+ "li-ord-cookie": {
+  "input": "* H\n1. [@5] a\n2. b\n",
+  "line": 2,
+  "col": 10,
+  "text": "* H\n5. [@5] a\n6. \n7. b\n",
+  "pt": [
+   3,
+   3
+  ],
+  "error": false
+ },
+ "li-ord-start": {
+  "input": "* H\n3. a\n4. b\n",
+  "line": 2,
+  "col": 5,
+  "text": "* H\n1. a\n2. \n3. b\n",
+  "pt": [
+   3,
+   3
+  ],
+  "error": false
+ },
+ "li-outdent": {
+  "input": "* H\n- one\n  - sub\n",
+  "line": 3,
+  "col": 5,
+  "text": "* H\n- one\n- sub\n",
+  "pt": [
+   3,
+   3
+  ],
+  "error": false
+ },
+ "li-outdent-ord": {
+  "input": "* H\n1. a\n   1. b\n2. c\n",
+  "line": 3,
+  "col": 6,
+  "text": "* H\n1. a\n2. b\n3. c\n",
+  "pt": [
+   3,
+   3
+  ],
+  "error": false
+ },
+ "li-repair": {
+  "input": "* H\n1. a\n3. b\n- c\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n1. a\n2. b\n3. c\n",
+  "pt": [
+   2,
+   3
+  ],
+  "error": false
+ },
+ "li-rm-item": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\none\n- two\n- three\n",
+  "pt": [
+   2,
+   1
+  ],
+  "error": false
+ },
+ "li-sort-a": {
+  "input": "* H\n- pear\n- apple\n- fig\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- apple\n- fig\n- pear\n",
+  "pt": [
+   2,
+   0
+  ],
+  "error": false
+ },
+ "li-sort-ci": {
+  "input": "* H\n- b\n- B\n- a\n- A\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- a\n- A\n- b\n- B\n",
+  "pt": [
+   2,
+   0
+  ],
+  "error": false
+ },
+ "li-sort-n": {
+  "input": "* H\n- 10 b\n- 2 a\n- 33 c\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- 2 a\n- 10 b\n- 33 c\n",
+  "pt": [
+   2,
+   0
+  ],
+  "error": false
+ },
+ "li-sort-nested": {
+  "input": "* H\n- pear\n  - x\n- apple\n  - y\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- apple\n  - y\n- pear\n  - x\n",
+  "pt": [
+   2,
+   0
+  ],
+  "error": false
+ },
+ "li-sort-ord": {
+  "input": "* H\n1. pear\n2. apple\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n1. apple\n2. pear\n",
+  "pt": [
+   2,
+   3
+  ],
+  "error": false
+ },
+ "li-sort-prompt": {
+  "input": "* H\n- pear\n- apple\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- apple\n- pear\n",
+  "pt": [
+   2,
+   0
+  ],
+  "error": false
+ },
+ "li-sort-t": {
+  "input": "* H\n- <2026-05-02> b\n- <2026-01-01> a\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- <2026-01-01> a\n- <2026-05-02> b\n",
+  "pt": [
+   2,
+   0
+  ],
+  "error": false
+ },
+ "li-sort-x": {
+  "input": "* H\n- [X] a\n- [ ] b\n- [-] c\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- [ ] b\n- [-] c\n- [X] a\n",
+  "pt": [
+   2,
+   0
+  ],
+  "error": false
+ },
+ "li-tc-add": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- [ ] one\n- two\n- three\n",
+  "pt": [
+   2,
+   7
+  ],
+  "error": false
+ },
+ "li-tc-add-region": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 2,
+  "col": 0,
+  "text": "* H\n- [ ] one\n- [ ] two\n- [ ] three\n",
+  "pt": [
+   5,
+   0
+  ],
+  "error": false
+ },
+ "li-tc-cookie": {
+  "input": "* H [0/2]\n- [ ] a\n- [ ] b\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H [1/2]\n- [X] a\n- [ ] b\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false
+ },
+ "li-tc-cookie2": {
+  "input": "* H\n- item [0/2]\n  - [ ] a\n  - [ ] b\n",
+  "line": 3,
+  "col": 5,
+  "text": "* H\n- item [2/2]\n  - [X] a\n  - [X] b\n",
+  "pt": [
+   4,
+   0
+  ],
+  "error": false
+ },
+ "li-tc-ord": {
+  "input": "* H\n1. one\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n1. [ ] one\n",
+  "pt": [
+   2,
+   3
+  ],
+  "error": false
+ },
+ "li-tc-partial": {
+  "input": "* H\n- [-] p\n  - [X] a\n  - [ ] b\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- [-] p\n  - [X] a\n  - [ ] b\n",
+  "pt": [
+   2,
+   3
+  ],
+  "error": false
+ },
+ "li-tc-pct": {
+  "input": "* H [0%]\n- [ ] a\n- [ ] b\n- [ ] c\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H [33%]\n- [X] a\n- [ ] b\n- [ ] c\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false
+ },
+ "li-tc-remove": {
+  "input": "* H\n- [ ] one\n- [X] two\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- [-] one\n- [X] two\n",
+  "pt": [
+   2,
+   2
+  ],
+  "error": false
+ },
+ "li-tc-text": {
+  "input": "* H\nplain\n",
+  "line": 2,
+  "col": 2,
+  "text": "* H\nplain\n",
+  "pt": null,
+  "error": true
+ },
+ "li-cminus-1": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n+ one\n+ two\n+ three\n",
+  "pt": [
+   2,
+   3
+  ],
+  "error": false
+ },
+ "li-cminus-2": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n1. one\n2. two\n3. three\n",
+  "pt": [
+   2,
+   4
+  ],
+  "error": false
+ },
+ "li-cminus-3": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n1) one\n2) two\n3) three\n",
+  "pt": [
+   2,
+   4
+  ],
+  "error": false
+ },
+ "li-cminus-4": {
+  "input": "* H\n- one\n- two\n- three\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- one\n- two\n- three\n",
+  "pt": [
+   2,
+   3
+  ],
+  "error": false
+ },
+ "li-sort-A": {
+  "input": "* H\n- pear\n- apple\n- fig\n",
+  "line": 2,
+  "col": 3,
+  "text": "* H\n- pear\n- fig\n- apple\n",
+  "pt": [
+   2,
+   0
+  ],
+  "error": false
+ }
+}

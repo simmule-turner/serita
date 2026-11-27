@@ -1,0 +1,80 @@
+[
+ {
+  "id": "lg-done-time",
+  "input": "* TODO a\n* b\n* DONE c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n",
+  "line": 1,
+  "output": "* DONE a\nCLOSED: [2026-11-26 Thu 09:30]\n* b\n* DONE c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n"
+ },
+ {
+  "id": "lg-done-note",
+  "input": "* TODO a\n* b\n* DONE c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n",
+  "line": 1,
+  "output": "* DONE a\nCLOSED: [2026-11-26 Thu 09:30]\n- CLOSING NOTE [2026-11-26 Thu 09:30] \\\\\n  a note\n* b\n* DONE c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n"
+ },
+ {
+  "id": "lg-drawer",
+  "input": "* TODO a\n* b\n* DONE c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n",
+  "line": 1,
+  "output": "* DONE a\nCLOSED: [2026-11-26 Thu 09:30]\n:LOGBOOK:\n- CLOSING NOTE [2026-11-26 Thu 09:30] \\\\\n  a note\n:END:\n* b\n* DONE c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n"
+ },
+ {
+  "id": "lg-drawer-name",
+  "input": "* TODO a\n* b\n* DONE c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n",
+  "line": 1,
+  "output": "* DONE a\nCLOSED: [2026-11-26 Thu 09:30]\n:LOG:\n- CLOSING NOTE [2026-11-26 Thu 09:30] \\\\\n  a note\n:END:\n* b\n* DONE c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n"
+ },
+ {
+  "id": "lg-note-cmd",
+  "input": "* a\n",
+  "line": 1,
+  "output": "* a\n- Note taken on [2026-11-26 Thu 09:30] \\\\\n  n"
+ },
+ {
+  "id": "lg-note-cmd-drawer",
+  "input": "* a\n",
+  "line": 1,
+  "output": "* a\n:LOGBOOK:\n- Note taken on [2026-11-26 Thu 09:30] \\\\\n  n\n:END:\n"
+ },
+ {
+  "id": "lg-note-twice",
+  "input": "* a\n",
+  "line": 1,
+  "output": "* a\n:LOGBOOK:\n- Note taken on [2026-11-26 Thu 09:30] \\\\\n  n2\n- Note taken on [2026-11-26 Thu 09:30] \\\\\n  n1\n:END:\n"
+ },
+ {
+  "id": "lg-reschedule-note",
+  "input": "* TODO a\nSCHEDULED: <2026-11-20 Fri>\n",
+  "line": 1,
+  "output": "* TODO a\nSCHEDULED: <2026-12-01 Tue>\n- Rescheduled from \"[2026-11-20 Fri]\" on [2026-11-26 Thu 09:30] \\\\\n  why"
+ },
+ {
+  "id": "lg-empty-note",
+  "input": "* TODO a\n* b\n* DONE c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n",
+  "line": 1,
+  "output": "* DONE a\nCLOSED: [2026-11-26 Thu 09:30]\n- CLOSING NOTE [2026-11-26 Thu 09:30]\n* b\n* DONE c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n"
+ },
+ {
+  "id": "lg-undone-time",
+  "input": "* TODO a\n* b\n* DONE c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n",
+  "line": 1,
+  "output": "* TODO a\n* b\n* TODO c\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n"
+ },
+ {
+  "id": "lg-undone-note",
+  "input": "* TODO a\n* b\n* DONE c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n",
+  "line": 1,
+  "output": "* TODO a\n* b\n* TODO c\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n"
+ },
+ {
+  "id": "lg-undone-nil",
+  "input": "* TODO a\n* b\n* DONE c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n",
+  "line": 1,
+  "output": "* TODO a\n* b\n* TODO c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n"
+ },
+ {
+  "id": "lg-none-done-note",
+  "input": "* TODO a\n* b\n* DONE c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n",
+  "line": 1,
+  "output": "* TODO a\n* DONE b\nCLOSED: [2026-11-26 Thu 09:30]\n- CLOSING NOTE [2026-11-26 Thu 09:30] \\\\\n  a note\n* DONE c\nCLOSED: [2026-11-01 Sun 08:00]\n* TODO d\nSCHEDULED: <2026-11-20 Fri>\n"
+ }
+]

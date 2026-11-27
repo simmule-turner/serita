@@ -94,6 +94,11 @@ export function createLinkCommands(ctx) {
     ctx.message(`Cannot find entry with ID "${id}"`, true);
   }
 
+  async function runShell(cmd) {
+    if (!(await ctx.confirm(`Execute ${cmd} in shell? `))) return;
+    ctx.message('Shell links cannot run in a browser', true);
+  }
+
   async function runElisp(src) {
     if (!(await ctx.confirm(`Execute ${src} as Elisp? `))) return;
     try { ctx.message(`${src} => ${evalLisp(src).replace(/^"(.*)"$/s, '$1')}`); } catch (e) { ctx.message(e.message, true); }
@@ -102,6 +107,7 @@ export function createLinkCommands(ctx) {
   /** Follows one link object from scanLine. */
   async function follow(obj) {
     if (obj.kind === 'footnote') { footnoteAt(obj.line, obj.start); return; }
+    if (obj.kind === 'radio-link') { const at = L.radioTarget(text(), obj.name); if (at) goto(at.line, at.col); return; }
     if (obj.kind === 'target' || obj.kind === 'radio') { ctx.message('No link found', true); return; }
     const s = settings();
     const raw = obj.raw ?? `${obj.type}:${obj.path}`;
@@ -114,7 +120,7 @@ export function createLinkCommands(ctx) {
     if (type === 'mailto') { ctx.openUrl(`mailto:${path}`); return; }
     if (type === 'doi') { ctx.openUrl(`https://doi.org/${path}`); return; }
     if (type === 'elisp') { await runElisp(path); return; }
-    if (type === 'shell') { ctx.message('Not supported: shell links', true); return; }
+    if (type === 'shell') { await runShell(path); return; }
     ctx.message(`Not supported: ${type} links`, true);
   }
 
