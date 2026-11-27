@@ -74,6 +74,7 @@ export function shiftStamp(text, offset, dir, { sideways = false } = {}) {
  * @returns {{ date: Date, time: boolean }}
  */
 export function parseDate(input, base, today = base) {
+  const realToday = today;
   let rest = input.trim().toLowerCase();
   let time = null;
   let until = null;
@@ -133,7 +134,8 @@ export function parseDate(input, base, today = base) {
   }
   if (date === null) {
     const today = utc(b.y, b.m, b.d);
-    if (wd >= 0) { const ahead = ((wd - today.getUTCDay() + 6) % 7) + 1; date = utc(b.y, b.m, b.d + ahead); }
+    // a weekday is the next one after the real today, whatever date the prompt started from
+    if (wd >= 0) { const t0 = parts(realToday); const ahead = ((wd - utc(t0.y, t0.m, t0.d).getUTCDay() + 6) % 7) + 1; date = utc(t0.y, t0.m, t0.d + ahead); }
     else if (y === null && mo === null && d !== null) date = utc(b.y, b.m + (d < b.d ? 1 : 0), d);
     else if (y !== null || mo !== null || d !== null) {
       // Without a year, a date that has gone by this year means the next one.

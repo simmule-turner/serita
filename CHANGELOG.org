@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.12
+Closer to Emacs in lists and date prompts. S-left and S-right change the bullet from anywhere on an item's first line instead of selecting text. C-u C-c - cycles forward like C-c -, and a number picks the bullet, counting round from the end for negatives. A weekday typed at a date prompt counts from today, and scheduling a task that has a time starts the prompt with that time.
+
 * 0.11.11
 Fixes from testing 0.11.10. Scheduling or setting a deadline on a task that already has a date now starts the prompt from that date, so RET keeps it and ++1d counts from it. Tapping a radio link in the Outline view marks the line of its target. Multi-line emphasis no longer prints its closing marker twice, and S-left and S-right on a list bullet change the bullet again.
 

@@ -62,6 +62,14 @@ ok((await text()) === '* H\n- apple\n- fig\n- pear\n', 'C-c ^ sorts the list');
 await at('* H\n- one\n- two\n', 2, 0);
 await page.keyboard.press('Shift+ArrowRight');
 ok((await text()) === '* H\n+ one\n+ two\n', 'S-RIGHT on a bullet changes the bullet of the list');
+await at('* H\n- one\n- two\n', 2, 4);
+await page.keyboard.press('Shift+ArrowRight');
+ok((await text()) === '* H\n+ one\n+ two\n', 'S-RIGHT in the text of an item changes the bullet too (li3-sarrow-text)');
+
+// S-RIGHT with the cursor in the indent of a nested item changes the bullet and selects nothing (the outline.org example)
+await at('* H\n- one\n    - A child item\n    - Another child\n', 3, 2);
+await page.keyboard.press('Shift+ArrowRight');
+ok((await text()) === '* H\n- one\n    + A child item\n    + Another child\n' && (await page.evaluate(() => { const e = document.getElementById('editor'); return e.selectionStart === e.selectionEnd; })), 'S-RIGHT in the indent of a nested item changes its bullet and does not select');
 
 // Bold over two lines shows its closing marker once in the Outline view
 await at('* H\nsome *bold\ntext* end\n', 1);

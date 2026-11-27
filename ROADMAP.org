@@ -39,7 +39,10 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Agenda files: a file that cannot be read (batch Emacs crashes, so the wording is unknown) and the restricted agenda for one file (Emacs shows only that file).
 - Agenda: agenda files other than the open ones, filters by top headline and by saved views, bulk actions that need a prompt Emacs shows (refile, scatter, function), the order of items of equal priority beyond what was recorded, an effort filter's sign (Emacs ignored it in our results).
 
+- Sparse trees by date: before, after and between dates (C-c / b, a, d, D), results recorded in conformance v0.1.76.
+
 * Later: capture, refile and archive
+- ~org-log-refile~: a refiled entry gets a Refiled on line (or a note), results recorded in conformance v0.1.76.
 - Refile: ~org-refile-use-cache~ as a setting (the list is built each time here).
 
 * Later: Appearance
@@ -54,6 +57,7 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Examples for the chapters not built yet (Babel in Lisp and JavaScript, an export sample) as each arrives.
 
 * Later: links and markup
+- Radio targets match across a line break (the words may be split by a newline and indentation), results recorded in conformance v0.1.76.
 - Emphasis over a line break shows unstyled; Emacs finds it across line breaks.
 - The Text view underlines links and marks code, strike-through and underline, but cannot show bold or italic without moving letters; a later layer could.
 - Link types that need other programs (info, gnus, rmail, bbdb, w3m).

@@ -159,7 +159,7 @@ function makeItems(text, from, to) {
 }
 
 /**
- * C-c - outside a table: on an item it changes the bullet of the whole list to the next kind (`which` a number picks the kind, 'previous' goes back);
+ * C-c - outside a table: on an item it changes the bullet of the whole list to the next kind (`which` a number picks the kind (counting round, so -1 is the last), 'previous' goes back);
  * on a line of text or a heading it makes an item; on a region it makes every line an item. A blank line is left alone.
  * @param {{ region?: [number, number], which?: number | 'previous' }} opts
  */
@@ -169,7 +169,9 @@ export function ctrlCMinus(text, line, col, { region = null, which } = {}) {
   const it = itemAt(a, line);
   if (it) {
     const own = info(splitLines(text)[it.line].text);
-    const style = typeof which === 'number' ? BULLETS[which % BULLETS.length] : nextBullet(own.bullet, which === 'previous');
+    // an indented list may also use * as its bullet, so a number counts through five kinds there and four at the left margin
+    const kinds = own.indent > 0 ? ['-', '+', '*', '1.', '1)'] : BULLETS;
+    const style = typeof which === 'number' ? kinds[((which % kinds.length) + kinds.length) % kinds.length] : nextBullet(own.bullet, which === 'previous');
     const lines = repairLines(text, it.line, style);
     const old = splitLines(text)[line].text;
     const mine = info(old);
@@ -309,10 +311,8 @@ export function returnInItem(text, line, col) {
   return { text: join(lines), line: line + 1, col: pad.length };
 }
 
-/** Whether the cursor is on the bullet of an item's first line (S-LEFT and S-RIGHT there change the bullet, as C-c - does). */
-export function onBullet(text, line, col) {
+/** Whether the line is the first line of an item (S-LEFT and S-RIGHT anywhere on it change the bullet, as C-c - does). */
+export function onItemLine(text, line) {
   const it = itemAt(analyze(text), line);
-  if (!it || it.line !== line) return false;
-  const own = info(splitLines(text)[line].text);
-  return col >= own.indent && col <= own.indent + own.bullet.length - 1;
+  return !!it && it.line === line;
 }

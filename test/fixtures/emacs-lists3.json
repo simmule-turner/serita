@@ -1,0 +1,250 @@
+[
+ {
+  "id": "li3-cminus-arg-1-ord",
+  "input": "* H\n1. one\n2. two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1) one\n2) two\n",
+  "tail": "((ok self 2 4 \"1) one\") nil)"
+ },
+ {
+  "id": "li3-cminus-arg-1-sub",
+  "input": "* H\n- one\n  - a\n  - b\n- two\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  1) a\n  2) b\n- two\n",
+  "tail": "((ok self 3 6 \"  1) a\") nil)"
+ },
+ {
+  "id": "li3-cminus-arg-1",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n1) one\n2) two\n",
+  "tail": "((ok self 2 4 \"1) one\") nil)"
+ },
+ {
+  "id": "li3-cminus-arg0-ord",
+  "input": "* H\n1. one\n2. two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n- one\n- two\n",
+  "tail": "((ok self 2 3 \"- one\") nil)"
+ },
+ {
+  "id": "li3-cminus-arg0-sub",
+  "input": "* H\n- one\n  - a\n  - b\n- two\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  - a\n  - b\n- two\n",
+  "tail": "((ok self 3 5 \"  - a\") nil)"
+ },
+ {
+  "id": "li3-cminus-arg0",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- one\n- two\n",
+  "tail": "((ok self 2 3 \"- one\") nil)"
+ },
+ {
+  "id": "li3-cminus-arg2-ord",
+  "input": "* H\n1. one\n2. two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1. one\n2. two\n",
+  "tail": "((ok self 2 4 \"1. one\") nil)"
+ },
+ {
+  "id": "li3-cminus-arg2-sub",
+  "input": "* H\n- one\n  - a\n  - b\n- two\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  * a\n  * b\n- two\n",
+  "tail": "((ok self 3 5 \"  * a\") nil)"
+ },
+ {
+  "id": "li3-cminus-arg2",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n1. one\n2. two\n",
+  "tail": "((ok self 2 4 \"1. one\") nil)"
+ },
+ {
+  "id": "li3-cminus-arg9-ord",
+  "input": "* H\n1. one\n2. two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "((ok self 2 3 \"+ one\") nil)"
+ },
+ {
+  "id": "li3-cminus-arg9-sub",
+  "input": "* H\n- one\n  - a\n  - b\n- two\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  1) a\n  2) b\n- two\n",
+  "tail": "((ok self 3 6 \"  1) a\") nil)"
+ },
+ {
+  "id": "li3-cminus-arg9",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "((ok self 2 3 \"+ one\") nil)"
+ },
+ {
+  "id": "li3-cminus-c16-ord",
+  "input": "* H\n1. one\n2. two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1) one\n2) two\n",
+  "tail": "((ok self 2 4 \"1) one\") nil)"
+ },
+ {
+  "id": "li3-cminus-c16-sub",
+  "input": "* H\n- one\n  - a\n  - b\n- two\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  + a\n  + b\n- two\n",
+  "tail": "((ok self 3 5 \"  + a\") nil)"
+ },
+ {
+  "id": "li3-cminus-c16",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "((ok self 2 3 \"+ one\") nil)"
+ },
+ {
+  "id": "li3-cminus-c4-ord",
+  "input": "* H\n1. one\n2. two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1) one\n2) two\n",
+  "tail": "((ok self 2 4 \"1) one\") nil)"
+ },
+ {
+  "id": "li3-cminus-c4-sub",
+  "input": "* H\n- one\n  - a\n  - b\n- two\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  + a\n  + b\n- two\n",
+  "tail": "((ok self 3 5 \"  + a\") nil)"
+ },
+ {
+  "id": "li3-cminus-c4",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "((ok self 2 3 \"+ one\") nil)"
+ },
+ {
+  "id": "li3-sarrow-box",
+  "input": "* H\n- [ ] a\n- b\n",
+  "line": 2,
+  "col": 0,
+  "output": "* H\n+ [ ] a\n+ b\n",
+  "tail": "((ok self 2 0 \"+ [ ] a\") nil)"
+ },
+ {
+  "id": "li3-sarrow-col1",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 1,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "((ok self 2 1 \"+ one\") nil)"
+ },
+ {
+  "id": "li3-sarrow-col2",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 2,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "((ok self 2 2 \"+ one\") nil)"
+ },
+ {
+  "id": "li3-sarrow-desc-l",
+  "input": "* H\n- a :: b\n- c :: d\n",
+  "line": 2,
+  "col": 0,
+  "output": "* H\n1) a :: b\n2) c :: d\n",
+  "tail": "((ok self 2 0 \"1) a :: b\") nil)"
+ },
+ {
+  "id": "li3-sarrow-desc",
+  "input": "* H\n- a :: b\n- c :: d\n",
+  "line": 2,
+  "col": 0,
+  "output": "* H\n+ a :: b\n+ c :: d\n",
+  "tail": "((ok self 2 0 \"+ a :: b\") nil)"
+ },
+ {
+  "id": "li3-sarrow-dot",
+  "input": "* H\n1) one\n2) two\n",
+  "line": 2,
+  "col": 0,
+  "output": "* H\n- one\n- two\n",
+  "tail": "((ok self 2 0 \"- one\") nil)"
+ },
+ {
+  "id": "li3-sarrow-indent",
+  "input": "* H\n  - one\n  - two\n",
+  "line": 2,
+  "col": 2,
+  "output": "* H\n  + one\n  + two\n",
+  "tail": "((ok self 2 2 \"  + one\") nil)"
+ },
+ {
+  "id": "li3-sarrow-ord-r",
+  "input": "* H\n1. one\n2. two\n",
+  "line": 2,
+  "col": 0,
+  "output": "* H\n1) one\n2) two\n",
+  "tail": "((ok self 2 0 \"1) one\") nil)"
+ },
+ {
+  "id": "li3-sarrow-plus-l",
+  "input": "* H\n+ one\n+ two\n",
+  "line": 2,
+  "col": 0,
+  "output": "* H\n- one\n- two\n",
+  "tail": "((ok self 2 0 \"- one\") nil)"
+ },
+ {
+  "id": "li3-sarrow-plus-r",
+  "input": "* H\n+ one\n+ two\n",
+  "line": 2,
+  "col": 0,
+  "output": "* H\n1. one\n2. two\n",
+  "tail": "((ok self 2 0 \"1. one\") nil)"
+ },
+ {
+  "id": "li3-sarrow-sub-l",
+  "input": "* H\n- one\n  - a\n  - b\n",
+  "line": 3,
+  "col": 2,
+  "output": "* H\n- one\n  1) a\n  2) b\n",
+  "tail": "((ok self 3 2 \"  1) a\") nil)"
+ },
+ {
+  "id": "li3-sarrow-sub",
+  "input": "* H\n- one\n  - a\n  - b\n",
+  "line": 3,
+  "col": 2,
+  "output": "* H\n- one\n  + a\n  + b\n",
+  "tail": "((ok self 3 2 \"  + a\") nil)"
+ },
+ {
+  "id": "li3-sarrow-text",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "((ok self 2 4 \"+ one\") nil)"
+ }
+]

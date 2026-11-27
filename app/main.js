@@ -2169,7 +2169,7 @@ const inItem = () => { const l = listPoint().line; return cur.a.items.some((x) =
 /** C-c -: a table gets a rule; on a list item the bullet changes (a number picks the kind); text and headings become items. */
 function ctrlCMinus() {
   if (inTable()) { COMMANDS['table-hline'](); return; }
-  const which = arg?.num !== undefined ? arg.num : arg?.list ? 'previous' : undefined;
+  const which = arg?.num !== undefined ? arg.num : undefined;
   listEdit((t, l, c, region) => lists.ctrlCMinus(t, l, c, { region, which }));
 }
 
@@ -2656,7 +2656,7 @@ function askNote(from, to, text = `Insert note for state change from "${from}" t
 async function todoStep(dir) {
   const a = arg;
   // S-LEFT and S-RIGHT on a list bullet change the list's bullet
-  if (viewMode() === 'text' && !a) { const p = listPoint(); if (lists.onBullet(currentBuffer().text, p.line, p.col)) { listEdit((t, l, c) => lists.ctrlCMinus(t, l, c, { which: dir < 0 ? 'previous' : undefined })); return; } }
+  if (viewMode() === 'text' && !a) { const p = listPoint(); if (lists.onItemLine(currentBuffer().text, p.line)) { listEdit((t, l, c) => lists.ctrlCMinus(t, l, c, { which: dir < 0 ? 'previous' : undefined })); return; } }
   if (a?.list === 4) { message('Logging a state-change note is not supported', true); return; }
   const said = [];
   let same = false;
@@ -2731,11 +2731,11 @@ const todayDate = () => { const n = new Date(); return new Date(Date.UTC(n.getFu
 const dayOf = (d) => d.toISOString().slice(0, 10);
 
 /** The date prompt of the Outline view: the typed field with a month to tap, the time, and for a new timestamp whether it is active. */
-function askDateSheet({ label, base, active, canToggle }) {
+function askDateSheet({ label, base, active, canToggle, initial = '' }) {
   return panel((sheet, close) => {
     const two = (n) => String(n).padStart(2, '0');
     const iso = (y, m, d) => `${y}-${two(m)}-${two(d)}`;
-    const input = h('input', { autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Date', placeholder: dayOf(base) });
+    const input = h('input', { autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Date', placeholder: dayOf(base), value: initial });
     let shown = { y: base.getUTCFullYear(), m: base.getUTCMonth() + 1 };
     let isActive = active;
     const read = () => { try { return parseDate(input.value, base, todayDate()); } catch { return null; } };
@@ -2788,12 +2788,12 @@ function askDateSheet({ label, base, active, canToggle }) {
 }
 
 /** Asks for a date ("2026-12-01", "+3d", "tomorrow 14:30") and returns the stamp text, or null when cancelled. */
-async function askStamp(label, active = true, canToggle = false, preset = null) {
+async function askStamp(label, active = true, canToggle = false, preset = null, initial = '') {
   const base = preset ?? todayDate();
   let typed;
-  if (viewMode() === 'text') typed = await mini.ask({ prompt: `${label} Date+time [${dayOf(base)}]:`, value: '', complete: null, inputMode: 'text' });
+  if (viewMode() === 'text') typed = await mini.ask({ prompt: `${label} Date+time [${dayOf(base)}]:`, value: initial, complete: null, inputMode: 'text' });
   else {
-    const got = await askDateSheet({ label: label || (active ? 'Timestamp' : 'Inactive timestamp'), base, active, canToggle });
+    const got = await askDateSheet({ label: label || (active ? 'Timestamp' : 'Inactive timestamp'), base, active, canToggle, initial });
     if (got === undefined) return null;
     typed = got.typed; active = got.active;
   }
@@ -2917,7 +2917,9 @@ async function planHere(keyword, label, said, hd = enclosingHead()) {
   if (!hd) { message('Not at a heading'); return; }
   // the date already set is the default of the prompt, as org-read-date takes it
   const set = /(\d{4})-(\d\d)-(\d\d)/.exec(planningStamp(currentBuffer().text, hd.line, keyword) ?? '');
-  const stamp = await askStamp(label, true, false, set ? new Date(Date.UTC(+set[1], +set[2] - 1, +set[3])) : null);
+  // a time that was set comes with it, as Emacs puts it in the minibuffer
+  const setTime = /\s(\d\d:\d\d(?:-\d\d:\d\d)?)/.exec(planningStamp(currentBuffer().text, hd.line, keyword) ?? '');
+  const stamp = await askStamp(label, true, false, set ? new Date(Date.UTC(+set[1], +set[2] - 1, +set[3])) : null, setTime ? setTime[1] : '');
   if (stamp === null) return;
   // org-log-reschedule and org-log-redeadline: changing a date that was set leaves a line saying so
   const mode = logMode(keyword === 'SCHEDULED' ? 'org-log-reschedule' : 'org-log-redeadline');
@@ -3754,7 +3756,7 @@ editor.addEventListener('keydown', (e) => {
   }
   if (chord === 'RET' && keymap.pending() === '' && editor.value[editor.selectionStart] === undefined) return;
   if (chord === 'RET' && keymap.pending() === '' && editor.value[editor.selectionStart] === '\n') return; // at the end of the line RET stays a newline
-  if (HEADING_ONLY.has(chord) && kindAtCursor().kind !== 'heading' && !stampAt(currentBuffer().text, cursorOffset()) && !((chord === 'S-<left>' || chord === 'S-<right>') && lists.onBullet(currentBuffer().text, listPoint().line, listPoint().col))) return; // elsewhere the arrows select, as usual
+  if (HEADING_ONLY.has(chord) && kindAtCursor().kind !== 'heading' && !stampAt(currentBuffer().text, cursorOffset()) && !((chord === 'S-<left>' || chord === 'S-<right>') && lists.onItemLine(currentBuffer().text, listPoint().line))) return; // elsewhere the arrows select, as usual
   if ((chord === 'C-c' || chord === 'C-x' || chord === 'C-v') && !held.ctrl && keymap.pending() === '') return; // a keyboard's own C-c, C-x and C-v stay copy, cut and paste; the prefixes come from the key row
   if (chord) runChord(chord, e, fromRow);
   else if (keymap.pending() && e.key.length === 1) runChord(e.key, e, false);

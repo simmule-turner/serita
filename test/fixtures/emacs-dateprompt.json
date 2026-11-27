@@ -1,0 +1,156 @@
+[
+ {
+  "id": "dp-sched-both",
+  "input": "* TODO a\nDEADLINE: <2026-12-24 Thu> SCHEDULED: <2026-11-23 Mon>\n",
+  "typed": "",
+  "keyword": "SCHEDULED",
+  "date": "2026-11-23",
+  "time": null,
+  "prompt": "SCHEDULED Date+time [2026-11-23]: ",
+  "initial": null,
+  "real": "2026-11-27"
+ },
+ {
+  "id": "dp-sched-day",
+  "input": "* TODO a\nSCHEDULED: <2026-11-23 Mon>\n",
+  "typed": "12",
+  "keyword": "SCHEDULED",
+  "date": "2026-12-12",
+  "time": null,
+  "prompt": "SCHEDULED Date+time [2026-11-23]: ",
+  "initial": null,
+  "real": "2026-11-27"
+ },
+ {
+  "id": "dp-sched-md",
+  "input": "* TODO a\nSCHEDULED: <2026-11-23 Mon>\n",
+  "typed": "3/4",
+  "keyword": "SCHEDULED",
+  "date": "2027-03-04",
+  "time": null,
+  "prompt": "SCHEDULED Date+time [2026-11-23]: ",
+  "initial": null,
+  "real": "2026-11-27"
+ },
+ {
+  "id": "dp-sched-none-ret",
+  "input": "* TODO a\n",
+  "typed": "",
+  "keyword": "SCHEDULED",
+  "date": "2026-11-26",
+  "time": null,
+  "prompt": "SCHEDULED Date+time [2026-11-26]: ",
+  "initial": null,
+  "real": "2026-11-27"
+ },
+ {
+  "id": "dp-sched-rel",
+  "input": "* TODO a\nSCHEDULED: <2026-11-23 Mon>\n",
+  "typed": "+1d",
+  "keyword": "SCHEDULED",
+  "date": "2026-11-28",
+  "time": null,
+  "prompt": "SCHEDULED Date+time [2026-11-23]: ",
+  "initial": null,
+  "real": "2026-11-27"
+ },
+ {
+  "id": "dp-sched-rel2",
+  "input": "* TODO a\nSCHEDULED: <2026-11-23 Mon>\n",
+  "typed": "++1d",
+  "keyword": "SCHEDULED",
+  "date": "2026-11-24",
+  "time": null,
+  "prompt": "SCHEDULED Date+time [2026-11-23]: ",
+  "initial": null,
+  "real": "2026-11-27"
+ },
+ {
+  "id": "dp-sched-rel3",
+  "input": "* TODO a\nSCHEDULED: <2026-11-23 Mon>\n",
+  "typed": "+1w",
+  "keyword": "SCHEDULED",
+  "date": "2026-12-04",
+  "time": null,
+  "prompt": "SCHEDULED Date+time [2026-11-23]: ",
+  "initial": null,
+  "real": "2026-11-27"
+ },
+ {
+  "id": "dp-sched-ret",
+  "input": "* TODO a\nSCHEDULED: <2026-11-23 Mon>\n",
+  "typed": "",
+  "keyword": "SCHEDULED",
+  "date": "2026-11-23",
+  "time": null,
+  "prompt": "SCHEDULED Date+time [2026-11-23]: ",
+  "initial": null,
+  "real": "2026-11-27"
+ },
+ {
+  "id": "dp-sched-time",
+  "input": "* TODO a\nSCHEDULED: <2026-11-23 Mon 10:30>\n",
+  "typed": "",
+  "keyword": "SCHEDULED",
+  "date": "2026-11-23",
+  "time": null,
+  "prompt": "SCHEDULED Date+time [2026-11-23]: ",
+  "initial": "10:30",
+  "real": "2026-11-27"
+ },
+ {
+  "id": "dp-sched-time2",
+  "input": "* TODO a\nSCHEDULED: <2026-11-23 Mon 10:30>\n",
+  "typed": "14:00",
+  "keyword": "SCHEDULED",
+  "date": "2026-11-23",
+  "time": "14:00",
+  "prompt": "SCHEDULED Date+time [2026-11-23]: ",
+  "initial": "10:30",
+  "real": "2026-11-27"
+ },
+ {
+  "id": "dp-sched-wd",
+  "input": "* TODO a\nSCHEDULED: <2026-11-23 Mon>\n",
+  "typed": "fri",
+  "keyword": "SCHEDULED",
+  "date": "2026-12-04",
+  "time": null,
+  "prompt": "SCHEDULED Date+time [2026-11-23]: ",
+  "initial": null,
+  "real": "2026-11-27"
+ },
+ {
+  "id": "dp-dl-none-rel",
+  "input": "* TODO a\n",
+  "typed": "++1w",
+  "keyword": "DEADLINE",
+  "date": "2026-12-03",
+  "time": null,
+  "prompt": "DEADLINE Date+time [2026-11-26]: ",
+  "initial": null,
+  "real": "2026-11-27"
+ },
+ {
+  "id": "dp-dl-rel",
+  "input": "* TODO a\nDEADLINE: <2026-11-23 Mon>\n",
+  "typed": "++1w",
+  "keyword": "DEADLINE",
+  "date": "2026-11-30",
+  "time": null,
+  "prompt": "DEADLINE Date+time [2026-11-23]: ",
+  "initial": null,
+  "real": "2026-11-27"
+ },
+ {
+  "id": "dp-dl-ret",
+  "input": "* TODO a\nDEADLINE: <2026-11-23 Mon>\n",
+  "typed": "",
+  "keyword": "DEADLINE",
+  "date": "2026-11-23",
+  "time": null,
+  "prompt": "DEADLINE Date+time [2026-11-23]: ",
+  "initial": null,
+  "real": "2026-11-27"
+ }
+]
