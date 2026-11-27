@@ -305,6 +305,24 @@ await page.click('#btn-menu'); await btn('Settings').click(); await btn(/28 sett
 await view('Outline');
 const hgt = await page.locator('.ol-table td button.cell', { hasText: 'Loose' }).evaluate((e) => e.getBoundingClientRect().height);
 ok(hgt > 40 && (await page.locator('.ol-table.wrap').count()) === 1, 'with Wrap table cells on, a long cell grows taller');
+// The date sheet of a task that already has a date: Today is today, and Set keeps the date that was typed
+await view('Text');
+await page.fill('#editor', '* TODO a\nSCHEDULED: <2026-11-23 Mon 10:30>\n');
+await view('Outline');
+await page.locator('.ol-head .title', { hasText: 'a' }).first().click();
+await page.locator('.sheet button', { hasText: /Scheduled/ }).first().click();
+const field = sheet.getByLabel('Date');
+ok((await field.inputValue()) === '10:30', 'the field starts with the time that was set');
+const real = await page.evaluate(() => { const n = new Date(); return `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}`; });
+ok((await sheet.locator('.day.today').getAttribute('aria-label')) !== '2026-11-23' || real === '2026-11-23', 'the day marked as today is not the date of the task');
+await sheet.getByRole('button', { name: 'Today', exact: true }).click();
+ok((await field.inputValue()) === `${real} 10:30`, 'Today puts today, keeping the time');
+await field.fill('2026-11-24 10:30');
+await field.focus();
+await sheet.getByRole('button', { name: 'Set', exact: true }).click();
+await view('Text');
+ok((await value()).includes('SCHEDULED: <2026-11-24 Tue 10:30>'), 'Set with the field focused keeps the date that was typed');
+await view('Outline');
 await page.keyboard.press('Escape');
 ok(errors.length === 0, `no page errors${errors.length ? ': ' + errors.join('; ') : ''}`);
 await close();

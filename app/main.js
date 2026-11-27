@@ -2760,7 +2760,7 @@ function askDateSheet({ label, base, active, canToggle, initial = '' }) {
       grid.replaceChildren(...['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((n) => h('span', { class: 'dow' }, n)),
         ...monthGrid(shown.y, shown.m).map((c) => {
           const key = iso(c.y, c.m, c.d);
-          return h('button', { class: `day${c.other ? ' other' : ''}${key === dayOf(base) ? ' today' : ''}${key === sel ? ' on' : ''}`, 'aria-label': key, 'aria-pressed': String(key === sel),
+          return h('button', { class: `day${c.other ? ' other' : ''}${key === dayOf(todayDate()) ? ' today' : ''}${key === sel ? ' on' : ''}`, 'aria-label': key, 'aria-pressed': String(key === sel),
             onclick: () => write(new Date(Date.UTC(c.y, c.m - 1, c.d)), p?.time ?? null, p?.until) }, String(c.d));
         }));
       hours.textContent = p?.time ? two(p.time[0]) : '--';
@@ -2779,11 +2779,11 @@ function askDateSheet({ label, base, active, canToggle, initial = '' }) {
       h('div', { class: 'timerow' }, h('span', {}, 'Time'), h('div', { class: 'tpair' }, stepper('hour', hours, 'Hour'), h('span', {}, ':'), stepper('minute', minutes, 'Minutes'))),
       h('div', { class: 'timerow' }, h('span', {}, 'No time'), noTime),
       canToggle ? h('div', { class: 'timerow' }, h('span', {}, 'Timestamp'), activeBtn) : null,
-      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { onclick: () => write(base, parsed()?.time ?? null, null) }, 'Today'),
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel'), h('button', { onclick: () => write(todayDate(), parsed()?.time ?? null, null) }, 'Today'),
         h('button', { class: 'primary', onclick: () => close({ typed: input.value, active: isActive }) }, 'Set')));
     draw();
     // The keyboard opens only when the field is tapped, and goes away when a control below it is tapped, so the controls stay in reach.
-    sheet.addEventListener('pointerdown', (e) => { if (e.target.closest('button')) input.blur(); });
+    sheet.addEventListener('pointerdown', (e) => { if (e.target.closest('button') && !e.target.closest('.row')) input.blur(); }); // not for the buttons of the bottom row: the keyboard going away moves them, and the tap would land on a day
   });
 }
 

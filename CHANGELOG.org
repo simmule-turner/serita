@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.15
+The Outline date sheet on a task that already has a date: Today now picks today's date (it picked the task's date), the day marked as today is today, and tapping Set with the keyboard up no longer lands on a calendar day when the keyboard drops away.
+
 * 0.11.14
 Date prompts and bullets as Emacs does them. A time typed before a relative date ("10:30 +1d") keeps its date and time, since Emacs only reads a relative date at the start; "+1d 10:30" moves the day and sets the time. S-left, S-right and C-c - on an indented list cycle through *, which a list at the left margin cannot use.
 
