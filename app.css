@@ -223,4 +223,4 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 #hl .tv-u { text-decoration: underline; text-decoration-color: var(--muted); }
 #hl .tv-s { text-decoration: line-through; text-decoration-color: var(--muted); }
 #hl .tv-code { background: var(--bar); }
-.ol-head.flash { background: var(--hit); }
+.ol-head.flash, .ol-line.flash { background: var(--hit); }

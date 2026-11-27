@@ -65,7 +65,15 @@ ok((await link.count()) === 1 && (await page.locator('#outline b', { hasText: '*
 await link.click();
 await page.waitForTimeout(200);
 ok((await page.locator('#outline .ol-head.flash[data-line="2"]').count()) === 1, 'a tap on the link brings the heading into view and marks it');
-await page.evaluate(() => {});
+
+// A radio link in a text line and in a list item follows to its target in the Outline view, and the target's own line is marked
+await page.click('#btn-view'); await btn('Text').click();
+await at('* A\n<<<rad>>>\n* B\n- use rad here\nuse rad too\n', 1);
+await page.click('#btn-view'); await btn('Outline').click();
+ok((await page.locator('#outline .ol-link').count()) === 2, 'the Outline shows both uses of the radio target as links');
+await page.locator('#outline .ol-link').first().click();
+await page.waitForTimeout(200);
+ok((await page.locator('#outline .ol-line.flash[data-line="1"]').count()) === 1, 'a tap on a radio link marks the line of its target');
 
 ok(errors.length === 0, `no page errors ${errors.join('; ')}`);
 await close();

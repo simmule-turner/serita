@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.11
+Fixes from testing 0.11.10. Scheduling or setting a deadline on a task that already has a date now starts the prompt from that date, so RET keeps it and ++1d counts from it. Tapping a radio link in the Outline view marks the line of its target. Multi-line emphasis no longer prints its closing marker twice, and S-left and S-right on a list bullet change the bullet again.
+
 * 0.11.10
 The same features as 0.11.9, with the provenance record complete for the new list and logging tests so the release checks pass.
 

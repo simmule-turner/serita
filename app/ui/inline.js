@@ -7,6 +7,7 @@ import { analyze } from '../../core/outline.js';
 import { h } from './dom.js';
 
 const LINKS = new Set(['bracket', 'angle', 'plain', 'radio-link']);
+const MARK = { bold: '*', italic: '/', underline: '_', 'strike-through': '+', verbatim: '=', code: '~' };
 const TAG = { bold: 'b', italic: 'i', underline: 'u', 'strike-through': 's', verbatim: 'code', code: 'code' };
 
 /** The links of a line, and the ranges where a link's own text (its path) must not start emphasis. */
@@ -42,7 +43,7 @@ export function inlineNodes(line, onLink, base = 0, spans = undefined, radios = 
       const label = linkLabel(o, line);
       out.push(h('span', { class: 'ol-link', role: 'link', tabindex: '0', title: o.kind === 'bracket' ? unescapeLink(o.raw) : label, onclick: (e) => { e.stopPropagation(); onLink(base + o.start); } }, ...(o.kind === 'bracket' && o.desc !== undefined ? inlineNodes(label, () => onLink(base + o.start)) : [label])));
     } else {
-      const m = line[o.start];
+      const m = MARK[o.kind];
       const open = o.open ?? true;
       const close = o.close ?? true;
       out.push(h(TAG[o.kind], { class: `em-${o.kind}` }, open ? m : null, ...(o.kind === 'verbatim' || o.kind === 'code' ? [line.slice(o.inner[0], o.inner[1])] : inlineNodes(line.slice(o.inner[0], o.inner[1]), onLink, base + o.inner[0], undefined, radios)), close ? m : null));

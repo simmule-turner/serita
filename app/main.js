@@ -2788,8 +2788,8 @@ function askDateSheet({ label, base, active, canToggle }) {
 }
 
 /** Asks for a date ("2026-12-01", "+3d", "tomorrow 14:30") and returns the stamp text, or null when cancelled. */
-async function askStamp(label, active = true, canToggle = false) {
-  const base = todayDate();
+async function askStamp(label, active = true, canToggle = false, preset = null) {
+  const base = preset ?? todayDate();
   let typed;
   if (viewMode() === 'text') typed = await mini.ask({ prompt: `${label} Date+time [${dayOf(base)}]:`, value: '', complete: null, inputMode: 'text' });
   else {
@@ -2915,7 +2915,9 @@ async function agendaFilesDialog() {
 
 async function planHere(keyword, label, said, hd = enclosingHead()) {
   if (!hd) { message('Not at a heading'); return; }
-  const stamp = await askStamp(label);
+  // the date already set is the default of the prompt, as org-read-date takes it
+  const set = /(\d{4})-(\d\d)-(\d\d)/.exec(planningStamp(currentBuffer().text, hd.line, keyword) ?? '');
+  const stamp = await askStamp(label, true, false, set ? new Date(Date.UTC(+set[1], +set[2] - 1, +set[3])) : null);
   if (stamp === null) return;
   // org-log-reschedule and org-log-redeadline: changing a date that was set leaves a line saying so
   const mode = logMode(keyword === 'SCHEDULED' ? 'org-log-reschedule' : 'org-log-redeadline');
@@ -3002,7 +3004,7 @@ const links = createLinkCommands({
     // The Outline view has no cursor: the heading the place is under is brought into view
     const line = currentBuffer().text.slice(0, offset).split('\n').length - 1;
     const head = analyze(currentBuffer().text).heads.filter((x) => x.line <= line).pop();
-    if (head) setTimeout(() => { const row = $('outline').querySelector(`.ol-head[data-line="${head.line}"]`); row?.scrollIntoView({ block: 'center' }); row?.classList.add('flash'); setTimeout(() => row?.classList.remove('flash'), 1200); }, 0);
+    if (head) setTimeout(() => { const row = $('outline').querySelector(`.ol-line[data-line="${line}"]`) ?? $('outline').querySelector(`.ol-head[data-line="${head.line}"]`); row?.scrollIntoView({ block: 'center' }); row?.classList.add('flash'); setTimeout(() => row?.classList.remove('flash'), 1200); }, 0);
   },
   leave: () => leaveHere(),
   reveal: (line) => { const b = currentBuffer(); const opened = reveal(analyze(b.text).foldables, b.folds, Math.max(0, line)); if (JSON.stringify(opened) !== JSON.stringify(b.folds)) session.setFolds(b.id, opened); },
@@ -3752,7 +3754,7 @@ editor.addEventListener('keydown', (e) => {
   }
   if (chord === 'RET' && keymap.pending() === '' && editor.value[editor.selectionStart] === undefined) return;
   if (chord === 'RET' && keymap.pending() === '' && editor.value[editor.selectionStart] === '\n') return; // at the end of the line RET stays a newline
-  if (HEADING_ONLY.has(chord) && kindAtCursor().kind !== 'heading' && !stampAt(currentBuffer().text, cursorOffset())) return; // elsewhere the arrows select, as usual
+  if (HEADING_ONLY.has(chord) && kindAtCursor().kind !== 'heading' && !stampAt(currentBuffer().text, cursorOffset()) && !((chord === 'S-<left>' || chord === 'S-<right>') && lists.onBullet(currentBuffer().text, listPoint().line, listPoint().col))) return; // elsewhere the arrows select, as usual
   if ((chord === 'C-c' || chord === 'C-x' || chord === 'C-v') && !held.ctrl && keymap.pending() === '') return; // a keyboard's own C-c, C-x and C-v stay copy, cut and paste; the prefixes come from the key row
   if (chord) runChord(chord, e, fromRow);
   else if (keymap.pending() && e.key.length === 1) runChord(e.key, e, false);

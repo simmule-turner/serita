@@ -230,3 +230,4 @@ A separate repository holds questions (case files written by us) and results rec
 
 ### `test/logbook.test.js`, `test/browser/logging.mjs`, `test/fixtures/emacs-logging.json`
 - Logging, radio targets, multi-line emphasis, typed dates and list details were written from observed Emacs 30.1 results (conformance v0.1.74 and v0.1.75: lg-*, rt-*, me-*, dq-*, li2-*); no Emacs or Org source was read.
+- 0.11.11: the date prompt starting from the date already set follows the org-read-date default described in the Org manual and the `+N` / `++N` results of conformance v0.1.75 (dq-*); conformance v0.1.76 (dp-*) asks Emacs for the prompt text. The browser tests for it, for radio taps in the Outline view, for S-right on a bullet and for multi-line emphasis markers were written by us.

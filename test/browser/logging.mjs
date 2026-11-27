@@ -53,6 +53,14 @@ await page.focus('#editor');
 await ctrl('c'); await ctrl('t');
 ok((await plain()).startsWith('#+TODO: TODO(t) WAIT(w@/!) | DONE(d!)\n* DONE a\n- State "DONE"       from "WAIT"       [T]\n- State "WAIT"'), 'DONE(d!) logs the time, newest first');
 
+// The date prompt starts from the date already set: RET keeps it, ++1d counts from it
+await setting({ 'view.emacsKeys': 'true' });
+await at('* TODO a\nSCHEDULED: <2026-11-23 Mon>\n', 1);
+await ctrl('c'); await ctrl('s');
+ok(/Date\+time \[2026-11-23\]/.test(await page.locator('#findbar').textContent()), 'the prompt offers the scheduled date as its default');
+await page.keyboard.type('++1d'); await page.keyboard.press('Enter');
+ok((await text()).includes('SCHEDULED: <2026-11-24 Tue>'), '++1d counts from the date already set');
+
 ok(errors.length === 0, 'no page errors');
 await close();
 process.exit(failed ? 1 : 0);

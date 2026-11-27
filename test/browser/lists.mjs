@@ -58,6 +58,15 @@ await ctrl('c'); await page.keyboard.press('^');
 await page.locator('.sheet').getByRole('button', { name: 'Alphabetically', exact: true }).click();
 ok((await text()) === '* H\n- apple\n- fig\n- pear\n', 'C-c ^ sorts the list');
 
+// S-RIGHT on a bullet cycles it, like C-c - (li-sright)
+await at('* H\n- one\n- two\n', 2, 0);
+await page.keyboard.press('Shift+ArrowRight');
+ok((await text()) === '* H\n+ one\n+ two\n', 'S-RIGHT on a bullet changes the bullet of the list');
+
+// Bold over two lines shows its closing marker once in the Outline view
+await at('* H\nsome *bold\ntext* end\n', 1);
+await page.click('#btn-view'); await sheet.getByRole('button', { name: 'Outline', exact: true }).click();
+ok((await page.locator('#outline .ol-line').allTextContents()).includes('text* end'), 'the closing marker of multi-line bold is printed once');
 ok(errors.length === 0, 'no page errors');
 await close();
 process.exit(failed ? 1 : 0);

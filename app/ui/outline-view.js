@@ -56,7 +56,7 @@ export function renderOutline(root, { text, folds, hideStars, indent = false, ta
     const m = CHECKBOX.exec(raw);
     const it = itemAt.get(line);
     const chev = it && it.end > it.line + 1 ? h('button', { class: 'ichev', 'aria-label': folds[line] ? 'Show' : 'Hide', onclick: () => on.cycle(line) }, folds[line] ? '▸' : '▾') : null;
-    rows.push(h('div', { class: `ol-line${raw.trim() === '' ? ' blank' : ''}`, style: indent ? `padding-left: calc(32px + ${level * 2}ch)` : undefined }, chev, m ? [m[1], h('button', { class: 'box', 'aria-label': m[2] === 'X' ? 'Checked' : 'Unchecked', onclick: () => on.checkbox(line) }, `[${m[2]}]`), ...rich(m[3], m[1].length + 3)] : raw === '' ? ' ' : rich(raw, 0)));
+    rows.push(h('div', { class: `ol-line${raw.trim() === '' ? ' blank' : ''}`, 'data-line': String(line), style: indent ? `padding-left: calc(32px + ${level * 2}ch)` : undefined }, chev, m ? [m[1], h('button', { class: 'box', 'aria-label': m[2] === 'X' ? 'Checked' : 'Unchecked', onclick: () => on.checkbox(line) }, `[${m[2]}]`), ...rich(m[3], m[1].length + 3)] : raw === '' ? ' ' : rich(raw, 0)));
   });
   root.replaceChildren(...rows);
 }
