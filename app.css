@@ -49,6 +49,8 @@ main { flex: 1; min-height: 0; display: flex; position: relative; background: va
 .sheet .row.prefix button.on { border-color: var(--accent); color: var(--accent); background: var(--bar); }
 .sheet button.cancel { border-color: var(--accent); }
 .sheet .item .meta { color: var(--muted); font-size: 14px; text-align: right; }
+.sheet .sec { color: var(--muted); font-size: 13px; padding: 10px 4px 2px; }
+.sheet .none { padding: 10px 4px; }
 .sheet .list { display: flex; flex-direction: column; gap: 0; }
 .sheet pre { margin: 0; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; white-space: pre-wrap; font: 13px ui-monospace, Menlo, Consolas, monospace; max-height: 8em; overflow: auto; }
 .sheet .path { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 14px; overflow-wrap: anywhere; }
@@ -224,3 +226,4 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 #hl .tv-s { text-decoration: line-through; text-decoration-color: var(--muted); }
 #hl .tv-code { background: var(--bar); }
 .ol-head.flash, .ol-line.flash { background: var(--hit); }
+.sheet input[type=search] { position: sticky; top: 0; flex: none; background: var(--bg); z-index: 1; }

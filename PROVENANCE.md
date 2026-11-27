@@ -68,6 +68,8 @@ Each tooling module below was written 2026-11-21 by the Claude (Sonnet 5.5) sess
 ### `app/main.js`, `app/ui/session.js`, `app/ui/config.js`, `app/ui/providers.js`, `app/ui/find.js`, `app/ui/recent.js`, `sw.js`, `index.html`, `app.css`, `manifest.webmanifest`
 - Written from: the author's decisions and mockups of 2026-11-21 (SPEC.md, "Decided" tables), the author's screenshot of their own existing app for layout (shape of the screen only; no code), standard web platform documentation (service workers, Web App Manifest, IndexedDB, Web Crypto), and this project's own modules. The icons are generated plain images (a white letter on a green square). Statement as above.
 
+- 0.11.18: the Settings regrouping (sections, search, Appearance and Debugging screens, Shift-selection and the three log rows) follows the author's mockups of 2026-11-27; the settings it exposes (org-log-done, org-log-reschedule, org-log-redeadline, org-support-shift-select) were already implemented from conformance results; no Emacs source or other program was consulted.
+
 ### `test/sw.test.js`, `test/config.test.js`, `test/find.test.js`, `test/recent.test.js`, `test/session.test.js`, `test/browser/app.mjs`, `test/browser/harness.mjs`
 - Written from: the modules above and the author's decisions; expected values are hand-derived from those decisions, not from any other program. Statement as above.
 
@@ -229,7 +231,7 @@ A separate repository holds questions (case files written by us) and results rec
 - Written from: the Org manual's chapter on plain lists (items, bullets, numbering, checkboxes, sorting) and observed Emacs 30.1 results with Org 9.7.11 for M-RET, M-S-RET, C-c -, org-toggle-item, org-toggle-heading, org-toggle-checkbox with prefix arguments, org-sort-list, list repair, item moves and indents, and org-paste-subtree with prefix arguments (conformance v0.1.73). No other project's code was consulted.
 
 ### `test/lists3.test.js`, `test/dateprompt.test.js`, `test/fixtures/emacs-lists3.json`, `test/fixtures/emacs-dateprompt.json`, `test/fixtures/emacs-dateprefill.json`
-- Written from observed Emacs 30.1 results with Org 9.7.11 for C-c - with prefix arguments, S-left and S-right on item lines, and the date a prompt gives when it starts from a date already set (conformance v0.1.76, v0.1.77 and v0.1.78: li3-*, li4-*, dp-*, dt-*, dd-*, ddr-*); no Emacs or Org source was read.
+- Written from observed Emacs 30.1 results with Org 9.7.11 for C-c - with prefix arguments, S-left and S-right on item lines, and the date a prompt gives when it starts from a date already set (conformance v0.1.76, v0.1.77 and v0.1.78 and v0.1.79: li3-*, li4-*,li5-*, dp-*, dt-*, dd-*, ddr-*); no Emacs or Org source was read.
 
 ### `test/logbook.test.js`, `test/browser/logging.mjs`, `test/fixtures/emacs-logging.json`
 - Logging, radio targets, multi-line emphasis, typed dates and list details were written from observed Emacs 30.1 results (conformance v0.1.74 and v0.1.75: lg-*, rt-*, me-*, dq-*, li2-*); no Emacs or Org source was read.

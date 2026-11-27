@@ -337,5 +337,523 @@
   "keys": [
    "org-shiftright"
   ]
+ },
+ {
+  "id": "li5-dash-0",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n- one\n- two\n",
+  "tail": "",
+  "whichs": [
+   0
+  ]
+ },
+ {
+  "id": "li5-dash-1",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "",
+  "whichs": [
+   1
+  ]
+ },
+ {
+  "id": "li5-dash-2",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1. one\n2. two\n",
+  "tail": "",
+  "whichs": [
+   2
+  ]
+ },
+ {
+  "id": "li5-dash-2x2",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1. one\n2. two\n",
+  "tail": "",
+  "whichs": [
+   2,
+   2
+  ]
+ },
+ {
+  "id": "li5-dash-3",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1) one\n2) two\n",
+  "tail": "",
+  "whichs": [
+   3
+  ]
+ },
+ {
+  "id": "li5-dash-3x2",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1) one\n2) two\n",
+  "tail": "",
+  "whichs": [
+   3,
+   3
+  ]
+ },
+ {
+  "id": "li5-dash-4",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n- one\n- two\n",
+  "tail": "",
+  "whichs": [
+   4
+  ]
+ },
+ {
+  "id": "li5-dash-5",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "",
+  "whichs": [
+   5
+  ]
+ },
+ {
+  "id": "li5-dot-0",
+  "input": "* H\n1. one\n1. two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n- one\n- two\n",
+  "tail": "",
+  "whichs": [
+   0
+  ]
+ },
+ {
+  "id": "li5-dot-1",
+  "input": "* H\n1. one\n1. two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "",
+  "whichs": [
+   1
+  ]
+ },
+ {
+  "id": "li5-dot-2",
+  "input": "* H\n1. one\n1. two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1. one\n2. two\n",
+  "tail": "",
+  "whichs": [
+   2
+  ]
+ },
+ {
+  "id": "li5-dot-2x2",
+  "input": "* H\n1. one\n1. two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1. one\n2. two\n",
+  "tail": "",
+  "whichs": [
+   2,
+   2
+  ]
+ },
+ {
+  "id": "li5-dot-3",
+  "input": "* H\n1. one\n1. two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1) one\n2) two\n",
+  "tail": "",
+  "whichs": [
+   3
+  ]
+ },
+ {
+  "id": "li5-dot-3x2",
+  "input": "* H\n1. one\n1. two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1) one\n2) two\n",
+  "tail": "",
+  "whichs": [
+   3,
+   3
+  ]
+ },
+ {
+  "id": "li5-dot-4",
+  "input": "* H\n1. one\n1. two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n- one\n- two\n",
+  "tail": "",
+  "whichs": [
+   4
+  ]
+ },
+ {
+  "id": "li5-dot-5",
+  "input": "* H\n1. one\n1. two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "",
+  "whichs": [
+   5
+  ]
+ },
+ {
+  "id": "li5-paren-0",
+  "input": "* H\n1) one\n1) two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n- one\n- two\n",
+  "tail": "",
+  "whichs": [
+   0
+  ]
+ },
+ {
+  "id": "li5-paren-1",
+  "input": "* H\n1) one\n1) two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "",
+  "whichs": [
+   1
+  ]
+ },
+ {
+  "id": "li5-paren-2",
+  "input": "* H\n1) one\n1) two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1. one\n2. two\n",
+  "tail": "",
+  "whichs": [
+   2
+  ]
+ },
+ {
+  "id": "li5-paren-2x2",
+  "input": "* H\n1) one\n1) two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1. one\n2. two\n",
+  "tail": "",
+  "whichs": [
+   2,
+   2
+  ]
+ },
+ {
+  "id": "li5-paren-3",
+  "input": "* H\n1) one\n1) two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1) one\n2) two\n",
+  "tail": "",
+  "whichs": [
+   3
+  ]
+ },
+ {
+  "id": "li5-paren-3x2",
+  "input": "* H\n1) one\n1) two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1) one\n2) two\n",
+  "tail": "",
+  "whichs": [
+   3,
+   3
+  ]
+ },
+ {
+  "id": "li5-paren-4",
+  "input": "* H\n1) one\n1) two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n- one\n- two\n",
+  "tail": "",
+  "whichs": [
+   4
+  ]
+ },
+ {
+  "id": "li5-paren-5",
+  "input": "* H\n1) one\n1) two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "",
+  "whichs": [
+   5
+  ]
+ },
+ {
+  "id": "li5-plus-0",
+  "input": "* H\n+ one\n+ two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n- one\n- two\n",
+  "tail": "",
+  "whichs": [
+   0
+  ]
+ },
+ {
+  "id": "li5-plus-1",
+  "input": "* H\n+ one\n+ two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "",
+  "whichs": [
+   1
+  ]
+ },
+ {
+  "id": "li5-plus-2",
+  "input": "* H\n+ one\n+ two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1. one\n2. two\n",
+  "tail": "",
+  "whichs": [
+   2
+  ]
+ },
+ {
+  "id": "li5-plus-2x2",
+  "input": "* H\n+ one\n+ two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1. one\n2. two\n",
+  "tail": "",
+  "whichs": [
+   2,
+   2
+  ]
+ },
+ {
+  "id": "li5-plus-3",
+  "input": "* H\n+ one\n+ two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1) one\n2) two\n",
+  "tail": "",
+  "whichs": [
+   3
+  ]
+ },
+ {
+  "id": "li5-plus-3x2",
+  "input": "* H\n+ one\n+ two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n1) one\n2) two\n",
+  "tail": "",
+  "whichs": [
+   3,
+   3
+  ]
+ },
+ {
+  "id": "li5-plus-4",
+  "input": "* H\n+ one\n+ two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n- one\n- two\n",
+  "tail": "",
+  "whichs": [
+   4
+  ]
+ },
+ {
+  "id": "li5-plus-5",
+  "input": "* H\n+ one\n+ two\n",
+  "line": 2,
+  "col": 4,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "",
+  "whichs": [
+   5
+  ]
+ },
+ {
+  "id": "li5-seq",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n1. one\n2. two\n",
+  "tail": "",
+  "whichs": [
+   1,
+   2,
+   2
+  ]
+ },
+ {
+  "id": "li5-seq2",
+  "input": "* H\n- one\n- two\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n+ one\n+ two\n",
+  "tail": "",
+  "whichs": [
+   2,
+   2,
+   1
+  ]
+ },
+ {
+  "id": "li5-sub-dash-2",
+  "input": "* H\n- one\n  - a\n  - b\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  * a\n  * b\n",
+  "tail": "",
+  "whichs": [
+   2
+  ]
+ },
+ {
+  "id": "li5-sub-dash-3",
+  "input": "* H\n- one\n  - a\n  - b\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  1. a\n  2. b\n",
+  "tail": "",
+  "whichs": [
+   3
+  ]
+ },
+ {
+  "id": "li5-sub-dash-4",
+  "input": "* H\n- one\n  - a\n  - b\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  1) a\n  2) b\n",
+  "tail": "",
+  "whichs": [
+   4
+  ]
+ },
+ {
+  "id": "li5-sub-dot-2",
+  "input": "* H\n- one\n  1. a\n  1. b\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  * a\n  * b\n",
+  "tail": "",
+  "whichs": [
+   2
+  ]
+ },
+ {
+  "id": "li5-sub-dot-3",
+  "input": "* H\n- one\n  1. a\n  1. b\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  1. a\n  2. b\n",
+  "tail": "",
+  "whichs": [
+   3
+  ]
+ },
+ {
+  "id": "li5-sub-dot-4",
+  "input": "* H\n- one\n  1. a\n  1. b\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  1) a\n  2) b\n",
+  "tail": "",
+  "whichs": [
+   4
+  ]
+ },
+ {
+  "id": "li5-sub-paren-2",
+  "input": "* H\n- one\n  1) a\n  1) b\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  * a\n  * b\n",
+  "tail": "",
+  "whichs": [
+   2
+  ]
+ },
+ {
+  "id": "li5-sub-paren-3",
+  "input": "* H\n- one\n  1) a\n  1) b\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  1. a\n  2. b\n",
+  "tail": "",
+  "whichs": [
+   3
+  ]
+ },
+ {
+  "id": "li5-sub-paren-4",
+  "input": "* H\n- one\n  1) a\n  1) b\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  1) a\n  2) b\n",
+  "tail": "",
+  "whichs": [
+   4
+  ]
+ },
+ {
+  "id": "li5-sub-plus-2",
+  "input": "* H\n- one\n  + a\n  + b\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  * a\n  * b\n",
+  "tail": "",
+  "whichs": [
+   2
+  ]
+ },
+ {
+  "id": "li5-sub-plus-3",
+  "input": "* H\n- one\n  + a\n  + b\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  1. a\n  2. b\n",
+  "tail": "",
+  "whichs": [
+   3
+  ]
+ },
+ {
+  "id": "li5-sub-plus-4",
+  "input": "* H\n- one\n  + a\n  + b\n",
+  "line": 3,
+  "col": 5,
+  "output": "* H\n- one\n  1) a\n  2) b\n",
+  "tail": "",
+  "whichs": [
+   4
+  ]
  }
 ]

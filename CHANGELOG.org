@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.18
+Settings regrouped. Emacs is in sections (Tasks and logging, Agenda and calendar, Capture, refile and archive, Links and footnotes, Keys and editing, Startup) with a search field that finds a setting by its name, its Emacs variable or a related word. Appearance now holds the tool rows and table settings, Debugging holds the key event log, and Emacs gains Shift-selection and the three log options: when a task is done, rescheduled, or a deadline changes.
+
 * 0.11.17
 Times with a length at the date prompt, as Emacs reads them: 10:30+1 means 10:30-11:30, 10:30+1:25 means 10:30-11:55, and a task whose time is a range starts the prompt with its start and length (10:30+1:15). A time followed by a relative date (10:30 +1d) still keeps the date and time, since Emacs reads a relative date only at the start.
 

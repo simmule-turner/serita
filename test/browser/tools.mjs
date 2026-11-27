@@ -68,14 +68,14 @@ await page.locator('.sheet').getByLabel('Dismiss').click();
 ok((await page.evaluate(() => document.activeElement.id)) === 'editor', 'closing it leaves the focus in the text');
 await page.setViewportSize({ width: 390, height: 800 });
 
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/Tool row in the Text view/).click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/^Appearance/).click(); await btn(/Tool row in the Text view/).click(); await btn('‹ Settings').click(); await btn('Close').click();
 ok(await page.locator('#tools').isHidden(), 'the Text view tool row can be hidden');
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/Tool row in the Text view/).click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/^Appearance/).click(); await btn(/Tool row in the Text view/).click(); await btn('‹ Settings').click(); await btn('Close').click();
 ok(await page.locator('#tools').isVisible(), 'and shown again');
 
 await page.click('#btn-view'); await btn('Outline').click();
 ok(await page.locator('#tools').isHidden(), 'the Outline view has no tool row until it is turned on');
-await page.click('#btn-menu'); await btn('Settings').click(); await btn(/Tool row in the Outline view/).click(); await btn('Close').click();
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/^Appearance/).click(); await btn(/Tool row in the Outline view/).click(); await btn('‹ Settings').click(); await btn('Close').click();
 ok(!(await page.locator('#tools').textContent()).includes('null'), 'no stray text in the Outline row');
 ok((await page.locator('#tools button').count()) === 4, 'the Outline view keeps Undo, Redo and the two size buttons');
 

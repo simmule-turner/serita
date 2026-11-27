@@ -842,12 +842,9 @@ async function settings() {
         h('div', { class: 'list' },
           h('button', { class: 'item', onclick: () => close('github') }, h('span', {}, 'GitHub'), h('span', { class: 'meta' }, `${summary('github')} ›`)),
           h('button', { class: 'item', onclick: () => close('webdav') }, h('span', {}, 'WebDAV'), h('span', { class: 'meta' }, `${summary('webdav')} ›`)),
-          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, '28 settings ›')),
+          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, `${EMACS_ROWS.length} settings ›`)),
           h('button', { class: 'item', onclick: () => close('appearance') }, h('span', {}, 'Appearance'), h('span', { class: 'meta' }, `${theme()[0].toUpperCase()}${theme().slice(1)}, ${fontSize()}px ›`)),
-          h('button', { class: 'item', onclick: () => close('restore') }, h('span', {}, 'Restore open files on start'), h('span', { class: 'meta' }, restoreOn() ? 'On ›' : 'Off ›')),
-          h('button', { class: 'item', onclick: () => close('tools-text') }, h('span', {}, 'Tool row in the Text view'), h('span', { class: 'meta' }, toolRowOn('text') ? 'On ›' : 'Off ›')),
-          h('button', { class: 'item', onclick: () => close('keylog') }, h('span', {}, 'Key event log'), h('span', { class: 'meta' }, keyLogOn() ? 'On ›' : 'Off ›')),
-          h('button', { class: 'item', onclick: () => close('tools-outline') }, h('span', {}, 'Tool row in the Outline view'), h('span', { class: 'meta' }, toolRowOn('outline') ? 'On ›' : 'Off ›')),
+          h('button', { class: 'item', onclick: () => close('debugging') }, h('span', {}, 'Debugging'), h('span', { class: 'meta' }, '›')),
           h('div', { class: 'item' }, h('span', {}, 'Settings file'),
             h('span', { class: 'btns' }, h('button', { onclick: () => close('export') }, 'Export'), h('button', { onclick: () => close('import') }, 'Import'))),
           h('p', { class: 'note' }, 'Tokens and passwords are stored on this device.'),
@@ -859,66 +856,90 @@ async function settings() {
     if (what === 'github' || what === 'webdav') await setup(what);
     else if (what === 'emacs-settings') await emacsSettings();
     else if (what === 'appearance') await appearance();
-    else if (what === 'keylog') await keyLogScreen();
-    else if (what === 'restore') config.update({ settings: { 'session.restore': String(!restoreOn()) } });
-    else if (what === 'tools-text') config.update({ settings: { 'view.toolRowText': String(!toolRowOn('text')) } });
-    else if (what === 'tools-outline') config.update({ settings: { 'view.toolRowOutline': String(!toolRowOn('outline')) } });
+    else if (what === 'debugging') await debugging();
     else if (what === 'export') { await exportDialog(); return; }
     else { $('import-file').click(); return; }
   }
 }
 
+
+/** Settings, Emacs: [section, key, label, what the row shows, other words that find it]. Search matches the label, the Emacs variable and those words. */
+const yesNo = (on) => (on ? 'On' : 'Off');
+const modeName = (name) => ({ off: 'Off', time: 'Time', note: 'Note' }[logMode(name)]);
+const countOf = (n, one, many) => `${n} ${n === 1 ? one : many}`;
+const EMACS_ROWS = [
+  ['Tasks and logging', 'log-done', 'When a task is done', () => modeName('org-log-done'), 'closed timestamp note'],
+  ['Tasks and logging', 'log-reschedule', 'When rescheduled', () => modeName('org-log-reschedule'), 'scheduled log note'],
+  ['Tasks and logging', 'log-redeadline', 'When a deadline changes', () => modeName('org-log-redeadline'), 'deadline log note'],
+  ['Tasks and logging', 'log-repeat', 'Log repeats', () => ({ time: 'Time', note: 'Note', off: 'Off' }[logRepeatMode()]), 'repeating habit'],
+  ['Tasks and logging', 'log-drawer', 'Log into drawer', () => logDrawer() ?? 'Off', 'logbook'],
+  ['Agenda and calendar', 'agenda-files', 'Agenda files', () => countOf(agendaFileNames().length, 'file', 'files'), ''],
+  ['Agenda and calendar', 'time-grid', 'Agenda time grid', () => yesNo(timeGridOn()), ''],
+  ['Agenda and calendar', 'agenda-prefix', 'Agenda line format', () => (prefixText() ? 'Custom' : 'Default'), 'prefix category'],
+  ['Agenda and calendar', 'date-style', 'Date style', () => ({ american: 'American', european: 'European', iso: 'ISO' }[dateStyle()]), 'month day order'],
+  ['Agenda and calendar', 'diary-file', 'Diary file', () => diaryFile() || 'None', 'sexp'],
+  ['Agenda and calendar', 'diary-on', 'Diary in the agenda', () => yesNo(diaryOn()), ''],
+  ['Agenda and calendar', 'holidays', 'Holidays', () => (holidayKinds().length ? holidayKinds().map((k) => HOLIDAY_KINDS.find((x) => x[0] === k)?.[1] ?? k).join(', ') : 'None'), 'calendar'],
+  ['Agenda and calendar', 'holidays-agenda', 'Holidays in the agenda', () => yesNo(holidaysInAgenda()), ''],
+  ['Agenda and calendar', 'holidays-local', 'Local holidays', () => (localHolidays() ? 'Custom' : 'None'), ''],
+  ['Agenda and calendar', 'contacts-files', 'Contacts files', () => (contactFiles().length ? countOf(contactFiles().length, 'file', 'files') : 'None'), 'people'],
+  ['Agenda and calendar', 'birthday-property', 'Birthday property', () => contactProperty(), 'anniversary'],
+  ['Capture, refile and archive', 'capture-templates', 'Capture templates', () => countOf(parseTemplates(captureText()).length, 'template', 'templates'), 'org-capture'],
+  ['Capture, refile and archive', 'refile', 'Refile targets', () => (refileText() ? 'Custom' : 'Top level'), 'move'],
+  ['Capture, refile and archive', 'refile-new', 'Refile new headings', () => ({ nil: 'Not allowed', confirm: 'Ask', t: 'Allowed' }[refileNew()]), 'create parent'],
+  ['Capture, refile and archive', 'archive', 'Archive location', () => archiveLocation(), ''],
+  ['Capture, refile and archive', 'archive-done', 'Archive marks done', () => (archiveMarkDone() === null ? 'Off' : archiveMarkDone() === true ? 'On' : archiveMarkDone()), ''],
+  ['Capture, refile and archive', 'archive-context', 'Archive saves', () => (archiveContext().length ? archiveContext().join(' ') : 'Nothing'), 'context'],
+  ['Links and footnotes', 'link-abbrev', 'Link abbreviations', () => (setting('org-link-abbrev-alist') ? 'Custom' : 'None'), ''],
+  ['Links and footnotes', 'link-search', 'Link text search', () => ({ '': 'Ask to create', t: 'Exact headline', nil: 'Any text' }[setting('org-link-search-must-match-exact-headline') || '']), ''],
+  ['Links and footnotes', 'link-keep', 'Keep stored links', () => yesNo(setting('org-link-keep-stored-after-insertion') === 't'), ''],
+  ['Links and footnotes', 'link-id', 'Store links by ID', () => ({ '': 'Off', t: 'Create if missing', 'use-existing': 'Existing only' }[setting('org-id-link-to-org-use-id') || ''] ?? 'Off'), 'property'],
+  ['Links and footnotes', 'fn-label', 'Footnote labels', () => ({ '': 'Numbers', confirm: 'Ask', nil: 'Always ask' }[setting('org-footnote-auto-label') || ''] ?? 'Numbers'), ''],
+  ['Links and footnotes', 'fn-section', 'Footnote section', () => (setting('org-footnote-section') === 'nil' ? 'None' : (setting('org-footnote-section') || 'Footnotes')), ''],
+  ['Links and footnotes', 'fn-inline', 'Define footnotes inline', () => yesNo(setting('org-footnote-define-inline') === 't'), ''],
+  ['Links and footnotes', 'fn-adjust', 'Renumber footnotes automatically', () => yesNo(setting('org-footnote-auto-adjust') === 't'), ''],
+  ['Keys and editing', 'emacs', 'Emacs keys', () => yesNo(emacsKeys()), 'keyboard bindings'],
+  ['Keys and editing', 'shift-select', 'Shift-selection', () => yesNo(setting('org-support-shift-select') === 't'), 'S-left S-right shift arrow'],
+  ['Keys and editing', 'beep', 'Beep on errors', () => yesNo(beepOn()), 'sound'],
+  ['Keys and editing', 'stars', 'Hide leading stars', () => yesNo(hideStars()), 'headings'],
+  ['Keys and editing', 'indented', 'Indent files on open', () => yesNo(indentSetting()), 'org-indent-mode'],
+  ['Keys and editing', 'tags-column', 'Tag column', () => String(tagsColumn()), 'tags align'],
+  ['Startup', 'restore', 'Restore open files on start', () => yesNo(restoreOn()), 'session reopen'],
+  ['Startup', 'init-file', 'Init file', () => initName() || 'None', 'init.el elisp lisp']];
+
 /** The setting each row of Settings, Emacs, changes; a row whose setting the init file sets cannot be changed there. */
 const LOCK = { 'agenda-files': 'org-agenda-files', archive: 'org-archive-location', 'archive-done': 'org-archive-mark-done', 'archive-context': 'org-archive-save-context-info', 'time-grid': 'org-agenda-use-time-grid',
   'capture-templates': 'org-capture-templates', 'contacts-files': 'org-contacts-files', 'birthday-property': 'org-contacts-birthday-property', 'date-style': 'calendar-date-style', 'diary-file': 'diary-file', 'diary-on': 'org-agenda-include-diary',
   stars: 'org-hide-leading-stars', indented: 'org-startup-indented', holidays: 'calendar-holidays', 'holidays-agenda': 'diary-show-holidays-flag', 'holidays-local': 'holiday-local-holidays', 'log-drawer': 'org-log-into-drawer',
+  'log-done': 'org-log-done', 'log-reschedule': 'org-log-reschedule', 'log-redeadline': 'org-log-redeadline', 'shift-select': 'org-support-shift-select',
   'log-repeat': 'org-log-repeat', 'link-abbrev': 'org-link-abbrev-alist', 'link-search': 'org-link-search-must-match-exact-headline', 'link-keep': 'org-link-keep-stored-after-insertion', 'link-id': 'org-id-link-to-org-use-id', 'fn-label': 'org-footnote-auto-label', 'fn-section': 'org-footnote-section', 'fn-inline': 'org-footnote-define-inline', 'fn-adjust': 'org-footnote-auto-adjust', 'agenda-prefix': 'org-agenda-prefix-settings', refile: 'org-refile-settings', 'refile-new': 'org-refile-allow-creating-parent-nodes', 'tags-column': 'org.tagsColumn' };
 
-/** Settings, Emacs: the settings that are Emacs's own, in alphabetical order. */
+/** Whether a row answers a search: every word typed is part of its label, its Emacs variable or its other words. */
+const rowMatches = (row, query) => {
+  const hay = `${row[2]} ${LOCK[row[1]] ?? ''} ${row[4]}`.toLowerCase();
+  return query.toLowerCase().split(/\s+/).filter(Boolean).every((w) => hay.includes(w));
+};
+
+/** Settings, Emacs: the settings that are Emacs's own, in sections, with a search field. */
 async function emacsSettings() {
   let note = '';
+  let query = '';
   for (;;) {
     const what = await panel((sheet, close) => {
-      const files = agendaFileNames().length;
-      const item = (key, label, meta) => h('button', { class: 'item', onclick: () => close(key) }, h('span', {}, label), h('span', { class: 'meta' }, `${fromInit(LOCK[key]) ? 'Init file' : meta} ›`));
-      put(sheet, h('h2', {}, 'Emacs'), note ? h('p', {}, note) : null,
-        h('div', { class: 'list' },
-          item('agenda-files', 'Agenda files', `${files} ${files === 1 ? 'file' : 'files'}`),
-          item('archive', 'Archive location', archiveLocation()),
-          item('archive-done', 'Archive marks done', archiveMarkDone() === null ? 'Off' : archiveMarkDone() === true ? 'On' : archiveMarkDone()),
-          item('archive-context', 'Archive saves', archiveContext().length ? archiveContext().join(' ') : 'Nothing'),
-          item('time-grid', 'Agenda time grid', timeGridOn() ? 'On' : 'Off'),
-          item('beep', 'Beep on errors', beepOn() ? 'On' : 'Off'),
-          item('capture-templates', 'Capture templates', (() => { const n = parseTemplates(captureText()).length; return `${n} ${n === 1 ? 'template' : 'templates'}`; })()),
-          item('contacts-files', 'Contacts files', contactFiles().length ? `${contactFiles().length} ${contactFiles().length === 1 ? 'file' : 'files'}` : 'None'),
-          item('birthday-property', 'Birthday property', contactProperty()),
-          item('date-style', 'Date style', { american: 'American', european: 'European', iso: 'ISO' }[dateStyle()]),
-          item('diary-file', 'Diary file', diaryFile() || 'None'),
-          item('diary-on', 'Diary in the agenda', diaryOn() ? 'On' : 'Off'),
-          item('emacs', 'Emacs keys', emacsKeys() ? 'On' : 'Off'),
-          item('stars', 'Hide leading stars', hideStars() ? 'On' : 'Off'),
-          item('indented', 'Indent files on open', indentSetting() ? 'On' : 'Off'),
-          item('holidays', 'Holidays', holidayKinds().length ? holidayKinds().map((k) => HOLIDAY_KINDS.find((x) => x[0] === k)?.[1] ?? k).join(', ') : 'None'),
-          item('holidays-agenda', 'Holidays in the agenda', holidaysInAgenda() ? 'On' : 'Off'),
-          item('holidays-local', 'Local holidays', localHolidays() ? 'Custom' : 'None'),
-          item('log-drawer', 'Log into drawer', logDrawer() ?? 'Off'),
-          item('link-abbrev', 'Link abbreviations', setting('org-link-abbrev-alist') ? 'Custom' : 'None'),
-          item('link-search', 'Link text search', { '': 'Ask to create', t: 'Exact headline', nil: 'Any text' }[setting('org-link-search-must-match-exact-headline') || '']),
-          item('link-keep', 'Keep stored links', setting('org-link-keep-stored-after-insertion') === 't' ? 'On' : 'Off'),
-          item('link-id', 'Store links by ID', { '': 'Off', t: 'Create if missing', 'use-existing': 'Existing only' }[setting('org-id-link-to-org-use-id') || ''] ?? 'Off'),
-          item('fn-label', 'Footnote labels', { '': 'Numbers', confirm: 'Ask', nil: 'Always ask' }[setting('org-footnote-auto-label') || ''] ?? 'Numbers'),
-          item('fn-section', 'Footnote section', setting('org-footnote-section') === 'nil' ? 'None' : (setting('org-footnote-section') || 'Footnotes')),
-          item('fn-inline', 'Define footnotes inline', setting('org-footnote-define-inline') === 't' ? 'On' : 'Off'),
-          item('fn-adjust', 'Renumber footnotes automatically', setting('org-footnote-auto-adjust') === 't' ? 'On' : 'Off'),
-          item('log-repeat', 'Log repeats', { time: 'Time', note: 'Note', off: 'Off' }[logRepeatMode()]),
-          item('agenda-prefix', 'Agenda line format', prefixText() ? 'Custom' : 'Default'),
-          item('refile', 'Refile targets', refileText() ? 'Custom' : 'Top level'),
-          item('refile-new', 'Refile new headings', { nil: 'Not allowed', confirm: 'Ask', t: 'Allowed' }[refileNew()]),
-          item('table-wrap', 'Wrap table cells', wrapCells() ? 'On' : 'Off'),
-          item('table-width', 'Table width', `${Math.round(widthFraction() * 100)}%`),
-          item('table-zebra', 'Stripe table rows', zebraRows() ? 'On' : 'Off'),
-          item('tags-column', 'Tag column', String(tagsColumn())),
-          item('init-file', 'Init file', initName() || 'None')),
+      const list = h('div', { class: 'list' });
+      const fill = () => {
+        list.replaceChildren();
+        let last = '';
+        for (const row of EMACS_ROWS.filter((r) => rowMatches(r, query))) {
+          if (row[0] !== last) { list.append(h('div', { class: 'sec' }, row[0])); last = row[0]; }
+          list.append(h('button', { class: 'item', onclick: () => close(row[1]) }, h('span', {}, row[2]), h('span', { class: 'meta' }, `${fromInit(LOCK[row[1]]) ? 'Init file' : row[3]()} ›`)));
+        }
+        if (!list.children.length) list.append(h('p', { class: 'none' }, 'No setting matches.'));
+      };
+      const input = h('input', { type: 'search', value: query, placeholder: 'Search settings', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Search settings' });
+      input.addEventListener('input', () => { query = input.value; fill(); });
+      fill();
+      put(sheet, h('h2', {}, 'Emacs'), note ? h('p', {}, note) : null, input, list,
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
     });
     if (what === undefined) return;
@@ -942,6 +963,11 @@ async function emacsSettings() {
     else if (what === 'refile-new') await refileNewDialog();
     else if (what === 'agenda-prefix') await prefixSettingsDialog();
     else if (what === 'refile') await refileSettingsDialog();
+    else if (what === 'log-done') await choiceSetting('When a task is done', 'org-log-done', LOG_MODES);
+    else if (what === 'log-reschedule') await choiceSetting('When rescheduled', 'org-log-reschedule', LOG_MODES);
+    else if (what === 'log-redeadline') await choiceSetting('When a deadline changes', 'org-log-redeadline', LOG_MODES);
+    else if (what === 'shift-select') config.update({ settings: { 'org-support-shift-select': setting('org-support-shift-select') === 't' ? '' : 't' } });
+    else if (what === 'restore') config.update({ settings: { 'session.restore': String(!restoreOn()) } });
     else if (what === 'beep') config.update({ settings: { 'view.beep': String(!beepOn()) } });
     else if (what === 'capture-templates') await captureTemplatesDialog();
     else if (what === 'emacs') config.update({ settings: { 'view.emacsKeys': String(!emacsKeys()) } });
@@ -957,13 +983,12 @@ async function emacsSettings() {
     else if (what === 'fn-adjust') config.update({ settings: { 'org-footnote-auto-adjust': setting('org-footnote-auto-adjust') === 't' ? '' : 't' } });
     else if (what === 'stars') config.update({ settings: { 'org-hide-leading-stars': hideStars() ? '' : 't' } });
     else if (what === 'indented') config.update({ settings: { 'org-startup-indented': indentSetting() ? '' : 't' } });
-    else if (what === 'table-wrap') config.update({ settings: { 'org-table-widget-wrap-columns': wrapCells() ? '' : 't' } });
-    else if (what === 'table-zebra') config.update({ settings: { 'org-table-widget-zebra-stripe': zebraRows() ? '' : 't' } });
-    else if (what === 'table-width') await tableWidthDialog();
     else await tagsColumnDialog();
     note = $('message').classList.contains('error') ? '' : $('message').textContent;
   }
 }
+
+const LOG_MODES = [['', 'Off', 'nothing is recorded'], ['time', 'Time', 'a log line with the time'], ['note', 'Note', 'a log line and a note']];
 
 /** What a Reset button closes its panel with. */
 const RESET = Symbol('reset');
@@ -991,7 +1016,7 @@ async function tableWidthDialog() {
     put(sheet, h('h2', {}, 'Table width'),
       h('p', {}, 'The share of the screen width, from 30 to 100 percent, that a table in the Outline view may use before it scrolls sideways or, with Wrap table cells on, wraps. The default is 100.'),
       input,
-      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Emacs'), h('button', { onclick: () => close(RESET) }, 'Reset'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Set')));
+      h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Appearance'), h('button', { onclick: () => close(RESET) }, 'Reset'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Set')));
     input.focus();
   });
   if (value === undefined) return;
@@ -1001,7 +1026,7 @@ async function tableWidthDialog() {
   config.update({ settings: { 'org-table-widget-max-width-fraction': String(n / 100) } });
 }
 
-/** The Appearance screen: theme, font, text size and paragraph spacing. Each change shows at once. */
+/** The Appearance screen: theme, font, text size, paragraph spacing, tool rows and tables. Each change shows at once. */
 async function appearance() {
   const FONT_NAMES = [['monospace', 'Monospace'], ['sans-serif', 'Sans-serif'], ['serif', 'Serif'], ['system', 'System']];
   for (;;) {
@@ -1009,6 +1034,7 @@ async function appearance() {
       const choice = (label, on, value) => h('button', { class: `opt${on ? ' on' : ''}`, 'aria-pressed': String(on), onclick: () => close(value) }, label);
       const step = (label, value, down, up) => h('div', { class: 'stepper' },
         h('button', { 'aria-label': `${label} smaller`, onclick: () => close(down) }, '−'), h('span', {}, value), h('button', { 'aria-label': `${label} larger`, onclick: () => close(up) }, '+'));
+      const row = (key, label, meta) => h('button', { class: 'item', onclick: () => close(key) }, h('span', {}, label), h('span', { class: 'meta' }, `${meta} ›`));
       const custom = !FONT_NAMES.some(([k]) => k === fontChoice());
       put(sheet, h('h2', {}, 'Appearance'),
         h('div', { class: 'card' }, h('div', { class: 'cap' }, 'Theme'),
@@ -1018,11 +1044,20 @@ async function appearance() {
           h('p', {}, 'With a font that is not monospace, columns such as the tag column do not line up on screen.')),
         h('div', { class: 'card' }, h('div', { class: 'cap' }, 'Font size'), step('Font size', `${fontSize()}px`, 'size:-1', 'size:1'), h('p', {}, '12 to 32. The A− and A+ buttons change the same size.')),
         h('div', { class: 'card' }, h('div', { class: 'cap' }, 'Paragraph spacing'), step('Paragraph spacing', `${paragraphSpacing()}px`, 'space:-1', 'space:1'), h('p', {}, 'The gap between paragraphs in the Outline view, 0 to 32.')),
+        h('div', { class: 'sec' }, 'Tool rows'),
+        h('div', { class: 'list' }, row('tools-text', 'Tool row in the Text view', toolRowOn('text') ? 'On' : 'Off'), row('tools-outline', 'Tool row in the Outline view', toolRowOn('outline') ? 'On' : 'Off')),
+        h('div', { class: 'sec' }, 'Tables'),
+        h('div', { class: 'list' }, row('table-wrap', 'Wrap table cells', wrapCells() ? 'On' : 'Off'), row('table-width', 'Table width', `${Math.round(widthFraction() * 100)}%`), row('table-zebra', 'Stripe table rows', zebraRows() ? 'On' : 'Off')),
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
     });
     if (what === undefined) return;
     const [kind, arg] = what.split(':');
-    if (kind === 'theme') config.update({ settings: { 'view.theme': arg } });
+    if (what === 'tools-text') config.update({ settings: { 'view.toolRowText': String(!toolRowOn('text')) } });
+    else if (what === 'tools-outline') config.update({ settings: { 'view.toolRowOutline': String(!toolRowOn('outline')) } });
+    else if (what === 'table-wrap') config.update({ settings: { 'org-table-widget-wrap-columns': wrapCells() ? '' : 't' } });
+    else if (what === 'table-zebra') config.update({ settings: { 'org-table-widget-zebra-stripe': zebraRows() ? '' : 't' } });
+    else if (what === 'table-width') await tableWidthDialog();
+    else if (kind === 'theme') config.update({ settings: { 'view.theme': arg } });
     else if (kind === 'font') config.update({ settings: { 'view.font': arg } });
     else if (kind === 'size') setTextSize(Number(arg));
     else if (kind === 'space') config.update({ settings: { 'view.paragraphSpacing': String(Math.min(32, Math.max(0, paragraphSpacing() + Number(arg)))) } });
@@ -3782,6 +3817,20 @@ function klog(...parts) {
 }
 
 /** The key event log as a screen of its own: what was recorded, with Copy, Clear and On or Off. */
+/** Settings, Debugging: tools for finding out why something does not work; for now the key event log. */
+async function debugging() {
+  for (;;) {
+    const what = await panel((sheet, close) => {
+      put(sheet, h('h2', {}, 'Debugging'),
+        h('div', { class: 'list' }, h('button', { class: 'item', onclick: () => close('keylog') }, h('span', {}, 'Key event log'), h('span', { class: 'meta' }, keyLogOn() ? 'On ›' : 'Off ›'))),
+        h('p', {}, 'Records what the keyboard sends the editor, to find out why a key does not do what it should.'),
+        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
+    });
+    if (what === undefined) return;
+    await keyLogScreen();
+  }
+}
+
 async function keyLogScreen() {
   for (;;) {
     const act = await panel((sheet, close) => {
@@ -3792,7 +3841,7 @@ async function keyLogScreen() {
           h('button', { onclick: () => close('toggle') }, keyLogOn() ? 'Turn off' : 'Turn on'),
           h('button', { onclick: () => close('clear') }, 'Clear'),
           h('button', { class: 'primary', onclick: () => close('copy') }, 'Copy'),
-          h('button', { onclick: () => close(undefined) }, 'Close')));
+          h('button', { onclick: () => close(undefined) }, '‹ Debugging')));
     });
     if (act === 'toggle') config.update({ settings: { 'view.keyLog': String(!keyLogOn()) } });
     else if (act === 'clear') keyLines.length = 0;

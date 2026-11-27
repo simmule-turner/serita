@@ -57,21 +57,21 @@ To type C-c or C-x, use Ctrl on the key row and then the letter; a keyboard's ow
 
 Above the mode line, a row of keys stands in for a keyboard: Meta, Ctrl and Shift apply to the next key, and a letter typed on the on-screen keyboard after Ctrl or Meta is the key chord, for example Ctrl then n is C-n. Tab and the arrows follow; the arrows move as C-p, C-n, C-b and C-f do, and with Shift they extend the selection. The keyboard button shows or hides the on-screen keyboard. Float turns the row into a panel you can drag; Dock puts it back. Pressing a key never opens the keyboard.
 
-Settings, Key event log, records what the keyboard sends and which key chord Serita made of it. Turn it on, press the keys in the editor, then open it again to read the log, Copy it or Clear it; it helps when a key does not do what it should.
+Settings, Debugging, Key event log, records what the keyboard sends and which key chord Serita made of it. Turn it on, press the keys in the editor, then open it again to read the log, Copy it or Clear it; it helps when a key does not do what it should.
 
 Settings, Emacs, Hide leading stars, shows only the last star of each heading. Indent files on open turns on org-indent-mode: each level is indented two columns and the text under a heading lines up with the heading's text, with nothing added to the file. A file can ask for it with ~#+STARTUP: indent~ or refuse with ~#+STARTUP: noindent~, and the palette command Indent mode toggles it for the file you are in. Both apply to the Text view; the Outline view always shows every star and its own indentation.
 
 ** Tool row
-Under the tabs, one row of buttons: undo, redo, line numbers, wrap, smaller text, larger text, and Line. Settings turns the row on or off for each view. In the Outline view the row keeps undo, redo and the two size buttons. Line opens Lines and text: go to a line, select all, copy all, duplicate, delete (to the kill ring), move, indent and outdent the line. Typing within a second is one undo step; each structure edit is its own.
+Under the tabs, one row of buttons: undo, redo, line numbers, wrap, smaller text, larger text, and Line. Settings, Appearance turns the row on or off for each view. In the Outline view the row keeps undo, redo and the two size buttons. Line opens Lines and text: go to a line, select all, copy all, duplicate, delete (to the kill ring), move, indent and outdent the line. Typing within a second is one undo step; each structure edit is its own.
 
 ** Appearance
-Menu, Settings, Appearance: Theme (System, Light or Dark), Font (monospace by default, or another, or a font name from your device), Font size (12 to 32; A− and A+ change the same size) and Paragraph spacing (0 to 32 px, Outline view). Menus and buttons keep a fixed size.
+Menu, Settings, Appearance: Theme (System, Light or Dark), Font (monospace by default, or another, or a font name from your device), Font size (12 to 32; A− and A+ change the same size) and Paragraph spacing (0 to 32 px, Outline view), the Tool row of each view, and the Tables settings: Wrap table cells, Table width and Stripe table rows. Menus and buttons keep a fixed size.
 
 ** Tag column
 Menu, Settings, Emacs, Tag column. A negative number ends the heading line at that column (-77 by default); a positive number starts the tags there; 0 puts them one space after the title.
 
 ** Restore
-Open files, the current tab, folds, the view and unsaved edits come back when you reopen Serita. Settings, Restore open files on start turns it off.
+Open files, the current tab, folds, the view and unsaved edits come back when you reopen Serita. Settings, Emacs, Restore open files on start turns it off.
 
 ** Back
 The arrow at the bottom left of the text goes back to where you came from: a place you left by tapping a tab, a row of the agenda, Go to line, a search, or M-< and M->. After an agenda row it returns to the agenda. Hold it to see where it would go. C-x C-SPC does the same.
@@ -185,6 +185,8 @@ Settings, Emacs, Archive marks done (nil, t or a keyword such as CANCELLED) mark
 
 ** Settings
 Menu, then Settings, sets up GitHub (owner, repository, branch, token) and WebDAV (address, user, password). They are kept in this browser, on this device.
+
+Emacs holds the settings that are Emacs's own, in sections: Tasks and logging, Agenda and calendar, Capture, refile and archive, Links and footnotes, Keys and editing, and Startup. Type in the search field to find a setting by its name, its Emacs variable (org-log) or a related word (shift arrow); the sections that have a match stay as headings. When a task is done, When rescheduled and When a deadline changes are each Off, Time or Note. Shift-selection lets S-left and S-right select text where Org has no use for them. Appearance holds the look of the app; Debugging holds the Key event log.
 
 Export writes an Org file of your settings. Give it a passphrase to encrypt the tokens and passwords; without one they are written in plain text, so keep the file private. Import reads such a file on another device and replaces its settings.
 
