@@ -33,7 +33,7 @@ import { filterActive, filterLabel, noFilter, parseEffort, parseSigned } from '.
 import { holidayList } from '../core/holidays.js';
 import { startReplace } from '../core/replace.js';
 import { sparseTree } from '../core/sparse.js';
-import { addLogEntry, completeRepeat, dropClosed, formatStamp, logLine, planningStamp, setClosed, insertStamp, parseDate, setPlanning, shiftStamp, stampAt } from '../core/timestamp.js';
+import { timePrefill, addLogEntry, completeRepeat, dropClosed, formatStamp, logLine, planningStamp, setClosed, insertStamp, parseDate, setPlanning, shiftStamp, stampAt } from '../core/timestamp.js';
 import { createMinibuffer } from './ui/minibuffer.js';
 import { duplicateLine, indentLine, killLine, killWholeLine, lineInfo, lineStart, moveLine } from '../core/lines.js';
 import { createKillRing } from '../core/killring.js';
@@ -2917,9 +2917,9 @@ async function planHere(keyword, label, said, hd = enclosingHead()) {
   if (!hd) { message('Not at a heading'); return; }
   // the date already set is the default of the prompt, as org-read-date takes it
   const set = /(\d{4})-(\d\d)-(\d\d)/.exec(planningStamp(currentBuffer().text, hd.line, keyword) ?? '');
-  // a time that was set comes with it, as Emacs puts it in the minibuffer
-  const setTime = /\s(\d\d:\d\d(?:-\d\d:\d\d)?)/.exec(planningStamp(currentBuffer().text, hd.line, keyword) ?? '');
-  const stamp = await askStamp(label, true, false, set ? new Date(Date.UTC(+set[1], +set[2] - 1, +set[3])) : null, setTime ? setTime[1] : '');
+  // a time that was set comes with it, as Emacs puts it in the minibuffer (a range as its start and length)
+  const setTime = timePrefill(planningStamp(currentBuffer().text, hd.line, keyword));
+  const stamp = await askStamp(label, true, false, set ? new Date(Date.UTC(+set[1], +set[2] - 1, +set[3])) : null, setTime);
   if (stamp === null) return;
   // org-log-reschedule and org-log-redeadline: changing a date that was set leaves a line saying so
   const mode = logMode(keyword === 'SCHEDULED' ? 'org-log-reschedule' : 'org-log-redeadline');

@@ -84,7 +84,16 @@ export function parseDate(input, base, today = base) {
   // the time may stand anywhere among the words ("10:30 +1d" as well as "+1d 10:30")
   let timeFirst = false;
   const cut = () => { timeFirst = rest.slice(t.index + t[0].length).trim() !== '' && rest.slice(0, t.index).trim() === ''; rest = `${rest.slice(0, t.index)} ${rest.slice(t.index + t[0].length)}`.trim(); };
-  if (t) { time = hm(t[1], t[2], t[3]); until = `${two(hm(t[4], t[5], t[6])[0])}:${two(+t[5])}`; cut(); }
+  // 10:30+1 and 10:30+1:25: a start and how long it lasts (a single digit of hours, as Emacs reads it)
+  const dur = /(?:^|\s)(\d{1,2}):(\d\d)(am|pm)?\+(\d)(?::(\d\d))?(?![\ddwmy])/.exec(rest) ?? (/(?:^|\s)(\d{1,2})()(am|pm)\+(\d)(?::(\d\d))?(?![\ddwmy])/.exec(rest));
+  let durationUsed = false;
+  if (!t && dur) {
+    t = dur; durationUsed = true;
+    time = hm(dur[1], dur[2] || undefined, dur[3]);
+    const end = (time[0] * 60 + time[1] + +dur[4] * 60 + +(dur[5] ?? 0)) % 1440;
+    until = `${two(Math.floor(end / 60))}:${two(end % 60)}`;
+    cut();
+  } else if (t) { time = hm(t[1], t[2], t[3]); until = `${two(hm(t[4], t[5], t[6])[0])}:${two(+t[5])}`; cut(); }
   else if ((t = /(?:^|\s)(\d{1,2})(?::(\d\d))?(am|pm)(?=\s|$)/.exec(rest)) || (t = /(?:^|\s)(\d{1,2}):(\d\d)()(?=\s|$)/.exec(rest))) { time = hm(t[1], t[2], t[3] || undefined); cut(); }
   const b = parts(base);
   const month = (w) => (w.length >= 3 ? MONTH_NAMES.findIndex((x) => x.startsWith(w)) + 1 : 0);
@@ -128,6 +137,7 @@ export function parseDate(input, base, today = base) {
     else if ((m = /^(\d{1,2})\.(\d{1,2})$/.exec(w))) { d = +m[1]; mo = +m[2]; }
     else if (/^\d{4}$/.test(w)) y = +w;
     else if (/^\d{1,2}$/.test(w)) { if (!iso) d = +w; }
+    else if (durationUsed && (m = /^[.,](\d{1,2})$/.exec(w))) { if (!iso) d = +m[1]; } // what is left of 10:30+1.5 once +1 is the length: the 5 is a day
     else if (month(w)) mo = month(w);
     else if (weekday(w) >= 0) wd = weekday(w);
   }
@@ -276,4 +286,15 @@ export function planningStamp(text, line, keyword) {
   const l = splitLines(text)[line + 1]?.text ?? '';
   const m = new RegExp(`${keyword}:\\s*[<[]([^>\\]]*)[>\\]]`).exec(/^\s*(?:CLOSED|DEADLINE|SCHEDULED):/.test(l) ? l : '');
   return m ? `[${m[1]}]` : null;
+}
+
+/** What Emacs puts in the date prompt for a stamp that has a time: "10:30", or for a range the start and its length, "10:30+1" or "10:30+1:25". */
+export function timePrefill(stamp) {
+  const m = /\s(\d\d):(\d\d)(?:-(\d\d):(\d\d))?/.exec(stamp ?? '');
+  if (!m) return '';
+  if (m[3] === undefined) return `${m[1]}:${m[2]}`;
+  const diff = (+m[3] * 60 + +m[4]) - (+m[1] * 60 + +m[2]);
+  const h = Math.trunc(diff / 60);
+  const min = Math.abs(diff % 60);
+  return `${m[1]}:${m[2]}+${min === 0 ? h : `${h}:${String(min).padStart(2, '0')}`}`;
 }

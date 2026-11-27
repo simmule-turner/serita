@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.17
+Times with a length at the date prompt, as Emacs reads them: 10:30+1 means 10:30-11:30, 10:30+1:25 means 10:30-11:55, and a task whose time is a range starts the prompt with its start and length (10:30+1:15). A time followed by a relative date (10:30 +1d) still keeps the date and time, since Emacs reads a relative date only at the start.
+
 * 0.11.16
 Closer to Emacs with the keys. S-left and S-right off a heading, a timestamp and a list item select nothing and say how to turn shift-selection on, the org-support-shift-select setting (t in the settings file); a prefix such as C-2 stays in the echo area while C-c waits for its next key.
 
