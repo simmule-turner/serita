@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { parseDate } from '../core/timestamp.js';
 
-// Cases from Emacs 30.1 (conformance v0.1.76, dp-*): the date a prompt gives when it starts from the date already set; today was 2026-11-27.
+// Cases from Emacs 30.1 (conformance v0.1.76 dp-* and v0.1.77 dt-*): the date a prompt gives when it starts from the date already set; today was 2026-11-27.
 const cases = JSON.parse(fs.readFileSync(new URL('./fixtures/emacs-dateprompt.json', import.meta.url), 'utf8'));
 const day = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(Date.UTC(y, m - 1, d)); };
 

@@ -71,6 +71,12 @@ await at('* H\n- one\n    - A child item\n    - Another child\n', 3, 2);
 await page.keyboard.press('Shift+ArrowRight');
 ok((await text()) === '* H\n- one\n    + A child item\n    + Another child\n' && (await page.evaluate(() => { const e = document.getElementById('editor'); return e.selectionStart === e.selectionEnd; })), 'S-RIGHT in the indent of a nested item changes its bullet and does not select');
 
+// The same from the key row: its Shift and → buttons on the nested item
+await at('* H\n- one\n    - A child item\n    - Another child\n', 3, 0);
+await page.locator('#keyrow button', { hasText: 'Shift' }).click();
+await page.locator('#keyrow button', { hasText: '→' }).click();
+ok((await text()) === '* H\n- one\n    + A child item\n    + Another child\n' && (await page.evaluate(() => { const e = document.getElementById('editor'); return e.selectionStart === e.selectionEnd; })), 'the key row Shift and → change the bullet of a nested item and do not select');
+
 // Bold over two lines shows its closing marker once in the Outline view
 await at('* H\nsome *bold\ntext* end\n', 1);
 await page.click('#btn-view'); await sheet.getByRole('button', { name: 'Outline', exact: true }).click();

@@ -139,11 +139,15 @@ export function insertItem(text, line, col, { box = false } = {}) {
   return { text: join(out), line: at, col: tag ? m.indent + m.bullet.length + own.space.length : m.textStart };
 }
 
-/** The bullet after `bullet` when cycling forward (or back) through BULLETS. */
-export const nextBullet = (bullet, back = false) => {
-  const kind = /\d/.test(bullet) ? (bullet.endsWith('.') ? '1.' : '1)') : bullet === '*' ? '-' : bullet;
-  const i = BULLETS.indexOf(kind);
-  return BULLETS[(i + (back ? BULLETS.length - 1 : 1)) % BULLETS.length];
+/** The bullet kinds a list can cycle through: an indented list may also use *, a list at the left margin may not. */
+const kindsFor = (indent) => (indent > 0 ? ['-', '+', '*', '1.', '1)'] : BULLETS);
+
+/** The bullet after `bullet` when cycling forward (or back) through the kinds of a list at `indent`. */
+export const nextBullet = (bullet, back = false, indent = 0) => {
+  const kinds = kindsFor(indent);
+  const kind = /\d/.test(bullet) ? (bullet.endsWith('.') ? '1.' : '1)') : bullet;
+  const i = Math.max(0, kinds.indexOf(kind));
+  return kinds[(i + (back ? kinds.length - 1 : 1)) % kinds.length];
 };
 
 /** Makes the text lines in a region (0-based, `from` up to `to`) items; blank lines stay. */
@@ -169,9 +173,8 @@ export function ctrlCMinus(text, line, col, { region = null, which } = {}) {
   const it = itemAt(a, line);
   if (it) {
     const own = info(splitLines(text)[it.line].text);
-    // an indented list may also use * as its bullet, so a number counts through five kinds there and four at the left margin
-    const kinds = own.indent > 0 ? ['-', '+', '*', '1.', '1)'] : BULLETS;
-    const style = typeof which === 'number' ? kinds[((which % kinds.length) + kinds.length) % kinds.length] : nextBullet(own.bullet, which === 'previous');
+    const kinds = kindsFor(own.indent);
+    const style = typeof which === 'number' ? kinds[((which % kinds.length) + kinds.length) % kinds.length] : nextBullet(own.bullet, which === 'previous', own.indent);
     const lines = repairLines(text, it.line, style);
     const old = splitLines(text)[line].text;
     const mine = info(old);

@@ -246,5 +246,96 @@
   "col": 4,
   "output": "* H\n+ one\n+ two\n",
   "tail": "((ok self 2 4 \"+ one\") nil)"
+ },
+ {
+  "id": "li4-sub-next",
+  "input": "* H\n- one\n  + a\n  + b\n",
+  "line": 3,
+  "col": 4,
+  "output": "* H\n- one\n  * a\n  * b\n",
+  "tail": "",
+  "keys": [
+   "org-ctrl-c-minus"
+  ]
+ },
+ {
+  "id": "li4-sub-next2",
+  "input": "* H\n- one\n  + a\n  + b\n",
+  "line": 3,
+  "col": 4,
+  "output": "* H\n- one\n  1. a\n  2. b\n",
+  "tail": "",
+  "keys": [
+   "org-ctrl-c-minus",
+   "org-ctrl-c-minus"
+  ]
+ },
+ {
+  "id": "li4-sub-ord",
+  "input": "* H\n- one\n  1) a\n  2) b\n",
+  "line": 3,
+  "col": 4,
+  "output": "* H\n- one\n  - a\n  - b\n",
+  "tail": "",
+  "keys": [
+   "org-shiftright"
+  ]
+ },
+ {
+  "id": "li4-sub-prev",
+  "input": "* H\n- one\n  + a\n  + b\n",
+  "line": 3,
+  "col": 4,
+  "output": "* H\n- one\n  - a\n  - b\n",
+  "tail": "",
+  "keys": [
+   "org-shiftleft"
+  ]
+ },
+ {
+  "id": "li4-sub-prev2",
+  "input": "* H\n- one\n  - a\n  - b\n",
+  "line": 3,
+  "col": 4,
+  "output": "* H\n- one\n  1) a\n  2) b\n",
+  "tail": "",
+  "keys": [
+   "org-shiftleft"
+  ]
+ },
+ {
+  "id": "li4-sub-sright3",
+  "input": "* H\n- one\n  - a\n  - b\n",
+  "line": 3,
+  "col": 4,
+  "output": "* H\n- one\n  1. a\n  2. b\n",
+  "tail": "",
+  "keys": [
+   "org-shiftright",
+   "org-shiftright",
+   "org-shiftright"
+  ]
+ },
+ {
+  "id": "li4-sub-star",
+  "input": "* H\n- one\n  * a\n  * b\n",
+  "line": 3,
+  "col": 4,
+  "output": "* H\n- one\n  1. a\n  2. b\n",
+  "tail": "",
+  "keys": [
+   "org-ctrl-c-minus"
+  ]
+ },
+ {
+  "id": "li4-top-ord",
+  "input": "* H\n1) a\n2) b\n",
+  "line": 2,
+  "col": 3,
+  "output": "* H\n- a\n- b\n",
+  "tail": "",
+  "keys": [
+   "org-shiftright"
+  ]
  }
 ]

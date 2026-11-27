@@ -3838,7 +3838,7 @@ const keyRow = createKeyRow({
     }
     const chord = chordOf({ key, ...mods });
     // Shift and an arrow from the key row: on a heading, or up and down on a timestamp, they are the Org keys, as from a keyboard.
-    if (plainArrow && !(HEADING_ONLY.has(chord) && (kindAtCursor().kind === 'heading' || stampAt(currentBuffer().text, cursorOffset())))) { moveCursor(key, true); return; }
+    if (plainArrow && !(HEADING_ONLY.has(chord) && (kindAtCursor().kind === 'heading' || stampAt(currentBuffer().text, cursorOffset()) || ((chord === 'S-<left>' || chord === 'S-<right>') && lists.onItemLine(currentBuffer().text, listPoint().line))))) { moveCursor(key, true); return; }
     if (chord) runChord(chord, { preventDefault() {} }, true);
   },
 });

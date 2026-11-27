@@ -80,9 +80,12 @@ export function parseDate(input, base, today = base) {
   let until = null;
   // 14:30, 2pm, 9:05pm, and a range 10:00-11:30
   const hm = (h, m, ap) => [ap ? (+h % 12) + (ap === 'pm' ? 12 : 0) : +h, +(m ?? 0)];
-  let t = /(?:^|\s)(\d{1,2}):(\d\d)(am|pm)?-(\d{1,2}):(\d\d)(am|pm)?$/.exec(rest);
-  if (t) { time = hm(t[1], t[2], t[3]); until = `${two(hm(t[4], t[5], t[6])[0])}:${two(+t[5])}`; rest = rest.slice(0, t.index).trim(); }
-  else if ((t = /(?:^|\s)(\d{1,2})(?::(\d\d))?(am|pm)$/.exec(rest)) || (t = /(?:^|\s)(\d{1,2}):(\d\d)()$/.exec(rest))) { time = hm(t[1], t[2], t[3] || undefined); rest = rest.slice(0, t.index).trim(); }
+  let t = /(?:^|\s)(\d{1,2}):(\d\d)(am|pm)?-(\d{1,2}):(\d\d)(am|pm)?(?=\s|$)/.exec(rest);
+  // the time may stand anywhere among the words ("10:30 +1d" as well as "+1d 10:30")
+  let timeFirst = false;
+  const cut = () => { timeFirst = rest.slice(t.index + t[0].length).trim() !== '' && rest.slice(0, t.index).trim() === ''; rest = `${rest.slice(0, t.index)} ${rest.slice(t.index + t[0].length)}`.trim(); };
+  if (t) { time = hm(t[1], t[2], t[3]); until = `${two(hm(t[4], t[5], t[6])[0])}:${two(+t[5])}`; cut(); }
+  else if ((t = /(?:^|\s)(\d{1,2})(?::(\d\d))?(am|pm)(?=\s|$)/.exec(rest)) || (t = /(?:^|\s)(\d{1,2}):(\d\d)()(?=\s|$)/.exec(rest))) { time = hm(t[1], t[2], t[3] || undefined); cut(); }
   const b = parts(base);
   const month = (w) => (w.length >= 3 ? MONTH_NAMES.findIndex((x) => x.startsWith(w)) + 1 : 0);
   const weekday = (w) => (w.length >= 3 ? WEEKDAYS.findIndex((x) => x.startsWith(w)) : -1);
@@ -98,6 +101,8 @@ export function parseDate(input, base, today = base) {
   // Words Org does not know (tomorrow, next, now) are skipped, so a prompt with only those keeps the default date.
   for (const w of rest.split(/\s+/).filter(Boolean)) {
     if (w === '.' || w === 'today') continue;
+    // a relative date has to come first: after a leading time ("10:30 +1d") Emacs ignores it
+    if (timeFirst && /^[-+]/.test(w)) continue;
     if ((m = /^\+{1,2}(\d*)([dwmy]|[a-z]{3,})?$/.exec(w)) || (m = /^(-)(\d*)([dwmy]|[a-z]{3,})?$/.exec(w))) {
       const minus = w[0] === '-';
       const from = !minus && w.startsWith('++') ? base : today;

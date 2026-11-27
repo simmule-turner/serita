@@ -229,7 +229,7 @@ A separate repository holds questions (case files written by us) and results rec
 - Written from: the Org manual's chapter on plain lists (items, bullets, numbering, checkboxes, sorting) and observed Emacs 30.1 results with Org 9.7.11 for M-RET, M-S-RET, C-c -, org-toggle-item, org-toggle-heading, org-toggle-checkbox with prefix arguments, org-sort-list, list repair, item moves and indents, and org-paste-subtree with prefix arguments (conformance v0.1.73). No other project's code was consulted.
 
 ### `test/lists3.test.js`, `test/dateprompt.test.js`, `test/fixtures/emacs-lists3.json`, `test/fixtures/emacs-dateprompt.json`
-- Written from observed Emacs 30.1 results with Org 9.7.11 for C-c - with prefix arguments, S-left and S-right on item lines, and the date a prompt gives when it starts from a date already set (conformance v0.1.76: li3-*, dp-*); no Emacs or Org source was read.
+- Written from observed Emacs 30.1 results with Org 9.7.11 for C-c - with prefix arguments, S-left and S-right on item lines, and the date a prompt gives when it starts from a date already set (conformance v0.1.76 and v0.1.77: li3-*, li4-*, dp-*, dt-*); no Emacs or Org source was read.
 
 ### `test/logbook.test.js`, `test/browser/logging.mjs`, `test/fixtures/emacs-logging.json`
 - Logging, radio targets, multi-line emphasis, typed dates and list details were written from observed Emacs 30.1 results (conformance v0.1.74 and v0.1.75: lg-*, rt-*, me-*, dq-*, li2-*); no Emacs or Org source was read.
