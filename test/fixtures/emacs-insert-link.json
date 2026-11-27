@@ -1,0 +1,1083 @@
+[
+ {
+  "id": "ij-abbrev-full",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "https://github.com/foo",
+   "d"
+  ],
+  "dir": "/tmp",
+  "text": "[[https://github.com/foo][d]]one\n",
+  "point": 29,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-abbrev",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "gh:foo",
+   "d"
+  ],
+  "dir": "/tmp",
+  "text": "[[gh:foo][d]]one\n",
+  "point": 13,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-bare",
+  "input": "one two three\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "foo.org",
+   ""
+  ],
+  "dir": "/tmp",
+  "text": "[[foo.org]]one two three\n",
+  "point": 11,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-cid",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "#cid",
+   "C"
+  ],
+  "dir": "/tmp",
+  "text": "[[#cid][C]]one\n",
+  "point": 11,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-desc-bracket-end",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "http://a.b",
+   "a]"
+  ],
+  "dir": "/tmp",
+  "text": "[[http://a.b][a]​]]one\n",
+  "point": 19,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-desc-eq",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "http://a.b",
+   "http://a.b"
+  ],
+  "dir": "/tmp",
+  "text": "[[http://a.b][http://a.b]]one\n",
+  "point": 26,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-desc-ws",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "http://a.b",
+   "  d  "
+  ],
+  "dir": "/tmp",
+  "text": "[[http://a.b][d]]one\n",
+  "point": 17,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-edit-del",
+  "input": "a [[http://old.x][od]] b\n",
+  "line": 0,
+  "col": 6,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "",
+   ""
+  ],
+  "dir": "/tmp",
+  "text": "a  b\n",
+  "point": null,
+  "error": "Empty link",
+  "prompts": [
+   [
+    "read-string",
+    "Link: ",
+    "http://old.x"
+   ],
+   [
+    "read-string",
+    "Description: ",
+    "od"
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-edit-desc-empty",
+  "input": "a [[http://old.x][od]] b\n",
+  "line": 0,
+  "col": 6,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "http://old.x",
+   ""
+  ],
+  "dir": "/tmp",
+  "text": "a [[http://old.x]] b\n",
+  "point": 18,
+  "error": null,
+  "prompts": [
+   [
+    "read-string",
+    "Link: ",
+    "http://old.x"
+   ],
+   [
+    "read-string",
+    "Description: ",
+    "od"
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-edit-keep",
+  "input": "a [[http://old.x][od]] b\n",
+  "line": 0,
+  "col": 6,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "",
+   ""
+  ],
+  "dir": "/tmp",
+  "text": "a  b\n",
+  "point": null,
+  "error": "Empty link",
+  "prompts": [
+   [
+    "read-string",
+    "Link: ",
+    "http://old.x"
+   ],
+   [
+    "read-string",
+    "Description: ",
+    "od"
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-edit-nodesc",
+  "input": "a [[http://old.x]] b\n",
+  "line": 0,
+  "col": 6,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "http://new.y",
+   "nd"
+  ],
+  "dir": "/tmp",
+  "text": "a [[http://new.y][nd]] b\n",
+  "point": 22,
+  "error": null,
+  "prompts": [
+   [
+    "read-string",
+    "Link: ",
+    "http://old.x"
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-edit",
+  "input": "a [[http://old.x][od]] b\n",
+  "line": 0,
+  "col": 6,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "http://new.y",
+   "nd"
+  ],
+  "dir": "/tmp",
+  "text": "a [[http://new.y][nd]] b\n",
+  "point": 22,
+  "error": null,
+  "prompts": [
+   [
+    "read-string",
+    "Link: ",
+    "http://old.x"
+   ],
+   [
+    "read-string",
+    "Description: ",
+    "od"
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-end-word",
+  "input": "word\n",
+  "line": 0,
+  "col": 4,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "http://x.y",
+   "d"
+  ],
+  "dir": "/tmp",
+  "text": "word[[http://x.y][d]]\n",
+  "point": 21,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-escape",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "http://a.b/[x]",
+   "a [b] c"
+  ],
+  "dir": "/tmp",
+  "text": "[[http://a.b/\\[x\\]][a [b] c]]one\n",
+  "point": 29,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-file-path",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "file:/tmp/x/foo.org",
+   "d"
+  ],
+  "dir": "/tmp",
+  "text": "[[file:x/foo.org][d]]one\n",
+  "point": 21,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-file-rel",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "file:./foo.org",
+   "d"
+  ],
+  "dir": "/tmp",
+  "text": "[[file:foo.org][d]]one\n",
+  "point": 19,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-file",
+  "input": "one two three\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "file:foo.org",
+   "Foo"
+  ],
+  "dir": "/tmp",
+  "text": "[[file:foo.org][Foo]]one two three\n",
+  "point": 21,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-fn-link",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "fn:1",
+   "d"
+  ],
+  "dir": "/tmp",
+  "text": "[[fn:1][d]]one\n",
+  "point": 11,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-heading",
+  "input": "* Head\n",
+  "line": 0,
+  "col": 3,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "http://x.y",
+   "d"
+  ],
+  "dir": "/tmp",
+  "text": "* H[[http://x.y][d]]ead\n",
+  "point": 20,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-http",
+  "input": "one two three\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "http://x.y",
+   "d"
+  ],
+  "dir": "/tmp",
+  "text": "[[http://x.y][d]]one two three\n",
+  "point": 17,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-in-word",
+  "input": "word\n",
+  "line": 0,
+  "col": 2,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "http://x.y",
+   "d"
+  ],
+  "dir": "/tmp",
+  "text": "wo[[http://x.y][d]]rd\n",
+  "point": 19,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-mailto",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "mailto:a@b.c",
+   "Mail"
+  ],
+  "dir": "/tmp",
+  "text": "[[mailto:a@b.c][Mail]]one\n",
+  "point": 22,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-no-scheme",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "www.a.b",
+   ""
+  ],
+  "dir": "/tmp",
+  "text": "[[www.a.b]]one\n",
+  "point": 11,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-nodesc",
+  "input": "one two three\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "http://x.y",
+   ""
+  ],
+  "dir": "/tmp",
+  "text": "[[http://x.y]]one two three\n",
+  "point": 14,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-prefix-abs",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": "4",
+  "answers": [
+   "/tmp/foo.org",
+   "d"
+  ],
+  "dir": "/tmp",
+  "text": "[[file:foo.org][d]]one\n",
+  "point": 19,
+  "error": null,
+  "prompts": [
+   [
+    "read-file-name",
+    "File: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-prefix",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": "4",
+  "answers": [
+   "file:foo.org",
+   "d"
+  ],
+  "dir": "/tmp",
+  "text": "[[file:file:foo.org][d]]one\n",
+  "point": 24,
+  "error": null,
+  "prompts": [
+   [
+    "read-file-name",
+    "File: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-prefix2",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": "16",
+  "answers": [
+   "foo.org",
+   "d"
+  ],
+  "dir": "/tmp",
+  "text": "[[file:/tmp/foo.org][d]]one\n",
+  "point": 24,
+  "error": null,
+  "prompts": [
+   [
+    "read-file-name",
+    "File: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-region-def",
+  "input": "one two three\n",
+  "line": 0,
+  "col": 0,
+  "region": {
+   "from": 4,
+   "to": 7
+  },
+  "prefix": null,
+  "answers": [
+   "http://x.y",
+   ""
+  ],
+  "dir": "/tmp",
+  "text": "one [[http://x.y]] three\n",
+  "point": 18,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    "two"
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-region",
+  "input": "one two three\n",
+  "line": 0,
+  "col": 0,
+  "region": {
+   "from": 4,
+   "to": 7
+  },
+  "prefix": null,
+  "answers": [
+   "http://x.y",
+   "d"
+  ],
+  "dir": "/tmp",
+  "text": "one [[http://x.y][d]] three\n",
+  "point": 21,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    "two"
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-star",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "*Head",
+   "H"
+  ],
+  "dir": "/tmp",
+  "text": "[[*Head][H]]one\n",
+  "point": 12,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-stored-desc",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "file:/tmp/x.org::*Head",
+   "Mine"
+  ],
+  "dir": "/tmp",
+  "text": "[[file:x.org::*Head][Mine]]one\n",
+  "point": 27,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link (default file:/tmp/x.org::*Head): ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    "Head"
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-stored-empty",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "",
+   ""
+  ],
+  "dir": "/tmp",
+  "text": "one\n",
+  "point": null,
+  "error": "No link selected",
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link (default file:/tmp/x.org::*Head): ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-stored-keep-t",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "file:/tmp/x.org::*Head",
+   ""
+  ],
+  "dir": "/tmp",
+  "text": "[[file:x.org::*Head]]one\n",
+  "point": 21,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link (default file:/tmp/x.org::*Head): ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    "Head"
+   ]
+  ],
+  "stored": "((\"file:/tmp/x.org::*Head\" \"Head\"))",
+  "keep": false
+ },
+ {
+  "id": "ij-stored-keep",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "file:/tmp/x.org::*Head",
+   ""
+  ],
+  "dir": "/tmp",
+  "text": "[[file:x.org::*Head]]one\n",
+  "point": 21,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link (default file:/tmp/x.org::*Head): ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    "Head"
+   ]
+  ],
+  "stored": "((\"http://z\" \"Z\"))",
+  "keep": false
+ },
+ {
+  "id": "ij-stored",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "file:/tmp/x.org::*Head",
+   ""
+  ],
+  "dir": "/tmp",
+  "text": "[[file:x.org::*Head]]one\n",
+  "point": 21,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link (default file:/tmp/x.org::*Head): ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    "Head"
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ },
+ {
+  "id": "ij-trailing-ws",
+  "input": "one\n",
+  "line": 0,
+  "col": 0,
+  "region": null,
+  "prefix": null,
+  "answers": [
+   "http://a.b ",
+   "d"
+  ],
+  "dir": "/tmp",
+  "text": "[[http://a.b ][d]]one\n",
+  "point": 18,
+  "error": null,
+  "prompts": [
+   [
+    "org-completing-read",
+    "Insert link: ",
+    null
+   ],
+   [
+    "read-string",
+    "Description: ",
+    null
+   ]
+  ],
+  "stored": null,
+  "keep": false
+ }
+]

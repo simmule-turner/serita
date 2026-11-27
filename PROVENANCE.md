@@ -218,3 +218,9 @@ A separate repository holds questions (case files written by us) and results rec
 
 ### `core/extra-menu.js`, `test/extra-menu.test.js`
 - Written from: the Emacs Lisp manual's description of easy-menu-define (menu items as vectors with :help, :enable and :visible, the "---" separator, submenus as lists) and observed Emacs 30.1 results with Org 9.7.11 for org-capture-select-template (groups, keys, order) and org-find-olp (conformance v0.1.61 to v0.1.63). No other project's code was consulted.
+
+### `core/links.js`, `core/footnote.js`, `core/emphasize.js`, `core/emphasis.js`, `app/ui/inline.js`, `app/ui/linkcmds.js`, `test/links.test.js`, `test/footnote.test.js`, `test/emphasize.test.js`, `test/emphasis.test.js`, `test/insert-link.test.js`, `test/browser/links.mjs`, `test/fixtures/emacs-objects.json`, `test/fixtures/emacs-entry-links.json`, `test/fixtures/emacs-insert-link.json`, `test/fixtures/emacs-footnote.json`, `test/fixtures/emacs-emphasize.json`, `test/fixtures/emacs-emphasis.json`
+- Written from: the Org manual's chapters on hyperlinks (link formats, internal links, search options, abbreviations, handling links), footnotes and emphasis markup, and observed Emacs 30.1 results with Org 9.7.11 for link parsing, org-open-at-point, org-store-link, org-insert-link, org-footnote-action and org-emphasize (conformance v0.1.70 to v0.1.72). No other project's code was consulted, and no Emacs or Org source was read.
+
+### `test/datetree2.test.js`, `test/recalc-marks.test.js`, `test/fixtures/emacs-datetree2.json`, `test/fixtures/emacs-recalc-marks.json`
+- Written from: the Org manual's description of date and week trees and of recalculation marks, and observed Emacs 30.1 results with Org 9.7.11 for ISO-year week trees, month trees, prompted dates, and which rows a recalculation covers (conformance v0.1.68 and v0.1.69). No other project's code was consulted.

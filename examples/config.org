@@ -58,6 +58,8 @@
 #+end_src
 ** Logging
 org-log-into-drawer is a drawer name such as LOGBOOK; org-log-repeat is on unless set to nil, or note to ask for a note too.
+** Links and footnotes
+org-link-abbrev-alist is a list of (name . replacement) pairs; %s stands for the rest of the link: ~(setq org-link-abbrev-alist '(("gh" . "https://github.com/%s")))~. org-link-search-must-match-exact-headline is query-to-create (offer to make the heading), t or nil; org-link-keep-stored-after-insertion keeps a stored link after C-c C-l uses it; org-id-link-to-org-use-id is nil, t (add an :ID: when missing) or use-existing. org-footnote-auto-label is t, confirm or nil; org-footnote-section is the heading for definitions (nil for none); org-footnote-define-inline and org-footnote-auto-adjust are t or nil.
 ** Archive and refile options
 org-archive-mark-done is nil, t or a done keyword; org-archive-save-context-info lists the properties kept on an archived entry; org-refile-allow-creating-parent-nodes is nil, confirm or t; org-agenda-use-time-grid is on unless set to nil.
 ** Stars and indentation
@@ -100,7 +102,7 @@ An ~easy-menu-define~ form in the init file is a menu behind the ☰ button at t
 #+end_src
 
 ** Keys of the settings above
-org-agenda-files, org-capture-templates, org-refile-settings, org-agenda-prefix-settings, org-archive-location, org-log-into-drawer, org-log-repeat, org-archive-mark-done, org-archive-save-context-info, org-refile-allow-creating-parent-nodes, org-agenda-use-time-grid, org-agenda-include-diary, diary-file, calendar-date-style, calendar-holidays, holiday-local-holidays, diary-show-holidays-flag, org-contacts-files, org-contacts-birthday-property, org-hide-leading-stars, org-startup-indented, org-table-widget-wrap-columns, org-table-widget-max-width-fraction, org-table-widget-zebra-stripe
+org-agenda-files, org-capture-templates, org-refile-settings, org-agenda-prefix-settings, org-archive-location, org-log-into-drawer, org-log-repeat, org-link-abbrev-alist, org-link-search-must-match-exact-headline, org-link-keep-stored-after-insertion, org-id-link-to-org-use-id, org-footnote-auto-label, org-footnote-section, org-footnote-define-inline, org-footnote-auto-adjust, org-archive-mark-done, org-archive-save-context-info, org-refile-allow-creating-parent-nodes, org-agenda-use-time-grid, org-agenda-include-diary, diary-file, calendar-date-style, calendar-holidays, holiday-local-holidays, diary-show-holidays-flag, org-contacts-files, org-contacts-birthday-property, org-hide-leading-stars, org-startup-indented, org-table-widget-wrap-columns, org-table-widget-max-width-fraction, org-table-widget-zebra-stripe
 
 ** Local holidays
 Settings, Emacs, Local holidays takes forms like these:

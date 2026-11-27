@@ -25,13 +25,12 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Unresolved in Emacs batch results: TAB on an open drawer line (the first TAB changes nothing, the second folds it), and C-c , SPC, which fails in batch; compare in an interactive Emacs.
 - Search: C-s with the context of the view.
 - What Emacs does with the folds a search opened when the search is accepted (this build leaves them open and closes them on cancel).
-- The heading title popup's three buttons, which insert at the cursor: footnote (A with a superscript 1), timer (stopwatch), and timestamp (calendar: C-c ., C-c !, C-u C-c ., S-up and S-down change it). They arrive with their features: timestamps and timers in the dates phase, footnotes in the markup phase.
+- The heading title popup's three buttons, which insert at the cursor: footnote (A with a superscript 1), timer (stopwatch), and timestamp (calendar: C-c ., C-c !, C-u C-c ., S-up and S-down change it). They arrive with their features: timestamps and timers in the dates phase; the footnote command (C-c C-x f) exists, its button does not.
 
 * Later: init file
 - Settings an init file can set that Serita keeps but does not use yet: org-weather-format, calendar-latitude and calendar-longitude, calendar-time-display-form, display-time-mode, org-babel-load-languages, org-log-done, org-startup-truncated, org-startup-with-inline-images, org-use-sub-superscripts, display-line-numbers-mode.
 
 * Later: tables
-- The recalculation marks # and *, which choose the rows a recalculation covers (C-# only sets them today).
 - Sorting a table with a function of your own (lambda or any Lisp function), which needs the Lisp interpreter; the built-in names work.
 - The rest of the universal argument: C-u C-c C-t (a state-change note), a number with TAB (go up to that level), C-2 and C-4 with C-c C-w, and C-u C-c C-x C-a (archive the finished trees).
 
@@ -53,3 +52,10 @@ Planned work only. Phase order is in SPEC.md section 12.
 * Later: documentation
 - The Info manual, ~manual/*.org~, one file per chapter, with the examples linked from it, and a test that every key and command in the app is described there.
 - Examples for the chapters not built yet (Babel in Lisp and JavaScript, an export sample) as each arrives.
+
+* Later: links and markup
+- Emphasis over a line break shows unstyled; Emacs finds it across line breaks.
+- The Text view underlines links and marks code, strike-through and underline, but cannot show bold or italic without moving letters; a later layer could.
+- Radio targets (<<<name>>>) and plain targets as link destinations, ~shell:~ links, and link types that need other programs (info, gnus, rmail, bbdb, w3m).
+- ~id:~ links look in the open files and the agenda files; Emacs keeps a database of every file it has seen.
+- Link completion of headings and files at the C-c C-l prompt.

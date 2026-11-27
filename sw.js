@@ -1,6 +1,6 @@
 // Offline cache. The version below must equal package.json's version (a test checks this),
 // so every release gets a new cache and replaces the old one.
-const VERSION = '0.11.7';
+const VERSION = '0.11.8';
 const CACHE = `serita-${VERSION}`;
 const FILES = [
   './',
@@ -25,7 +25,9 @@ const FILES = [
   'app/ui/config.js',
   'app/ui/dom.js',
   'app/ui/find.js',
+  'app/ui/inline.js',
   'app/ui/keyrow.js',
+  'app/ui/linkcmds.js',
   'app/ui/keys.js',
   'app/ui/history.js',
   'app/ui/minibuffer.js',
@@ -48,6 +50,7 @@ const FILES = [
   'examples/capture.org',
   'examples/agenda-birthdays.org',
   'examples/tables.org',
+  'examples/links.org',
   'examples/config.org',
   'examples/contacts.org',
   'examples/dates.org',
@@ -91,6 +94,10 @@ const FILES = [
   'core/orgmarkup.js',
   'core/entities.js',
   'core/datetree.js',
+  'core/emphasis.js',
+  'core/emphasize.js',
+  'core/footnote.js',
+  'core/links.js',
   'core/extra-menu.js',
   'core/elisp.js',
   'core/plot.js',

@@ -1,0 +1,318 @@
+[
+ {
+  "id": "en-affiliated",
+  "input": "* Alpha\n#+CAPTION: [[*Beta]]\n| a |\n* Beta\n",
+  "line": 1,
+  "col": 14,
+  "error": null,
+  "prompt": false,
+  "point": [
+   3,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-after-link-1",
+  "input": "* Alpha\ntext [[*Beta]] more\n* Beta\n",
+  "line": 1,
+  "col": 14,
+  "error": "No link found",
+  "prompt": false,
+  "point": null,
+  "evaluated": false
+ },
+ {
+  "id": "en-after-link-2",
+  "input": "* Alpha\ntext [[*Beta]] more\n* Beta\n",
+  "line": 1,
+  "col": 15,
+  "error": null,
+  "prompt": false,
+  "point": [
+   2,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-after-link-3",
+  "input": "* Alpha\ntext [[*Beta]] more\n* Beta\n",
+  "line": 1,
+  "col": 16,
+  "error": null,
+  "prompt": false,
+  "point": [
+   2,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-blank-line",
+  "input": "* Alpha\n[[*Beta]]\n\ntext\n* Beta\n",
+  "line": 2,
+  "col": 0,
+  "error": null,
+  "prompt": false,
+  "point": [
+   4,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-child",
+  "input": "* Alpha\ntext\n** Sub\n[[*Beta]]\n* Beta\n",
+  "line": 1,
+  "col": 2,
+  "error": null,
+  "prompt": false,
+  "point": [
+   1,
+   2
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-end-of-link-line",
+  "input": "* Alpha\ntext [[*Beta]]\n* Beta\n",
+  "line": 1,
+  "col": 14,
+  "error": "No link found",
+  "prompt": false,
+  "point": null,
+  "evaluated": false
+ },
+ {
+  "id": "en-head-two",
+  "input": "* Alpha\ntext [[*Beta]] and [[*Gamma]]\n* Beta\n* Gamma\n",
+  "line": 0,
+  "col": 2,
+  "error": null,
+  "prompt": true,
+  "point": [
+   2,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-head",
+  "input": "* Alpha\ntext [[*Beta]] only\n* Beta\n",
+  "line": 0,
+  "col": 2,
+  "error": null,
+  "prompt": false,
+  "point": [
+   2,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-in-comment",
+  "input": "* Alpha\n# [[*Beta]]\n* Beta\n",
+  "line": 1,
+  "col": 5,
+  "error": null,
+  "prompt": false,
+  "point": [
+   2,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-in-desc-link",
+  "input": "* Alpha\n[[http://a.b][x [[*Beta]] y]]\n* Beta\n",
+  "line": 1,
+  "col": 4,
+  "error": null,
+  "prompt": false,
+  "point": [
+   1,
+   4
+  ],
+  "evaluated": true
+ },
+ {
+  "id": "en-in-keyword",
+  "input": "#+TITLE: [[*Beta]]\n* Beta\n",
+  "line": 0,
+  "col": 12,
+  "error": null,
+  "prompt": false,
+  "point": [
+   1,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-in-list",
+  "input": "* Alpha\n- item [[*Beta]] x\n* Beta\n",
+  "line": 1,
+  "col": 3,
+  "error": null,
+  "prompt": false,
+  "point": [
+   2,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-in-src",
+  "input": "* Alpha\n#+begin_src c\n[[*Beta]]\n#+end_src\n* Beta\n",
+  "line": 2,
+  "col": 3,
+  "error": null,
+  "prompt": false,
+  "point": null,
+  "evaluated": true
+ },
+ {
+  "id": "en-in-table-cell",
+  "input": "* Alpha\n| a | [[*Beta]] |\n* Beta\n",
+  "line": 1,
+  "col": 8,
+  "error": null,
+  "prompt": false,
+  "point": [
+   2,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-in-table",
+  "input": "* Alpha\n| a | [[*Beta]] |\n* Beta\n",
+  "line": 1,
+  "col": 3,
+  "error": null,
+  "prompt": false,
+  "point": [
+   2,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-link-end-eol",
+  "input": "* Alpha\ntext [[*Beta]]\n* Beta\n",
+  "line": 1,
+  "col": 13,
+  "error": null,
+  "prompt": false,
+  "point": [
+   2,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-nested-emph",
+  "input": "* Alpha\n*[[*Beta]]*\n* Beta\n",
+  "line": 1,
+  "col": 4,
+  "error": null,
+  "prompt": false,
+  "point": [
+   2,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-none",
+  "input": "* Alpha\ntext\n* Beta\n",
+  "line": 1,
+  "col": 2,
+  "error": null,
+  "prompt": false,
+  "point": [
+   1,
+   2
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-one",
+  "input": "* Alpha\ntext [[*Beta]] only\n* Beta\n",
+  "line": 1,
+  "col": 2,
+  "error": null,
+  "prompt": false,
+  "point": [
+   2,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-planning",
+  "input": "* Alpha [[*Beta]] :t:\n* Beta\n",
+  "line": 0,
+  "col": 10,
+  "error": null,
+  "prompt": false,
+  "point": [
+   1,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-prev",
+  "input": "* Alpha\n[[*Beta]]\n* Beta\ntext\n",
+  "line": 3,
+  "col": 2,
+  "error": null,
+  "prompt": false,
+  "point": [
+   3,
+   2
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-prop",
+  "input": "* Alpha\n:PROPERTIES:\n:X: [[*Beta]]\n:END:\n* Beta\n",
+  "line": 2,
+  "col": 6,
+  "error": null,
+  "prompt": false,
+  "point": [
+   4,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-two-b",
+  "input": "* Alpha\ntext [[*Beta]] and [[*Gamma]]\n* Beta\n* Gamma\n",
+  "line": 1,
+  "col": 2,
+  "error": null,
+  "prompt": true,
+  "point": [
+   3,
+   0
+  ],
+  "evaluated": false
+ },
+ {
+  "id": "en-two",
+  "input": "* Alpha\ntext [[*Beta]] and [[*Gamma]]\n* Beta\n* Gamma\n",
+  "line": 1,
+  "col": 2,
+  "error": null,
+  "prompt": true,
+  "point": [
+   2,
+   0
+  ],
+  "evaluated": false
+ }
+]

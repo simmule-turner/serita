@@ -83,6 +83,15 @@ test('reveal opens the folds that hide a line', () => {
   assert.deepEqual(reveal(heads, { 1: 'all', 6: 'all' }, 4), { 6: 'all' });
 });
 
+test('reveal opens only the path to a line: siblings along the way stay folded', () => {
+  const doc = '* Top\n** One\n1 body\n** Two\n2 body\n*** Deep\ndeep body\n** Three\n3 body\n* Other\no body\n';
+  const f = reveal(analyze(doc).foldables, { 0: 'all', 9: 'all' }, 5);
+  // Top opens; One and Three, which have text, are folded again; Two (on the path) is open
+  assert.deepEqual(f, { 1: 'all', 7: 'all', 9: 'all' });
+  // with `entry` the heading itself shows its text, its children folded
+  assert.deepEqual(reveal(analyze(doc).foldables, { 0: 'all', 3: 'all', 9: 'all' }, 3, { entry: true }), { 1: 'all', 5: 'all', 7: 'all', 9: 'all' });
+});
+
 test('promote and demote change one heading; the subtree variants change all of it', () => {
   assert.equal(changeLevel(DOC, 1, 1, false).text, DOC.replace('* A', '** A'));
   assert.equal(changeLevel(DOC, 1, 1, true).text, DOC.replace('* A', '** A').replace('** B', '*** B').replace('** C', '*** C'));

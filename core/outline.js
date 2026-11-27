@@ -279,12 +279,27 @@ export function diff(a, b) {
   return { from, to: a.length - tail, insert: b.slice(from, b.length - tail) };
 }
 
-/** Opens every fold that hides the given line. */
-export function reveal(heads, folds, line) {
+/**
+ * Opens what hides the given line and nothing else, as Emacs's reveal does: the headings above it open to show their children, whose
+ * own subtrees stay folded unless they lead to the line. With `entry`, the heading the line is on (or under) also shows its text.
+ * @param {object[]} heads the foldable headings and drawers
+ * @param {Record<number, string>} folds
+ * @param {number} line
+ */
+export function reveal(heads, folds, line, { entry = false } = {}) {
   const f = { ...folds };
-  for (const h of heads) {
-    if (f[h.line] === 'all' && line > h.line && line < h.end) delete f[h.line];
-    else if (f[h.line] === 'body' && line > h.line && line < h.bodyEnd) delete f[h.line];
+  const chain = heads.filter((h) => h.line <= line && line < h.end);
+  const onPath = new Set(chain.map((h) => h.line));
+  const target = [...chain].reverse().find((h) => !h.isDrawer);
+  const foldChildren = (h) => { for (const c of h.children ?? []) if (!onPath.has(c.line) && c.end > c.line + 1 && f[c.line] === undefined) f[c.line] = 'all'; };
+  let exposed = false; // once a folded subtree opens, every heading on the way down shows its children, not their subtrees
+  for (const h of chain) {
+    const wanted = line > h.line || (entry && h === target);
+    if (f[h.line] === 'all' && wanted) { delete f[h.line]; foldChildren(h); exposed = true; }
+    else {
+      if (f[h.line] === 'body' && ((line > h.line && line < h.bodyEnd) || (entry && h === target))) delete f[h.line];
+      if (exposed && !h.isDrawer) foldChildren(h);
+    }
   }
   return f;
 }

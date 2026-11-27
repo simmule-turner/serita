@@ -1,0 +1,32 @@
+#+TITLE: Links, footnotes and emphasis
+# CC0 1.0: public domain. In the Text view put the cursor where the text says and press the keys; in the Outline view tap a link.
+
+* Following links
+Put the cursor on a link and press C-c C-o (palette: Open link). A tap does it in the Outline view. C-c & (or Back) returns.
+- A heading: [[*Footnotes and emphasis]]
+- A custom ID: [[#intro]]
+- Text in this file, such as a target: [[some target]]
+- The web: [[https://orgmode.org][The Org site]] or a bare https://orgmode.org
+- A file in the same folder: [[file:tables.org][the tables example]]
+- A line: [[file:links.org::5][line 5 of this file]]
+- A regexp, which shows the matching lines: [[file:links.org::/target/][lines with "target"]]
+With the cursor elsewhere on a line or in an entry, C-c C-o takes the link there, or lists them when there are several.
+
+A target for the link above: <<some target>>
+
+* Footnotes and emphasis
+:PROPERTIES:
+:CUSTOM_ID: intro
+:END:
+Write *bold*, /italic/, _underline_, +strike-through+, =verbatim= and ~code~. Select some text and press C-c C-x C-f to wrap it in a marker you choose; SPC removes one.
+
+Put the cursor at the end of this sentence and press C-c C-x f: a numbered footnote is added here and its definition goes under a Footnotes heading at the end of the file. C-c C-x f on the reference jumps to the definition, and on the definition back.
+C-u C-c C-x f asks for s (sort), r (renumber), n (normalize) or d (delete); the second note [fn:2] exists already.
+
+* Making links
+- C-c C-l inserts a link at the cursor: it asks for the link (a URL, file:name, *Heading, #custom-id or text) and a description. On a link it edits it. With text selected, the text is the description.
+- C-u C-c C-l asks for a file; C-u C-u C-c C-l writes its full path.
+- C-c l on a heading stores a link to it; the next C-c C-l offers it.
+
+* Footnotes
+[fn:2] The second note, to try C-u C-c C-x f with n or d.

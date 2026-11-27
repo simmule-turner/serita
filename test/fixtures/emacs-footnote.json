@@ -1,0 +1,1048 @@
+[
+ {
+  "id": "fb-adjust",
+  "input": "* Alpha\na[fn:1] b[fn:2]\n\n* Footnotes\n[fn:1] one\n[fn:2] two\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "16",
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": true
+  },
+  "text": "* Alpha\na[fn:1] b[fn:2]\n\n* Footnotes\n[fn:1] one\n[fn:2] two\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fb-before-heading",
+  "input": "intro text\n* Alpha\n",
+  "line": 0,
+  "col": 3,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "int[fn:1]ro text\n* Alpha\n\n* Footnotes\n\n[fn:1] \n",
+  "point": [
+   5,
+   6
+  ],
+  "messages": [
+   "Position saved to mark ring, go back with ‘C-c &’.",
+   "Edit definition and go back with ‘C-c &’ or, if unique, with ‘C-c C-c’."
+  ]
+ },
+ {
+  "id": "fb-confirm-a",
+  "input": "* Alpha\nsome text here\n* Beta\nmore\n",
+  "line": 1,
+  "col": 5,
+  "prefix": null,
+  "answer": "a",
+  "opts": {
+   "autoLabel": "confirm",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nsome [fn:a]text here\n* Beta\nmore\n\n* Footnotes\n\n[fn:a] \n",
+  "point": [
+   7,
+   6
+  ],
+  "messages": [
+   "Position saved to mark ring, go back with ‘C-c &’.",
+   "Edit definition and go back with ‘C-c &’ or, if unique, with ‘C-c C-c’."
+  ]
+ },
+ {
+  "id": "fb-confirm-empty",
+  "input": "* Alpha\nsome text here\n* Beta\nmore\n",
+  "line": 1,
+  "col": 5,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "confirm",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nsome [fn::]text here\n* Beta\nmore\n",
+  "point": [
+   1,
+   10
+  ],
+  "messages": []
+ },
+ {
+  "id": "fb-confirm-name",
+  "input": "* Alpha\nsome text here\n* Beta\nmore\n",
+  "line": 1,
+  "col": 5,
+  "prefix": null,
+  "answer": "nm",
+  "opts": {
+   "autoLabel": "confirm",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nsome [fn:nm]text here\n* Beta\nmore\n\n* Footnotes\n\n[fn:nm] \n",
+  "point": [
+   7,
+   7
+  ],
+  "messages": [
+   "Position saved to mark ring, go back with ‘C-c &’.",
+   "Edit definition and go back with ‘C-c &’ or, if unique, with ‘C-c C-c’."
+  ]
+ },
+ {
+  "id": "fb-def-in-list",
+  "input": "- item\n  text\n",
+  "line": 1,
+  "col": 4,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "- item\n  te[fn:1]xt\n\n* Footnotes\n\n[fn:1] \n",
+  "point": [
+   5,
+   6
+  ],
+  "messages": [
+   "Position saved to mark ring, go back with ‘C-c &’.",
+   "Edit definition and go back with ‘C-c &’ or, if unique, with ‘C-c C-c’."
+  ]
+ },
+ {
+  "id": "fb-define-inline",
+  "input": "* Alpha\nsome text here\n* Beta\nmore\n",
+  "line": 1,
+  "col": 5,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": true,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nsome [fn:1:]text here\n* Beta\nmore\n",
+  "point": [
+   1,
+   11
+  ],
+  "messages": []
+ },
+ {
+  "id": "fb-delete-def",
+  "input": "* Alpha\ntext[fn:1] more\n\n* Footnotes\n[fn:1] the def\n",
+  "line": 4,
+  "col": 2,
+  "prefix": "16",
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\ntext[fn:1] more\n\n* Footnotes\n[fn:1] the def\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fb-delete-inline",
+  "input": "* Alpha\ntext[fn:1:inl] more\n",
+  "line": 1,
+  "col": 6,
+  "prefix": "16",
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\ntext[fn:1:inl] more\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fb-delete-two",
+  "input": "* Alpha\na[fn:1] b[fn:1]\n\n[fn:1] def\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "16",
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\na[fn:1] b[fn:1]\n\n[fn:1] def\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fb-delete",
+  "input": "* Alpha\ntext[fn:1] more\n\n* Footnotes\n[fn:1] the def\n",
+  "line": 1,
+  "col": 6,
+  "prefix": "16",
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\ntext[fn:1] more\n\n* Footnotes\n[fn:1] the def\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fb-fill",
+  "input": "* Alpha\nword word word word word word word word word word word word word word word word word word word word word word word word word word word word word word \n",
+  "line": 1,
+  "col": 40,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nword word word word word word word word [fn:1]word word word word word word word word word word word word word word word word word word word word word word \n\n* Footnotes\n\n[fn:1] \n",
+  "point": [
+   5,
+   6
+  ],
+  "messages": [
+   "Position saved to mark ring, go back with ‘C-c &’.",
+   "Edit definition and go back with ‘C-c &’ or, if unique, with ‘C-c C-c’."
+  ]
+ },
+ {
+  "id": "fb-fn-in-heading-sub",
+  "input": "* A\n** B\ntext\n",
+  "line": 2,
+  "col": 2,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* A\n** B\nte[fn:1]xt\n\n* Footnotes\n\n[fn:1] \n",
+  "point": [
+   6,
+   6
+  ],
+  "messages": [
+   "Position saved to mark ring, go back with ‘C-c &’.",
+   "Edit definition and go back with ‘C-c &’ or, if unique, with ‘C-c C-c’."
+  ]
+ },
+ {
+  "id": "fb-in-block",
+  "input": "* Alpha\n#+begin_src c\nx\n#+end_src\n",
+  "line": 2,
+  "col": 0,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\n#+begin_src c\nx\n#+end_src\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fb-nil-dup",
+  "input": "* Alpha\nt[fn:nm] x\n\n[fn:nm] d\n",
+  "line": 1,
+  "col": 10,
+  "prefix": null,
+  "answer": "nm",
+  "opts": {
+   "autoLabel": "nil",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nt[fn:nm] x[fn:nm]\n\n[fn:nm] d\n",
+  "point": [
+   1,
+   17
+  ],
+  "messages": [
+   "New reference to existing note"
+  ]
+ },
+ {
+  "id": "fb-nil-empty",
+  "input": "* Alpha\nsome text here\n* Beta\nmore\n",
+  "line": 1,
+  "col": 5,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "nil",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nsome [fn::]text here\n* Beta\nmore\n",
+  "point": [
+   1,
+   10
+  ],
+  "messages": []
+ },
+ {
+  "id": "fb-nil-name",
+  "input": "* Alpha\nsome text here\n* Beta\nmore\n",
+  "line": 1,
+  "col": 5,
+  "prefix": null,
+  "answer": "nm",
+  "opts": {
+   "autoLabel": "nil",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nsome [fn:nm]text here\n* Beta\nmore\n\n* Footnotes\n\n[fn:nm] \n",
+  "point": [
+   7,
+   7
+  ],
+  "messages": [
+   "Position saved to mark ring, go back with ‘C-c &’.",
+   "Edit definition and go back with ‘C-c &’ or, if unique, with ‘C-c C-c’."
+  ]
+ },
+ {
+  "id": "fb-nil-num",
+  "input": "* Alpha\nsome text here\n* Beta\nmore\n",
+  "line": 1,
+  "col": 5,
+  "prefix": null,
+  "answer": "7",
+  "opts": {
+   "autoLabel": "nil",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nsome [fn:7]text here\n* Beta\nmore\n\n* Footnotes\n\n[fn:7] \n",
+  "point": [
+   7,
+   6
+  ],
+  "messages": [
+   "Position saved to mark ring, go back with ‘C-c &’.",
+   "Edit definition and go back with ‘C-c &’ or, if unique, with ‘C-c C-c’."
+  ]
+ },
+ {
+  "id": "fb-sort-order",
+  "input": "* Alpha\nb[fn:2] a[fn:1]\n\n[fn:1] one\n\n[fn:2] two\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "4",
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": null,
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nb[fn:2] a[fn:1]\n\n[fn:1] one\n\n[fn:2] two\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fb-sort",
+  "input": "* Alpha\nb[fn:2] a[fn:1]\n\n* Footnotes\n[fn:1] one\n[fn:2] two\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "4",
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nb[fn:2] a[fn:1]\n\n* Footnotes\n[fn:1] one\n[fn:2] two\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fb-t-prefix",
+  "input": "* Alpha\nsome text here\n* Beta\nmore\n",
+  "line": 1,
+  "col": 5,
+  "prefix": "4",
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nsome text here\n* Beta\nmore\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fb-two-sections",
+  "input": "* Alpha\ntext\n* Footnotes\n[fn:1] old\n* Beta\nmore\n",
+  "line": 5,
+  "col": 2,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\ntext\n* Footnotes\n\n[fn:2] \n[fn:1] old\n* Beta\nmo[fn:2]re\n",
+  "point": [
+   4,
+   6
+  ],
+  "messages": [
+   "Position saved to mark ring, go back with ‘C-c &’.",
+   "Edit definition and go back with ‘C-c &’ or, if unique, with ‘C-c C-c’."
+  ]
+ },
+ {
+  "id": "fm-arg-num",
+  "input": "* Alpha\nsome[fn:1] b[fn:2] text here\n\n* Footnotes\n[fn:1] one\n[fn:2] two\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "1",
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nsome[fn:1] b[fn:2] text here\n\n* Footnotes\n[fn:1] one\n[fn:2] two\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fm-arg16",
+  "input": "* Alpha\ntext[fn:1] more\n\n* Footnotes\n[fn:1] the def\n",
+  "line": 1,
+  "col": 6,
+  "prefix": "16",
+  "answer": "d",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\ntext more\n\n* Footnotes\n",
+  "point": [
+   1,
+   4
+  ],
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete",
+   "1 definition(s) of and 1 reference(s) of footnote 1 removed"
+  ]
+ },
+ {
+  "id": "fm-bad",
+  "input": "* Alpha\nb[fn:2] a[fn:1]\n\n* Footnotes\n[fn:2] two\n[fn:1] one\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "4",
+  "answer": "x",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nb[fn:2] a[fn:1]\n\n* Footnotes\n[fn:2] two\n[fn:1] one\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fm-delete-adjust",
+  "input": "* Alpha\na[fn:1] b[fn:2]\n\n* Footnotes\n[fn:1] one\n[fn:2] two\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "4",
+  "answer": "d",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": true
+  },
+  "text": "* Alpha\na b[fn:1]\n\n* Footnotes\n\n[fn:1] two\n",
+  "point": [
+   1,
+   1
+  ],
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete",
+   "1 definition(s) of and 1 reference(s) of footnote 1 removed"
+  ]
+ },
+ {
+  "id": "fm-delete-anon",
+  "input": "* Alpha\ntext[fn::anon] more\n",
+  "line": 1,
+  "col": 6,
+  "prefix": "4",
+  "answer": "d",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\ntext more\n",
+  "point": [
+   1,
+   4
+  ],
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete",
+   "Anonymous footnote removed"
+  ]
+ },
+ {
+  "id": "fm-delete-def",
+  "input": "* Alpha\ntext[fn:1] more\n\n* Footnotes\n[fn:1] the def\n",
+  "line": 4,
+  "col": 2,
+  "prefix": "4",
+  "answer": "d",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\ntext more\n\n* Footnotes\n",
+  "point": [
+   4,
+   0
+  ],
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete",
+   "1 definition(s) of and 1 reference(s) of footnote 1 removed"
+  ]
+ },
+ {
+  "id": "fm-delete-inline",
+  "input": "* Alpha\ntext[fn:1:inl] more\n",
+  "line": 1,
+  "col": 6,
+  "prefix": "4",
+  "answer": "d",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\ntext more\n",
+  "point": [
+   1,
+   4
+  ],
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete",
+   "0 definition(s) of and 1 reference(s) of footnote 1 removed"
+  ]
+ },
+ {
+  "id": "fm-delete-ref",
+  "input": "* Alpha\ntext[fn:1] more\n\n* Footnotes\n[fn:1] the def\n",
+  "line": 1,
+  "col": 6,
+  "prefix": "4",
+  "answer": "d",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\ntext more\n\n* Footnotes\n",
+  "point": [
+   1,
+   4
+  ],
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete",
+   "1 definition(s) of and 1 reference(s) of footnote 1 removed"
+  ]
+ },
+ {
+  "id": "fm-delete-two",
+  "input": "* Alpha\na[fn:1] b[fn:1]\n\n[fn:1] def\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "4",
+  "answer": "d",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\na b\n",
+  "point": [
+   1,
+   1
+  ],
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete",
+   "1 definition(s) of and 2 reference(s) of footnote 1 removed"
+  ]
+ },
+ {
+  "id": "fm-delete",
+  "input": "* Alpha\nb[fn:2] a[fn:1]\n\n* Footnotes\n[fn:2] two\n[fn:1] one\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "4",
+  "answer": "d",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nb a[fn:1]\n\n* Footnotes\n[fn:1] one\n",
+  "point": [
+   1,
+   1
+  ],
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete",
+   "1 definition(s) of and 1 reference(s) of footnote 2 removed"
+  ]
+ },
+ {
+  "id": "fm-in-block",
+  "input": "* Alpha\n#+begin_src c\nx\n#+end_src\n",
+  "line": 2,
+  "col": 0,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\n#+begin_src c\nx\n#+end_src\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fm-in-comment",
+  "input": "* Alpha\n# note\n",
+  "line": 1,
+  "col": 3,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\n# note\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fm-in-drawer",
+  "input": "* A\n:LOGBOOK:\nx\n:END:\n",
+  "line": 2,
+  "col": 0,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* A\n:LOGBOOK:\nx\n:END:\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fm-in-keyword",
+  "input": "#+TITLE: x\n* Alpha\n",
+  "line": 0,
+  "col": 9,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "#+TITLE: x\n* Alpha\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fm-in-list",
+  "input": "- one\n- two\n",
+  "line": 1,
+  "col": 4,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "- one\n- tw[fn:1]o\n\n* Footnotes\n\n[fn:1] \n",
+  "point": [
+   5,
+   6
+  ],
+  "messages": [
+   "Position saved to mark ring, go back with ‘C-c &’.",
+   "Edit definition and go back with ‘C-c &’ or, if unique, with ‘C-c C-c’."
+  ]
+ },
+ {
+  "id": "fm-in-property",
+  "input": "* A\n:PROPERTIES:\n:X: y\n:END:\n",
+  "line": 2,
+  "col": 3,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* A\n:PROPERTIES:\n:X: y\n:END:\n",
+  "point": null,
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fm-in-table",
+  "input": "| a | b |\n",
+  "line": 0,
+  "col": 3,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "| a[fn:1] | b |\n\n* Footnotes\n\n[fn:1] \n",
+  "point": [
+   4,
+   6
+  ],
+  "messages": [
+   "Position saved to mark ring, go back with ‘C-c &’.",
+   "Edit definition and go back with ‘C-c &’ or, if unique, with ‘C-c C-c’."
+  ]
+ },
+ {
+  "id": "fm-jump-int",
+  "input": "* Alpha\ntext[fn:1] more\n\n* Footnotes\n[fn:1] the def\n",
+  "line": 1,
+  "col": 6,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\ntext[fn:1] more\n\n* Footnotes\n[fn:1] the def\n",
+  "point": [
+   4,
+   6
+  ],
+  "messages": [
+   "Position saved to mark ring, go back with ‘C-c &’.",
+   "Edit definition and go back with ‘C-c &’ or, if unique, with ‘C-c C-c’."
+  ]
+ },
+ {
+  "id": "fm-new-confirm-int",
+  "input": "* Alpha\nsome text\n",
+  "line": 1,
+  "col": 4,
+  "prefix": null,
+  "answer": "a",
+  "opts": {
+   "autoLabel": "confirm",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nsome[fn:a] text\n\n* Footnotes\n\n[fn:a] \n",
+  "point": [
+   5,
+   6
+  ],
+  "messages": [
+   "Position saved to mark ring, go back with ‘C-c &’.",
+   "Edit definition and go back with ‘C-c &’ or, if unique, with ‘C-c C-c’."
+  ]
+ },
+ {
+  "id": "fm-new-key",
+  "input": "* Alpha\nsome text\n",
+  "line": 1,
+  "col": 4,
+  "prefix": null,
+  "answer": "",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nsome[fn:1] text\n\n* Footnotes\n\n[fn:1] \n",
+  "point": [
+   5,
+   6
+  ],
+  "messages": [
+   "Position saved to mark ring, go back with ‘C-c &’.",
+   "Edit definition and go back with ‘C-c &’ or, if unique, with ‘C-c C-c’."
+  ]
+ },
+ {
+  "id": "fm-normalize-inline",
+  "input": "* Alpha\nb[fn:x] a[fn::anon] c[fn:y:inl]\n\n[fn:x] ex\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "4",
+  "answer": "n",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nb[fn:1] a[fn:2] c[fn:3]\n\n* Footnotes\n\n[fn:1] ex\n\n[fn:2] anon\n\n[fn:3] inl\n",
+  "point": [
+   1,
+   3
+  ],
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fm-normalize",
+  "input": "* Alpha\nb[fn:2] a[fn:1]\n\n* Footnotes\n[fn:2] two\n[fn:1] one\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "4",
+  "answer": "n",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nb[fn:1] a[fn:2]\n\n* Footnotes\n\n[fn:1] two\n\n[fn:2] one\n",
+  "point": [
+   1,
+   3
+  ],
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fm-renumber",
+  "input": "* Alpha\nb[fn:2] a[fn:1]\n\n* Footnotes\n[fn:2] two\n[fn:1] one\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "4",
+  "answer": "r",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nb[fn:1] a[fn:2]\n\n* Footnotes\n[fn:1] two\n[fn:2] one\n",
+  "point": [
+   1,
+   3
+  ],
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fm-sort-multi",
+  "input": "* Alpha\nb[fn:2] a[fn:1]\n\n* Footnotes\n[fn:2] two\n\nmore two\n\n[fn:1] one\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "4",
+  "answer": "s",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nb[fn:2] a[fn:1]\n\n* Footnotes\n\n[fn:2] two\n\nmore two\n\n[fn:1] one\n",
+  "point": [
+   1,
+   3
+  ],
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fm-sort-nosec",
+  "input": "* Alpha\nb[fn:2] a[fn:1]\n\n[fn:2] two\n\n[fn:1] one\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "4",
+  "answer": "s",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nb[fn:2] a[fn:1]\n\n* Footnotes\n\n[fn:2] two\n\n[fn:1] one\n",
+  "point": [
+   1,
+   3
+  ],
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fm-sort-renumber",
+  "input": "* Alpha\nb[fn:2] a[fn:1]\n\n* Footnotes\n[fn:2] two\n[fn:1] one\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "4",
+  "answer": "S",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nb[fn:1] a[fn:2]\n\n* Footnotes\n\n[fn:1] two\n\n[fn:2] one\n",
+  "point": [
+   1,
+   3
+  ],
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ },
+ {
+  "id": "fm-sort",
+  "input": "* Alpha\nb[fn:2] a[fn:1]\n\n* Footnotes\n[fn:2] two\n[fn:1] one\n",
+  "line": 1,
+  "col": 3,
+  "prefix": "4",
+  "answer": "s",
+  "opts": {
+   "autoLabel": "t",
+   "section": "Footnotes",
+   "defineInline": false,
+   "autoAdjust": false
+  },
+  "text": "* Alpha\nb[fn:2] a[fn:1]\n\n* Footnotes\n\n[fn:2] two\n\n[fn:1] one\n",
+  "point": [
+   1,
+   3
+  ],
+  "messages": [
+   "Footnotes: [s]ort | [r]enumber fn:N | [S]=r+s | [n]ormalize | [d]elete"
+  ]
+ }
+]

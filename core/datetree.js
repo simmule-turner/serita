@@ -20,27 +20,28 @@ export function isoWeek(d) {
 }
 
 /** The three headings (key and title) for a date: the key is what an existing heading starts with. */
-function levels(date, week) {
+function levels(date, week, month = false) {
   const y = date.getUTCFullYear(); const m = date.getUTCMonth() + 1; const d = date.getUTCDate();
   const [iy, iw] = isoWeek(date);
   const mid = week ? `${iy}-W${two(iw)}` : `${y}-${two(m)}`;
   const day = `${y}-${two(m)}-${two(d)}`;
-  return [
-    { key: String(y), title: String(y), pattern: /^\d{4}/ },
+  const list = [
+    { key: String(week ? iy : y), title: String(week ? iy : y), pattern: /^\d{4}/ },
     { key: mid, title: week ? mid : `${mid} ${MONTHS[m - 1]}`, pattern: week ? /^\d{4}-W\d\d/ : /^\d{4}-\d\d/ },
     { key: day, title: `${day} ${DAYS[date.getUTCDay()]}`, pattern: /^\d{4}-\d\d-\d\d/ },
   ];
+  return month ? list.slice(0, 2) : list;
 }
 
 /**
  * Finds or creates the day's heading below the heading at `parentLine` (or at the top of the file when null).
  * @returns {{ text: string, line: number }} the new text and the line of the day heading
  */
-export function ensureDay(text, date, { week = false, parentLine = null } = {}) {
+export function ensureDay(text, date, { week = false, month = false, parentLine = null } = {}) {
   let out = text;
   let parent = parentLine;
   let line = -1;
-  for (const [depth, lv] of levels(date, week).entries()) {
+  for (const [depth, lv] of levels(date, week, month).entries()) {
     const a = analyze(out);
     const p = parent === null ? null : a.heads.find((h) => h.line === parent);
     const level = p ? p.level + 1 : 1;
@@ -61,7 +62,7 @@ export function ensureDay(text, date, { week = false, parentLine = null } = {}) 
     out = join(lines);
     line = at + add.length - 1; parent = line;
   }
-  // The day's blank lines at its end go: the new entry follows the last line of text
+  // The last heading's blank lines at its end go: the new entry follows the last line of text
   const a = analyze(out);
   const day = a.heads.find((h) => h.line === line);
   const lines = splitLines(out);

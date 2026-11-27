@@ -479,6 +479,8 @@ ok((await text()) === '| cc | d |\n| a | b |\n', 'M-down in a table moves the ro
 
 await at2('| a | b |\n', 1, 2); await page.keyboard.press('Control+#');
 ok((await text()) === '| # | a | b |\n', 'C-# in a table adds a marks column and sets the mark to #');
+await at2('| a | b |\n| c | d |\n', 2, 2); await page.keyboard.press('Control+#');
+ok((await sel()).split('-')[0] > 10, 'C-# keeps the cursor on its row');
 await page.fill('#editor', '| a | b |\n| c | d |\n|   |   |\n'); await page.evaluate(() => { const e = document.getElementById('editor'); e.setSelectionRange(2, 15); });
 await ctrl('c'); await ctrl('x'); await page.keyboard.press('Alt+w');
 await page.evaluate(() => { const e = document.getElementById('editor'); e.setSelectionRange(22, 22); });
@@ -627,7 +629,7 @@ ok((await sel()) === '0-0' && (await text()) === '* Alpha\n* Gamma\n** Beta\nbod
   ok((await p3.locator('.sheet h2').first().textContent()).startsWith('Capture:'), 'a row with (org-capture nil "z") opens that template without the list');
   await p3.keyboard.press('Escape');
   await p3.click('#btn-menu'); await p3.getByRole('button', { name: 'Capture', exact: true }).click();
-  ok((await p3.locator('.sheet .item').allTextContents()).join('|') === 'w  Work›|z  Zedz.org ›', 'the capture list shows the group and the template');
+  ok((await p3.locator('.sheet .item').allTextContents()).join('|') === 'w  Work...›|z  Zedz.org ›', 'the capture list shows the group and the template');
   await p3.keyboard.press('w');
   ok((await p3.locator('.sheet h2').first().textContent()) === 'Capture w' && (await p3.locator('.sheet .item').count()) === 1, 'typing a group key opens the entries under it');
   await p3.close();
@@ -639,7 +641,7 @@ ok((await sel()) === '0-0' && (await text()) === '* Alpha\n* Gamma\n** Beta\nbod
   const initText = `(defun go (file path) (find-file file) (goto-char (org-find-olp (cons file path))))\n(easy-menu-define m nil "Menu" '("Menu" ["Current" (go "local:j.org" (list "Bag" "Track" (format-time-string "%Y-%m")))]))\n`;
   const filler = Array.from({ length: 40 }, (_, i) => `* Filler ${i}\ntext\n`).join('');
   const now = new Date(); const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-  const journal = `${filler}* Bag\n** Track\n*** ${ym}\ntarget body\n*** 1999-01\n`;
+  const journal = `#+STARTUP: overview\n${filler}* Bag\n** Track\n*** ${ym}\ntarget body\n*** 1999-01\nold body\n** Side\nside body\n`;
   await p4.evaluate(async ([init, j]) => {
     await new Promise((res, rej) => { const r = indexedDB.open('serita-local', 1); r.onsuccess = () => { const x = r.result.transaction('files', 'readwrite'); x.objectStore('files').put({ text: init, version: 'v1' }, 'init.el'); x.objectStore('files').put({ text: j, version: 'v1' }, 'j.org'); x.oncomplete = res; x.onerror = rej; }; r.onerror = rej; });
     localStorage.setItem('serita.settings', JSON.stringify({ 'serita-init-file': 'local:init.el', 'view.mode': 'outline' }));
@@ -652,6 +654,7 @@ ok((await sel()) === '0-0' && (await text()) === '* Alpha\n* Gamma\n** Beta\nbod
   ok(await p4.locator('#outline').isVisible(), 'a row that goes to a heading keeps the Outline view');
   const box = await p4.locator(`.ol-head:has-text("${ym}")`).boundingBox();
   ok(box && box.y > 0 && box.y < 500, 'the heading the row finds is in view');
+  ok((await p4.getByText('target body').count()) === 1 && (await p4.getByText('old body').count()) === 0 && (await p4.getByText('side body').count()) === 0 && (await p4.getByText('Filler 3', { exact: true }).count()) === 1, 'only the heading it finds opens: its text shows, its siblings and the rest stay folded');
   await p4.close();
 }
 ok(errors.length === 0, `no page errors ${errors.join('; ')}`);

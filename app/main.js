@@ -46,6 +46,9 @@ import { lineAt, project, toFull, toShown, touchedFold } from '../core/projectio
 import { renderOutline } from './ui/outline-view.js';
 import { TEXT_KEYS, chordOf, createKeymap } from './ui/keys.js';
 import { createHistory } from './ui/history.js';
+import { createLinkCommands } from './ui/linkcmds.js';
+import { decorations } from './ui/inline.js';
+import { readForms } from '../core/lisp-read.js';
 import { createKeyRow } from './ui/keyrow.js';
 import { followViewport } from './ui/viewport.js';
 import { askVersion, watchUpdates } from './ui/update.js';
@@ -310,7 +313,7 @@ let hit = null;
 let marks = []; // what a sparse tree matched ({ line, from, to } in the real text), shown in the highlight color until C-c C-c
 function paintOverlay() {
   const hl = $('hl');
-  if (!cur || editor.hidden || (!hit && marks.length === 0 && !lineNumbers())) { hl.replaceChildren(); return; }
+  if (!cur || editor.hidden || (!hit && marks.length === 0 && !lineNumbers() && !/\[\[|(^|[\s(])[*/_+=~][^\s*/_+=~]/m.test(editor.value))) { hl.replaceChildren(); return; }
   hl.style.width = `${editor.clientWidth}px`;
   let at = 0;
   let number = 0;
@@ -332,6 +335,13 @@ function paintOverlay() {
         let pos = 0;
         for (const x of here) { if (x.from < pos) continue; out.push(text.slice(pos, x.from), h('mark', {}, text.slice(x.from, x.to))); pos = x.to; }
         kids.splice(0, 1, ...out, text.slice(pos));
+      }
+    }
+    if (kids.length === 1 && typeof kids[0] === 'string') {
+      const d = decorations(text);
+      if (d.length) {
+        const cut = [...new Set([0, text.length, ...d.flatMap((x) => [x.from, x.to])])].sort((a, b) => a - b);
+        kids.splice(0, 1, ...cut.slice(0, -1).map((a, i) => { const z = cut[i + 1]; const cls = d.filter((x) => x.from <= a && x.to >= z).map((x) => x.cls).join(' '); return cls ? h('span', { class: cls }, text.slice(a, z)) : text.slice(a, z); }));
       }
     }
     return h('div', { class: 'hl-line', ...(lineNumbers() ? { 'data-n': String(number) } : {}) }, ...kids);
@@ -577,7 +587,7 @@ const SAMPLES = [
   ['weekly-review', 'Weekly review', 'Agenda for a week'], ['outline', 'Outline and folding', 'TAB, S-TAB'], ['dates', 'Dates and repeaters', 'Schedule, deadline'],
   ['clocking', 'Clocking and effort', 'Clock in, out'], ['project', 'A project with clocking', 'Tasks and time'], ['capture', 'Capture', 'Templates and a target'],
   ['refile-archive', 'Refile and archive', 'Move and archive'], ['search-replace', 'Find and replace', 'C-s, M-%'],
-  ['diary', 'Diary entries', 'Dates and sexps'], ['contacts', 'Contacts and birthdays', 'BIRTHDAY property'], ['agenda-birthdays', 'Agenda with birthdays', 'org-contacts-anniversaries'], ['tables', 'Tables', 'Align, sort, edit'], ['config', 'Settings example', 'Every setting'],
+  ['diary', 'Diary entries', 'Dates and sexps'], ['contacts', 'Contacts and birthdays', 'BIRTHDAY property'], ['agenda-birthdays', 'Agenda with birthdays', 'org-contacts-anniversaries'], ['links', 'Links, footnotes and emphasis', 'C-c C-o, C-c C-l, C-c C-x f'], ['tables', 'Tables', 'Align, sort, edit'], ['config', 'Settings example', 'Every setting'],
 ];
 
 /** The list of examples. Returns the chosen file, or undefined. */
@@ -662,10 +672,10 @@ async function queryReplace(regexp = false) {
 }
 
 /** A sparse tree (C-c / r, t, T): everything folds to the top level except the matches and the headings above them. */
-async function sparse(kind) {
+async function sparse(kind, preset) {
   if (finding || shownId === null) return;
-  let arg = '';
-  if (kind !== 'todo') {
+  let arg = preset ?? '';
+  if (kind !== 'todo' && preset === undefined) {
     const ask = {
       regexp: { prompt: 'Regexp:', title: 'Show matching lines', help: 'Shows the lines that match an Emacs regexp, and the headings above them.' },
       match: { prompt: 'Match:', title: 'Show matching headings', help: 'Tags such as work+urgent-home or work|home, then / and TODO keywords, or Effort="5h" and LEVEL=2.' },
@@ -852,7 +862,7 @@ async function settings() {
 const LOCK = { 'agenda-files': 'org-agenda-files', archive: 'org-archive-location', 'archive-done': 'org-archive-mark-done', 'archive-context': 'org-archive-save-context-info', 'time-grid': 'org-agenda-use-time-grid',
   'capture-templates': 'org-capture-templates', 'contacts-files': 'org-contacts-files', 'birthday-property': 'org-contacts-birthday-property', 'date-style': 'calendar-date-style', 'diary-file': 'diary-file', 'diary-on': 'org-agenda-include-diary',
   stars: 'org-hide-leading-stars', indented: 'org-startup-indented', holidays: 'calendar-holidays', 'holidays-agenda': 'diary-show-holidays-flag', 'holidays-local': 'holiday-local-holidays', 'log-drawer': 'org-log-into-drawer',
-  'log-repeat': 'org-log-repeat', 'agenda-prefix': 'org-agenda-prefix-settings', refile: 'org-refile-settings', 'refile-new': 'org-refile-allow-creating-parent-nodes', 'tags-column': 'org.tagsColumn' };
+  'log-repeat': 'org-log-repeat', 'link-abbrev': 'org-link-abbrev-alist', 'link-search': 'org-link-search-must-match-exact-headline', 'link-keep': 'org-link-keep-stored-after-insertion', 'link-id': 'org-id-link-to-org-use-id', 'fn-label': 'org-footnote-auto-label', 'fn-section': 'org-footnote-section', 'fn-inline': 'org-footnote-define-inline', 'fn-adjust': 'org-footnote-auto-adjust', 'agenda-prefix': 'org-agenda-prefix-settings', refile: 'org-refile-settings', 'refile-new': 'org-refile-allow-creating-parent-nodes', 'tags-column': 'org.tagsColumn' };
 
 /** Settings, Emacs: the settings that are Emacs's own, in alphabetical order. */
 async function emacsSettings() {
@@ -882,6 +892,14 @@ async function emacsSettings() {
           item('holidays-agenda', 'Holidays in the agenda', holidaysInAgenda() ? 'On' : 'Off'),
           item('holidays-local', 'Local holidays', localHolidays() ? 'Custom' : 'None'),
           item('log-drawer', 'Log into drawer', logDrawer() ?? 'Off'),
+          item('link-abbrev', 'Link abbreviations', setting('org-link-abbrev-alist') ? 'Custom' : 'None'),
+          item('link-search', 'Link text search', { '': 'Ask to create', t: 'Exact headline', nil: 'Any text' }[setting('org-link-search-must-match-exact-headline') || '']),
+          item('link-keep', 'Keep stored links', setting('org-link-keep-stored-after-insertion') === 't' ? 'On' : 'Off'),
+          item('link-id', 'Store links by ID', { '': 'Off', t: 'Create if missing', 'use-existing': 'Existing only' }[setting('org-id-link-to-org-use-id') || ''] ?? 'Off'),
+          item('fn-label', 'Footnote labels', { '': 'Numbers', confirm: 'Ask', nil: 'Always ask' }[setting('org-footnote-auto-label') || ''] ?? 'Numbers'),
+          item('fn-section', 'Footnote section', setting('org-footnote-section') === 'nil' ? 'None' : (setting('org-footnote-section') || 'Footnotes')),
+          item('fn-inline', 'Define footnotes inline', setting('org-footnote-define-inline') === 't' ? 'On' : 'Off'),
+          item('fn-adjust', 'Renumber footnotes automatically', setting('org-footnote-auto-adjust') === 't' ? 'On' : 'Off'),
           item('log-repeat', 'Log repeats', { time: 'Time', note: 'Note', off: 'Off' }[logRepeatMode()]),
           item('agenda-prefix', 'Agenda line format', prefixText() ? 'Custom' : 'Default'),
           item('refile', 'Refile targets', refileText() ? 'Custom' : 'Top level'),
@@ -919,6 +937,14 @@ async function emacsSettings() {
     else if (what === 'emacs') config.update({ settings: { 'view.emacsKeys': String(!emacsKeys()) } });
     else if (what === 'log-drawer') await logDrawerDialog();
     else if (what === 'log-repeat') await logRepeatDialog();
+    else if (what === 'link-abbrev') await lineSetting({ title: 'Link abbreviations', help: 'A Lisp list of (name . replacement) pairs, for example ((\"gh\" . \"https://github.com/%s\")). %s stands for the rest of the link and %h for the rest URL-encoded.', shown: setting('org-link-abbrev-alist') ?? '', key: 'org-link-abbrev-alist', check: (v) => { if (v === '') return ''; const f = readForms(v)[0]; if (!Array.isArray(f) && !f?.quote) throw new Error('Expected a list'); return v; }, said: (v) => (v ? 'Link abbreviations set' : 'No link abbreviations') });
+    else if (what === 'link-search') await choiceSetting('Link text search', 'org-link-search-must-match-exact-headline', [['', 'Ask to create', 'a missing heading is offered'], ['t', 'Exact headline', 'text must be a headline'], ['nil', 'Any text', 'any text in the file']]);
+    else if (what === 'link-keep') config.update({ settings: { 'org-link-keep-stored-after-insertion': setting('org-link-keep-stored-after-insertion') === 't' ? '' : 't' } });
+    else if (what === 'link-id') await choiceSetting('Store links by ID', 'org-id-link-to-org-use-id', [['', 'Off', 'file and heading'], ['t', 'Create if missing', 'adds an :ID: property'], ['use-existing', 'Existing only', 'only entries with an :ID:']]);
+    else if (what === 'fn-label') await choiceSetting('Footnote labels', 'org-footnote-auto-label', [['', 'Numbers', 'the next free number'], ['confirm', 'Ask', 'offers the next number'], ['nil', 'Always ask', 'empty makes an anonymous one']]);
+    else if (what === 'fn-section') await lineSetting({ title: 'Footnote section', help: 'The heading that holds footnote definitions. nil puts a definition after the paragraph.', shown: setting('org-footnote-section') === 'nil' ? 'nil' : (setting('org-footnote-section') || 'Footnotes'), key: 'org-footnote-section', check: (v) => (v === '' || v === 'Footnotes' ? '' : v), said: (v) => `Footnote section: ${v === 'nil' ? 'none' : v || 'Footnotes'}` });
+    else if (what === 'fn-inline') config.update({ settings: { 'org-footnote-define-inline': setting('org-footnote-define-inline') === 't' ? '' : 't' } });
+    else if (what === 'fn-adjust') config.update({ settings: { 'org-footnote-auto-adjust': setting('org-footnote-auto-adjust') === 't' ? '' : 't' } });
     else if (what === 'stars') config.update({ settings: { 'org-hide-leading-stars': hideStars() ? '' : 't' } });
     else if (what === 'indented') config.update({ settings: { 'org-startup-indented': indentSetting() ? '' : 't' } });
     else if (what === 'table-wrap') config.update({ settings: { 'org-table-widget-wrap-columns': wrapCells() ? '' : 't' } });
@@ -1205,7 +1231,7 @@ async function runMenuCallback(row, menu) {
 async function visitOffset(name, offset) {
   const text = (session.state().buffers.find((b) => bufferName(b) === name)?.text) ?? (await app.storage.read(name))?.text ?? '';
   const line = text.slice(0, offset).split('\n').length - 1;
-  await visitLine(name, line, { keepView: true });
+  await visitLine(name, line);
 }
 
 $('btn-menu').addEventListener('click', () => builtinMenu());
@@ -1280,7 +1306,7 @@ async function capture(keys) {
 async function pickTemplate(templates) {
   let prefix = '';
   for (;;) {
-    const items = menuAt(templates, prefix).map((m) => ({ label: `${m.key}  ${m.description}`, key: m.key.slice(-1), meta: m.group ? '›' : `${m.template.target.file} ›`, value: m }));
+    const items = menuAt(templates, prefix).map((m) => ({ label: `${m.key}  ${m.description}${m.group ? '...' : ''}`, key: m.key.slice(-1), meta: m.group ? '›' : `${m.template.target.file} ›`, value: m }));
     const m = await choose(prefix ? `Capture ${prefix}` : 'Capture', items, { back: prefix ? '‹ Back' : null });
     if (m === BACK) { prefix = prefix.slice(0, -1); continue; }
     if (!m) return undefined;
@@ -1299,8 +1325,8 @@ async function runCapture(tpl) {
   }
   // A date tree with +prompt, or :time-prompt, asks for the date (and time) the capture is for; it also fills %t and the like
   let when = localNow();
-  if (tpl.target.prompt || tpl.opts.timePrompt) {
-    const stamp = await askStamp('Capture date', false);
+  if (tpl.target.kind === 'datetree' && (tpl.target.prompt || tpl.opts.timePrompt)) {
+    const stamp = await askStamp('Date for tree entry', false);
     if (!stamp) return;
     const m = /(\d{4})-(\d\d)-(\d\d)(?: [^\d\]]+)?(?: (\d\d):(\d\d))?/.exec(stamp);
     when = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], m[4] ? +m[4] : when.getUTCHours(), m[5] ? +m[5] : when.getUTCMinutes()));
@@ -1393,18 +1419,17 @@ async function bufferFor(name) {
 /** C-c C-w (C-c M-w keeps the original): choose where the heading and its subtree go. */
 let lastRefile = null;
 
-/** Takes the buffer shown to the line of a heading, as visiting it does. */
-async function visitLine(name, line, { keepView = false } = {}) {
+/** Takes the buffer shown to the line of a heading, as visiting it does; the view stays as it is, and in the Outline view the heading is scrolled into view. */
+async function visitLine(name, line) {
   const here = currentBuffer();
   const x = bufferName(here) === name ? here : await bufferFor(name);
   if (!x) { failure(new Error(`${name} does not exist`)); return false; }
   leaveHere();
   session.select(x.id);
-  const outline = keepView && viewMode() === 'outline';
-  if (!outline) setView('text');
+  const outline = viewMode() === 'outline';
   // as Emacs does when it goes to a refile target: the folds that hide it open
   const b = currentBuffer();
-  const opened = reveal(analyze(b.text).foldables, b.folds, Math.max(0, line));
+  const opened = reveal(analyze(b.text).foldables, b.folds, Math.max(0, line), { entry: true });
   if (JSON.stringify(opened) !== JSON.stringify(b.folds)) session.setFolds(b.id, opened);
   placeCursor(Math.max(0, line));
   // The Outline view stays: its row for the heading is brought into view
@@ -1544,6 +1569,14 @@ async function logDrawerDialog() {
   if (!/^[A-Za-z0-9_-]*$/.test(name)) { message('A drawer name is letters, digits, - and _', true); return; }
   config.update({ settings: { 'org-log-into-drawer': name } });
   message(name ? `Log lines go in :${name}:` : 'Log lines go in the text');
+}
+
+/** A setting with a few named values; the first is the default and is stored as an empty setting. */
+async function choiceSetting(title, key, rows) {
+  const v = await choose(title, rows.map(([value, label, meta]) => ({ label, meta, value })));
+  if (v === undefined) return;
+  config.update({ settings: { [key]: v } });
+  message(`${title}: ${rows.find((r) => r[0] === v)[1]}`);
 }
 
 async function logRepeatDialog() {
@@ -2016,6 +2049,13 @@ const tableHere = () => {
   if (t !== 'table-row' && t !== 'table-rule') return null;
   return { line, col: cursorOffset() - lineOffset(currentBuffer().text, line) };
 };
+
+/** The table commands that move or align first apply the formulas again to a row marked # (Org says so in the echo area). */
+function tableEditAuto(fn) {
+  let said = null;
+  tableEdit((t, l, c) => { const a = tblcmd.autoRecalc(t, l); said = a.message ?? null; return fn(a.text, l, c); });
+  if (said) message(said);
+}
 
 /** Runs a table edit `fn(text, line, col)` at a line and column and puts the cursor where it says (in the Text view); an error is shown after the edit. */
 function tableEditAt(line, col, fn, { place = true } = {}) {
@@ -2847,6 +2887,36 @@ function globalVisibility(a, fromTab) {
   set(r.folds, r.state.toUpperCase());
 }
 
+/** What the link, footnote and emphasis commands (app/ui/linkcmds.js) use of the app. */
+const links = createLinkCommands({
+  buffer: () => currentBuffer(),
+  buffers: () => session.state().buffers,
+  offset: () => cursorOffset(),
+  selection: () => (viewMode() === 'text' && editor.selectionStart !== editor.selectionEnd ? { from: toFull(cur.proj, editor.selectionStart), to: toFull(cur.proj, editor.selectionEnd) } : null),
+  apply: (text) => { lastCycle = null; session.apply(currentBuffer().id, { text }); },
+  place: (offset) => { if (viewMode() === 'text') placeOffset(offset); },
+  leave: () => leaveHere(),
+  reveal: (line) => { const b = currentBuffer(); const opened = reveal(analyze(b.text).foldables, b.folds, Math.max(0, line)); if (JSON.stringify(opened) !== JSON.stringify(b.folds)) session.setFolds(b.id, opened); },
+  ask: (o) => askText(o),
+  choose: (title, items) => choose(title, items),
+  chooseChar: ({ title, items }) => choose(title, items),
+  confirm: async (prompt) => (await ask('Confirm', prompt, [{ label: 'No', value: false }, { label: 'Yes', value: true, primary: true }])) === true,
+  pickFile: () => askText({ prompt: 'File:', title: 'Link to a file', help: 'The name of the file, for example notes.org or ../other/notes.org.', ok: 'Next' }),
+  visit: async (name) => {
+    let x = session.state().buffers.find((b) => bufferName(b) === name) ?? (await bufferFor(name));
+    if (!x) { session.createFile(name, ''); x = session.state().buffers.find((b) => bufferName(b) === name); }
+    if (!x) return false;
+    if (x.id !== shownId) { leaveHere(); session.select(x.id); }
+    return true;
+  },
+  orgFiles: async () => (await Promise.all(agendaFileNames().map(async (n) => { try { const f = await app.storage.read(n); return f ? { name: n, text: f.text } : null; } catch { return null; } }))).filter(Boolean),
+  openUrl: (u) => { window.open(u, '_blank', 'noopener'); },
+  sparse: (re) => sparse('regexp', re),
+  setting: (k) => setting(k),
+  arg: () => arg,
+  message: (t, e) => message(t, !!e),
+});
+
 const COMMANDS = {
   'universal-argument': () => { argState = pressU(argState); echoArg(); },
   'negative-argument': () => { argState = pressDigit(argState, '-'); echoArg(); },
@@ -2864,6 +2934,11 @@ const COMMANDS = {
   'beginning-of-buffer': () => { leaveHere(); goTo(0); },
   'end-of-buffer': () => { leaveHere(); goTo(editor.value.length); },
   'back': () => goBack(),
+  'open-link': () => links.openAtPoint(),
+  'store-link': () => links.storeLink(),
+  'insert-link': () => links.insertLink(),
+  'footnote': () => links.footnote(),
+  'emphasize': () => links.emphasize(),
   'effort': () => setEffort(),
   'capture': () => capture(),
   // In the Outline view there is no cursor, so Refile from the palette is for the argument forms; a heading is refiled from its own menu
@@ -2884,10 +2959,10 @@ const COMMANDS = {
     if (a?.num !== undefined) { message('Cycling with a numeric argument is not supported', true); return; }
     // C-u TAB cycles the whole buffer; C-u C-u TAB goes back to the startup visibility and C-u C-u C-u TAB shows everything
     if (a) { globalVisibility(a, true); return; }
-    if (inTable()) { tableEdit(table.nextField); return; } const { line, kind } = kindAtCursor(); if (kind === null) message('Not at a heading or list item'); else cycleHeading(line);
+    if (inTable()) { tableEditAuto(table.nextField); return; } const { line, kind } = kindAtCursor(); if (kind === null) message('Not at a heading or list item'); else cycleHeading(line);
   },
   'indent': () => { const st = session.state(); const b = st.buffers.find((x) => x.id === st.current); if (!b) return; indentOverride.set(b.id, !indentOn(b)); render(); message(indentOn(b) ? 'Indent mode on' : 'Indent mode off'); },
-  'cycle-global': () => { const a = arg; if (inTable() && !a) { tableEdit(table.previousField); return; } globalVisibility(a, false); },
+  'cycle-global': () => { const a = arg; if (inTable() && !a) { tableEditAuto(table.previousField); return; } globalVisibility(a, false); },
   'move-up': () => inTable() ? tableEdit((t, l, c) => table.moveRow(t, l, c, -1)) : editHere((t, l) => moveSubtree(t, l, -1), (t, l) => moveItem(t, l, -1)),
   'move-down': () => inTable() ? tableEdit((t, l, c) => table.moveRow(t, l, c, 1)) : editHere((t, l) => moveSubtree(t, l, 1), (t, l) => moveItem(t, l, 1)),
   // On plain text Emacs's M-left moves a word back.
@@ -2939,7 +3014,7 @@ const COMMANDS = {
       const col = /\$(\d+)/.exec(table.fieldInfo(currentBuffer().text, here.line, here.col) ?? '');
       const r = col && tblcmd.evalFieldFormula(currentBuffer().text, here.line, Number(col[1]) - 1);
       if (r) { tableEditAt(here.line, here.col, () => ({ text: r.text, line: here.line, col: here.col, error: r.error })); return; }
-      tableEdit(table.align); return;
+      tableEditAuto(table.align); return;
     }
     if (marks.length) { marks = []; paintOverlay(); message('Temporary highlights/overlays removed from current buffer'); return; }
     const at = editor.selectionStart;
@@ -2952,7 +3027,7 @@ const COMMANDS = {
     if (arg?.list) { insertHeadingAfterSubtree(arg.list >= 16); return; }
     if (inTable()) { tableEdit(table.splitField); return; } const r = runEdit((t) => insertHeadingHere(t, cursorOffset())); if (r) placeOffset(r.pos); },
   'unsent-saves': () => sendQueued(true),
-  'table-next-row': () => tableEdit(table.nextRow),
+  'table-next-row': () => tableEditAuto(table.nextRow),
   'table-copy-down': () => tableEdit(table.copyDown),
   'table-hline': () => { const above = !!arg; tableEdit((t, l, c) => table.insertHline(t, l, c, above)); },
   'table-hline-and-move': () => tableEdit(table.hlineAndMove),
@@ -2994,7 +3069,7 @@ const COMMANDS = {
   'cut-special': () => (inTable() ? tableCopyRegion(true) : subtreeKill(true)),
   'copy-special': () => (inTable() ? tableCopyRegion(false) : subtreeKill(false)),
   'paste-special': () => (inTable() ? tablePasteRectangle() : subtreePaste()),
-  'table-rotate-recalc-marks': () => tableEdit(tblcmd.rotateMark),
+  'table-rotate-recalc-marks': () => tableEdit((t, l, c) => ({ ...tblcmd.rotateMark(t, l), col: c })),
   'keep-offline': () => offlineDialog(),
   'table-create': () => tableCreate(),
   'table-field-info': () => { const at = tableHere(); const i = at && table.fieldInfo(currentBuffer().text, at.line, at.col); message(i ?? 'Not in table', !i); },
@@ -3352,6 +3427,7 @@ $('outline').addEventListener('pointerup', (e) => {
 $('outline').addEventListener('pointercancel', () => { swipe = null; });
 
 const outlineOn = {
+  link: (line, col) => links.openAt(line, col),
   cycle: cycleHeading,
   todo: (line) => runEdit((t) => cycleTodo(t, line, 1, tagsColumn())),
   checkbox: (line) => runEdit((t) => toggleCheckbox(t, line)),
@@ -3378,7 +3454,7 @@ const PALETTE = [
   ['table-transpose', 'org-table-transpose-table-at-point', 'Transpose table'], ['table-field-info', 'org-table-field-info', 'Show field coordinates'], ['table-hline', 'org-table-insert-hline', 'Insert horizontal line'],
   ['table-copy-down', 'org-table-copy-down', 'Copy field down'], ['table-next-row', 'org-table-next-row', 'Next row'],
   ['toggle-checkbox', 'org-toggle-checkbox', 'Toggle checkbox'], ['sparse-tree-regexp', 'org-sparse-tree', 'Show matching lines', true], ['sparse-tree-match', 'org-match-sparse-tree', 'Show headings by tag or property', true], ['sparse-tree-todo', 'org-show-todo-tree', 'Show unfinished TODO entries', true], ['sparse-tree-todo-keyword', 'org-show-todo-tree', 'Show entries with a TODO keyword', true],
-  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true], ['effort', 'org-set-effort', 'Set effort'], ['capture', 'org-capture', 'Capture', true], ['refile', 'org-refile', 'Refile', true], ['refile-copy', 'org-refile-copy', 'Refile and keep'], ['refile-cache-clear', 'org-refile-cache-clear', 'Clear refile cache', true], ['archive-subtree', 'org-archive-subtree', 'Archive'], ['archive-sibling', 'org-archive-to-archive-sibling', 'Archive to sibling'], ['archive-tag', 'org-toggle-archive-tag', 'Toggle archive tag'], ['clock-in', 'org-clock-in', 'Clock in'], ['clock-out', 'org-clock-out', 'Clock out'], ['clock-cancel', 'org-clock-cancel', 'Cancel clock'], ['agenda-file-add', 'org-agenda-file-to-front', 'Add file to agenda files', true], ['agenda-file-remove', 'org-remove-file', 'Remove file from agenda files', true],
+  ['isearch-forward', 'isearch-forward', 'Find forward', true], ['isearch-backward', 'isearch-backward', 'Find backward', true], ['isearch-forward-regexp', 'isearch-forward-regexp', 'Find regexp forward', true], ['isearch-backward-regexp', 'isearch-backward-regexp', 'Find regexp backward', true], ['query-replace', 'query-replace', 'Replace', true], ['query-replace-regexp', 'query-replace-regexp', 'Replace regexp', true], ['goto-line', 'goto-line', 'Go to line', true], ['back', 'pop-global-mark', 'Go back', true], ['open-link', 'org-open-at-point', 'Open link', true], ['store-link', 'org-store-link', 'Store link', true], ['insert-link', 'org-insert-link', 'Insert link', true], ['footnote', 'org-footnote-action', 'Footnote', true], ['emphasize', 'org-emphasize', 'Emphasize', true], ['effort', 'org-set-effort', 'Set effort'], ['capture', 'org-capture', 'Capture', true], ['refile', 'org-refile', 'Refile', true], ['refile-copy', 'org-refile-copy', 'Refile and keep'], ['refile-cache-clear', 'org-refile-cache-clear', 'Clear refile cache', true], ['archive-subtree', 'org-archive-subtree', 'Archive'], ['archive-sibling', 'org-archive-to-archive-sibling', 'Archive to sibling'], ['archive-tag', 'org-toggle-archive-tag', 'Toggle archive tag'], ['clock-in', 'org-clock-in', 'Clock in'], ['clock-out', 'org-clock-out', 'Clock out'], ['clock-cancel', 'org-clock-cancel', 'Cancel clock'], ['agenda-file-add', 'org-agenda-file-to-front', 'Add file to agenda files', true], ['agenda-file-remove', 'org-remove-file', 'Remove file from agenda files', true],
   ['undo', 'undo', 'Undo', true], ['redo', 'undo-redo', 'Redo', true],
   ['select-all', 'mark-whole-buffer', 'Select all'], ['kill-line', 'kill-line', 'Cut to end of line'], ['kill-whole-line', 'kill-whole-line', 'Cut whole line'], ['yank', 'yank', 'Paste'],
   ['next-line', 'next-line', 'Next line'], ['previous-line', 'previous-line', 'Previous line'], ['forward-char', 'forward-char', 'Forward character'], ['backward-char', 'backward-char', 'Backward character'],

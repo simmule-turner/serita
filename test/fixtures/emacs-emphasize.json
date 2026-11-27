@@ -1,0 +1,142 @@
+[
+ {
+  "id": "em-emphasize-again",
+  "input": "one *two* three\n",
+  "from": 6,
+  "to": 6,
+  "char": "*",
+  "text": "one *t ** wo* three\n",
+  "point": 8,
+  "error": null
+ },
+ {
+  "id": "em-emphasize-ask",
+  "input": "one two three\n",
+  "from": 4,
+  "to": 7,
+  "char": "*",
+  "text": "one *two* three\n",
+  "point": 9,
+  "error": null
+ },
+ {
+  "id": "em-emphasize-b",
+  "input": "one two three\n",
+  "from": 4,
+  "to": 7,
+  "char": "*",
+  "text": "one *two* three\n",
+  "point": 9,
+  "error": null
+ },
+ {
+  "id": "em-emphasize-bad",
+  "input": "one two three\n",
+  "from": 4,
+  "to": 7,
+  "char": "x",
+  "text": "one two three\n",
+  "point": null,
+  "error": "No such emphasis marker: \"x\""
+ },
+ {
+  "id": "em-emphasize-end",
+  "input": "one two three\n",
+  "from": 7,
+  "to": 7,
+  "char": "*",
+  "text": "one two ** three\n",
+  "point": 9,
+  "error": null
+ },
+ {
+  "id": "em-emphasize-i",
+  "input": "one two three\n",
+  "from": 4,
+  "to": 7,
+  "char": "/",
+  "text": "one /two/ three\n",
+  "point": 9,
+  "error": null
+ },
+ {
+  "id": "em-emphasize-ml",
+  "input": "one two\nthree four\n",
+  "from": 4,
+  "to": 13,
+  "char": "*",
+  "text": "one *two\nthree* four\n",
+  "point": 15,
+  "error": null
+ },
+ {
+  "id": "em-emphasize-none",
+  "input": "one two three\n",
+  "from": 5,
+  "to": 5,
+  "char": "*",
+  "text": "one t ** wo three\n",
+  "point": 7,
+  "error": null
+ },
+ {
+  "id": "em-emphasize-pre",
+  "input": "say (two) now\n",
+  "from": 5,
+  "to": 8,
+  "char": "*",
+  "text": "say (*two*) now\n",
+  "point": 10,
+  "error": null
+ },
+ {
+  "id": "em-emphasize-pre2",
+  "input": "onetwothree\n",
+  "from": 3,
+  "to": 6,
+  "char": "*",
+  "text": "one *two* three\n",
+  "point": 9,
+  "error": null
+ },
+ {
+  "id": "em-emphasize-space-char",
+  "input": "one *two* three\n",
+  "from": 4,
+  "to": 9,
+  "char": " ",
+  "text": "one two three\n",
+  "point": 7,
+  "error": null
+ },
+ {
+  "id": "em-emphasize-space",
+  "input": "one  two\n",
+  "from": 4,
+  "to": 4,
+  "char": "*",
+  "text": "one ** two\n",
+  "point": 5,
+  "error": null
+ },
+ {
+  "id": "em-emphasize-v",
+  "input": "one two three\n",
+  "from": 4,
+  "to": 7,
+  "char": "=",
+  "text": "one =two= three\n",
+  "point": 9,
+  "error": null
+ },
+ {
+  "id": "em-emphasize-ws",
+  "input": "one two three\n",
+  "from": 3,
+  "to": 8,
+  "char": "*",
+  "text": "one * two * three\n",
+  "point": 11,
+  "error": null
+ }
+]

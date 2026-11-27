@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.8
+Links, footnotes and emphasis. C-c C-o follows a link (headings, custom IDs, text, files with ::search, ids, URLs), C-c l stores one, C-c C-l inserts or edits one, C-c C-x f adds, jumps to, sorts, renumbers, normalizes or deletes footnotes, and C-c C-x C-f wraps the selection in a marker; the Outline view shows links by their description and emphasis styled. Also: C-# keeps the cursor in the table, week trees use the ISO year, capture has :tree-type month, and a row marked # recalculates when you leave it.
+
 * 0.11.7
 The extra menu is now a floating ☰ button at the bottom right, opposite Back, and Menu is as it was. A menu row that goes to a heading with org-find-olp finds it in the file as it is open, so unsaved edits no longer shift the line, and it stays in the Outline view and scrolls the heading into view instead of switching to Text.
 

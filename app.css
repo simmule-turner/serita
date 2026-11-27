@@ -215,3 +215,11 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 .ol-table.zebra tr:nth-child(even) td { background: var(--bar); }
 .sheet .report { padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: 13px; }
 .sheet .report.kept { color: var(--muted); }
+
+.ol-link { color: var(--accent); text-decoration: underline; cursor: pointer; }
+.ol-line b, .title b { font-weight: 700; }
+.ol-line code, .title code { font: inherit; background: var(--bar); border-radius: 3px; padding: 0 2px; }
+#hl .tv-link { text-decoration: underline; text-decoration-color: var(--accent); }
+#hl .tv-u { text-decoration: underline; text-decoration-color: var(--muted); }
+#hl .tv-s { text-decoration: line-through; text-decoration-color: var(--muted); }
+#hl .tv-code { background: var(--bar); }

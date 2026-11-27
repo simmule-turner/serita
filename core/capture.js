@@ -45,9 +45,11 @@ function template(t) {
   if (!['entry', 'item', 'checkitem', 'table-line', 'plain'].includes(kind)) throw new Error(`Template ${key}: unknown type ${kind ?? type}`);
   const tk = name(target?.[0]);
   const tree = /^file\+(olp\+)?(date|week)tree(\+prompt)?$/.exec(tk ?? '');
-  const spec = tree ? { kind: 'datetree', file: target?.[1], path: tree[1] ? target.slice(2) : [], week: tree[2] === 'week', prompt: !!tree[3] } : { file: { kind: 'file', file: target?.[1] }, 'file+headline': { kind: 'headline', file: target?.[1], path: [target?.[2]] }, 'file+olp': { kind: 'olp', file: target?.[1], path: target?.slice(2) }, 'file+function': { kind: 'function', file: target?.[1], fn: name(unquote(target?.[2])) } }[tk];
+  if (tree?.[1] && tree[3]) tree.length = 0; // there is no file+olp+datetree+prompt
+
+  const spec = tree?.length ? { kind: 'datetree', file: target?.[1], path: tree[1] ? target.slice(2) : [], week: tree[2] === 'week', prompt: !!tree[3] } : { file: { kind: 'file', file: target?.[1] }, 'file+headline': { kind: 'headline', file: target?.[1], path: [target?.[2]] }, 'file+olp': { kind: 'olp', file: target?.[1], path: target?.slice(2) }, 'file+function': { kind: 'function', file: target?.[1], fn: name(unquote(target?.[2])) } }[tk];
   if (tk === 'file+function' && !spec.fn) throw new Error(`Template ${key}: file+function needs the name of a function`);
-  if (!spec || typeof spec.file !== 'string') throw new Error(`Template ${key}: the target ${tk ?? 'given'} is not supported yet`);
+  if (!spec || typeof spec.file !== 'string') throw new Error(`Template ${key}: invalid capture target specification (${tk ?? 'none'})`);
   if (typeof text !== 'string') throw new Error(`Template ${key}: the template text is missing`);
   const opts = {};
   for (let i = 0; i < rest.length; i += 2) {
@@ -60,7 +62,7 @@ function template(t) {
     else if (k === ':clock-in') opts.clockIn = rest[i + 1] === true;
     else if (k === ':clock-keep') opts.clockKeep = rest[i + 1] === true;
     else if (k === ':clock-resume') opts.clockResume = rest[i + 1] === true;
-    else if (k === ':tree-type') { const v = name(unquote(rest[i + 1])); if (v !== 'week') throw new Error(`Template ${key}: :tree-type ${v} is not supported yet`); if (spec.kind === 'datetree') spec.week = true; }
+    else if (k === ':tree-type') { const v = name(unquote(rest[i + 1])); if (v !== 'week' && v !== 'month') throw new Error(`Template ${key}: :tree-type ${v} is not supported`); if (spec.kind === 'datetree') { spec.week = v === 'week'; spec.month = v === 'month'; } }
     else if (k === ':time-prompt') opts.timePrompt = rest[i + 1] === true;
     else if (k === ':prepare-finalize') { opts.prepare = name(unquote(rest[i + 1])); if (!opts.prepare) throw new Error(`Template ${key}: :prepare-finalize needs the name of a function`); }
     else throw new Error(`Template ${key}: the option ${k} is not supported yet`);
@@ -169,7 +171,7 @@ export function place(text, tpl, captured, { tagsColumn = DEFAULT_TAGS_COLUMN, u
       parentLine = h.line; among = h.children;
     });
     if (!date) throw new Error('A date tree needs the date');
-    const r = ensureDay(text, date, { week: tpl.target.week, parentLine });
+    const r = ensureDay(text, date, { week: tpl.target.week, month: tpl.target.month, parentLine });
     text = r.text; dayLine = r.line;
   }
   if (tpl.target.kind === 'function') {

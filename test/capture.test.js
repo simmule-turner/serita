@@ -40,5 +40,5 @@ test('the reader reads lists, strings, keywords and quotes', () => {
 test('add-to-list puts the new template first, as Emacs does; setq gives the list;  unsupported targets are named', () => {
   const t = parseTemplates('(add-to-list \'org-capture-templates \'("a" "A" entry (file "f.org") "* %?"))\n(add-to-list \'org-capture-templates \'("b" "B" plain (file "f.org") "%?"))');
   assert.deepEqual(t.map((x) => x.key), ['b', 'a']);
-  assert.throws(() => parseTemplates('(setq org-capture-templates \'(("a" "A" entry (function foo) "* %?")))'), /not supported yet/);
+  assert.throws(() => parseTemplates('(setq org-capture-templates \'(("a" "A" entry (function foo) "* %?")))'), /invalid capture target specification \(function\)/);
 });

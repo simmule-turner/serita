@@ -1,0 +1,461 @@
+[
+ {
+  "line": "*bold*",
+  "found": [
+   [
+    "bold",
+    "*bold*"
+   ]
+  ]
+ },
+ {
+  "line": "a*b*c",
+  "found": []
+ },
+ {
+  "line": "x *bold* y",
+  "found": [
+   [
+    "bold",
+    "*bold*"
+   ]
+  ]
+ },
+ {
+  "line": "*b *",
+  "found": []
+ },
+ {
+  "line": "* b*",
+  "found": []
+ },
+ {
+  "line": "(*b*)",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "*b*,",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "*b*.",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "*b*'",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "*b*\"",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "*b*-",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "*b*_",
+  "found": []
+ },
+ {
+  "line": "*b*a",
+  "found": []
+ },
+ {
+  "line": "a*b*",
+  "found": []
+ },
+ {
+  "line": "*a* *b*",
+  "found": [
+   [
+    "bold",
+    "*a*"
+   ],
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "*a, b*",
+  "found": [
+   [
+    "bold",
+    "*a, b*"
+   ]
+  ]
+ },
+ {
+  "line": "*a",
+  "found": []
+ },
+ {
+  "line": "b*",
+  "found": []
+ },
+ {
+  "line": "*a",
+  "found": []
+ },
+ {
+  "line": "",
+  "found": []
+ },
+ {
+  "line": "b*",
+  "found": []
+ },
+ {
+  "line": "*a",
+  "found": []
+ },
+ {
+  "line": "b",
+  "found": []
+ },
+ {
+  "line": "c*",
+  "found": []
+ },
+ {
+  "line": "*/bi/*",
+  "found": [
+   [
+    "bold",
+    "*/bi/*"
+   ],
+   [
+    "italic",
+    "/bi/"
+   ]
+  ]
+ },
+ {
+  "line": "/*ib*/",
+  "found": [
+   [
+    "italic",
+    "/*ib*/"
+   ],
+   [
+    "bold",
+    "*ib*"
+   ]
+  ]
+ },
+ {
+  "line": "=*not*=",
+  "found": [
+   [
+    "verbatim",
+    "=*not*="
+   ]
+  ]
+ },
+ {
+  "line": "=a=b=",
+  "found": [
+   [
+    "verbatim",
+    "=a=b="
+   ]
+  ]
+ },
+ {
+  "line": "~a=b~",
+  "found": [
+   [
+    "code",
+    "~a=b~"
+   ]
+  ]
+ },
+ {
+  "line": "_u_",
+  "found": [
+   [
+    "underline",
+    "_u_"
+   ]
+  ]
+ },
+ {
+  "line": "+s+",
+  "found": [
+   [
+    "strike-through",
+    "+s+"
+   ]
+  ]
+ },
+ {
+  "line": "a_b_c",
+  "found": []
+ },
+ {
+  "line": "**",
+  "found": []
+ },
+ {
+  "line": "***",
+  "found": []
+ },
+ {
+  "line": "*a**",
+  "found": [
+   [
+    "bold",
+    "*a**"
+   ]
+  ]
+ },
+ {
+  "line": "**a**",
+  "found": [
+   [
+    "bold",
+    "**a**"
+   ],
+   [
+    "bold",
+    "*a*"
+   ]
+  ]
+ },
+ {
+  "line": "*a *b* c*",
+  "found": [
+   [
+    "bold",
+    "*a *b*"
+   ]
+  ]
+ },
+ {
+  "line": "/it/",
+  "found": [
+   [
+    "italic",
+    "/it/"
+   ]
+  ]
+ },
+ {
+  "line": "x/it/",
+  "found": []
+ },
+ {
+  "line": "/it/x",
+  "found": []
+ },
+ {
+  "line": "[*b*]",
+  "found": []
+ },
+ {
+  "line": "{*b*}",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "<*b*>",
+  "found": []
+ },
+ {
+  "line": "- *b*",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "*b*:",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "*b*;",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "*b*!",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "*b*?",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "*b*)",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "*b*]",
+  "found": []
+ },
+ {
+  "line": "\\*b*",
+  "found": []
+ },
+ {
+  "line": "*b\\*",
+  "found": [
+   [
+    "bold",
+    "*b\\*"
+   ]
+  ]
+ },
+ {
+  "line": "*b*\\",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "'*b*'",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "\"*b*\"",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "*b*…",
+  "found": []
+ },
+ {
+  "line": "é*b*",
+  "found": []
+ },
+ {
+  "line": "*b*é",
+  "found": []
+ },
+ {
+  "line": "1*b*",
+  "found": []
+ },
+ {
+  "line": "*1*",
+  "found": [
+   [
+    "bold",
+    "*1*"
+   ]
+  ]
+ },
+ {
+  "line": "*b* *c",
+  "found": [
+   [
+    "bold",
+    "*b*"
+   ]
+  ]
+ },
+ {
+  "line": "=a b=",
+  "found": [
+   [
+    "verbatim",
+    "=a b="
+   ]
+  ]
+ },
+ {
+  "line": "= a=",
+  "found": []
+ },
+ {
+  "line": "=a =",
+  "found": []
+ },
+ {
+  "line": "~~",
+  "found": []
+ },
+ {
+  "line": "==",
+  "found": []
+ },
+ {
+  "line": "",
+  "found": []
+ }
+]

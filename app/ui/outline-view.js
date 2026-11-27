@@ -4,6 +4,7 @@
 import { analyze, ellipsisLines, hiddenLines } from '../../core/outline.js';
 import { tableView } from '../../core/table.js';
 import { h } from './dom.js';
+import { inlineNodes } from './inline.js';
 
 const CHECKBOX = /^([ \t]*(?:[-+*]|\d+[.)])[ \t]+(?:\[@\d+\][ \t]+)?)\[([ X-])\](.*)$/s;
 
@@ -38,16 +39,18 @@ export function renderOutline(root, { text, folds, hideStars, indent = false, ta
         h('button', { class: 'chev', 'aria-label': folds[line] ? 'Show' : 'Hide', onclick: () => on.cycle(line) }, hasContent ? (folds[line] ? '▸' : '▾') : ''),
         h('span', { class: 'stars' }, indent ? `${' '.repeat((hd.level - 1) * 2)}*` : hideStars ? `${' '.repeat(hd.level - 1)}*` : '*'.repeat(hd.level)),
         hd.todo === null ? null : h('button', { class: `st ${isDone ? 'done' : 'todo'}`, onclick: () => on.todo(line) }, hd.todo),
-        h('button', { class: 'title', onclick: () => on.actions(line) }, (hd.priority ? `[#${hd.priority}] ` : '') + hd.title),
+        h('button', { class: 'title', onclick: () => on.actions(line) }, (hd.priority ? `[#${hd.priority}] ` : ''), ...(on.link ? inlineNodes(hd.title, (c) => on.link(line, c), Math.max(0, node.line.text.indexOf(hd.title, hd.level))) : [hd.title])),
         hd.tags.length ? h('span', { class: 'tags' }, `:${hd.tags.join(':')}:`) : null,
         dots.has(line) ? h('span', { class: 'dots' }, '…') : null));
       return;
     }
     const raw = node.line.text;
+    const plainLine = node.type === 'text' || node.type === 'list-item';
+    const rich = (str, base) => (on.link && plainLine ? inlineNodes(str, (c) => on.link(line, c), base) : [str]);
     const m = CHECKBOX.exec(raw);
     const it = itemAt.get(line);
     const chev = it && it.end > it.line + 1 ? h('button', { class: 'ichev', 'aria-label': folds[line] ? 'Show' : 'Hide', onclick: () => on.cycle(line) }, folds[line] ? '▸' : '▾') : null;
-    rows.push(h('div', { class: `ol-line${raw.trim() === '' ? ' blank' : ''}`, style: indent ? `padding-left: calc(32px + ${level * 2}ch)` : undefined }, chev, m ? [m[1], h('button', { class: 'box', 'aria-label': m[2] === 'X' ? 'Checked' : 'Unchecked', onclick: () => on.checkbox(line) }, `[${m[2]}]`), m[3]] : raw === '' ? ' ' : raw));
+    rows.push(h('div', { class: `ol-line${raw.trim() === '' ? ' blank' : ''}`, style: indent ? `padding-left: calc(32px + ${level * 2}ch)` : undefined }, chev, m ? [m[1], h('button', { class: 'box', 'aria-label': m[2] === 'X' ? 'Checked' : 'Unchecked', onclick: () => on.checkbox(line) }, `[${m[2]}]`), ...rich(m[3], m[1].length + 3)] : raw === '' ? ' ' : rich(raw, 0)));
   });
   root.replaceChildren(...rows);
 }

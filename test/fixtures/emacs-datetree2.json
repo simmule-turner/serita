@@ -1,0 +1,123 @@
+[
+ {
+  "id": "tm-empty",
+  "input": "",
+  "date": [
+   2026,
+   11,
+   26
+  ],
+  "tree": "month",
+  "expect": "\n* 2026\n** 2026-11 November\n*** new\n"
+ },
+ {
+  "id": "tm-exist",
+  "input": "* 2026\n** 2026-11 November\n*** old\n",
+  "date": [
+   2026,
+   11,
+   26
+  ],
+  "tree": "month",
+  "expect": "* 2026\n** 2026-11 November\n*** old\n*** new\n"
+ },
+ {
+  "id": "tm-new-month",
+  "input": "* 2026\n** 2026-12 December\n",
+  "date": [
+   2026,
+   11,
+   26
+  ],
+  "tree": "month",
+  "expect": "* 2026\n** 2026-11 November\n*** new\n** 2026-12 December\n"
+ },
+ {
+  "id": "tm-week",
+  "input": "",
+  "date": [
+   2026,
+   11,
+   26
+  ],
+  "tree": "week",
+  "expect": "\n* 2026\n** 2026-W48\n*** 2026-11-26 Thursday\n**** new\n"
+ },
+ {
+  "id": "wk-ny-exist",
+  "input": "* 2026\n** 2026-W53\n*** 2026-12-31 Thursday\n",
+  "date": [
+   2027,
+   1,
+   1
+  ],
+  "tree": "week",
+  "expect": "* 2026\n** 2026-W53\n*** 2026-12-31 Thursday\n*** 2027-01-01 Friday\n**** new\n"
+ },
+ {
+  "id": "wk-ny0",
+  "input": "",
+  "date": [
+   2026,
+   12,
+   31
+  ],
+  "tree": "week",
+  "expect": "\n* 2026\n** 2026-W53\n*** 2026-12-31 Thursday\n**** new\n"
+ },
+ {
+  "id": "wk-ny1",
+  "input": "",
+  "date": [
+   2027,
+   1,
+   1
+  ],
+  "tree": "week",
+  "expect": "\n* 2026\n** 2026-W53\n*** 2027-01-01 Friday\n**** new\n"
+ },
+ {
+  "id": "wk-ny2",
+  "input": "",
+  "date": [
+   2024,
+   12,
+   30
+  ],
+  "tree": "week",
+  "expect": "\n* 2025\n** 2025-W01\n*** 2024-12-30 Monday\n**** new\n"
+ },
+ {
+  "id": "wk-ny3",
+  "input": "",
+  "date": [
+   2025,
+   1,
+   1
+  ],
+  "tree": "week",
+  "expect": "\n* 2025\n** 2025-W01\n*** 2025-01-01 Wednesday\n**** new\n"
+ },
+ {
+  "id": "wk-ny4",
+  "input": "",
+  "date": [
+   2021,
+   1,
+   3
+  ],
+  "tree": "week",
+  "expect": "\n* 2020\n** 2020-W53\n*** 2021-01-03 Sunday\n**** new\n"
+ },
+ {
+  "id": "wk-ny5",
+  "input": "",
+  "date": [
+   2026,
+   12,
+   28
+  ],
+  "tree": "week",
+  "expect": "\n* 2026\n** 2026-W53\n*** 2026-12-28 Monday\n**** new\n"
+ }
+]

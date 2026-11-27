@@ -70,6 +70,7 @@ function recalculateRun(text, line, mode, opts) {
   }
   if (f.tblfm.length === 0) return { text };
   if (mode === 'row') {
+    if (/^\s*\|\s*[!^_$/]\s*\|/.test(text.split('\n')[line] ?? '')) return { text, message: 'Re-applying formulas... done' }; // a row marked ! ^ _ $ or / takes no formulas
     const r = applyAll(text, f, { ...opts, only: dataRowNumber(text, f, line) });
     return r.error ? r : { text: r.text, message: 'Re-applying formulas... done' };
   }
@@ -86,6 +87,15 @@ function recalculateRun(text, line, mode, opts) {
     cur = r.text;
   }
   return { text: cur, error: `No convergence after ${MAX_ITERATIONS} iterations` };
+}
+
+/** What TAB, S-TAB, RET and C-c C-c first do in a table: a row marked # has its formulas applied again (org-table-maybe-recalculate-line). Returns { text, message? }. */
+export function autoRecalc(text, line) {
+  if (!/^\s*\|\s*#\s*\|/.test(text.split('\n')[line] ?? '')) return { text };
+  const f = formulaLines(text, line);
+  if (!f || f.tblfm.length === 0) return { text };
+  const r = recalculate(text, line, 'row');
+  return r.error ? { text } : r;
 }
 
 /** Recalculates every table that has a #+TBLFM: line (org-table-recalculate-buffer-tables), silently. */
