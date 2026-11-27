@@ -9,3 +9,14 @@
 * Log
 | Date | Item |
 |------+------|
+
+* Date trees and clocks
+In config.org, the group "w" has Meeting, which files under today's year, month and day headings (made when missing, in order) and clocks while you write it (~:clock-in t~), and Weekly note, which files under ISO week headings. Press C-c c, then w, then m. The headings below are what a meeting captured on 2026-11-26 leaves.
+
+* 2026
+** 2026-11 November
+*** 2026-11-26 Thursday
+**** Planning meeting
+:LOGBOOK:
+CLOCK: [2026-11-26 Thu 10:00]--[2026-11-26 Thu 10:25] =>  0:25
+:END:

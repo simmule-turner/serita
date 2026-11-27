@@ -4,8 +4,9 @@
 // A table is rows of strings with 'hline' for each rule, as table.js's toLisp gives it.
 
 import { alignLines, stringWidth } from './table.js';
+import { translate, MarkupError } from './orgmarkup.js';
 
-const NUMBER = /^[<>]?[-+^.0-9]*[0-9][-+^.0-9eEdDx()%:]*$/;
+const NUMBER = /^([<>]?[-+^.0-9]*[0-9][-+^.0-9eEdDx()%:]*|0[xX][0-9a-fA-F]+|nan|[-+]?inf)$/i;
 const NUMBER_FRACTION = 0.5;
 const COOKIE = /^<([lrc])?(\d+)?>$/;
 const isCookieRow = (r) => r !== 'hline' && r.some((c) => c !== '') && r.every((c) => c === '' || COOKIE.test(c));
@@ -13,7 +14,7 @@ const isCookieRow = (r) => r !== 'hline' && r.some((c) => c !== '') && r.every((
 export class ExportError extends Error {}
 
 /** The rows without alignment-cookie rows, each column's alignment (l, r, c) and width cookie, and the rows as groups split at rules. */
-function prepare(rows) {
+function prepare(rows, tr = (c) => c) {
   const data = rows.filter((r) => r !== 'hline');
   const cookies = data.filter(isCookieRow);
   const body = rows.filter((r) => r === 'hline' || !isCookieRow(r));
@@ -23,7 +24,7 @@ function prepare(rows) {
     let letter = null; let w = null;
     for (const c of cookies) { const k = COOKIE.exec(c[j] ?? ''); if (k) { if (k[1] && !letter) letter = k[1]; if (k[2] && w === null) w = Number(k[2]); } }
     let fields = 0; let numbers = 0;
-    for (const r of data) { if (isCookieRow(r)) continue; const c = r[j] ?? ''; if (c === '') continue; fields++; if (NUMBER.test(c)) numbers++; }
+    for (const r of data) { if (isCookieRow(r)) continue; const c = tr(r[j] ?? ''); if (c === '') continue; fields++; if (NUMBER.test(c)) numbers++; }
     align.push(letter ?? (fields > 0 && numbers / fields >= NUMBER_FRACTION ? 'r' : 'l'));
     cookieWidth.push(w);
   }
@@ -37,9 +38,11 @@ function prepare(rows) {
 
 // ---- Cells ----------------------------------------------------------------------------------------------------------------
 
-const html = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\\vert\{\}/g, '&vert;');
-const latex = (s) => s.replace(/\\vert\{\}/g, '\\(\\vert{}\\)');
-const plain = (s) => s.replace(/\\vert\{\}/g, '|');
+const cell = (format) => (s) => { try { return translate(s, format); } catch (e) { if (e instanceof MarkupError) throw new ExportError(e.message); throw e; } };
+const html = cell('html');
+const latex = cell('latex');
+const texinfo = cell('texinfo');
+const plain = cell('ascii');
 
 // ---- Generic ----------------------------------------------------------------------------------------------------------------
 
@@ -86,7 +89,7 @@ const FORMATS = {
   },
   generic,
   latex(rows, o) {
-    const p = prepare(rows);
+    const p = prepare(rows, latex);
     const env = word(o, 'environment', 'tabular');
     const book = !!o.booktabs;
     const fmt = (c) => (o.fmt ? o.fmt.replace('%s', latex(c)) : latex(c));
@@ -117,7 +120,7 @@ const FORMATS = {
     return (o.splice ? out.slice(1, -1) : out).join('\n');
   },
   html(rows, o) {
-    const p = prepare(rows);
+    const p = prepare(rows, html);
     const attrs = o.attributes ?? { border: '2', cellspacing: '0', cellpadding: '6', rules: 'groups', frame: 'hsides' };
     const open = `<table${Object.entries(attrs).map(([k, v]) => ` ${k.replace(/^:/, '')}="${v}"`).join('')}>`;
     const cls = { l: 'org-left', r: 'org-right', c: 'org-center' };
@@ -131,20 +134,20 @@ const FORMATS = {
     return out.join('\n');
   },
   texinfo(rows) {
-    const p = prepare(rows);
+    const p = prepare(rows, texinfo);
     const widths = p.rows.length ? Array.from({ length: p.n }, (_, j) => Math.max(1, ...p.rows.map((r) => stringWidth(r[j])))) : [];
     const out = [`@multitable ${widths.map((w) => `{${'a'.repeat(w)}}`).join(' ')}`];
     p.groups.forEach((g, gi) => g.forEach((r, ri) => {
       const head = gi === 0 && ri === 0 && p.groups.length > 1;
-      out.push(`${head ? '@headitem' : '@item'} ${plain(r[0] ?? '')}`, ...r.slice(1).map((c) => `@tab ${plain(c)}`));
+      out.push(`${head ? '@headitem' : '@item'} ${texinfo(r[0] ?? '')}`, ...r.slice(1).map((c) => `@tab ${texinfo(c)}`));
     }));
     out.push('@end multitable');
     return out.join('\n');
   },
   unicode(rows) {
-    const p = prepare(rows);
+    const p = prepare(rows, plain);
     const cells = (r) => r.map(plain);
-    const width = Array.from({ length: p.n }, (_, j) => p.cookieWidth[j] ?? Math.max(1, ...p.rows.map((r) => stringWidth(plain(r[j])))));
+    const width = Array.from({ length: p.n }, (_, j) => p.cookieWidth[j] ?? (p.rows.every((r) => r[j] === '') ? 1 : Math.max(...p.rows.map((r) => stringWidth(plain(r[j]))))));
     const total = width.reduce((a, w) => a + w + 2, 0);
     const put = (c, w, a) => { const gap = Math.max(0, w - stringWidth(c)); return a === 'r' ? ' '.repeat(gap) + c : a === 'c' ? ' '.repeat(Math.floor(gap / 2)) + c + ' '.repeat(gap - Math.floor(gap / 2)) : c + ' '.repeat(gap); };
     const out = ['━'.repeat(total)];

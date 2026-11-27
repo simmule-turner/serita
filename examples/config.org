@@ -28,6 +28,9 @@
     ("j" "Journal" entry (file+olp "capture.org" "Journal") "* %U %?")
     ("l" "Log" table-line (file+headline "capture.org" "Log") "| %U | %? |")
     ("d" "Dated log" entry (file+function "capture.org" log-today) "* %^T %?\n")
+    ("w" "Work")
+    ("wm" "Meeting" entry (file+datetree "capture.org") "* %?\n" :clock-in t)
+    ("wk" "Weekly note" entry (file+weektree "capture.org") "* %?\n")
     ;; The birthday goes in the property drawer, where org-contacts-anniversaries reads it.
     ("v" "Contact" entry (file+headline "contacts.org" "Contacts")
      "* %^{Name}\n:PROPERTIES:\n:EMAIL: %^{Email}\n:BIRTHDAY: %^{Birthday (YYYY-MM-DD)}\n:END:\n%?")))
@@ -60,7 +63,7 @@ org-archive-mark-done is nil, t or a done keyword; org-archive-save-context-info
 ** Stars and indentation
 org-hide-leading-stars is t to show only the last star of a heading, and org-startup-indented is t to open files with org-indent-mode on. A file can decide for itself with #+STARTUP: indent or #+STARTUP: noindent.
 ** Tables
-org-table-widget-wrap-columns is t to wrap long cells in the Outline view's table grid, org-table-widget-max-width-fraction is the share of the screen a table may use (0.3 to 1), and org-table-widget-zebra-stripe is t to shade every other row.
+org-table-widget-wrap-columns is t to wrap long cells in the Outline view's table grid, org-table-widget-max-width-fraction is the share of the screen a table may use (0.3 to 1), and org-table-widget-zebra-stripe, serita-extra-menu is t to shade every other row.
 ** Diary
 org-agenda-include-diary is t or nil, diary-file names the diary (any storage name), and calendar-date-style is american, european or iso.
 
@@ -81,6 +84,19 @@ Settings, Emacs, Init file names a Lisp file that is run at startup and by Reloa
 (setq org-agenda-files '("github:home.org" "github:journal.org")
       org-tags-column 0)
 (load "github:org/templates.el")
+#+end_src
+
+*** Extra menu
+An ~easy-menu-define~ form in the init file is a menu at the top of Menu, above More. A row names a command, a capture or an agenda, or a function you defined; ~"---"~ is a separator and a list is a submenu. In Emacs the same form adds a menu to the menu bar.
+#+begin_src emacs-lisp
+(easy-menu-define my-menu global-map "My menu"
+  '("My menu"
+    ["Capture a task" (org-capture nil "t") :help "Task template"]
+    ["Agenda" org-agenda]
+    "---"
+    ("Clock"
+     ["Clock in" org-clock-in]
+     ["Clock out" org-clock-out])))
 #+end_src
 
 ** Keys of the settings above

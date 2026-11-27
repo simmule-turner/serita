@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.6
+An extra menu: an easy-menu-define form in the init file, valid in Emacs too, shows at the top of Menu, above More. Capture gains template groups, running a template by key, date and week trees (file+datetree, file+weektree, file+olp+datetree and the +prompt forms) and :clock-in with :clock-keep and :clock-resume. Table export turns Org markup in cells into LaTeX, HTML, Texinfo and Unicode forms, with the full entity table. The Outline view shows subtree rows to cut, copy and paste, and format-time-string in your own functions uses local time.
+
 * 0.11.5
 Subtrees cut, copy and paste as in Emacs: C-c C-x C-w, M-w and C-y (cells in a table), with a count before C-w or M-w for sibling subtrees and a level before C-y; consecutive cuts join. Table rows and columns are in the palette, Export is in the Outline view's table sheet, a GitHub token loses stray spaces and line breaks when saved, and the theme is set before files are read, with a plain message when GitHub rejects the token.
 

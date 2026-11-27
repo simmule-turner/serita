@@ -5,8 +5,11 @@
 
 import { isSym } from './lisp-read.js';
 import { emacsRegexp, hasUpper } from './regexp.js';
+import { analyze } from './outline.js';
 
 export class ElispError extends Error {}
+/** find-file for a file whose text the caller has not given yet; the caller reads it and runs the form again. */
+export class NeedFile extends Error { constructor(file) { super(`Need ${file}`); this.file = file; } }
 const bad = (m) => { throw new ElispError(m); };
 const truthy = (x) => x !== null && x !== false;
 const sym = (x) => (isSym(x) ? x.sym : null);
@@ -41,10 +44,14 @@ const regexpQuote = (s) => s.replace(/[[*.\\?+^$]/g, (c) => `\\${c}`);
 /**
  * An interpreter over one buffer.
  * @param {string} source the init file text's forms, already read (defuns are taken from them)
- * @param {{ text: string, now?: Date }} init the buffer text; `now` for format-time-string
+ * @param {{ text: string, now?: Date }} init the buffer text; `now` (a Date, or a function that gives one) for format-time-string
  */
-export function makeLisp(forms, { now = new Date() } = {}) {
+/** The local date and time as a Date whose UTC fields hold them. */
+const localNow = () => { const n = new Date(); return new Date(Date.UTC(n.getFullYear(), n.getMonth(), n.getDate(), n.getHours(), n.getMinutes(), n.getSeconds())); };
+
+export function makeLisp(forms, { now = localNow, files = new Map() } = {}) {
   const defs = new Map();
+  let visiting = null; // the file find-file opened
   for (const f of forms) if (Array.isArray(f) && sym(f[0]) === 'defun') defs.set(sym(f[1]), { params: f[2].map(sym), body: f.slice(3) });
   const globals = new Map();
   let buf = { text: '', pt: 1 };
@@ -108,9 +115,26 @@ export function makeLisp(forms, { now = new Date() } = {}) {
     '1+': (a) => num(a) + 1, '1-': (a) => num(a) - 1,
     '=': (a, b) => num(a) === num(b), '<': (a, b) => num(a) < num(b), '>': (a, b) => num(a) > num(b), '<=': (a, b) => num(a) <= num(b), '>=': (a, b) => num(a) >= num(b), '/=': (a, b) => num(a) !== num(b),
     not: (a) => !truthy(a), null: (a) => !truthy(a), equal: (a, b) => show(a, true) === show(b, true), eq: (a, b) => a === b, 'string=': (a, b) => str(a) === str(b),
+    cons: (a, b) => (b === null ? [a] : Array.isArray(b) ? [a, ...b] : bad('error Improper lists are not supported')),
+    'find-file': (n) => { const name = str(n); if (!files.has(name)) throw new NeedFile(name); buf = { text: files.get(name), pt: 1 }; match = null; visiting = name; return null; },
+    'org-find-olp': (path, thisBuffer) => {
+      if (!Array.isArray(path) || path.some((x) => typeof x !== 'string')) bad('wrong-type-argument listp');
+      let text = buf.text; let names = path;
+      if (thisBuffer === undefined || !truthy(thisBuffer)) { const f = path[0]; if (!files.has(f)) throw new NeedFile(f); text = files.get(f); names = path.slice(1); }
+      const a = analyze(text);
+      let level = 1; let scope = a.heads.filter((h) => h.level === 1); let found = null;
+      for (const name of names) {
+        found = scope.find((h) => h.title === name);
+        if (!found) bad(`error Heading not found on level ${level}: ${name}`);
+        level++; scope = found.children;
+      }
+      if (!found) bad('error No outline path');
+      const lines = text.split('\n');
+      return lines.slice(0, found.line).reduce((n, l) => n + l.length + 1, 0) + 1;
+    },
     list: (...a) => a, car: (a) => (Array.isArray(a) ? a[0] ?? null : null), cdr: (a) => (Array.isArray(a) ? a.slice(1) : null), nth: (n, a) => a?.[n] ?? null, length: (a) => (typeof a === 'string' || Array.isArray(a) ? a.length : 0),
     concat: (...a) => a.map(str).join(''), format: (f, ...a) => format(f, a), 'regexp-quote': (s) => regexpQuote(str(s)), 'make-string': (n, c) => String.fromCodePoint(num(c)).repeat(num(n)),
-    'format-time-string': (f) => strftime(str(f), now), upcase: (s) => str(s).toUpperCase(), downcase: (s) => str(s).toLowerCase(), 'string-empty-p': (s) => str(s) === '',
+    'format-time-string': (f) => strftime(str(f), typeof now === 'function' ? now() : now), upcase: (s) => str(s).toUpperCase(), downcase: (s) => str(s).toLowerCase(), 'string-empty-p': (s) => str(s) === '',
     point: () => buf.pt, 'point-min': () => 1, 'point-max': () => buf.text.length + 1,
     'goto-char': (p) => { at(num(p)); buf.pt = p; return p; },
     'forward-line': (n) => forwardLine(n ?? 1), 'beginning-of-line': () => { buf.pt = lineStart(buf.pt); return null; }, 'end-of-line': () => { buf.pt = lineEnd(buf.pt); return null; },
@@ -183,6 +207,11 @@ export function makeLisp(forms, { now = new Date() } = {}) {
     },
   };
   SPECIAL['setq-default'] = SPECIAL.setq;
+  // easy-menu-define SYMBOL MAPS DOC MENU: the menu is kept as data; it is not attached to a keymap
+  // Features the app implements load silently; any other feature is reported as not supported
+  const FEATURES = new Set(['org', 'org-capture', 'org-agenda', 'org-clock', 'org-table', 'org-element', 'ol', 'cl-lib', 'subr-x', 'seq', 'easymenu']);
+  SPECIAL.require = (a, env) => { const f = sym(ev(a[0], env)); if (!FEATURES.has(f)) throw new Error(`void-function ${f === 'transient' ? 'require transient' : `require ${f}`}`); return ev(a[0], env); };
+  SPECIAL['easy-menu-define'] = (a, env) => { const n = sym(a[0]); globals.set(n, ev(a[3], env)); return a[0]; };
 
   function ev(form, env) {
     if (form === null || form === true || typeof form === 'number' || typeof form === 'string') return form;
@@ -206,7 +235,9 @@ export function makeLisp(forms, { now = new Date() } = {}) {
     if (FUNCS[head]) return FUNCS[head](...args);
     const d = defs.get(head);
     if (d) {
-      const frame = { vars: new Map(d.params.map((p, i) => [p, args[i] ?? null])), up: null };
+      const vars = new Map(); let mode = 'req'; let k = 0;
+      for (const p of d.params) { if (p === '&optional' || p === '&rest') { mode = p; continue; } if (mode === '&rest') { vars.set(p, args.slice(k).length ? args.slice(k) : null); k = args.length; } else vars.set(p, args[k++] ?? null); }
+      const frame = { vars, up: null };
       return evalBody(d.body.filter((x, i) => !(i === 0 && typeof x === 'string' && d.body.length > 1)), frame);
     }
     return bad(`void-function ${head}`);
@@ -216,6 +247,8 @@ export function makeLisp(forms, { now = new Date() } = {}) {
     has: (name) => defs.has(name),
     /** Evaluates one top-level form (setq, defun, add-to-list and the rest) with variables kept between calls. */
     evaluate(form) { steps = 0; return ev(form, null); },
+    /** Runs a form in a buffer that find-file may switch; returns its value and the file and point it ended at. May throw NeedFile. */
+    run(form) { steps = 0; visiting = null; buf = { text: '', pt: 1 }; match = null; const value = ev(form, null); return { value, file: visiting, point: buf.pt, text: buf.text }; },
     /** The value of a global variable, or undefined when nothing has set it. */
     get: (name) => globals.get(name),
     /** Runs the function NAME (no arguments) in a buffer; returns the new text and where point is, 1-based. */

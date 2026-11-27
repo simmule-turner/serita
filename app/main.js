@@ -16,14 +16,15 @@ import { analyze, contents, cycle, cycleGlobal, diff, ellipsisLines, hiddenLines
 import { backwardChar, backwardWord, forwardChar, forwardWord, lineEnd as endOfLine, lineStart as startOfLine, moveVertical } from '../core/motion.js';
 import { DEFAULT_TAGS_COLUMN, changeLevel, cycleTodo, todoTarget, indentItem, insertHeadingAfter, insertHeadingHere, moveItem, moveSubtree, setPriority, setTags, setTitle, stepPriority, toggleCheckbox, updateCookieAt } from '../core/outline-edit.js';
 import { parseStringList, formatStringList } from '../core/lisp-list.js';
-import { clockIn, clockOut, cancelClock, openClock, inClockedEntry } from '../core/clock.js';
-import { parseTemplates, promptsOf, expand, place } from '../core/capture.js';
+import { clockIn, clockOut, cancelClock, openClock, inClockedEntry, clockCapture } from '../core/clock.js';
+import { parseTemplates, promptsOf, expand, place, menuAt, templateByKey } from '../core/capture.js';
 import { bodyOf, setBody } from '../core/body.js';
 import { MONTH_NAMES, monthGrid, stepMonth, stepTime } from '../core/calendar.js';
 import { archiveSubtree, ARCHIVE_CONTEXT, checkTarget, newChild, archiveToSibling, listTargets, parseRefileSettings, RefileCache, refile, refileMessage, toggleArchiveTag } from '../core/refile.js';
 import { isEffort } from '../core/effort.js';
 import { deleteProperty, propertiesOf, propertyNames, setProperty } from '../core/properties.js';
 import { DEFAULT_FORMATS, parseAgendaSettings, phoneCells, phoneColumns } from '../core/prefix.js';
+import { parseExtraMenu } from '../core/extra-menu.js';
 import { cutSubtree, subtreeAt, pasteSubtree } from '../core/subtree.js';
 import { NONE as NO_ARG, argLabel, argValue, pressDigit, pressU } from '../core/universal.js';
 import { agenda, searchView, tagsView, todoList } from '../core/agenda.js';
@@ -38,7 +39,8 @@ import { createKillRing } from '../core/killring.js';
 import * as table from '../core/table.js';
 import * as tblcmd from '../core/tblcmd.js';
 import * as tblexport from '../core/tblexport.js';
-import { loadInit } from '../core/init.js';
+import { loadInit, printLisp } from '../core/init.js';
+import { makeLisp, NeedFile } from '../core/elisp.js';
 import * as plot from '../core/plot.js';
 import { lineAt, project, toFull, toShown, touchedFold } from '../core/projection.js';
 import { renderOutline } from './ui/outline-view.js';
@@ -176,17 +178,26 @@ function panel(build) {
 }
 
 /** A list of choices. Items are { label, value, meta? }. */
-function choose(title, items, { cancel = true, subtitle = null } = {}) {
+function choose(title, items, { cancel = true, subtitle = null, back = null } = {}) {
   return panel((sheet, close) => {
+    // A key typed that an item names (item.key) picks it, as in Emacs's capture menu.
+    const typed = (e) => {
+      if (!sheet.isConnected) { document.removeEventListener('keydown', typed, true); return; }
+      if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1) return;
+      const it = items.find((x) => x.key === e.key);
+      if (it) { e.preventDefault(); e.stopPropagation(); document.removeEventListener('keydown', typed, true); close(it.value); }
+    };
+    if (items.some((x) => x.key)) document.addEventListener('keydown', typed, true);
     put(sheet, 
       title ? h('h2', {}, title) : null,
       subtitle ? h('p', {}, subtitle) : null,
-      h('div', { class: 'list' }, items.map((it) => (it.group ? h('div', { class: 'group' }, it.group) : h('button', { class: `item${it.dim ? ' dim' : ''}`, onclick: () => close(it.value) },
+      h('div', { class: 'list' }, items.map((it) => (it.separator ? h('div', { class: 'sep' }) : it.group ? h('div', { class: 'group' }, it.group) : h('button', { class: `item${it.dim ? ' dim' : ''}`, onclick: () => close(it.value) },
         h('span', {}, it.label), it.meta ? h('span', { class: 'meta' }, it.meta) : null)))),
-      cancel ? h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Cancel')) : null,
+      cancel ? h('div', { class: 'row' }, back ? h('button', { onclick: () => close(BACK) }, back) : null, h('button', { onclick: () => close(undefined) }, 'Cancel')) : null,
     );
   });
 }
+const BACK = Symbol('back');
 
 /** A question with buttons. Buttons are { label, value, primary? }; the last one given is not special. */
 function ask(title, text, buttons) {
@@ -1104,7 +1115,8 @@ $('btn-view').addEventListener('click', async () => {
   else if (what === 'calendar') await calendarScreen();
   else if (what) setView(what);
 });
-$('btn-menu').addEventListener('click', async () => {
+/** The menu without an extra menu: Commands, Capture and Settings. With one, it is what "More" shows. */
+async function builtinMenu() {
   const what = await choose(null, [
     waiting ? { label: 'Restart to update', meta: `${VERSION} to ${waiting.version}`, value: 'restart' } : null,
     { label: 'Commands', value: 'commands' },
@@ -1114,6 +1126,102 @@ $('btn-menu').addEventListener('click', async () => {
   else if (what === 'commands') await commandPalette();
   else if (what === 'capture') await capture();
   else if (what === 'settings') await settings();
+}
+
+// ---- The extra menu (an easy-menu-define form in the init file) ---------------------------------------------------------------
+
+let extraMenuMemo = { text: null };
+function extraMenu() {
+  const text = settingsNow()['serita-extra-menu'] ?? '';
+  if (!text) return null;
+  if (extraMenuMemo.text !== text) { try { extraMenuMemo = { text, ...parseExtraMenu(text) }; } catch (e) { extraMenuMemo = { text, error: e }; } }
+  return extraMenuMemo;
+}
+
+/** :enable and :visible: t, nil and (use-region-p) are known; any other condition is reported when the row is used. */
+function menuCondition(c) {
+  if (c === true) return true;
+  if (c === null) return false;
+  if (Array.isArray(c) && c.length === 1 && c[0]?.sym === 'use-region-p') return viewMode() === 'text' && editor.selectionStart !== editor.selectionEnd;
+  return undefined;
+}
+
+/** The sheet for one level of the extra menu: its rows, separators and submenus. Returns what was chosen: a row, a submenu, MORE or undefined. */
+const MORE = Symbol('more');
+function menuLevel(title, rows, { more = false } = {}) {
+  const items = [];
+  for (const r of rows) {
+    if (r.kind === 'separator') { if (items.length && !items[items.length - 1].separator) items.push({ separator: true }); }
+    else if (r.kind === 'label') items.push({ group: r.label });
+    else {
+      if (menuCondition(r.visible) === false) continue;
+      const off = menuCondition(r.enable) === false;
+      items.push({ label: r.label, meta: r.kind === 'submenu' ? '›' : r.help ?? undefined, dim: off, value: r });
+    }
+  }
+  while (items.length && items[items.length - 1].separator) items.pop();
+  if (more) items.push({ separator: true }, { label: 'More', meta: '›', value: MORE });
+  return choose(title, items, { back: title ? '‹ Back' : null });
+}
+
+/** Runs a row's callback: a command by its Emacs name, or a form such as (org-capture nil "j"), or a function the init file defines. */
+async function runMenuCallback(row, menu) {
+  const cb = row.callback;
+  if (menuCondition(row.enable) === undefined) { message(`Not supported: ${printLisp(row.enable)}`, true); return; }
+  if (menuCondition(row.enable) === false) { message(`${row.label} is not available here`); return; }
+  const head = Array.isArray(cb) ? cb[0]?.sym : cb?.sym;
+  if (!head) { message(`${row.label} has no command`, true); return; }
+  const args = Array.isArray(cb) ? cb.slice(1) : [];
+  try {
+    if (head === 'org-capture') { const k = args[1]; if (typeof k === 'string') await capture(k); else await capture(); }
+    else if (head === 'org-agenda' || head === 'org-agenda-list') await agendaScreen();
+    else if (head === 'calendar') await calendarScreen();
+    else if (head === 'execute-extended-command') await commandPalette();
+    else if ((head === 'load-file' || head === 'load') && args[0]?.sym === 'user-init-file') await runInit();
+    else if (!Array.isArray(cb) && PALETTE.some((e) => e.name === head)) await invoke(PALETTE.find((e) => e.name === head).command);
+    else if (Array.isArray(cb) || menu.lisp.has(head)) {
+      // A form or a function of the init file runs in the Lisp; find-file asks for the files it opens, which are read and the form run again.
+      const form = Array.isArray(cb) ? cb : [{ sym: head }];
+      const files = new Map();
+      for (let tries = 0; ; tries++) {
+        const run = makeLisp(menu.forms, { files });
+        try {
+          const r = run.run(form);
+          if (r.file) await visitOffset(r.file, r.point - 1);
+          return;
+        } catch (e) {
+          if (!(e instanceof NeedFile) || tries > 20) throw e;
+          const f = await app.storage.read(e.file);
+          if (!f) throw new Error(`${e.file} does not exist`);
+          files.set(e.file, f.text);
+        }
+      }
+    } else message(`Not supported: ${head}`, true);
+  } catch (e) { failure(e); }
+}
+
+/** Opens a file and puts the cursor at an offset in it, as find-file and goto-char do. */
+async function visitOffset(name, offset) {
+  const text = (session.state().buffers.find((b) => bufferName(b) === name)?.text) ?? (await app.storage.read(name))?.text ?? '';
+  const line = text.slice(0, offset).split('\n').length - 1;
+  await visitLine(name, line);
+}
+
+$('btn-menu').addEventListener('click', async () => {
+  const x = extraMenu();
+  if (x?.error) message(`Extra menu: ${x.error.message}`, true);
+  if (!x?.items) { await builtinMenu(); return; }
+  const trail = [];
+  for (;;) {
+    const level = trail.length ? trail[trail.length - 1] : null;
+    const pick = await menuLevel(level?.label ?? null, level ? level.items : x.items, { more: !level });
+    if (pick === BACK) { trail.pop(); continue; }
+    if (pick === undefined) return;
+    if (pick === MORE) { await builtinMenu(); return; }
+    if (pick.kind === 'submenu') { trail.push(pick); continue; }
+    await runMenuCallback(pick, x);
+    return;
+  }
 });
 
 // ---- Capture ------------------------------------------------------------------------------------
@@ -1136,7 +1244,7 @@ function askCapture(title, target, initial, caret) {
 }
 
 /** Files the captured text into its target file, opening the file when it is not open. */
-async function fileCapture(tpl, captured, unchanged = false) {
+async function fileCapture(tpl, captured, unchanged = false, date = localNow()) {
   const name = tpl.target.file;
   let buffer = session.state().buffers.find((b) => b.name === name);
   if (!buffer) {
@@ -1144,34 +1252,78 @@ async function fileCapture(tpl, captured, unchanged = false) {
     const id = opened.ok ? opened.id : session.createFile(name, '');
     buffer = session.state().buffers.find((b) => b.id === id);
   }
-  const r = place(buffer.text, tpl, captured, { tagsColumn: tagsColumn(), unchanged });
+  const r = place(buffer.text, tpl, captured, { tagsColumn: tagsColumn(), unchanged, date });
   session.apply(buffer.id, { text: r.text });
   message(`Captured to ${name}`);
+  return { id: buffer.id, line: r.line, clockLine: r.clockLine, delta: r.text.split('\n').length - buffer.text.split('\n').length };
 }
 
 /** C-c c: choose a template, answer its questions, edit the text, and file it. */
-async function capture() {
+async function capture(keys) {
   try {
     const templates = captureTemplates();
-    const tpl = await choose('Capture', templates.map((t) => ({ label: `${t.key}  ${t.description}`, meta: `${t.target.file} ›`, value: t })));
-    if (!tpl) return;
-    const answers = [];
-    for (const q of promptsOf(tpl.template)) {
-      const a = q.date ? await askStamp(q.prompt, q.date.active) : q.choices.length ? await choose(q.prompt, q.choices.map((c) => ({ label: c, value: c }))) : await askText({ prompt: `${q.prompt}:`, title: q.prompt, value: q.default, ok: 'OK' });
-      if (a === undefined || a === null) return;
-      answers.push(a);
-    }
-    const b = currentBuffer();
-    const hd = b ? enclosingHead() : null;
-    const above = b ? editor.value.split('\n')[kindAtCursor().line] ?? '' : '';
-    const link = b?.name ? (hd ? `[[file:${b.name}::*${hd.title}][${hd.title}]]` : above.trim() ? `[[file:${b.name}::${above.trim()}]]` : `[[file:${b.name}]]`) : '';
-    const sel = viewMode() === 'text' && editor.selectionStart !== editor.selectionEnd ? editor.value.slice(editor.selectionStart, editor.selectionEnd) : '';
-    const e = expand(tpl.template, { answers, now: localNow(), link, selection: sel });
-    const where = tpl.target.path ? `${tpl.target.file} › ${tpl.target.path.join(' › ')}` : tpl.target.file;
-    const captured = tpl.opts.immediate ? e.text : await askCapture(`Capture: ${tpl.description}`, where, e.text, e.caret);
-    if (captured === undefined) return;
-    await fileCapture(tpl, tpl.opts.prepare ? tpl.lisp.call(tpl.opts.prepare, captured).text : captured, captured === e.text);
+    const tpl = keys === undefined ? await pickTemplate(templates) : templateByKey(templates, keys);
+    if (keys !== undefined && !tpl) { message(`No capture template \`${keys}'`, true); return; }
+    if (tpl) await runCapture(tpl);
   } catch (e) { failure(e); }
+}
+
+/** The capture menu: one level at a time, a key typed picks an entry, and a group opens the entries under its key. */
+async function pickTemplate(templates) {
+  let prefix = '';
+  for (;;) {
+    const items = menuAt(templates, prefix).map((m) => ({ label: `${m.key}  ${m.description}`, key: m.key.slice(-1), meta: m.group ? '›' : `${m.template.target.file} ›`, value: m }));
+    const m = await choose(prefix ? `Capture ${prefix}` : 'Capture', items, { back: prefix ? '‹ Back' : null });
+    if (m === BACK) { prefix = prefix.slice(0, -1); continue; }
+    if (!m) return undefined;
+    if (m.group) { prefix = m.key; continue; }
+    return m.template;
+  }
+}
+
+/** Answers the template's questions, lets you edit the text, and files it. */
+async function runCapture(tpl) {
+  const answers = [];
+  for (const q of promptsOf(tpl.template)) {
+    const a = q.date ? await askStamp(q.prompt, q.date.active) : q.choices.length ? await choose(q.prompt, q.choices.map((c) => ({ label: c, value: c }))) : await askText({ prompt: `${q.prompt}:`, title: q.prompt, value: q.default, ok: 'OK' });
+    if (a === undefined || a === null) return;
+    answers.push(a);
+  }
+  // A date tree with +prompt, or :time-prompt, asks for the date (and time) the capture is for; it also fills %t and the like
+  let when = localNow();
+  if (tpl.target.prompt || tpl.opts.timePrompt) {
+    const stamp = await askStamp('Capture date', false);
+    if (!stamp) return;
+    const m = /(\d{4})-(\d\d)-(\d\d)(?: [^\d\]]+)?(?: (\d\d):(\d\d))?/.exec(stamp);
+    when = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], m[4] ? +m[4] : when.getUTCHours(), m[5] ? +m[5] : when.getUTCMinutes()));
+  }
+  const b = currentBuffer();
+  const hd = b ? enclosingHead() : null;
+  const above = b ? editor.value.split('\n')[kindAtCursor().line] ?? '' : '';
+  const link = b?.name ? (hd ? `[[file:${b.name}::*${hd.title}][${hd.title}]]` : above.trim() ? `[[file:${b.name}::${above.trim()}]]` : `[[file:${b.name}]]`) : '';
+  const sel = viewMode() === 'text' && editor.selectionStart !== editor.selectionEnd ? editor.value.slice(editor.selectionStart, editor.selectionEnd) : '';
+  const e = expand(tpl.template, { answers, now: when, link, selection: sel });
+  const where = tpl.target.path?.length ? `${tpl.target.file} › ${tpl.target.path.join(' › ')}` : tpl.target.file;
+  // :clock-in starts when the capture does and stops any running clock; an aborted capture leaves that clock stopped
+  const started = localNow();
+  let interrupted = null;
+  if (tpl.opts.clockIn) { const c = runningClock(); if (c) { interrupted = { id: c.buffer.id, headLine: c.headLine }; stopClock(c, started); } }
+  const captured = tpl.opts.immediate ? e.text : await askCapture(`Capture: ${tpl.description}`, where, e.text, e.caret);
+  if (captured === undefined) return;
+  const filed = await fileCapture(tpl, tpl.opts.prepare ? tpl.lisp.call(tpl.opts.prepare, captured).text : captured, captured === e.text, when);
+  if (!tpl.opts.clockIn || filed.clockLine === null) return;
+  const buf = session.state().buffers.find((x) => x.id === filed.id);
+  const linesOf = (t) => t.split('\n').length;
+  const after = clockCapture(buf.text, filed.clockLine, started, localNow(), tpl.opts.clockKeep);
+  session.apply(buf.id, { text: after.text });
+  if (!tpl.opts.clockKeep && tpl.opts.clockResume && interrupted) {
+    // the interrupted clock's heading may have moved down by what the capture added above it
+    let at = interrupted.headLine;
+    if (interrupted.id === filed.id) { if (filed.line <= at) at += filed.delta; if (filed.clockLine < at) at += linesOf(after.text) - linesOf(buf.text); }
+    const target = session.state().buffers.find((x) => x.id === interrupted.id);
+    const r = clockIn(target.text, at, localNow());
+    session.apply(target.id, { text: r.text });
+  }
 }
 
 /** Settings, Emacs, Capture templates: the init.el form, as text. */
@@ -1885,9 +2037,9 @@ function tableCopyRegion(cut) {
 function tablePasteRectangle() { tableEdit((t, l, c) => { const r = tblcmd.pasteRectangle(t, l, c, rectClip); return { ...r, line: r.line ?? l, col: c }; }); }
 
 /** C-c C-x C-w and C-c C-x M-w outside a table: cut or copy the subtree at the cursor (a number cuts that many siblings). */
-function subtreeKill(cut) {
+function subtreeKill(cut, at) {
   const b = currentBuffer();
-  const line = viewMode() === 'outline' ? enclosingHead()?.line ?? -1 : lineAt(cur.proj, editor.selectionStart);
+  const line = at ?? (viewMode() === 'outline' ? enclosingHead()?.line ?? -1 : lineAt(cur.proj, editor.selectionStart));
   const n = Math.max(1, arg?.num ?? arg?.list ?? 1);
   try {
     const r = cut ? cutSubtree(b.text, line, n) : { killed: subtreeAt(b.text, line, n).text };
@@ -1897,6 +2049,11 @@ function subtreeKill(cut) {
     if (cut) { session.apply(b.id, { text: r.text }); if (viewMode() === 'text') placeOffset(lineStart(r.text, r.line + 1)); }
     message(`${cut ? 'Cut' : 'Copied'}: Subtree(s) with ${killRing.get().length} characters`);
   } catch (e) { failure(e); }
+}
+
+/** Paste subtree after, in the Outline view's heading sheet: the last kill goes after the heading's whole subtree, at its level (C-u C-c C-x C-y). */
+function subtreePasteAfter(line) {
+  runEdit((t) => { const x = pasteSubtree(t, line, 1, killRing.get(), { after: true, column: tagsColumn() }); return { text: x.text, line: x.line }; });
 }
 
 /** C-c C-x C-y outside a table: pastes the last kill as a subtree (a number sets its level). */
@@ -3065,6 +3222,11 @@ async function headingActions(line) {
   const planned = (k) => new RegExp(`${k}:\\s*([<[][^>\\]]*[>\\]])`).exec(/^\s*(?:CLOSED|DEADLINE|SCHEDULED):/.test(own) ? own : '')?.[1] ?? null;
   const effort = propertiesOf(b.text, line).find(([n]) => n === 'Effort')?.[1] || null;
   // What is set shows as a chip with its value; what is not set is under Add.
+  const heads = cur.a.heads.filter((x) => x.line >= hd.line && x.line < hd.end).length;
+  const subtreeSize = `${heads} ${heads === 1 ? 'heading' : 'headings'}`;
+  const kill = killRing.get();
+  const killed = kill ? kill.split('\n').filter((l) => /^\*+ /.test(l)) : [];
+  const pending = killed.length ? `${killed[0].replace(/^\*+ /, '').slice(0, 24)}${killed.length > 1 ? ` and ${killed.length - 1} more` : ''}` : null;
   const fields = [
     { value: 'todo', label: 'State', now: hd.todo, set: 'TODO state', meta: `${hd.todo ?? 'none'} to ${next ?? 'none'}` },
     { value: 'priority', label: 'Priority', now: hd.priority ? `[#${hd.priority}]` : null, set: 'Priority' },
@@ -3085,7 +3247,8 @@ async function headingActions(line) {
         ...[['Edit title', 'edit'], ['Edit body', 'body']].map(([l, v]) => h('button', { class: 'item', onclick: () => close(v) }, h('span', {}, l))),
         h('div', { class: 'group' }, 'Structure'),
         ...[['Insert heading below', 'insert'], ['Archive', 'archive'], ['Refile', 'refile'], ['Move up', 'move-up'], ['Move down', 'move-down'],
-          ['Promote', 'promote', hd.level > 1 ? `to level ${hd.level - 1}` : null], ['Demote', 'demote', `to level ${hd.level + 1}`], ['Promote subtree', 'promote-subtree'], ['Demote subtree', 'demote-subtree']]
+          ['Promote', 'promote', hd.level > 1 ? `to level ${hd.level - 1}` : null], ['Demote', 'demote', `to level ${hd.level + 1}`], ['Promote subtree', 'promote-subtree'], ['Demote subtree', 'demote-subtree'],
+          ['Cut subtree', 'cut-subtree', subtreeSize], ['Copy subtree', 'copy-subtree', subtreeSize], ...(pending ? [['Paste subtree after', 'paste-after', pending]] : [])]
           .map(([l, v, m]) => h('button', { class: 'item', onclick: () => close(v) }, h('span', {}, l), m ? h('span', { class: 'meta' }, m) : null)),
       ]),
       h('p', { class: 'note' }, 'Tap a chip to change it. + Add lists what is not set.'),
@@ -3119,6 +3282,9 @@ async function headingDo(what, hd, line, next) {
   else if (what === 'deadline') await planHere('DEADLINE', 'DEADLINE', 'Deadline on', hd);
   else if (what === 'clock-in') clockInHere(hd);
   else if (what === 'timestamp') await addTimestampBody(hd);
+  else if (what === 'cut-subtree') subtreeKill(true, line);
+  else if (what === 'copy-subtree') subtreeKill(false, line);
+  else if (what === 'paste-after') subtreePasteAfter(line);
   else if (what === 'refile') await refileHere(false, hd);
   else if (what === 'archive') await archiveHere(hd);
   else if (what === 'body') {

@@ -1,6 +1,7 @@
 // Capture: templates as init.el writes them, their escapes, and where the captured text goes (checked against Emacs 30.1 results).
 // Written from the Org manual's description and observed Emacs results; no Emacs or Org source was read.
 
+import { ensureDay } from './datetree.js';
 import { splitLines } from './parse.js';
 import { analyze } from './outline.js';
 import { alignLines } from './table.js';
@@ -18,10 +19,10 @@ const name = (x) => (isSym(x) ? x.sym : null);
  * The templates in the text of an init file: the forms that set `org-capture-templates` with setq or add-to-list.
  * @returns {{ key: string, description: string, type: string, target: { kind: string, file?: string, path?: string[] }, template: string, opts: Record<string, any> }[]}
  */
-export function parseTemplates(text) {
+export function parseTemplates(text, { now } = {}) {
   let list = [];
   const forms = readForms(text);
-  const lisp = makeLisp(forms);
+  const lisp = makeLisp(forms, now ? { now } : {});
   for (const form of forms) {
     const head = name(form[0]);
     if (head === 'defun') continue;
@@ -38,12 +39,13 @@ const quoted = (x) => { const v = unquote(x); if (!Array.isArray(v)) throw new E
 
 function template(t) {
   if (!Array.isArray(t) || typeof t[0] !== 'string' || typeof t[1] !== 'string') throw new Error('A template starts with a key and a description');
-  if (t.length === 2) throw new Error(`Template ${t[0]}: groups of templates are not supported yet`);
+  if (t.length === 2) return { key: t[0], description: t[1], group: true };
   const [key, description, type, target, text, ...rest] = t;
   const kind = name(type);
   if (!['entry', 'item', 'checkitem', 'table-line', 'plain'].includes(kind)) throw new Error(`Template ${key}: unknown type ${kind ?? type}`);
   const tk = name(target?.[0]);
-  const spec = { file: { kind: 'file', file: target?.[1] }, 'file+headline': { kind: 'headline', file: target?.[1], path: [target?.[2]] }, 'file+olp': { kind: 'olp', file: target?.[1], path: target?.slice(2) }, 'file+function': { kind: 'function', file: target?.[1], fn: name(unquote(target?.[2])) } }[tk];
+  const tree = /^file\+(olp\+)?(date|week)tree(\+prompt)?$/.exec(tk ?? '');
+  const spec = tree ? { kind: 'datetree', file: target?.[1], path: tree[1] ? target.slice(2) : [], week: tree[2] === 'week', prompt: !!tree[3] } : { file: { kind: 'file', file: target?.[1] }, 'file+headline': { kind: 'headline', file: target?.[1], path: [target?.[2]] }, 'file+olp': { kind: 'olp', file: target?.[1], path: target?.slice(2) }, 'file+function': { kind: 'function', file: target?.[1], fn: name(unquote(target?.[2])) } }[tk];
   if (tk === 'file+function' && !spec.fn) throw new Error(`Template ${key}: file+function needs the name of a function`);
   if (!spec || typeof spec.file !== 'string') throw new Error(`Template ${key}: the target ${tk ?? 'given'} is not supported yet`);
   if (typeof text !== 'string') throw new Error(`Template ${key}: the template text is missing`);
@@ -55,6 +57,11 @@ function template(t) {
     else if (k === ':empty-lines-before') opts.before = rest[i + 1];
     else if (k === ':empty-lines-after') opts.after = rest[i + 1];
     else if (k === ':immediate-finish') opts.immediate = rest[i + 1] === true;
+    else if (k === ':clock-in') opts.clockIn = rest[i + 1] === true;
+    else if (k === ':clock-keep') opts.clockKeep = rest[i + 1] === true;
+    else if (k === ':clock-resume') opts.clockResume = rest[i + 1] === true;
+    else if (k === ':tree-type') { const v = name(unquote(rest[i + 1])); if (v !== 'week') throw new Error(`Template ${key}: :tree-type ${v} is not supported yet`); if (spec.kind === 'datetree') spec.week = true; }
+    else if (k === ':time-prompt') opts.timePrompt = rest[i + 1] === true;
     else if (k === ':prepare-finalize') { opts.prepare = name(unquote(rest[i + 1])); if (!opts.prepare) throw new Error(`Template ${key}: :prepare-finalize needs the name of a function`); }
     else throw new Error(`Template ${key}: the option ${k} is not supported yet`);
   }
@@ -62,6 +69,26 @@ function template(t) {
 }
 
 // ---- Escapes ------------------------------------------------------------------------------------------------------------
+
+/**
+ * The entries of the capture menu after the keys typed so far (`prefix`), in the order written: a template or group whose key is one
+ * character longer than the prefix. A template "wm" without an entry "w" is not shown anywhere.
+ * @returns {{ key: string, description: string, group: boolean, template?: object }[]}
+ */
+export function menuAt(templates, prefix = '') {
+  const out = [];
+  for (const t of templates) {
+    if (!t.key.startsWith(prefix) || t.key.length <= prefix.length) continue;
+    const key = t.key.slice(0, prefix.length + 1);
+    const direct = t.key.length === prefix.length + 1;
+    // Only a key that has its own entry is shown; longer keys without a group entry are not reachable, as in Emacs
+    if (direct && !out.some((x) => x.key === key)) out.push({ key, description: t.description, group: !!t.group, ...(t.group ? {} : { template: t }) });
+  }
+  return out;
+}
+
+/** The template with exactly this key, or undefined (a group is not one). */
+export const templateByKey = (templates, key) => templates.find((t) => t.key === key && !t.group);
 
 /** The questions a template asks, in order: { prompt, default, choices }. */
 export function promptsOf(tpl) {
@@ -128,10 +155,23 @@ function insertAt(lines, at, add) {
  * @param {string} text the target document
  * @param {ReturnType<typeof parseTemplates>[number]} tpl
  * @param {string} captured the text of the capture buffer
- * @returns {{ text: string, line: number }} the new document and the line where the new text starts
+ * @returns {{ text: string, line: number, clockLine: number | null }} the new document, the line where the new text starts, and the heading a :clock-in clocks (the new entry, or the heading an item went under)
  */
-export function place(text, tpl, captured, { tagsColumn = DEFAULT_TAGS_COLUMN, unchanged = false } = {}) {
+export function place(text, tpl, captured, { tagsColumn = DEFAULT_TAGS_COLUMN, unchanged = false, date = null } = {}) {
   let fnLine = -1;
+  let dayLine = -1;
+  if (tpl.target.kind === 'datetree') {
+    let parentLine = null;
+    let among = analyze(text).heads.filter((h) => h.level === 1);
+    tpl.target.path.forEach((p, i) => {
+      const h = among.find((x) => x.title === p);
+      if (!h) throw new Error(`Heading not found on level ${i + 1}: ${p}`);
+      parentLine = h.line; among = h.children;
+    });
+    if (!date) throw new Error('A date tree needs the date');
+    const r = ensureDay(text, date, { week: tpl.target.week, parentLine });
+    text = r.text; dayLine = r.line;
+  }
   if (tpl.target.kind === 'function') {
     const r = tpl.lisp.call(tpl.target.fn, text);
     text = r.text;
@@ -154,7 +194,8 @@ export function place(text, tpl, captured, { tagsColumn = DEFAULT_TAGS_COLUMN, u
     if (t.kind === 'function') {
       const inside = a.heads.filter((h) => h.line <= fnLine && fnLine < h.end).sort((x, y) => y.level - x.level)[0];
       head = inside ?? null;
-    } else if (t.kind === 'headline') { head = find(t.path[0], a.heads); if (!head) pendingHeading = t.path[0]; }
+    } else if (t.kind === 'datetree') head = a.heads.find((h) => h.line === dayLine);
+    else if (t.kind === 'headline') { head = find(t.path[0], a.heads); if (!head) pendingHeading = t.path[0]; }
     else {
       let among = a.heads.filter((h) => h.level === 1);
       t.path.forEach((p, i) => { head = find(p, among); if (!head) throw new Error(`Heading not found on level ${i + 1}: ${p}`); among = head.children; });
@@ -237,5 +278,7 @@ export function place(text, tpl, captured, { tagsColumn = DEFAULT_TAGS_COLUMN, u
     while (k < l.length && /^\s*\|/.test(l[k])) k++;
     if (/^[ \t]*#\+TBLFM:/i.test(l[k] ?? '')) out = recalc(out, k).text;
   }
-  return { text: out, line: at };
+  const mark = tpl.type === 'entry' ? at + (tpl.opts.before ?? 0) : at;
+  const inside = analyze(out).heads.filter((h) => h.line <= mark && mark < h.end).sort((x, y) => y.level - x.level)[0];
+  return { text: out, line: at, clockLine: inside ? inside.line : null };
 }

@@ -77,12 +77,16 @@ const sha256 = async (s) => [...new Uint8Array(await crypto.subtle.digest('SHA-2
  * @param {{ file: string, read: (name: string) => Promise<string>, trusted: (name: string, hash: string, text: string) => Promise<boolean>, now?: Date }} o
  * @returns {Promise<{ settings: Record<string, string>, files: { name: string, hash: string }[], report: { kind: 'error' | 'untrusted' | 'kept', file: string, line?: number, message: string }[] }>}
  */
-export async function loadInit({ file, read, trusted, now = new Date() }) {
-  const lisp = makeLisp([], { now });
+// Definition forms whose arguments are names and bodies, not values to evaluate; they are reported as not supported
+const DEFINERS = new Set(['transient-define-prefix', 'transient-define-suffix', 'transient-define-infix', 'use-package', 'define-minor-mode', 'define-derived-mode', 'cl-defun', 'cl-defmacro', 'defmacro', 'defadvice', 'advice-add']);
+
+export async function loadInit({ file, read, trusted, now }) {
+  const lisp = makeLisp([], now ? { now } : {});
   const report = [];
   const files = [];
   const touched = new Set();
   const defuns = new Map();
+  let menuForm = null; // the last easy-menu-define
   const loading = [];
 
   const run = async (name, depth) => {
@@ -104,9 +108,11 @@ export async function loadInit({ file, read, trusted, now = new Date() }) {
           await loadOne(resolveName(target, name), depth + 1);
           continue;
         }
+        if (Array.isArray(form) && DEFINERS.has(sym(form[0]))) throw new Error(`void-function ${sym(form[0])}`);
         lisp.evaluate(form);
         const head = Array.isArray(form) ? sym(form[0]) : null;
         if (head === 'defun') defuns.set(sym(form[1]), src.slice(start, end));
+        else if (head === 'easy-menu-define') menuForm = src.slice(start, end);
         else if (head === 'setq' || head === 'setq-default') for (let i = 1; i < form.length; i += 2) touched.add(sym(form[i]));
         else if (head === 'add-to-list') touched.add(sym(lisp.evaluate(form[1])));
         else if (head === 'defvar' && form.length > 2) touched.add(sym(form[1]));
@@ -147,6 +153,7 @@ export async function loadInit({ file, read, trusted, now = new Date() }) {
   }
   for (const [key, vars] of Object.entries(groupSeen)) settings[key] = vars.map((n) => `(setq ${n} ${valueText(value(n))})`).join('\n');
   if (kinds) settings['calendar-holidays'] = kinds.size === 3 ? '' : kinds.size ? [...kinds].join(' ') : 'nil';
+  if (menuForm) settings['serita-extra-menu'] = `${[...defuns.values()].join('\n\n')}\n\n${menuForm}\n`.trimStart();
   if (touched.has('org-capture-templates')) {
     try {
       const t = `${[...defuns.values()].join('\n\n')}\n\n(setq org-capture-templates ${valueText(value('org-capture-templates'))})\n`.trimStart();

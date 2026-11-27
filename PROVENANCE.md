@@ -201,8 +201,8 @@ A separate repository holds questions (case files written by us) and results rec
 ### `core/elisp.js`, `test/capture-templates.test.js`, `test/fixtures/emacs-capture-templates.json`, `test/fixtures/user-templates.el`
 - Written from: the Emacs Lisp manual's descriptions of the functions it implements (let, setq, dolist, format, re-search-forward and re-search-backward, insert, replace-match, flush-lines) and observed Emacs 30.1 results with Org 9.7.11 for capture into a function target, :prepare-finalize, item bullets and numbering, tag alignment and table formulas after capture (conformance v0.1.55 and v0.1.56), recorded as fixtures and read as behavior only. user-templates.el is the author's own configuration. No other project's code was consulted.
 
-### `core/tblexport.js`, `test/table-transfer.test.js`, `test/fixtures/emacs-table-transfer.json`
-- Written from: the Org manual's chapters on tables (exporting, importing, rectangles, recalculation marks) and observed Emacs 30.1 results with Org 9.7.11 for orgtbl-to-csv, -tsv, -orgtbl, -generic, -latex, -html, -texinfo and -unicode, org-table-import, org-table-convert-region, rectangle copy, cut and paste, and mark rotation (conformance v0.1.54 and v0.1.57), recorded as fixtures and read as behavior only. No other project's code was consulted.
+### `core/tblexport.js`, `core/orgmarkup.js`, `core/entities.js`, `test/table-transfer.test.js`, `test/orgmarkup*.test.js`, `test/fixtures/emacs-table-transfer.json`, `test/fixtures/emacs-markup-cells.json`
+- Written from: the Org manual's chapters on tables (exporting, importing, rectangles, recalculation marks) and observed Emacs 30.1 results with Org 9.7.11 for orgtbl-to-csv, -tsv, -orgtbl, -generic, -latex, -html, -texinfo and -unicode, org-table-import, org-table-convert-region, rectangle copy, cut and paste, mark rotation, and the translation of inline markup, links, entities and special strings in cells (conformance v0.1.54, v0.1.57, v0.1.58 and v0.1.64 to v0.1.67; the entity table is a dump of org-entities), recorded as fixtures and read as behavior only. No other project's code was consulted.
 
 ### `core/init.js`, `test/init.test.js`, `test/fixtures/init/`
 - Written from: the Emacs Lisp manual's descriptions of load, setq, defvar, defun and add-to-list (the new element goes first unless APPEND is given). The fixtures are the author's own configuration files. No other project's code was consulted.
@@ -212,3 +212,6 @@ A separate repository holds questions (case files written by us) and results rec
 
 ### `test/conditional.test.js`
 - Written from: the HTTP standard's description of conditional requests (If-None-Match and 304). No other project's code was consulted.
+
+### `core/datetree.js`, `test/datetree.test.js`, `test/fixtures/emacs-datetree.json`
+- Written from: the Org manual's description of capture targets for date and week trees and observed Emacs 30.1 results with Org 9.7.11 for where an entry, item, checkitem, plain text or table row goes (existing and missing years, months, weeks and days, ordering, :prepend, :empty-lines, +prompt, file+olp+datetree), and for :clock-in, :clock-keep and :clock-resume (conformance v0.1.63), recorded as fixtures and read as behavior only. No other project's code was consulted.

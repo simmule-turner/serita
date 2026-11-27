@@ -28,7 +28,7 @@ Planned work only. Phase order is in SPEC.md section 12.
 - The heading title popup's three buttons, which insert at the cursor: footnote (A with a superscript 1), timer (stopwatch), and timestamp (calendar: C-c ., C-c !, C-u C-c ., S-up and S-down change it). They arrive with their features: timestamps and timers in the dates phase, footnotes in the markup phase.
 
 * Later: init file
-- Settings an init file can set that Serita keeps but does not use yet: org-xx-extra-menu and org-xx-menu-aliases (the extra menu), org-weather-format, calendar-latitude and calendar-longitude, calendar-time-display-form, display-time-mode, org-babel-load-languages, org-log-done, org-startup-truncated, org-startup-with-inline-images, org-use-sub-superscripts, display-line-numbers-mode.
+- Settings an init file can set that Serita keeps but does not use yet: org-weather-format, calendar-latitude and calendar-longitude, calendar-time-display-form, display-time-mode, org-babel-load-languages, org-log-done, org-startup-truncated, org-startup-with-inline-images, org-use-sub-superscripts, display-line-numbers-mode.
 
 * Later: tables
 - The recalculation marks # and *, which choose the rows a recalculation covers (C-# only sets them today).
@@ -41,7 +41,6 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Agenda: agenda files other than the open ones, filters by top headline and by saved views, bulk actions that need a prompt Emacs shows (refile, scatter, function), the order of items of equal priority beyond what was recorded, an effort filter's sign (Emacs ignored it in our results).
 
 * Later: capture, refile and archive
-- Template parts not done yet: ~:clock-in~, datetree targets, groups of templates, and capture templates typed by key.
 - Refile: ~org-refile-use-cache~ as a setting (the list is built each time here).
 
 * Later: Appearance

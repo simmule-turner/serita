@@ -48,16 +48,16 @@ test('the settings example names every setting the app keeps', () => {
 test('the settings example forms are ones the app accepts', () => {
   const t = read('config.org');
   assert.deepEqual(parseStringList(/setq org-agenda-files '(\([^)]*\))/.exec(block(t, 'Agenda files'))[1]), ['capture.org', 'weekly-review.org', 'project.org']);
-  assert.equal(parseTemplates(block(t, 'Capture templates')).length, 6);
+  assert.equal(parseTemplates(block(t, 'Capture templates')).length, 9);
   assert.equal(parseRefileSettings(block(t, 'Refile targets')).outline, true);
 });
 
 test('each capture template files into capture.org', () => {
   const tpls = parseTemplates(block(read('config.org'), 'Capture templates'));
-  for (const tpl of tpls) {
+  for (const tpl of tpls.filter((x) => !x.group)) {
     const answers = promptsOf(tpl.template).map(() => 'x');
     const e = expand(tpl.template, { answers, now: new Date(Date.UTC(2026, 10, 23, 9, 0)), link: '' });
-    const r = place(read('capture.org'), tpl, e.text.replace('\n  \n', '\n'));
+    const r = place(read('capture.org'), tpl, e.text.replace('\n  \n', '\n'), { date: new Date(Date.UTC(2026, 10, 23, 9, 0)) });
     assert.ok(r.text.length > read('capture.org').length, tpl.key);
   }
 });

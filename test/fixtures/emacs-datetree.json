@@ -1,0 +1,244 @@
+[
+ {
+  "id": "dt-blank-lines",
+  "input": "* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** old\n\n* Z\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** old\n**** new\n* Z\n",
+  "messages": []
+ },
+ {
+  "id": "dt-checkitem",
+  "input": "* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n- [ ] one\n",
+  "tpl": "(list \"k\" \"Desc\" (quote checkitem) (list 'file+datetree file) \"[ ] %?\")))",
+  "error": null,
+  "expect": "* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n- [ ] one\n- [ ] new\n",
+  "messages": []
+ },
+ {
+  "id": "dt-empty-lines",
+  "input": "* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** old\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\" :empty-lines 1)))",
+  "error": null,
+  "expect": "* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** old\n\n**** new\n\n",
+  "messages": []
+ },
+ {
+  "id": "dt-empty-nonl",
+  "input": "text",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "text\n* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** new\n",
+  "messages": []
+ },
+ {
+  "id": "dt-empty",
+  "input": "",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "\n* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** new\n",
+  "messages": []
+ },
+ {
+  "id": "dt-heading-todo",
+  "input": "* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday :tag:\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday :tag:\n**** new\n",
+  "messages": []
+ },
+ {
+  "id": "dt-item",
+  "input": "",
+  "tpl": "(list \"k\" \"Desc\" (quote item) (list 'file+datetree file) \"- %?\")))",
+  "error": null,
+  "expect": "\n* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n- new\n",
+  "messages": []
+ },
+ {
+  "id": "dt-month",
+  "input": "",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\" :tree-type month)))",
+  "error": "(void-variable month)",
+  "expect": "",
+  "messages": []
+ },
+ {
+  "id": "dt-new-day-newest-first",
+  "input": "* 2026\n** 2026-11 November\n*** 2026-11-30 Monday\n*** 2026-11-10 Tuesday\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** new\n*** 2026-11-30 Monday\n*** 2026-11-10 Tuesday\n",
+  "messages": []
+ },
+ {
+  "id": "dt-new-day-order",
+  "input": "* 2026\n** 2026-11 November\n*** 2026-11-27 Friday\n*** 2026-11-25 Wednesday\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** new\n*** 2026-11-27 Friday\n*** 2026-11-25 Wednesday\n",
+  "messages": []
+ },
+ {
+  "id": "dt-new-day",
+  "input": "* 2026\n** 2026-11 November\n*** 2026-11-25 Wednesday\n*** 2026-11-20 Friday\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "* 2026\n** 2026-11 November\n*** 2026-11-25 Wednesday\n*** 2026-11-20 Friday\n*** 2026-11-26 Thursday\n**** new\n",
+  "messages": []
+ },
+ {
+  "id": "dt-new-month-before",
+  "input": "* 2026\n** 2026-12 December\n*** 2026-12-01 Tuesday\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** new\n** 2026-12 December\n*** 2026-12-01 Tuesday\n",
+  "messages": []
+ },
+ {
+  "id": "dt-new-month",
+  "input": "* 2026\n** 2026-09 September\n*** 2026-09-01 Tuesday\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "* 2026\n** 2026-09 September\n*** 2026-09-01 Tuesday\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** new\n",
+  "messages": []
+ },
+ {
+  "id": "dt-new-year-after",
+  "input": "* 2025\n** 2025-12 December\n*** 2025-12-31 Wednesday\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "* 2025\n** 2025-12 December\n*** 2025-12-31 Wednesday\n* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** new\n",
+  "messages": []
+ },
+ {
+  "id": "dt-new-year-before",
+  "input": "* 2027\n** 2027-01 January\n*** 2027-01-01 Friday\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "\n* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** new\n* 2027\n** 2027-01 January\n*** 2027-01-01 Friday\n",
+  "messages": []
+ },
+ {
+  "id": "dt-olp-exist",
+  "input": "* Journal\n** 2026\n*** 2026-11 November\n**** 2026-11-26 Thursday\n***** old\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+olp+datetree file \"Journal\") \"* %?\\n\")))",
+  "error": null,
+  "expect": "* Journal\n** 2026\n*** 2026-11 November\n**** 2026-11-26 Thursday\n***** old\n***** new\n",
+  "messages": []
+ },
+ {
+  "id": "dt-olp-missing",
+  "input": "* Other\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+olp+datetree file \"Journal\") \"* %?\\n\")))",
+  "error": null,
+  "expect": "* Other\n",
+  "messages": [
+   "ERR"
+  ]
+ },
+ {
+  "id": "dt-olp",
+  "input": "* Journal\n** Home\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+olp+datetree file \"Journal\" \"Home\") \"* %?\\n\")))",
+  "error": null,
+  "expect": "* Journal\n** Home\n*** 2026\n**** 2026-11 November\n***** 2026-11-26 Thursday\n****** new\n",
+  "messages": []
+ },
+ {
+  "id": "dt-other-headings",
+  "input": "* Notes\ntext\n* 2026\n** 2026-11 November\n* Tail\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "* Notes\ntext\n* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** new\n* Tail\n",
+  "messages": []
+ },
+ {
+  "id": "dt-plain",
+  "input": "",
+  "tpl": "(list \"k\" \"Desc\" (quote plain) (list 'file+datetree file) \"%?\")))",
+  "error": null,
+  "expect": "\n* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\nnew\n",
+  "messages": []
+ },
+ {
+  "id": "dt-prompt",
+  "input": "",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree+prompt file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "\n* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** new\n",
+  "messages": []
+ },
+ {
+  "id": "dt-same-day-prepend",
+  "input": "* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** old\n* Z\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\" :prepend t)))",
+  "error": null,
+  "expect": "* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** new\n**** old\n* Z\n",
+  "messages": []
+ },
+ {
+  "id": "dt-same-day",
+  "input": "* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** old\n* Z\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** old\n**** new\n* Z\n",
+  "messages": []
+ },
+ {
+  "id": "dt-table",
+  "input": "",
+  "tpl": "(list \"k\" \"Desc\" (quote table-line) (list 'file+datetree file) \"| %? |\")))",
+  "error": null,
+  "expect": "\n* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n|     |\n|-----|\n| new |\n",
+  "messages": []
+ },
+ {
+  "id": "dt-time-prompt",
+  "input": "",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\" :time-prompt t)))",
+  "error": null,
+  "expect": "\n* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** new\n",
+  "messages": []
+ },
+ {
+  "id": "dt-two-lines",
+  "input": "",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\nbody\\n\")))",
+  "error": null,
+  "expect": "\n* 2026\n** 2026-11 November\n*** 2026-11-26 Thursday\n**** new\nbody\n",
+  "messages": []
+ },
+ {
+  "id": "dt-week-exist",
+  "input": "* 2026\n** 2026-W48\n*** 2026-11-25 Wednesday\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+weektree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "* 2026\n** 2026-W48\n*** 2026-11-25 Wednesday\n*** 2026-11-26 Thursday\n**** new\n",
+  "messages": []
+ },
+ {
+  "id": "dt-week-type",
+  "input": "",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\" :tree-type week)))",
+  "error": "(void-variable week)",
+  "expect": "",
+  "messages": []
+ },
+ {
+  "id": "dt-week",
+  "input": "",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+weektree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "\n* 2026\n** 2026-W48\n*** 2026-11-26 Thursday\n**** new\n",
+  "messages": []
+ },
+ {
+  "id": "dt-year",
+  "input": "* 2026\n** 2026-11 November\n*** 2026-11-25 Wednesday\n**** old\n",
+  "tpl": "(list \"k\" \"Desc\" (quote entry) (list 'file+datetree file) \"* %?\\n\")))",
+  "error": null,
+  "expect": "* 2026\n** 2026-11 November\n*** 2026-11-25 Wednesday\n**** old\n*** 2026-11-26 Thursday\n**** new\n",
+  "messages": []
+ }
+]

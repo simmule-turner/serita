@@ -73,3 +73,11 @@ export function inClockedEntry(text, clockedLine, line) {
   const next = heads.find((x) => x.line > top.line && x.level <= top.level);
   return line >= top.line && (!next || line < next.line);
 }
+
+/** A capture with :clock-in: the clock starts at `started` on the heading at `line` and, unless `keep`, stops at `now` (when the capture is filed). */
+export function clockCapture(text, line, started, now, keep) {
+  const r = clockIn(text, line, started);
+  if (keep) return { text: r.text };
+  const o = openClock(r.text);
+  return { text: clockOut(r.text, o.clockLine, started, now).text };
+}

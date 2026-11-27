@@ -56,6 +56,14 @@ await page.locator('.sheet textarea').fill('Fresh');
 await sheet.getByRole('button', { name: 'OK', exact: true }).click();
 ok((await page.locator('.ol-head .title').allTextContents()).includes('Fresh') && (await page.locator('#editor').isHidden()), 'Insert heading below adds a heading from the popup, without leaving the Outline view');
 
+await page.locator('.ol-head .title', { hasText: 'Fresh' }).click();
+await btn(/^Cut subtree/).click();
+ok(!(await page.locator('.ol-head .title').allTextContents()).includes('Fresh'), 'Cut subtree in the heading sheet removes the heading');
+await page.locator('.ol-head .title').first().click();
+ok(await btn(/^Paste subtree after/).isVisible(), 'Paste subtree after shows once something is cut');
+await btn(/^Paste subtree after/).click();
+ok((await page.locator('.ol-head .title').allTextContents())[1] === 'Fresh', 'Paste subtree after puts it after the heading');
+
 // The heading actions are chips for what is set, then Text and Structure; Edit body edits the text under the heading
 await page.locator('.ol-head .title', { hasText: 'Fresh' }).click();
 ok(JSON.stringify(await page.locator('.sheet .group').allTextContents()) === '["Text","Structure"]', 'the heading actions are grouped Text, Structure, with the values that are set as chips above');

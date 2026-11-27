@@ -601,6 +601,34 @@ ok((await sel()) === '0-0' && (await text()) === '* Alpha\n* Gamma\n** Beta\nbod
   ok((await p2.locator('.sheet .report').first().textContent()) === 'init.el, line 2: Not supported: no-such', 'the Init file sheet lists the problem with its file and line');
   await p2.close();
 }
+{
+  const p3 = await (await browser.newContext({ viewport: { width: 393, height: 800 } })).newPage();
+  await p3.goto(`${base}/`); await p3.waitForSelector('.tab.current');
+  const initText = `(setq org-capture-templates '(("w" "Work") ("wm" "Meeting" entry (file "m.org") "* %?") ("z" "Zed" entry (file "z.org") "* %?")))\n(easy-menu-define m nil "Menu" '("Menu" ["Journal" (org-capture nil "z")] "---" ("Sub" ["Cal" calendar])))\n`;
+  await p3.evaluate(async (t) => {
+    await new Promise((res, rej) => { const r = indexedDB.open('serita-local', 1); r.onsuccess = () => { const x = r.result.transaction('files', 'readwrite'); x.objectStore('files').put({ text: t, version: 'v1' }, 'init.el'); x.oncomplete = res; x.onerror = rej; }; });
+    localStorage.setItem('serita.settings', JSON.stringify({ 'serita-init-file': 'local:init.el' }));
+  }, initText);
+  await p3.reload();
+  await p3.getByRole('button', { name: 'Run', exact: true }).click();
+  await p3.waitForFunction(() => document.getElementById('message').textContent.startsWith('Init file: 1 file'));
+  await p3.click('#btn-menu');
+  ok((await p3.locator('.sheet .item').allTextContents()).join('|') === 'Journal|Sub›|More›', 'the extra menu shows its rows, then More');
+  await p3.locator('.sheet .item', { hasText: 'More' }).click();
+  ok((await p3.locator('.sheet .item').allTextContents()).join('|') === 'Commands|Capture|Settings', 'More shows the built-in menu as before');
+  await p3.keyboard.press('Escape');
+  await p3.click('#btn-menu'); await p3.locator('.sheet .item', { hasText: 'Sub' }).click();
+  ok((await p3.locator('.sheet .item').allTextContents()).join('|') === 'Cal', 'a submenu opens its rows');
+  await p3.keyboard.press('Escape');
+  await p3.click('#btn-menu'); await p3.locator('.sheet .item', { hasText: 'Journal' }).click();
+  ok((await p3.locator('.sheet h2').first().textContent()).startsWith('Capture:'), 'a row with (org-capture nil "z") opens that template without the list');
+  await p3.keyboard.press('Escape');
+  await p3.click('#btn-menu'); await p3.locator('.sheet .item', { hasText: 'More' }).click(); await p3.getByRole('button', { name: 'Capture', exact: true }).click();
+  ok((await p3.locator('.sheet .item').allTextContents()).join('|') === 'w  Work›|z  Zedz.org ›', 'the capture list shows the group and the template');
+  await p3.keyboard.press('w');
+  ok((await p3.locator('.sheet h2').first().textContent()) === 'Capture w' && (await p3.locator('.sheet .item').count()) === 1, 'typing a group key opens the entries under it');
+  await p3.close();
+}
 ok(errors.length === 0, `no page errors ${errors.join('; ')}`);
 await close();
 process.exit(failed ? 1 : 0);

@@ -15,7 +15,7 @@ S-TAB cycles the whole buffer: overview, contents, show all.
 ** TODO Finish the book :books:
 ** DONE Return the library copy :books:
 * Notes
-C-c C-x C-w cuts the subtree at the cursor, C-c C-x M-w copies it, and C-c C-x C-y pastes it as a subtree. Cut this whole Notes heading, move to the start of Projects, and paste: Notes goes before it. C-u 2 before C-w takes two siblings.
+C-c C-x C-w cuts the subtree at the cursor, C-c C-x M-w copies it, and C-c C-x C-y pastes it as a subtree. Cut this whole Notes heading, move to the start of Projects, and paste: Notes goes before it. C-u 2 before C-w takes two siblings. In the Outline view, tap a heading and use Cut subtree, Copy subtree and Paste subtree after.
 - A list item folds like a heading: TAB on it.
   - A child item
   - Another child

@@ -173,6 +173,13 @@ C-# in a row turns the mark in its first column from blank to ~#~, then ~*~, the
 |   |   3 |
 |   |   5 |
 
+Export table as HTML, LaTeX or Texinfo turns markup in the cells into that format's own: here Pear is bold, the link a hyperlink, and Pi becomes the Greek letter.
+
+| Name   | Note                           |
+|--------+--------------------------------|
+| *Pear* | [[https://example.org][Shop]]   |
+| \pi    | x^2 and H_2O                   |
+
 * Rows and columns from the palette
 Without Meta, open the Commands palette in a table and run ~org-table-kill-row~ to delete the row at the cursor, ~org-table-insert-row~ for a new one, ~org-table-move-row-up~ to reorder, or ~org-table-delete-column~ and ~org-table-insert-column~ for columns. With the cursor on Pear, kill the row:
 

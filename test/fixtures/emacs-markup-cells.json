@@ -1,0 +1,1306 @@
+{
+ "latex": [
+  {
+   "cell": "a *b /c/ d* e",
+   "out": "\\begin{tabular}{l}\\na \\textbf{b \\emph{c} d} e\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "*bold* text*",
+   "out": "\\begin{tabular}{l}\\n\\textbf{bold} text*\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "*a*b *c*",
+   "out": "\\begin{tabular}{l}\\n\\textbf{a*b *c}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "x_{a_b}",
+   "out": "\\begin{tabular}{l}\\nx\\textsubscript{a\\textsubscript{b}}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "x^{2}y",
+   "out": "\\begin{tabular}{l}\\nx\\textsuperscript{2}y\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a_b_c",
+   "out": "\\begin{tabular}{l}\\na\\textsubscript{b}\\textsubscript{c}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "*b*,*c*",
+   "out": "\\begin{tabular}{l}\\n\\textbf{b},*c*\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "(*b*)",
+   "out": "\\begin{tabular}{l}\\n(\\textbf{b})\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a*b*",
+   "out": "\\begin{tabular}{l}\\na*b*\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "~a_b~ =c*d=",
+   "out": "\\begin{tabular}{l}\\n\\texttt{a\\_b} \\texttt{c*d}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "*_u_*",
+   "out": "\\begin{tabular}{l}\\n\\textbf{\\uline{u}}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "[[https://x.org]]",
+   "out": "\\begin{tabular}{l}\\n\\url{https://x.org}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "https://x.org/p?a=1&b=2",
+   "out": "\\begin{tabular}{l}\\n\\url{https://x.org/p?a=1\\&b=2}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "[[mailto:a@b.c][m]]",
+   "out": "\\begin{tabular}{l}\\n\\href{mailto:a@b.c}{m}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "[[file:a.org][f]]",
+   "out": "\\begin{tabular}{l}\\n\\href{a.org}{f}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "[[#id][i]]",
+   "out": "ERR (user-error \"Org export aborted.  Unable to resolve link: \\\"id\\\"\nSee ‘org-export-with-broken-links’\")"
+  },
+  {
+   "cell": "[[https://x.org][*b* link]]",
+   "out": "\\begin{tabular}{l}\\n\\href{https://x.org}{\\textbf{b} link}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "[[*heading][h]]",
+   "out": "ERR (user-error \"Org export aborted.  Unable to resolve link: \\\"*heading\\\"\nSee ‘org-export-with-broken-links’\")"
+  },
+  {
+   "cell": "<2024-01-02 Tue>",
+   "out": "\\begin{tabular}{l}\\n\\textit{<2024-01-02 Tue>}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "[2024-01-02 Tue]",
+   "out": "\\begin{tabular}{l}\\n\\textit{{[}2024-01-02 Tue]}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "\\beta \\pi{} \\nbsp",
+   "out": "\\begin{tabular}{l}\\n\\(\\beta\\) \\(\\pi\\) ~\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "\\textbf{x} \\newline",
+   "out": "\\begin{tabular}{l}\\n\\textbf{x} \\newline\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a\\\\",
+   "out": "\\begin{tabular}{l}\\na$\\backslash$\\\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a\\",
+   "out": "\\begin{tabular}{l}\\na$\\backslash$\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "x_1 y^-2 z^*",
+   "out": "\\begin{tabular}{l}\\nx\\textsubscript{1} y\\textsuperscript{-2} z\\textsuperscript{*}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "-5 --- --",
+   "out": "\\begin{tabular}{l}\\n-5 --- --\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a... b",
+   "out": "\\begin{tabular}{l}\\na\\ldots{} b\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "'q' \"d\"",
+   "out": "\\begin{tabular}{l}\\n'q' \"d\"\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "\\vert{} bar",
+   "out": "\\begin{tabular}{l}\\n\\(\\vert{}\\) bar\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "\\vert",
+   "out": "\\begin{tabular}{l}\\n\\(\\vert{}\\)\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "*",
+   "out": "\\begin{tabular}{}\\n\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "**",
+   "out": "\\begin{tabular}{l}\\n**\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a * b * c",
+   "out": "\\begin{tabular}{l}\\na * b * c\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "/i/\\alpha",
+   "out": "\\begin{tabular}{l}\\n\\emph{i}\\(\\alpha\\)\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "\\Alpha \\Agrave{} \\copy",
+   "out": "\\begin{tabular}{l}\\nA \\`{A} \\textcopyright{}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "\\_ x",
+   "out": "\\begin{tabular}{l}\\n\\hspace*{0.5em}x\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "\\hellip",
+   "out": "\\begin{tabular}{l}\\n\\dots{}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a<b>c&d",
+   "out": "\\begin{tabular}{l}\\na<b>c\\&d\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "*a\\*b*",
+   "out": "\\begin{tabular}{l}\\n\\textbf{a$\\backslash$*b}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "=a b=c",
+   "out": "\\begin{tabular}{l}\\n=a b=c\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "~a~b~",
+   "out": "\\begin{tabular}{l}\\n\\texttt{a\\textasciitilde{}b}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "x_{*b*}",
+   "out": "\\begin{tabular}{l}\\nx\\textsubscript{\\textbf{b}}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "\\(x^2\\)",
+   "out": "\\begin{tabular}{l}\\n\\(x^2\\)\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "$y$ $$z$$",
+   "out": "\\begin{tabular}{l}\\n\\(y\\) $$z$$\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a @@latex:L@@ b",
+   "out": "\\begin{tabular}{l}\\na L b\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "call_x() src_sh{ls}",
+   "out": "\\begin{tabular}{l}\\ncall\\textsubscript{x}() src\\textsubscript{sh}\\{ls\\}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "[fn:1]",
+   "out": "ERR (error \"Definition not found for footnote 1\")"
+  },
+  {
+   "cell": "- -x",
+   "out": "\\begin{tabular}{l}\\n- -x\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "line1\\\\line2",
+   "out": "\\begin{tabular}{l}\\nline1$\\backslash$\\line2\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a--b",
+   "out": "\\begin{tabular}{l}\\na--b\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a -- b",
+   "out": "\\begin{tabular}{l}\\na -- b\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a --",
+   "out": "\\begin{tabular}{l}\\na --\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "-- a",
+   "out": "\\begin{tabular}{l}\\n-- a\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a---b",
+   "out": "\\begin{tabular}{l}\\na---b\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a --- b",
+   "out": "\\begin{tabular}{l}\\na --- b\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a-b",
+   "out": "\\begin{tabular}{l}\\na-b\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a\\-b",
+   "out": "\\begin{tabular}{l}\\na\\-b\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "[[file:a.org]]",
+   "out": "\\begin{tabular}{l}\\n\\url{a.org}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "[[file:a.org::*h][x]]",
+   "out": "\\begin{tabular}{l}\\n\\href{a.org}{x}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "[[file:a.txt][t]]",
+   "out": "\\begin{tabular}{l}\\n\\href{a.txt}{t}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "[[file:../a.org][up]]",
+   "out": "\\begin{tabular}{l}\\n\\href{../a.org}{up}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "[[https://x.org/a_b][u]]",
+   "out": "\\begin{tabular}{l}\\n\\href{https://x.org/a\\_b}{u}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "[[mailto:a@b.c]]",
+   "out": "\\begin{tabular}{l}\\n\\url{mailto:a@b.c}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "* h",
+   "out": "\\begin{tabular}{l}\\n* h\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "* ",
+   "out": "\\begin{tabular}{}\\n\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "*x* *",
+   "out": "\\begin{tabular}{l}\\n\\textbf{x} *\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a  b",
+   "out": "\\begin{tabular}{l}\\na  b\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a @@html:H@@ b",
+   "out": "\\begin{tabular}{l}\\na b\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a @@texinfo:T@@ b",
+   "out": "\\begin{tabular}{l}\\na b\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a @@ascii:A@@ b",
+   "out": "\\begin{tabular}{l}\\na b\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "[[https://x.org][a]] and [[https://y.org][b]]",
+   "out": "\\begin{tabular}{l}\\n\\href{https://x.org}{a} and \\href{https://y.org}{b}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "\\rarr \\to \\ge",
+   "out": "\\begin{tabular}{l}\\n\\(\\rightarrow\\) \\(\\to\\) \\(\\ge\\)\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "1/2 \\frac12",
+   "out": "\\begin{tabular}{l}\\n1/2 \\textonehalf{}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "x^{a b}",
+   "out": "\\begin{tabular}{l}\\nx\\textsuperscript{a b}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "x_a b",
+   "out": "\\begin{tabular}{l}\\nx\\textsubscript{a} b\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "~a b~",
+   "out": "\\begin{tabular}{l}\\n\\texttt{a b}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "+a b+",
+   "out": "\\begin{tabular}{l}\\n\\sout{a b}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "_a b_",
+   "out": "\\begin{tabular}{l}\\n\\uline{a b}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "/a\\/b/",
+   "out": "\\begin{tabular}{l}\\n\\emph{a$\\backslash$/b}\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "\\\\",
+   "out": "\\begin{tabular}{l}\\n$\\backslash$\\\\\\\\n\\end{tabular}"
+  },
+  {
+   "cell": "a\\\\ b",
+   "out": "\\begin{tabular}{l}\\na$\\backslash$\\ b\\\\\\n\\end{tabular}"
+  }
+ ],
+ "html": [
+  {
+   "cell": "a *b /c/ d* e",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a <b>b <i>c</i> d</b> e</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "*bold* text*",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><b>bold</b> text*</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "*a*b *c*",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><b>a*b *c</b></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "x_{a_b}",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">x<sub>a<sub>b</sub></sub></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "x^{2}y",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">x<sup>2</sup>y</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a_b_c",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a<sub>b</sub><sub>c</sub></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "*b*,*c*",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><b>b</b>,*c*</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "(*b*)",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">(<b>b</b>)</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a*b*",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a*b*</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "~a_b~ =c*d=",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><code>a_b</code> <code>c*d</code></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "*_u_*",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><b><span class=\"underline\">u</span></b></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "[[https://x.org]]",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><a href=\"https://x.org\">https://x.org</a></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "https://x.org/p?a=1&b=2",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><a href=\"https://x.org/p?a=1&amp;b=2\">https://x.org/p?a=1&amp;b=2</a></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "[[mailto:a@b.c][m]]",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><a href=\"mailto:a@b.c\">m</a></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "[[file:a.org][f]]",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><a href=\"a.html\">f</a></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "[[#id][i]]",
+   "out": "ERR (user-error \"Org export aborted.  Unable to resolve link: \\\"id\\\"\nSee ‘org-export-with-broken-links’\")"
+  },
+  {
+   "cell": "[[https://x.org][*b* link]]",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><a href=\"https://x.org\"><b>b</b> link</a></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "[[*heading][h]]",
+   "out": "ERR (user-error \"Org export aborted.  Unable to resolve link: \\\"*heading\\\"\nSee ‘org-export-with-broken-links’\")"
+  },
+  {
+   "cell": "<2024-01-02 Tue>",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><span class=\"timestamp-wrapper\"><span class=\"timestamp\">&lt;2024-01-02 Tue&gt;</span></span></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "[2024-01-02 Tue]",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><span class=\"timestamp-wrapper\"><span class=\"timestamp\">[2024-01-02 Tue]</span></span></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "\\beta \\pi{} \\nbsp",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">&beta; &pi; &nbsp;</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "\\textbf{x} \\newline",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">\\textbf{x} \\newline</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a\\\\",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a\\\\</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a\\",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a\\</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "x_1 y^-2 z^*",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">x<sub>1</sub> y<sup>-2</sup> z<sup>*</sup></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "-5 --- --",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">-5 &#x2014; --</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a... b",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a&#x2026; b</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "'q' \"d\"",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">'q' \"d\"</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "\\vert{} bar",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">&vert; bar</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "\\vert",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">&vert;</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "*",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<tbody>\\n<tr>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "**",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">**</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a * b * c",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a * b * c</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "/i/\\alpha",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><i>i</i>&alpha;</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "\\Alpha \\Agrave{} \\copy",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">&Alpha; &Agrave; &copy;</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "\\_ x",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">&ensp;x</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "\\hellip",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">&hellip;</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a<b>c&d",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a&lt;b&gt;c&amp;d</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "*a\\*b*",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><b>a\\*b</b></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "=a b=c",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">=a b=c</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "~a~b~",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><code>a~b</code></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "x_{*b*}",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">x<sub><b>b</b></sub></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "\\(x^2\\)",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">\\(x^2\\)</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "$y$ $$z$$",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">\\(y\\) \\[z\\]</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a @@latex:L@@ b",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a b</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "call_x() src_sh{ls}",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">call<sub>x</sub>() src<sub>sh</sub>{ls}</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "[fn:1]",
+   "out": "ERR (error \"Format specifier doesn’t match argument type\")"
+  },
+  {
+   "cell": "- -x",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">- -x</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "line1\\\\line2",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">line1\\\\line2</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a--b",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a&#x2013;b</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a -- b",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a &#x2013; b</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a --",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a --</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "-- a",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">&#x2013; a</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a---b",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a&#x2014;b</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a --- b",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a &#x2014; b</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a-b",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a-b</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a\\-b",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a&#x00ad;b</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "[[file:a.org]]",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><a href=\"a.html\">a.html</a></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "[[file:a.org::*h][x]]",
+   "out": "ERR (user-error \"Org export aborted.  Unable to resolve link: \\\"No match for fuzzy expression: *h\\\"\nSee ‘org-export-with-broken-links’\")"
+  },
+  {
+   "cell": "[[file:a.txt][t]]",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><a href=\"a.txt\">t</a></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "[[file:../a.org][up]]",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><a href=\"../a.html\">up</a></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "[[https://x.org/a_b][u]]",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><a href=\"https://x.org/a_b\">u</a></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "[[mailto:a@b.c]]",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><a href=\"mailto:a@b.c\">mailto:a@b.c</a></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "* h",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">* h</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "* ",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<tbody>\\n<tr>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "*x* *",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><b>x</b> *</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a  b",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a  b</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a @@html:H@@ b",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a H b</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a @@texinfo:T@@ b",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a b</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a @@ascii:A@@ b",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a b</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "[[https://x.org][a]] and [[https://y.org][b]]",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><a href=\"https://x.org\">a</a> and <a href=\"https://y.org\">b</a></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "\\rarr \\to \\ge",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">&rarr; &rarr; &ge;</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "1/2 \\frac12",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">1/2 &frac12;</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "x^{a b}",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">x<sup>a b</sup></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "x_a b",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">x<sub>a</sub> b</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "~a b~",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><code>a b</code></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "+a b+",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><del>a b</del></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "_a b_",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><span class=\"underline\">a b</span></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "/a\\/b/",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\"><i>a\\/b</i></td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "\\\\",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">\\\\</td>\\n</tr>\\n</tbody>\\n</table>"
+  },
+  {
+   "cell": "a\\\\ b",
+   "out": "<table border=\"2\" cellspacing=\"0\" cellpadding=\"6\" rules=\"groups\" frame=\"hsides\">\\n\\n\\n<colgroup>\\n<col  class=\"org-left\" />\\n</colgroup>\\n<tbody>\\n<tr>\\n<td class=\"org-left\">a\\\\ b</td>\\n</tr>\\n</tbody>\\n</table>"
+  }
+ ],
+ "texinfo": [
+  {
+   "cell": "a *b /c/ d* e",
+   "out": "@multitable {aaaaaaaaaaaaa}\\n@item a @strong{b @emph{c} d} e\\n@end multitable"
+  },
+  {
+   "cell": "*bold* text*",
+   "out": "@multitable {aaaaaaaaaaaa}\\n@item @strong{bold} text*\\n@end multitable"
+  },
+  {
+   "cell": "*a*b *c*",
+   "out": "@multitable {aaaaaaaa}\\n@item @strong{a*b *c}\\n@end multitable"
+  },
+  {
+   "cell": "x_{a_b}",
+   "out": "@multitable {aaaaaaa}\\n@item x@math{_a@math{_b}}\\n@end multitable"
+  },
+  {
+   "cell": "x^{2}y",
+   "out": "@multitable {aaaaaa}\\n@item x@math{^2}y\\n@end multitable"
+  },
+  {
+   "cell": "a_b_c",
+   "out": "@multitable {aaaaa}\\n@item a@math{_b}@math{_c}\\n@end multitable"
+  },
+  {
+   "cell": "*b*,*c*",
+   "out": "@multitable {aaaaaaa}\\n@item @strong{b},*c*\\n@end multitable"
+  },
+  {
+   "cell": "(*b*)",
+   "out": "@multitable {aaaaa}\\n@item (@strong{b})\\n@end multitable"
+  },
+  {
+   "cell": "a*b*",
+   "out": "@multitable {aaaa}\\n@item a*b*\\n@end multitable"
+  },
+  {
+   "cell": "~a_b~ =c*d=",
+   "out": "@multitable {aaaaaaaaaaa}\\n@item @code{a_b} @samp{c*d}\\n@end multitable"
+  },
+  {
+   "cell": "*_u_*",
+   "out": "@multitable {aaaaa}\\n@item @strong{u}\\n@end multitable"
+  },
+  {
+   "cell": "[[https://x.org]]",
+   "out": "@multitable {aaaaaaaaaaaaaaaaa}\\n@item @uref{https://x.org}\\n@end multitable"
+  },
+  {
+   "cell": "https://x.org/p?a=1&b=2",
+   "out": "@multitable {aaaaaaaaaaaaaaaaaaaaaaa}\\n@item @uref{https://x.org/p?a=1&b=2}\\n@end multitable"
+  },
+  {
+   "cell": "[[mailto:a@b.c][m]]",
+   "out": "@multitable {aaaaaaaaaaaaaaaaaaa}\\n@item @email{mailto:a@@b.c, m}\\n@end multitable"
+  },
+  {
+   "cell": "[[file:a.org][f]]",
+   "out": "@multitable {aaaaaaaaaaaaaaaaa}\\n@item @uref{a.org, f}\\n@end multitable"
+  },
+  {
+   "cell": "[[#id][i]]",
+   "out": "ERR (user-error \"Org export aborted.  Unable to resolve link: \\\"id\\\"\nSee ‘org-export-with-broken-links’\")"
+  },
+  {
+   "cell": "[[https://x.org][*b* link]]",
+   "out": "@multitable {aaaaaaaaaaaaaaaaaaaaaaaaaaa}\\n@item @uref{https://x.org, @strong{b} link}\\n@end multitable"
+  },
+  {
+   "cell": "[[*heading][h]]",
+   "out": "ERR (user-error \"Org export aborted.  Unable to resolve link: \\\"*heading\\\"\nSee ‘org-export-with-broken-links’\")"
+  },
+  {
+   "cell": "<2024-01-02 Tue>",
+   "out": "@multitable {aaaaaaaaaaaaaaaa}\\n@item @emph{<2024-01-02 Tue>}\\n@end multitable"
+  },
+  {
+   "cell": "[2024-01-02 Tue]",
+   "out": "@multitable {aaaaaaaaaaaaaaaa}\\n@item @emph{[2024-01-02 Tue]}\\n@end multitable"
+  },
+  {
+   "cell": "\\beta \\pi{} \\nbsp",
+   "out": "@multitable {aaaaaaaaaaaaaaaaa}\\n@item β π @tie{}\\n@end multitable"
+  },
+  {
+   "cell": "\\textbf{x} \\newline",
+   "out": "@multitable {aaaaaaaaaaaaaaaaaaa}\\n@item \\textbf{x} \\newline\\n@end multitable"
+  },
+  {
+   "cell": "a\\\\",
+   "out": "@multitable {aaa}\\n@item a\\\\\\n@end multitable"
+  },
+  {
+   "cell": "a\\",
+   "out": "@multitable {aa}\\n@item a\\\\n@end multitable"
+  },
+  {
+   "cell": "x_1 y^-2 z^*",
+   "out": "@multitable {aaaaaaaaaaaa}\\n@item x@math{_1} y@math{^-2} z@math{^*}\\n@end multitable"
+  },
+  {
+   "cell": "-5 --- --",
+   "out": "@multitable {aaaaaaaaa}\\n@item -5 --- --\\n@end multitable"
+  },
+  {
+   "cell": "a... b",
+   "out": "@multitable {aaaaaa}\\n@item a@dots{} b\\n@end multitable"
+  },
+  {
+   "cell": "'q' \"d\"",
+   "out": "@multitable {aaaaaaa}\\n@item 'q' \"d\"\\n@end multitable"
+  },
+  {
+   "cell": "\\vert{} bar",
+   "out": "@multitable {aaaaaaaaaaa}\\n@item | bar\\n@end multitable"
+  },
+  {
+   "cell": "\\vert",
+   "out": "@multitable {aaaaa}\\n@item |\\n@end multitable"
+  },
+  {
+   "cell": "*",
+   "out": "@multitable {}\\n@item \\n@end multitable"
+  },
+  {
+   "cell": "**",
+   "out": "@multitable {aa}\\n@item **\\n@end multitable"
+  },
+  {
+   "cell": "a * b * c",
+   "out": "@multitable {aaaaaaaaa}\\n@item a * b * c\\n@end multitable"
+  },
+  {
+   "cell": "/i/\\alpha",
+   "out": "@multitable {aaaaaaaaa}\\n@item @emph{i}α\\n@end multitable"
+  },
+  {
+   "cell": "\\Alpha \\Agrave{} \\copy",
+   "out": "@multitable {aaaaaaaaaaaaaaaaaaaaaa}\\n@item Α À @copyright{}\\n@end multitable"
+  },
+  {
+   "cell": "\\_ x",
+   "out": "@multitable {aaaa}\\n@item @w{ }x\\n@end multitable"
+  },
+  {
+   "cell": "\\hellip",
+   "out": "@multitable {aaaaaaa}\\n@item @dots{}\\n@end multitable"
+  },
+  {
+   "cell": "a<b>c&d",
+   "out": "@multitable {aaaaaaa}\\n@item a<b>c&d\\n@end multitable"
+  },
+  {
+   "cell": "*a\\*b*",
+   "out": "@multitable {aaaaaa}\\n@item @strong{a\\*b}\\n@end multitable"
+  },
+  {
+   "cell": "=a b=c",
+   "out": "@multitable {aaaaaa}\\n@item =a b=c\\n@end multitable"
+  },
+  {
+   "cell": "~a~b~",
+   "out": "@multitable {aaaaa}\\n@item @code{a~b}\\n@end multitable"
+  },
+  {
+   "cell": "x_{*b*}",
+   "out": "@multitable {aaaaaaa}\\n@item x@math{_@strong{b}}\\n@end multitable"
+  },
+  {
+   "cell": "\\(x^2\\)",
+   "out": "@multitable {aaaaaaa}\\n@item @math{x^2}\\n@end multitable"
+  },
+  {
+   "cell": "$y$ $$z$$",
+   "out": "@multitable {aaaaaaaaa}\\n@item @math{y} \\n@displaymath\\nz\\n@end displaymath\\n@end multitable"
+  },
+  {
+   "cell": "a @@latex:L@@ b",
+   "out": "@multitable {aaaaaaaaaaaaaaa}\\n@item a b\\n@end multitable"
+  },
+  {
+   "cell": "call_x() src_sh{ls}",
+   "out": "@multitable {aaaaaaaaaaaaaaaaaaa}\\n@item call@math{_x}() src@math{_sh}@{ls@}\\n@end multitable"
+  },
+  {
+   "cell": "[fn:1]",
+   "out": "ERR (error \"Definition not found for footnote 1\")"
+  },
+  {
+   "cell": "- -x",
+   "out": "@multitable {aaaa}\\n@item - -x\\n@end multitable"
+  },
+  {
+   "cell": "line1\\\\line2",
+   "out": "@multitable {aaaaaaaaaaaa}\\n@item line1\\\\line2\\n@end multitable"
+  },
+  {
+   "cell": "a--b",
+   "out": "@multitable {aaaa}\\n@item a--b\\n@end multitable"
+  },
+  {
+   "cell": "a -- b",
+   "out": "@multitable {aaaaaa}\\n@item a -- b\\n@end multitable"
+  },
+  {
+   "cell": "a --",
+   "out": "@multitable {aaaa}\\n@item a --\\n@end multitable"
+  },
+  {
+   "cell": "-- a",
+   "out": "@multitable {aaaa}\\n@item -- a\\n@end multitable"
+  },
+  {
+   "cell": "a---b",
+   "out": "@multitable {aaaaa}\\n@item a---b\\n@end multitable"
+  },
+  {
+   "cell": "a --- b",
+   "out": "@multitable {aaaaaaa}\\n@item a --- b\\n@end multitable"
+  },
+  {
+   "cell": "a-b",
+   "out": "@multitable {aaa}\\n@item a-b\\n@end multitable"
+  },
+  {
+   "cell": "a\\-b",
+   "out": "@multitable {aaaa}\\n@item a@-b\\n@end multitable"
+  },
+  {
+   "cell": "[[file:a.org]]",
+   "out": "@multitable {aaaaaaaaaaaaaa}\\n@item @uref{a.org}\\n@end multitable"
+  },
+  {
+   "cell": "[[file:a.org::*h][x]]",
+   "out": "@multitable {aaaaaaaaaaaaaaaaaaaaa}\\n@item @uref{a.org, x}\\n@end multitable"
+  },
+  {
+   "cell": "[[file:a.txt][t]]",
+   "out": "@multitable {aaaaaaaaaaaaaaaaa}\\n@item @uref{a.txt, t}\\n@end multitable"
+  },
+  {
+   "cell": "[[file:../a.org][up]]",
+   "out": "@multitable {aaaaaaaaaaaaaaaaaaaaa}\\n@item @uref{../a.org, up}\\n@end multitable"
+  },
+  {
+   "cell": "[[https://x.org/a_b][u]]",
+   "out": "@multitable {aaaaaaaaaaaaaaaaaaaaaaaa}\\n@item @uref{https://x.org/a_b, u}\\n@end multitable"
+  },
+  {
+   "cell": "[[mailto:a@b.c]]",
+   "out": "@multitable {aaaaaaaaaaaaaaaa}\\n@item @email{mailto:a@@b.c}\\n@end multitable"
+  },
+  {
+   "cell": "* h",
+   "out": "@multitable {aaa}\\n@item * h\\n@end multitable"
+  },
+  {
+   "cell": "* ",
+   "out": "@multitable {}\\n@item \\n@end multitable"
+  },
+  {
+   "cell": "*x* *",
+   "out": "@multitable {aaaaa}\\n@item @strong{x} *\\n@end multitable"
+  },
+  {
+   "cell": "a  b",
+   "out": "@multitable {aaaa}\\n@item a  b\\n@end multitable"
+  },
+  {
+   "cell": "a @@html:H@@ b",
+   "out": "@multitable {aaaaaaaaaaaaaa}\\n@item a b\\n@end multitable"
+  },
+  {
+   "cell": "a @@texinfo:T@@ b",
+   "out": "@multitable {aaaaaaaaaaaaaaaaa}\\n@item a T b\\n@end multitable"
+  },
+  {
+   "cell": "a @@ascii:A@@ b",
+   "out": "@multitable {aaaaaaaaaaaaaaa}\\n@item a b\\n@end multitable"
+  },
+  {
+   "cell": "[[https://x.org][a]] and [[https://y.org][b]]",
+   "out": "@multitable {aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa}\\n@item @uref{https://x.org, a} and @uref{https://y.org, b}\\n@end multitable"
+  },
+  {
+   "cell": "\\rarr \\to \\ge",
+   "out": "@multitable {aaaaaaaaaaaaa}\\n@item @arrow{} @arrow{} @geq{}\\n@end multitable"
+  },
+  {
+   "cell": "1/2 \\frac12",
+   "out": "@multitable {aaaaaaaaaaa}\\n@item 1/2 ½\\n@end multitable"
+  },
+  {
+   "cell": "x^{a b}",
+   "out": "@multitable {aaaaaaa}\\n@item x@math{^a b}\\n@end multitable"
+  },
+  {
+   "cell": "x_a b",
+   "out": "@multitable {aaaaa}\\n@item x@math{_a} b\\n@end multitable"
+  },
+  {
+   "cell": "~a b~",
+   "out": "@multitable {aaaaa}\\n@item @code{a b}\\n@end multitable"
+  },
+  {
+   "cell": "+a b+",
+   "out": "@multitable {aaaaa}\\n@item a b\\n@end multitable"
+  },
+  {
+   "cell": "_a b_",
+   "out": "@multitable {aaaaa}\\n@item a b\\n@end multitable"
+  },
+  {
+   "cell": "/a\\/b/",
+   "out": "@multitable {aaaaaa}\\n@item @emph{a\\/b}\\n@end multitable"
+  },
+  {
+   "cell": "\\\\",
+   "out": "@multitable {aa}\\n@item \\\\\\n@end multitable"
+  },
+  {
+   "cell": "a\\\\ b",
+   "out": "@multitable {aaaaa}\\n@item a\\\\ b\\n@end multitable"
+  }
+ ],
+ "unicode": [
+  {
+   "cell": "a *b /c/ d* e",
+   "out": "━━━━━━━━━━━━━━━\\n a *b /c/ d* e \\n━━━━━━━━━━━━━━━"
+  },
+  {
+   "cell": "*bold* text*",
+   "out": "━━━━━━━━━━━━━━\\n *bold* text* \\n━━━━━━━━━━━━━━"
+  },
+  {
+   "cell": "*a*b *c*",
+   "out": "━━━━━━━━━━\\n *a*b *c* \\n━━━━━━━━━━"
+  },
+  {
+   "cell": "x_{a_b}",
+   "out": "━━━━━━━━━\\n x_{a_b} \\n━━━━━━━━━"
+  },
+  {
+   "cell": "x^{2}y",
+   "out": "━━━━━━━━\\n x^{2}y \\n━━━━━━━━"
+  },
+  {
+   "cell": "a_b_c",
+   "out": "━━━━━━━\\n a_b_c \\n━━━━━━━"
+  },
+  {
+   "cell": "*b*,*c*",
+   "out": "━━━━━━━━━\\n *b*,*c* \\n━━━━━━━━━"
+  },
+  {
+   "cell": "(*b*)",
+   "out": "━━━━━━━\\n (*b*) \\n━━━━━━━"
+  },
+  {
+   "cell": "a*b*",
+   "out": "━━━━━━\\n a*b* \\n━━━━━━"
+  },
+  {
+   "cell": "~a_b~ =c*d=",
+   "out": "━━━━━━━━━━━━━\\n `a_b' `c*d' \\n━━━━━━━━━━━━━"
+  },
+  {
+   "cell": "*_u_*",
+   "out": "━━━━━━━\\n *_u_* \\n━━━━━━━"
+  },
+  {
+   "cell": "[[https://x.org]]",
+   "out": "━━━━━━━━━━━━━━━━━\\n <https://x.org> \\n━━━━━━━━━━━━━━━━━"
+  },
+  {
+   "cell": "https://x.org/p?a=1&b=2",
+   "out": "━━━━━━━━━━━━━━━━━━━━━━━━━━━\\n <https://x.org/p?a=1&b=2> \\n━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  },
+  {
+   "cell": "[[mailto:a@b.c][m]]",
+   "out": "━━━━━\\n [m] \\n━━━━━"
+  },
+  {
+   "cell": "[[file:a.org][f]]",
+   "out": "━━━━━\\n [f] \\n━━━━━"
+  },
+  {
+   "cell": "[[#id][i]]",
+   "out": "ERR (user-error \"Org export aborted.  Unable to resolve link: \\\"id\\\"\nSee ‘org-export-with-broken-links’\")"
+  },
+  {
+   "cell": "[[https://x.org][*b* link]]",
+   "out": "━━━━━━━━━━━━\\n [*b* link] \\n━━━━━━━━━━━━"
+  },
+  {
+   "cell": "[[*heading][h]]",
+   "out": "ERR (user-error \"Org export aborted.  Unable to resolve link: \\\"*heading\\\"\nSee ‘org-export-with-broken-links’\")"
+  },
+  {
+   "cell": "<2024-01-02 Tue>",
+   "out": "━━━━━━━━━━━━━━━━━━\\n <2024-01-02 Tue> \\n━━━━━━━━━━━━━━━━━━"
+  },
+  {
+   "cell": "[2024-01-02 Tue]",
+   "out": "━━━━━━━━━━━━━━━━━━\\n [2024-01-02 Tue] \\n━━━━━━━━━━━━━━━━━━"
+  },
+  {
+   "cell": "\\beta \\pi{} \\nbsp",
+   "out": "━━━━━━━\\n β π   \\n━━━━━━━"
+  },
+  {
+   "cell": "\\textbf{x} \\newline",
+   "out": "━━━━━━━━━━━━━━━━━━━━━\\n \\textbf{x} \\newline \\n━━━━━━━━━━━━━━━━━━━━━"
+  },
+  {
+   "cell": "a\\\\",
+   "out": "━━━━━\\n a\\\\ \\n━━━━━"
+  },
+  {
+   "cell": "a\\",
+   "out": "━━━━\\n a\\ \\n━━━━"
+  },
+  {
+   "cell": "x_1 y^-2 z^*",
+   "out": "━━━━━━━━━━━━━━\\n x_1 y^-2 z^* \\n━━━━━━━━━━━━━━"
+  },
+  {
+   "cell": "-5 --- --",
+   "out": "━━━━━━━━\\n -5 — – \\n━━━━━━━━"
+  },
+  {
+   "cell": "a... b",
+   "out": "━━━━━━\\n a… b \\n━━━━━━"
+  },
+  {
+   "cell": "'q' \"d\"",
+   "out": "━━━━━━━━━\\n 'q' \"d\" \\n━━━━━━━━━"
+  },
+  {
+   "cell": "\\vert{} bar",
+   "out": "━━━━━━━\\n | bar \\n━━━━━━━"
+  },
+  {
+   "cell": "\\vert",
+   "out": "━━━\\n | \\n━━━"
+  },
+  {
+   "cell": "*",
+   "out": ""
+  },
+  {
+   "cell": "**",
+   "out": "━━━━\\n ** \\n━━━━"
+  },
+  {
+   "cell": "a * b * c",
+   "out": "━━━━━━━━━━━\\n a * b * c \\n━━━━━━━━━━━"
+  },
+  {
+   "cell": "/i/\\alpha",
+   "out": "━━━━━━\\n /i/α \\n━━━━━━"
+  },
+  {
+   "cell": "\\Alpha \\Agrave{} \\copy",
+   "out": "━━━━━━━\\n Α À © \\n━━━━━━━"
+  },
+  {
+   "cell": "\\_ x",
+   "out": "━━━━\\n  x \\n━━━━"
+  },
+  {
+   "cell": "\\hellip",
+   "out": "━━━\\n … \\n━━━"
+  },
+  {
+   "cell": "a<b>c&d",
+   "out": "━━━━━━━━━\\n a<b>c&d \\n━━━━━━━━━"
+  },
+  {
+   "cell": "*a\\*b*",
+   "out": "━━━━━━━━\\n *a\\*b* \\n━━━━━━━━"
+  },
+  {
+   "cell": "=a b=c",
+   "out": "━━━━━━━━\\n =a b=c \\n━━━━━━━━"
+  },
+  {
+   "cell": "~a~b~",
+   "out": "━━━━━━━\\n `a~b' \\n━━━━━━━"
+  },
+  {
+   "cell": "x_{*b*}",
+   "out": "━━━━━━━━━\\n x_{*b*} \\n━━━━━━━━━"
+  },
+  {
+   "cell": "\\(x^2\\)",
+   "out": "━━━━━━━━━\\n \\(x^2\\) \\n━━━━━━━━━"
+  },
+  {
+   "cell": "$y$ $$z$$",
+   "out": "━━━━━━━━━━━\\n $y$ $$z$$ \\n━━━━━━━━━━━"
+  },
+  {
+   "cell": "a @@latex:L@@ b",
+   "out": "━━━━━\\n a b \\n━━━━━"
+  },
+  {
+   "cell": "call_x() src_sh{ls}",
+   "out": "━━━━━━━━━━━━━━━━━━━━━\\n call_x() src_sh{ls} \\n━━━━━━━━━━━━━━━━━━━━━"
+  },
+  {
+   "cell": "[fn:1]",
+   "out": "━━━━━━━\\n [nil] \\n━━━━━━━"
+  },
+  {
+   "cell": "- -x",
+   "out": "━━━━━━\\n - -x \\n━━━━━━"
+  },
+  {
+   "cell": "line1\\\\line2",
+   "out": "━━━━━━━━━━━━━━\\n line1\\\\line2 \\n━━━━━━━━━━━━━━"
+  },
+  {
+   "cell": "a--b",
+   "out": "━━━━━\\n a–b \\n━━━━━"
+  },
+  {
+   "cell": "a -- b",
+   "out": "━━━━━━━\\n a – b \\n━━━━━━━"
+  },
+  {
+   "cell": "a --",
+   "out": "━━━━━\\n a – \\n━━━━━"
+  },
+  {
+   "cell": "-- a",
+   "out": "━━━━━\\n – a \\n━━━━━"
+  },
+  {
+   "cell": "a---b",
+   "out": "━━━━━\\n a—b \\n━━━━━"
+  },
+  {
+   "cell": "a --- b",
+   "out": "━━━━━━━\\n a — b \\n━━━━━━━"
+  },
+  {
+   "cell": "a-b",
+   "out": "━━━━━\\n a-b \\n━━━━━"
+  },
+  {
+   "cell": "a\\-b",
+   "out": "━━━━\\n ab \\n━━━━"
+  },
+  {
+   "cell": "[[file:a.org]]",
+   "out": "━━━━━━━━━━━━━━\\n <file:a.org> \\n━━━━━━━━━━━━━━"
+  },
+  {
+   "cell": "[[file:a.org::*h][x]]",
+   "out": "━━━━━\\n [x] \\n━━━━━"
+  },
+  {
+   "cell": "[[file:a.txt][t]]",
+   "out": "━━━━━\\n [t] \\n━━━━━"
+  },
+  {
+   "cell": "[[file:../a.org][up]]",
+   "out": "━━━━━━\\n [up] \\n━━━━━━"
+  },
+  {
+   "cell": "[[https://x.org/a_b][u]]",
+   "out": "━━━━━\\n [u] \\n━━━━━"
+  },
+  {
+   "cell": "[[mailto:a@b.c]]",
+   "out": "━━━━━━━━━━━━━━━━\\n <mailto:a@b.c> \\n━━━━━━━━━━━━━━━━"
+  },
+  {
+   "cell": "* h",
+   "out": "━━━━━\\n * h \\n━━━━━"
+  },
+  {
+   "cell": "* ",
+   "out": ""
+  },
+  {
+   "cell": "*x* *",
+   "out": "━━━━━━━\\n *x* * \\n━━━━━━━"
+  },
+  {
+   "cell": "a  b",
+   "out": "━━━━━━\\n a  b \\n━━━━━━"
+  },
+  {
+   "cell": "a @@html:H@@ b",
+   "out": "━━━━━\\n a b \\n━━━━━"
+  },
+  {
+   "cell": "a @@texinfo:T@@ b",
+   "out": "━━━━━\\n a b \\n━━━━━"
+  },
+  {
+   "cell": "a @@ascii:A@@ b",
+   "out": "━━━━━━━\\n a A b \\n━━━━━━━"
+  },
+  {
+   "cell": "[[https://x.org][a]] and [[https://y.org][b]]",
+   "out": "━━━━━━━━━━━━━\\n [a] and [b] \\n━━━━━━━━━━━━━"
+  },
+  {
+   "cell": "\\rarr \\to \\ge",
+   "out": "━━━━━━━\\n → → ≥ \\n━━━━━━━"
+  },
+  {
+   "cell": "1/2 \\frac12",
+   "out": "━━━━━━━\\n 1/2 ½ \\n━━━━━━━"
+  },
+  {
+   "cell": "x^{a b}",
+   "out": "━━━━━━━━━\\n x^{a b} \\n━━━━━━━━━"
+  },
+  {
+   "cell": "x_a b",
+   "out": "━━━━━━━\\n x_a b \\n━━━━━━━"
+  },
+  {
+   "cell": "~a b~",
+   "out": "━━━━━━━\\n `a b' \\n━━━━━━━"
+  },
+  {
+   "cell": "+a b+",
+   "out": "━━━━━━━\\n +a b+ \\n━━━━━━━"
+  },
+  {
+   "cell": "_a b_",
+   "out": "━━━━━━━\\n _a b_ \\n━━━━━━━"
+  },
+  {
+   "cell": "/a\\/b/",
+   "out": "━━━━━━━━\\n /a\\/b/ \\n━━━━━━━━"
+  },
+  {
+   "cell": "\\\\",
+   "out": "━━━━\\n \\\\ \\n━━━━"
+  },
+  {
+   "cell": "a\\\\ b",
+   "out": "━━━━━━━\\n a\\\\ b \\n━━━━━━━"
+  }
+ ]
+}

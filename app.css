@@ -120,6 +120,7 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 .ol-line.blank { height: var(--ps, 10px); min-height: 0; padding: 0; border-bottom: 0; overflow: hidden; }
 .sheet .card { border: 1px solid var(--line); border-radius: 8px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
 .sheet .group { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); padding: 12px 4px 2px; }
+.sheet .sep { border-top: 2px solid var(--line); margin: 6px 0; }
 .sheet .cap { font-size: 12px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
 .sheet .seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
 .sheet .seg.two { grid-template-columns: repeat(2, minmax(0, 1fr)); }

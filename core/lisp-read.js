@@ -1,4 +1,4 @@
-// A reader for the data in an init file: lists, strings, keywords and symbols, numbers, 't' and 'nil', and the quote mark.
+// A reader for the data in an init file: lists, strings, keywords and symbols, numbers, 't' and 'nil', and the quote marks ' and #'.
 // A dotted tail is kept as the `tail` property of the array. It only reads; nothing is evaluated. Strings take \n, \t, \" and \\. Comments start with ; and run to the end of the line.
 
 /** A symbol or keyword. */
@@ -18,6 +18,7 @@ export function readForms(text, { integers = false, spans = false } = {}) {
     if (i >= text.length) fail('Unexpected end');
     const c = text[i];
     if (c === "'") { i++; return { quote: read() }; }
+    if (c === '#' && text[i + 1] === "'") { i += 2; return { quote: read() }; }
     if (c === '(') {
       i++;
       const list = [];
@@ -30,6 +31,16 @@ export function readForms(text, { integers = false, spans = false } = {}) {
         list.push(read());
       }
     }
+    if (c === '[') {
+      i++;
+      const v = []; v.vector = true;
+      for (;;) {
+        skip();
+        if (i >= text.length) fail('A vector is not closed');
+        if (text[i] === ']') { i++; return v; }
+        v.push(read());
+      }
+    }
     if (c === ')') fail('Unexpected )');
     if (c === '"') {
       let s = '';
@@ -40,7 +51,7 @@ export function readForms(text, { integers = false, spans = false } = {}) {
         s += text[i];
       }
     }
-    const m = /^[^\s()"';]+/.exec(text.slice(i));
+    const m = /^[^\s()\[\]"';]+/.exec(text.slice(i));
     if (!m) fail('Unexpected character');
     i += m[0].length;
     if (m[0] === 't') return true;
