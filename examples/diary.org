@@ -31,7 +31,7 @@ Set calendar-latitude and calendar-longitude in the init file (for example =(set
 
 * Sun times today only, in your own format
 %%(when (equal date (calendar-current-date)) (let ((l (solar-sunrise-sunset date))) (format "Sun times: 🌅 %s | 🌇 %s | ⌛ %s" (apply 'solar-time-string (car l)) (apply 'solar-time-string (cadr l)) (nth 2 l))))
-The test (equal date (calendar-current-date)) is true only on the current day. Add =(setq calendar-time-display-form '(24-hours ":" minutes))= to the init file for 24-hour times without the zone.
+The test (equal date (calendar-current-date)) is true only on the current day. To show the length as 9h56 instead of 9:56, wrap it: (string-replace ":" "h" (nth 2 l)). A time such as 07:05 anywhere in a diary line is taken as the entry's time, so the form '(24-hours "h" minutes) keeps the sunrise in the text. Add =(setq calendar-time-display-form '(24-hours ":" minutes))= to the init file for 24-hour times without the zone.
 
 * Sexp timestamps in an Org file
 ** Pay rent <%%(diary-date t 1 t)>

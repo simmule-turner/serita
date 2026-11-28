@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.23
+Diary sexps can reshape text with string-replace and replace-regexp-in-string, so a sun-times line can show the length as 9h56 instead of 9:56. The sunrise tests no longer depend on the machine's time zone, which had failed in CI.
+
 * 0.11.22
 The agenda now shows a heading whose own text holds a timestamp (** Vacation <2026-09-25 Fri 16:00>), at that time and with the stamp left out of the text. A <%%(sexp)> stamp in a heading, in the text below it or after SCHEDULED: or DEADLINE: shows the heading on each day the sexp holds, as Emacs does; a sexp that returns nil or fails shows nothing. Sample documents now include Logging, and the diary examples cover sexp timestamps.
 

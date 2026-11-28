@@ -40,6 +40,7 @@ test('a place name replaces the coordinates', () => {
 import { diaryEntries } from '../core/diary.js';
 import { where } from '../core/solar.js';
 test('the diary sexp diary-sunrise-sunset gives the sentence for each day, and nothing without a place', () => {
+  process.env.TZ = 'America/New_York'; // the sexp reads the device's time zone
   const run = () => diaryEntries('%%(diary-sunrise-sunset)\n', { y: 2026, m: 11, d: 26 }, 2).map((e) => e.text);
   Object.assign(where, { lat: null, lon: null, name: null });
   assert.deepEqual(run(), []);
@@ -64,6 +65,7 @@ test('calendar-time-display-form shapes the times (Emacs: sun-h24, sun-h12ampm)'
 });
 
 test('the sexps solar-sunrise-sunset, solar-time-string, let, apply, format and when build a custom line', () => {
+  process.env.TZ = 'America/New_York';
   Object.assign(where, { lat: 35.994, lon: -78.8986, name: 'Durham', form: null });
   now.date = () => new Date(2026, 10, 26, 9);
   const entry = '%%(when (equal date (calendar-current-date)) (let ((l (solar-sunrise-sunset date))) (format "Sun times: 🌅 %s | 🌇 %s | ⌛ %s" (apply \'solar-time-string (car l)) (apply \'solar-time-string (cadr l)) (nth 2 l))))\n';
@@ -83,4 +85,11 @@ test('timeString follows the form for any hours', () => {
   where.form = null;
   assert.equal(timeString(0.25, 'EST'), '12:15am (EST)');
   assert.equal(timeString(13.5, null), '1:30pm');
+});
+
+test('string-replace and replace-regexp-in-string reshape the duration', () => {
+  const one = (src) => diaryEntries(`%%(${src})\n`, { y: 2026, m: 11, d: 26 }, 1)[0].text;
+  assert.equal(one('string-replace ":" "h" "9:56"'), '9h56');
+  assert.equal(one('replace-regexp-in-string "\\\\([0-9]+\\\\):\\\\([0-9]+\\\\)" "\\\\1h\\\\2" "9:56"'), '9h56');
+  assert.equal(one('replace-regexp-in-string ":" "[\\\\&]" "9:56"'), '9[:]56');
 });

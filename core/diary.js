@@ -1,6 +1,7 @@
 // The diary file: entries that start with a date or a %%(sexp), and the ones that fall on a day. Written from the behavior Emacs 30.1 showed
 // (conformance v0.1.25): which forms match, what the text is, the order within a day, and the calendar sexps.
 import { readForms, isSym } from './lisp-read.js';
+import { emacsRegexp } from './regexp.js';
 import { sunriseSunset, sunTimes, timeString, localZone, where } from './solar.js';
 
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
@@ -186,6 +187,11 @@ export function ev(form, date, env = new Map()) {
         scope.set(v.sym, init === undefined ? null : ev(init, date, name === 'let*' ? scope : env));
       }
       return progn(args.slice(1), scope);
+    }
+    case 'string-replace': return String(val(2)).split(String(val(0))).join(String(val(1)));
+    case 'replace-regexp-in-string': { // the replacement may hold \& (the match), \N (a group) and \\
+      const re = emacsRegexp(String(val(0)), true); const rep = String(val(1));
+      return String(val(2)).replace(re, (...m) => rep.replace(/\\([&\d\\])/g, (_, c) => (c === '&' ? m[0] : c === '\\' ? '\\' : typeof m[Number(c)] === 'string' ? m[Number(c)] : '')));
     }
     case 'cons': return [val(0), val(1)];
     case 'equal': return JSON.stringify(val(0)) === JSON.stringify(val(1)) ? true : null;
