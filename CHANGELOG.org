@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.20
+The on-screen keyboard now stays as it was: closing a sheet (a log note, Skip, Save, Cancel) and pressing the Menu button no longer dismiss it. Changing a setting keeps the screen scrolled where it was, instead of jumping back to the top. In the capture menu, a template's key typed on the screen keyboard picks it.
+
 * 0.11.19
 One search field at the top of Settings finds any setting on any screen, by its name, its Emacs variable or a related word; the Emacs screen keeps its sections without a field of its own. Debugging is a single panel (record switch, log that scrolls sideways, Clear, Copy). Capture left the Menu (C-c c and Commands, Capture open it). Skip on a reschedule or deadline note now logs the line alone, and the cross logs nothing.
 

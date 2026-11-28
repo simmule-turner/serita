@@ -164,15 +164,21 @@ const failure = (e) => message(e?.message ?? String(e), true);
  * A panel that rises from the bottom over a dimmed screen. `build(sheet, close)` fills it.
  * Resolves with whatever `close` is given; a tap outside, or Escape, closes it with undefined.
  */
-function panel(build) {
+/** Where a panel that is drawn again after each change was scrolled to, by name; dropped when the panel is left. */
+const scrolls = {};
+function panel(build, { keep = null } = {}) {
   return new Promise((resolve) => {
     if (dismissed) { resolve(undefined); return; }
     const scrim = h('div', { class: 'scrim' });
     const sheet = h('div', { class: 'sheet', role: 'dialog' });
+    // A sheet with a field takes the focus; when it closes the field that had it comes back, so the keyboard stays as it was.
+    const before = document.activeElement;
     const onKey = (e) => { if (e.key === 'Escape' && $('layer').lastElementChild === sheet) { e.stopPropagation(); close(undefined); } };
     function close(value) {
+      if (keep) { if (value === undefined) delete scrolls[keep]; else scrolls[keep] = sheet.querySelector('.body')?.scrollTop ?? 0; }
       scrim.remove(); sheet.remove();
       document.removeEventListener('keydown', onKey, true);
+      if (before?.isConnected && /^(INPUT|TEXTAREA)$/.test(before.tagName) && (!document.activeElement || document.activeElement === document.body)) before.focus({ preventScroll: true });
       resolve(value);
     }
     sheet.dismiss = () => { dismissed = true; close(undefined); };
@@ -184,20 +190,29 @@ function panel(build) {
     document.addEventListener('keydown', onKey, true);
     $('layer').append(scrim, sheet);
     build(sheet, close);
+    if (keep && scrolls[keep]) { const body = sheet.querySelector('.body'); if (body) body.scrollTop = scrolls[keep]; }
   });
 }
 
 /** A list of choices. Items are { label, value, meta? }. */
 function choose(title, items, { cancel = true, subtitle = null, back = null } = {}) {
   return panel((sheet, close) => {
-    // A key typed that an item names (item.key) picks it, as in Emacs's capture menu.
-    const typed = (e) => {
-      if (!sheet.isConnected) { document.removeEventListener('keydown', typed, true); return; }
-      if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1) return;
-      const it = items.find((x) => x.key === e.key);
-      if (it) { e.preventDefault(); e.stopPropagation(); document.removeEventListener('keydown', typed, true); close(it.value); }
+    // A key typed that an item names (item.key) picks it, as in Emacs's capture menu: from a keyboard, or typed on the screen keyboard.
+    const pick = (ch) => {
+      const it = items.find((x) => x.key === ch);
+      if (it) { document.removeEventListener('keydown', typed, true); document.removeEventListener('beforeinput', soft, true); close(it.value); }
+      return !!it;
     };
-    if (items.some((x) => x.key)) document.addEventListener('keydown', typed, true);
+    const typed = (e) => {
+      if (!sheet.isConnected) { document.removeEventListener('keydown', typed, true); document.removeEventListener('beforeinput', soft, true); return; }
+      if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1) return;
+      if (pick(e.key)) { e.preventDefault(); e.stopPropagation(); }
+    };
+    const soft = (e) => {
+      if (!sheet.isConnected) { document.removeEventListener('keydown', typed, true); document.removeEventListener('beforeinput', soft, true); return; }
+      if (e.inputType === 'insertText' && e.data?.length === 1 && pick(e.data)) { e.preventDefault(); e.stopPropagation(); }
+    };
+    if (items.some((x) => x.key)) { document.addEventListener('keydown', typed, true); document.addEventListener('beforeinput', soft, true); }
     put(sheet, 
       title ? h('h2', {}, title) : null,
       subtitle ? h('p', {}, subtitle) : null,
@@ -870,7 +885,7 @@ async function settings() {
       put(sheet, h('h2', {}, 'Settings'), note ? h('p', {}, note) : null, input, normal, found,
         waiting ? h('div', { class: 'row' }, h('button', { class: 'primary', onclick: () => { close(undefined); restart(); } }, 'Restart to update')) : null,
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Close')));
-    });
+    }, { keep: 'settings' });
     note = '';
     if (what?.run) { const r = await what.run(); if (r === 'closed') return; if (typeof r === 'string') note = r; continue; }
     if (what === undefined) return;
@@ -973,7 +988,7 @@ async function emacsSettings() {
       }
       put(sheet, h('h2', {}, 'Emacs'), note ? h('p', {}, note) : null, list,
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
-    });
+    }, { keep: 'emacs' });
     if (what === undefined) return;
     note = await emacsAction(what);
   }
@@ -1098,7 +1113,7 @@ async function appearance() {
         h('div', { class: 'sec' }, 'Tables'),
         h('div', { class: 'list' }, row('table-wrap', 'Wrap table cells', wrapCells() ? 'On' : 'Off'), row('table-width', 'Table width', `${Math.round(widthFraction() * 100)}%`), row('table-zebra', 'Stripe table rows', zebraRows() ? 'On' : 'Off')),
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
-    });
+    }, { keep: 'appearance' });
     if (what === undefined) return;
     const [kind, arg] = what.split(':');
     if (await appearanceRow(what)) continue;
@@ -1322,6 +1337,7 @@ async function visitOffset(name, offset) {
   await visitLine(name, line);
 }
 
+$('toolbar').addEventListener('mousedown', (e) => { if (e.target.closest('button')) e.preventDefault(); }); // an open keyboard and the cursor stay as they are
 $('btn-menu').addEventListener('click', () => builtinMenu());
 
 /** The floating Extra button, at the right as Back is at the left, is there when the init file defines a menu. */
@@ -3873,7 +3889,7 @@ async function debugging() {
         h('pre', { class: 'keylogtext', 'aria-label': 'Recorded key events' }, keyLines.length ? keyLines.join('\n') : '(nothing recorded yet)'),
         h('div', { class: 'row' }, h('button', { onclick: () => close('clear') }, 'Clear'), h('button', { class: 'primary', onclick: () => close('copy') }, 'Copy')),
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
-    });
+    }, { keep: 'debugging' });
     if (act === undefined) return;
     if (act === 'toggle') config.update({ settings: { 'view.keyLog': String(!keyLogOn()) } });
     else if (act === 'clear') keyLines.length = 0;

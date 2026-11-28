@@ -142,7 +142,7 @@ View, then Agenda, lists what is scheduled, due or dated in the open files, by D
 Filter keeps some of the rows: by tag (~+work -home~), category (~+calls~), effort (~<1:00~, ~>0:30~, ~=2:00~; entries with no effort stay only for ~>~) and an Emacs regexp (~+rent~ keeps lines that match, ~-rent~ hides them). The filters show in the title and Clear all filters removes them. Mark turns a tap into a mark; All and None mark every row or none, and Act on N sets the TODO state, adds or removes a tag, sets the priority, schedules, sets a deadline or archives every marked entry. In the Text view C-c a a opens the agenda, C-c a t the TODO list, C-c a m tags and C-c a s a search.
 
 ** Capture
-C-c c (or Menu, Commands, Capture) lists the capture templates by key and description. Tap one, answer its questions, edit the text, and Save files it into the template's target; Cancel drops it.
+C-c c (or Menu, Commands, Capture) lists the capture templates by key and description. Tap one, or type its key, answer its questions, edit the text, and Save files it into the template's target; Cancel drops it.
 
 Emacs's own template, ~t~ Task, which files a TODO under Tasks, is there until you set your own; it files to ~.notes~ in your storage, since Emacs's ~~/.notes~ has no home folder here. A template is set as ~init.el~ writes it, in Settings, Emacs, Capture templates (Reset brings the default back):
 

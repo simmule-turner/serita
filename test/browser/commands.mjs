@@ -151,6 +151,26 @@ ok((await btn(/Record key events/).count()) === 1 && (await btn('Clear').count()
 ok((await sheet.locator('.keylogtext').evaluate((e) => getComputedStyle(e).whiteSpace)) === 'pre', 'the log lines do not wrap');
 await btn('‹ Settings').click(); await btn('Close').click();
 
+// Screens that change a setting stay where they were scrolled; the Menu leaves an open keyboard alone; the capture menu takes typed keys
+await page.click('#btn-menu'); await btn('Settings').click(); await btn(/\d+ settings/).click();
+await btn(/Beep on errors/).scrollIntoViewIfNeeded(); await sheet.locator('.body').evaluate((e) => { e.scrollTop += 150; });
+const was = await sheet.locator('.body').evaluate((e) => e.scrollTop);
+await btn(/Beep on errors/).click();
+const now = await sheet.locator('.body').evaluate((e) => e.scrollTop);
+ok(was > 100 && Math.abs(now - was) < 2, 'Settings, Emacs stays scrolled where it was after a setting changes');
+await btn(/Beep on errors/).click();
+await btn('‹ Settings').click(); await btn('Close').click();
+await page.evaluate(() => document.getElementById('editor').focus());
+await page.click('#btn-menu');
+ok(await page.evaluate(() => document.activeElement.id) === 'editor', 'the Menu button leaves the focus, and so an open keyboard, in the editor');
+await page.keyboard.press('Escape');
+ok(await page.evaluate(() => document.activeElement.id) === 'editor', 'closing the Menu keeps the focus in the editor');
+await at('x\n', 1);
+await page.click('#btn-menu'); await btn(/Commands/).click(); await page.keyboard.type('org-capture'); await page.keyboard.press('Enter');
+await page.keyboard.insertText('t');
+ok((await sheet.locator('textarea').inputValue()).startsWith('* TODO ') && (await text()) === 'x\n', 'a key typed on the screen keyboard picks the capture template and is not typed into the text');
+await btn('Cancel').click();
+
 // Movement and search scroll the text to the cursor
 const long = Array.from({ length: 200 }, (_, i) => `line ${i + 1}`).join('\n') + '\nneedle\n';
 await at(long, 1);

@@ -71,6 +71,17 @@ await at(planned, 1); await ctrl('c'); await ctrl('s'); await page.keyboard.type
 await page.locator('.sheet .dismiss').click();
 ok(/^\* TODO a\nSCHEDULED: <\d{4}-\d\d-\d\d \w{3}>\n$/.test(await text()) && !(await text()).includes('2026-11-23'), 'the cross in the reschedule note keeps the new date and logs nothing');
 
+// A note sheet gives the focus back to the editor, so an open keyboard stays open
+await setting({ 'view.emacsKeys': 'true', 'org-log-done': 'note' });
+await at('* TODO a\n', 1);
+await ctrl('c'); await ctrl('t');
+ok(await page.evaluate(() => document.activeElement.tagName) === 'TEXTAREA' && await page.locator('.sheet').count() === 1, 'the note sheet takes the focus');
+await page.locator('.sheet').getByRole('button', { name: 'Skip', exact: true }).click();
+ok(await page.evaluate(() => document.activeElement.id) === 'editor', 'after Skip the editor has the focus again');
+await at('* TODO a\n', 1);
+await ctrl('c'); await ctrl('t'); await page.locator('.sheet textarea').fill('done'); await page.locator('.sheet').getByRole('button', { name: 'Save', exact: true }).click();
+ok(await page.evaluate(() => document.activeElement.id) === 'editor', 'after Save the editor has the focus again');
+
 ok(errors.length === 0, 'no page errors');
 await close();
 process.exit(failed ? 1 : 0);
