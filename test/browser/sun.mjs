@@ -26,6 +26,9 @@ const title = await sheet.locator('h2').innerText();
 const lines = (await sheet.locator('textarea').inputValue()).split('\n');
 ok(/^Sunrise\/sunset times for \w+ \d{4} at Durham:$/.test(title), 'the month sheet has the heading as its title');
 ok(lines.length >= 28 && /^\w{3} {1,2}1: Sunrise \d+:\d\d[ap]m \(E[SD]T\), sunset \d+:\d\d[ap]m \(E[SD]T\) \(\d+:\d\d hrs daylight\)$/.test(lines[0]), 'one line a day, without the place');
+await btn('Copy').click();
+await page.waitForFunction(() => document.getElementById('message').innerText.trim() !== '');
+ok(await page.evaluate(() => getComputedStyle(document.getElementById('message')).zIndex === '11'), 'the message line is above the dimming layer behind any sheet, such as this one');
 await btn('Close').click();
 
 await setting({});
@@ -44,7 +47,7 @@ await page.locator('.sheet.calendar').getByRole('button', { name: 'Sun', exact: 
 await page.waitForFunction(() => /^\w{3} \d+, \d{4}: Sunrise/.test(document.getElementById('message').innerText));
 ok(/^\w{3} \d+, \d{4}: Sunrise .* at 36\.0N, 78\.9W /.test(await said()), 'the Sun button in the Calendar says the same');
 const clear = await page.evaluate(() => { const r = document.getElementById('message').getBoundingClientRect(); return document.elementFromPoint(r.left + 20, r.top + r.height / 2)?.id === 'message'; });
-ok(clear, 'the message is not under the dimming layer while the Calendar is open');
+ok(clear, 'the message is not under the dimming layer in the Calendar');
 const names = await page.locator('.sheet.calendar .abar:last-child button').allInnerTexts();
 ok(names.join(',') === 'Today,Sun,Agenda,Close', `the bottom row is ${names.join(',')}`);
 const boxes = await page.locator('.sheet.calendar .abar:last-child button').evaluateAll((b) => b.map((x) => Math.round(x.getBoundingClientRect().width)));

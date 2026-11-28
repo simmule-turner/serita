@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.27
+The message line at the bottom is never dimmed behind a sheet, so command results such as the sunrise and sunset text are readable everywhere.
+
 * 0.11.26
 While the Calendar is open, the message line at the bottom is no longer dimmed, so the sunrise and sunset text is easy to read.
 

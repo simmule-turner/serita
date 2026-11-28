@@ -247,6 +247,9 @@ A separate repository holds questions (case files written by us) and results rec
 ### 0.11.22: `core/agenda.js` (sexpStamps, headline timestamps), `test/sexp-stamps.test.js`, `test/fixtures/emacs-sexp-stamps.json`
 - Written from observed Emacs 30.1 results with Org 9.7.11 (conformance v0.1.82: ts-*): a timestamp in a headline and `<%%(sexp)>` in a headline, a body line or after SCHEDULED/DEADLINE show the heading on each day the sexp holds. Conformance v0.1.83 (ss-*) shows that the heading appears as written whatever the sexp returns (a string, a cons), and that a sexp that is nil or fails shows nothing.
 
+### 0.11.27: `app.css` (the message line above the dimming layer behind every sheet), `test/browser/sun.mjs`
+- Our own styling; the browser test checks the message is not under the dimming layer behind the Calendar and the month sheet.
+
 ### 0.11.26: `app.css` (the message line above the dimming layer in the Calendar), `test/browser/sun.mjs`
 - Our own styling; the browser test checks that the message is not under the dimming layer.
 

@@ -24,8 +24,8 @@ main { flex: 1; min-height: 0; display: flex; position: relative; background: va
 #modeline { padding: 4px 10px; background: #5f6368; color: #ffffff; border-top: 1px solid var(--line); font: 13px ui-monospace, Menlo, Consolas, monospace; white-space: pre; overflow: hidden; }
 #message { padding: 4px 10px; min-height: 28px; font-size: 14px; border-top: 1px solid var(--line); color: var(--muted); }
 #message.error { color: var(--danger); }
-body:has(.sheet.calendar) #message { position: relative; z-index: 11; background: var(--bg); color: var(--fg); }
-body:has(.sheet.calendar) #message.error { color: var(--danger); }
+body:has(#layer .scrim) #message { position: relative; z-index: 11; background: var(--bg); color: var(--fg); }
+body:has(#layer .scrim) #message.error { color: var(--danger); }
 #layer .scrim { z-index: 10; position: fixed; inset: 0; background: #000000; opacity: 0.55; }
 #layer .sheet { z-index: 11; position: fixed; left: 0; right: 0; bottom: 0; max-height: 92%; overflow: auto; background: var(--panel); border-radius: 16px 16px 0 0; padding: 12px 20px 22px; display: flex; flex-direction: column; gap: 12px; max-width: 640px; margin: 0 auto; }
 #layer .sheet::before { content: ''; align-self: center; width: 52px; height: 5px; border-radius: 3px; background: var(--line); flex: none; }
