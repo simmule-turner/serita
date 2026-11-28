@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.22
+The agenda now shows a heading whose own text holds a timestamp (** Vacation <2026-09-25 Fri 16:00>), at that time and with the stamp left out of the text. A <%%(sexp)> stamp in a heading, in the text below it or after SCHEDULED: or DEADLINE: shows the heading on each day the sexp holds, as Emacs does; a sexp that returns nil or fails shows nothing. Sample documents now include Logging, and the diary examples cover sexp timestamps.
+
 * 0.11.21
 Sparse trees by date (C-c / b, a, D) and past-due deadlines (C-c / d); C-c . on a stamp edits it and keeps its repeater; radio links work across a line break. Logging follows Emacs more closely: notes for refiling and clock-out, STARTUP log words, closing notes on repeats and custom org-log-note-headings. Sunrise and sunset appear with %%(diary-sunrise-sunset) from calendar-latitude and calendar-longitude, shaped by calendar-time-display-form, and your own diary lines can use solar-sunrise-sunset, solar-time-string, let, format and apply.
 

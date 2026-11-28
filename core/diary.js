@@ -187,6 +187,7 @@ export function ev(form, date, env = new Map()) {
       }
       return progn(args.slice(1), scope);
     }
+    case 'cons': return [val(0), val(1)];
     case 'equal': return JSON.stringify(val(0)) === JSON.stringify(val(1)) ? true : null;
     case 'car': return val(0)?.[0] ?? null;
     case 'cdr': { const l = val(0); return Array.isArray(l) && l.length > 1 ? l.slice(1) : null; }

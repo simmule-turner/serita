@@ -32,3 +32,15 @@ Set calendar-latitude and calendar-longitude in the init file (for example =(set
 * Sun times today only, in your own format
 %%(when (equal date (calendar-current-date)) (let ((l (solar-sunrise-sunset date))) (format "Sun times: 🌅 %s | 🌇 %s | ⌛ %s" (apply 'solar-time-string (car l)) (apply 'solar-time-string (cadr l)) (nth 2 l))))
 The test (equal date (calendar-current-date)) is true only on the current day. Add =(setq calendar-time-display-form '(24-hours ":" minutes))= to the init file for 24-hour times without the zone.
+
+* Sexp timestamps in an Org file
+** Pay rent <%%(diary-date t 1 t)>
+Shows on the 1st of every month, like a repeating timestamp.
+** Team meeting <%%(diary-float t 4 4) 10:00-11:00>
+Shows on the fourth Thursday of each month at 10:00.
+** Report
+SCHEDULED: <%%(diary-float t 1 1)>
+Shows as Scheduled: on the first Monday of each month.
+** Dentist <2026-12-03 Thu 09:30>
+A timestamp in the heading puts the heading on that day.
+For computed text such as the sun times above, put the sexp on its own line at the left margin; a <%%(...)> stamp always shows its heading as written.

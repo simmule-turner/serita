@@ -9,7 +9,8 @@ import { propertiesOf } from './properties.js';
 import { matcher } from './sparse.js';
 import { effortMinutes } from './effort.js';
 import { keeps } from './agenda-filter.js';
-import { agendaLines, diaryEntries, hooks } from './diary.js';
+import { agendaLines, diaryEntries, hooks, ev } from './diary.js';
+import { readForms } from './lisp-read.js';
 import { anniversaries, parseContacts } from './contacts.js';
 import { holidaysOf } from './holidays.js';
 import { DEFAULT_FORMATS, formatPrefix, iconFor } from './prefix.js';
@@ -51,6 +52,24 @@ function occurrences(st, from, to) {
   const out = [];
   if (!st.repeat || st.repeat.unit === 'h') { if (st.date >= from && st.date <= to) out.push(st.date); return out; }
   for (let k = 0; k < 4000; k++) { const d = step(st.date, st.repeat, k); if (d > to) break; if (d >= from) out.push(d); }
+  return out;
+}
+
+/** The <%%(sexp)> timestamps of a line: the sexp's source, what follows it inside the brackets (a time), and where it sits. */
+function sexpStamps(text) {
+  const out = [];
+  for (let at = text.indexOf('<%%('); at >= 0; at = text.indexOf('<%%(', at + 1)) {
+    let depth = 0; let str = false; let end = -1;
+    for (let k = at + 3; k < text.length; k++) {
+      const c = text[k];
+      if (str) { if (c === '\\') k++; else if (c === '"') str = false; continue; }
+      if (c === '"') str = true; else if (c === '(') depth++; else if (c === ')' && --depth === 0) { end = k; break; }
+    }
+    if (end < 0) break;
+    const close = text.indexOf('>', end);
+    if (close < 0) break;
+    out.push({ sexp: text.slice(at + 3, end + 1), rest: text.slice(end + 1, close), start: at, end: close + 1 });
+  }
   return out;
 }
 
@@ -115,6 +134,8 @@ const base = (hd) => ({ file: hd.file, line: hd.line, category: hd.category, tod
   effortText: propertiesOf(hd.text, hd.line, hd.lines).find(([n]) => n.toUpperCase() === 'EFFORT')?.[1] ?? '', effort: effortMinutes(propertiesOf(hd.text, hd.line, hd.lines).find(([n]) => n.toUpperCase() === 'EFFORT')?.[1]),
   text: [hd.h.todo, hd.h.priority ? `[#${hd.h.priority}]` : null, hd.h.title].filter(Boolean).join(' ') });
 
+const titled = (hd, title) => { const b = base(hd); return { ...b, title, text: [hd.h.todo, hd.h.priority ? `[#${hd.h.priority}]` : null, title].filter(Boolean).join(' ') }; };
+
 /**
  * The agenda for a span of days.
  * @param {{ category: string, text: string }[]} files
@@ -130,7 +151,8 @@ export function agenda(files, { start, span, today, warn = 14, now = null, timeG
   const byDay = new Map();
   for (let i = 0; i < days; i++) byDay.set(key(addDays(from, i)), []);
   const put = (d, e) => byDay.get(key(d))?.push(e);
-  for (const hd of headings(files)) {
+  const heads = headings(files);
+  for (const hd of heads) {
     const plan = hd.own.length && /^\s*(?:CLOSED|DEADLINE|SCHEDULED):/.test(hd.own[0]) ? hd.own[0] : '';
     for (const m of plan.matchAll(PLAN)) {
       const st = parseStamp(m[2]);
@@ -151,6 +173,15 @@ export function agenda(files, { start, span, today, warn = 14, now = null, timeG
           if (ahead > 0 && ahead <= warn) put(today, { ...base(hd), kind: 'deadline', label: `In ${String(ahead).padStart(3)} d.:`, late: -ahead });
           else if (ahead < 0) put(today, { ...base(hd), kind: 'deadline', label: `${String(-ahead).padStart(2)} d. ago:`, late: -ahead, sortLate: -0.5 });
         }
+      }
+    }
+    // A timestamp in the headline shows the heading on its day, with the stamp taken out of the text.
+    if (hd.h.title.includes('<')) {
+      const bare = hd.h.title.replace(new RegExp(STAMP.source, 'g'), (m) => (m[0] === '<' ? '' : m));
+      for (const m of hd.h.title.matchAll(STAMP)) {
+        const st = parseStamp(m[0]);
+        if (!st || !st.active) continue;
+        for (const d of occurrences(st, from, to)) put(d, { ...titled(hd, bare), kind: 'stamp', label: '', clock: st.time ? timeLabel(st) : '', late: 0, time: st.time });
       }
     }
     for (const text of hd.own.slice(plan ? 1 : 0)) {
@@ -178,6 +209,47 @@ export function agenda(files, { start, span, today, warn = 14, now = null, timeG
       for (const l of agendaLines(e.text)) put(utc(e.y, e.m, e.d), { file: i, line: e.line, category: f.category, todo: null, priority: null, title: l.text, tags: [], itags: [], effort: null, text: l.text, done: false, kind: 'sexp', label: '', clock: l.time ? timeLabel(l) : '', late: 0, time: l.time, quiet: e.quiet, birthday: isBirthday(l.text) });
     }
   });
+  // <%%(sexp)> timestamps in a headline, a body line or after SCHEDULED/DEADLINE show the heading on each day the sexp holds.
+  const sexpDays = (sexp) => {
+    let form;
+    try { form = readForms(sexp)[0]; } catch { return []; }
+    const hits = [];
+    for (let i = 0; i < days; i++) {
+      const d = addDays(from, i);
+      let r = null;
+      try { r = ev(form, [d.getUTCMonth() + 1, d.getUTCDate(), d.getUTCFullYear()]); } catch { r = null; }
+      if (r !== null && r !== false && r !== undefined && !(Array.isArray(r) && !r.length)) hits.push(d);
+    }
+    return hits;
+  };
+  const clockOf = (rest) => {
+    const m = /(\d{1,2}):(\d\d)(?:-(\d{1,2}):(\d\d))?/.exec(rest);
+    return m ? { time: `${two(+m[1])}:${m[2]}`, until: m[3] !== undefined ? `${two(+m[3])}:${m[4]}` : null, text: m[0] } : null;
+  };
+  for (const hd of heads) {
+    const plan = hd.own.length && /^\s*(?:CLOSED|DEADLINE|SCHEDULED):/.test(hd.own[0]) ? hd.own[0] : '';
+    const head = sexpStamps(hd.h.title);
+    let shown = hd.h.title;
+    for (const st of [...head].reverse()) { const c = clockOf(st.rest); if (c) shown = shown.slice(0, st.start) + shown.slice(st.start, st.end).replace(c.text, '') + shown.slice(st.end); }
+    shown = shown.replace(new RegExp(STAMP.source, 'g'), (m) => (m[0] === '<' ? '' : m));
+    for (const st of head) {
+      const c = clockOf(st.rest);
+      for (const d of sexpDays(st.sexp)) put(d, { ...titled(hd, shown), kind: 'stamp', label: '', clock: c ? timeLabel(c) : '', late: 0, time: c?.time ?? null });
+    }
+    for (const st of sexpStamps(plan)) {
+      const kw = /(SCHEDULED|DEADLINE):\s*$/.exec(plan.slice(0, st.start))?.[1];
+      if (!kw) continue;
+      const c = clockOf(st.rest);
+      for (const d of sexpDays(st.sexp)) put(d, { ...titled(hd, hd.h.title), kind: kw === 'SCHEDULED' ? 'scheduled' : 'deadline', label: kw === 'SCHEDULED' ? 'Scheduled:' : 'Deadline:', clock: c ? timeLabel({ ...c, until: kw === 'DEADLINE' ? null : c.until }) : '', late: 0, time: c?.time ?? null });
+    }
+    for (const text of hd.own.slice(plan ? 1 : 0)) {
+      if (/^\s*:[A-Za-z_]+:/.test(text)) continue;
+      for (const st of sexpStamps(text)) {
+        const c = clockOf(st.rest);
+        for (const d of sexpDays(st.sexp)) put(d, { ...titled(hd, hd.h.title), kind: 'stamp', label: '', clock: c ? timeLabel(c) : '', late: 0, time: c?.time ?? null });
+      }
+    }
+  }
   // Holidays (options like holidaysOf takes) show as Diary lines, as Emacs shows them; a solar time becomes the line's time
   if (holidays) {
     const last = new Date(from.getTime() + (days - 1) * 86400000);
