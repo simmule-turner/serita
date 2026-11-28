@@ -43,6 +43,8 @@ ok(/^\w{3} \d+, \d{4}: Sunrise .* at 36\.0N, 78\.9W /.test(await said()), 'S in 
 await page.locator('.sheet.calendar').getByRole('button', { name: 'Sun', exact: true }).click();
 await page.waitForFunction(() => /^\w{3} \d+, \d{4}: Sunrise/.test(document.getElementById('message').innerText));
 ok(/^\w{3} \d+, \d{4}: Sunrise .* at 36\.0N, 78\.9W /.test(await said()), 'the Sun button in the Calendar says the same');
+const clear = await page.evaluate(() => { const r = document.getElementById('message').getBoundingClientRect(); return document.elementFromPoint(r.left + 20, r.top + r.height / 2)?.id === 'message'; });
+ok(clear, 'the message is not under the dimming layer while the Calendar is open');
 const names = await page.locator('.sheet.calendar .abar:last-child button').allInnerTexts();
 ok(names.join(',') === 'Today,Sun,Agenda,Close', `the bottom row is ${names.join(',')}`);
 const boxes = await page.locator('.sheet.calendar .abar:last-child button').evaluateAll((b) => b.map((x) => Math.round(x.getBoundingClientRect().width)));

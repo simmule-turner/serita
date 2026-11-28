@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.26
+While the Calendar is open, the message line at the bottom is no longer dimmed, so the sunrise and sunset text is easy to read.
+
 * 0.11.25
 The Calendar has a Sun button between Today and Agenda that says the sunrise and sunset of the chosen day, for phones with no keyboard; the other buttons keep their size.
 
