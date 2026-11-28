@@ -2121,7 +2121,7 @@ async function calendarScreen() {
           h('div', { class: 'cal' }, ...['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((n) => h('span', { class: 'dow' }, n)), ...monthGrid(y, m).map(cell)),
           h('div', { class: 'aday' }, calendarState.day),
           ...(picked.length || holidays.length ? [...holidays, ...picked].map(row) : [h('p', { class: 'aempty' }, 'Nothing on this day')])), sidewaysSwipe((dir) => close({ move: dir }))),
-        h('div', { class: 'abar' }, h('button', { onclick: () => close({ today: true }) }, 'Today'), h('button', { onclick: () => close({ agenda: true }) }, 'Agenda'), h('button', { onclick: () => close(undefined) }, 'Close')));
+        h('div', { class: 'abar' }, h('button', { onclick: () => close({ today: true }) }, 'Today'), h('button', { onclick: () => close({ sun: true }) }, 'Sun'), h('button', { onclick: () => close({ agenda: true }) }, 'Agenda'), h('button', { onclick: () => close(undefined) }, 'Close')));
     });
     document.removeEventListener('keydown', sunKey);
     if (!act) return;

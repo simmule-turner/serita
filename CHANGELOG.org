@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.25
+The Calendar has a Sun button between Today and Agenda that says the sunrise and sunset of the chosen day, for phones with no keyboard; the other buttons keep their size.
+
 * 0.11.24
 Sunrise and sunset commands, as in Emacs: sunrise-sunset in the palette says today's times (with C-u it asks for a date), calendar-sunrise-sunset-month lists every day of the month the Calendar shows, and S in the Calendar says the times of the chosen day. They use calendar-latitude and calendar-longitude from the init file and follow calendar-time-display-form.
 

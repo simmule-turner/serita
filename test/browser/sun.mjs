@@ -40,6 +40,15 @@ await page.keyboard.press('Shift+S');
 await page.waitForFunction(() => /^\w{3} \d+, \d{4}: Sunrise/.test(document.getElementById('message').innerText));
 ok(/^\w{3} \d+, \d{4}: Sunrise .* at 36\.0N, 78\.9W /.test(await said()), 'S in the Calendar says the times of the chosen day, starting with its date');
 
+await page.locator('.sheet.calendar').getByRole('button', { name: 'Sun', exact: true }).click();
+await page.waitForFunction(() => /^\w{3} \d+, \d{4}: Sunrise/.test(document.getElementById('message').innerText));
+ok(/^\w{3} \d+, \d{4}: Sunrise .* at 36\.0N, 78\.9W /.test(await said()), 'the Sun button in the Calendar says the same');
+const names = await page.locator('.sheet.calendar .abar:last-child button').allInnerTexts();
+ok(names.join(',') === 'Today,Sun,Agenda,Close', `the bottom row is ${names.join(',')}`);
+const boxes = await page.locator('.sheet.calendar .abar:last-child button').evaluateAll((b) => b.map((x) => Math.round(x.getBoundingClientRect().width)));
+await page.screenshot({ path: '/tmp/cal-sun.png' });
+const right = await page.locator('.sheet.calendar .abar:last-child button').last().evaluate((x) => Math.round(x.getBoundingClientRect().right));
+ok(right <= 393, `the row fits the phone (${boxes.join(', ')} px wide, ends at ${right})`);
 ok(errors.length === 0, `no page errors ${errors.join('; ')}`);
 await close();
 process.exit(failed ? 1 : 0);
