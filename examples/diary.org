@@ -29,12 +29,16 @@ Monday Standup
 %%(diary-sunrise-sunset)
 Set calendar-latitude and calendar-longitude in the init file (for example =(setq calendar-latitude 35.994 calendar-longitude -78.8986)=), and every day of the agenda shows its sunrise and sunset.
 
+* Weather
+%%(org-weather)
+Today's agenda shows the current conditions and the day's forecast from Open-Meteo, for the place set above. In the init file, =(setq org-weather-format "%icon %desc %tcur%tu (%tmin-%tmax)")= shapes the line; %desc, %icon and %main describe the weather, %tmorn %tday %teve %tnight give the day's temperatures, %tcur %tmin %tmax %tamin %tamax the current, low, high and "feels like" ones, %h %p %s the humidity, pressure and wind, and %a the age of the data, each with its unit as %tu %hu %pu %su %au. org-weather-refresh-interval is the hours between refreshes (nil for never), org-weather-temperature-unit is celsius or fahrenheit, and org-weather-speed-unit is mph, km/h, m/s or knots. In the command palette, org-weather-refresh fetches it now; a refresh that fails keeps the last forecast.
+
 * Sunrise and sunset commands
 In the command palette, sunrise-sunset says today's times. With C-u it asks for a date and starts the message with it (Sun, Jun 21, 2026: Sunrise 6:00am (EDT), ...). calendar-sunrise-sunset-month lists the month the Calendar shows, one line a day. In the Calendar, S says the times of the chosen day. They use calendar-latitude and calendar-longitude from the init file.
 
 * Sun times today only, in your own format
 %%(when (equal date (calendar-current-date)) (let ((l (solar-sunrise-sunset date))) (format "Sun times: 🌅 %s | 🌇 %s | ⌛ %s" (apply 'solar-time-string (car l)) (apply 'solar-time-string (cadr l)) (nth 2 l))))
-The test (equal date (calendar-current-date)) is true only on the current day. To show the length as 9h56 instead of 9:56, wrap it: (string-replace ":" "h" (nth 2 l)). A time such as 07:05 anywhere in a diary line is taken as the entry's time, so the form '(24-hours "h" minutes) keeps the sunrise in the text. Add =(setq calendar-time-display-form '(24-hours ":" minutes))= to the init file for 24-hour times without the zone.
+The test (equal date (calendar-current-date)) is true only on the current day; with (defun today-p () (equal date (calendar-current-date))) in the init file, %%(when (today-p) (org-weather)) shows the weather line on today's entry. Functions defined with defun in the init file can be called from diary sexps, and date is the date being checked. To show the length as 9h56 instead of 9:56, wrap it: (string-replace ":" "h" (nth 2 l)). A time such as 07:05 anywhere in a diary line is taken as the entry's time, so the form '(24-hours "h" minutes) keeps the sunrise in the text. Add =(setq calendar-time-display-form '(24-hours ":" minutes))= to the init file for 24-hour times without the zone.
 
 * Sexp timestamps in an Org file
 ** Pay rent <%%(diary-date t 1 t)>

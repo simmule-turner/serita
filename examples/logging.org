@@ -5,7 +5,10 @@
 
 * TODO Write the report
 SCHEDULED: <2026-12-01 Tue>
-Press C-c C-t to finish it: you are asked for a closing note. Press C-c C-s and pick another date: with lognotereschedule a note is asked for too.
+Press C-c C-t to finish it: you are asked for a closing note. Press C-c C-s and pick another date: with lognotereschedule a note is asked for too; save it empty to log the line alone, or Skip to log nothing.
+* TODO Drop the schedule
+SCHEDULED: <2026-12-01 Tue>
+Press C-u C-c C-s to take the date away: a line saying it was removed goes under the heading. C-u C-c C-d does the same for a deadline.
 * TODO Water the plants
 SCHEDULED: <2026-12-01 Tue +1w>
 Finishing a repeating task asks for a note (lognoterepeat) and moves the date a week on.

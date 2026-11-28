@@ -1,5 +1,11 @@
 #+TITLE: Changelog
 
+* 0.11.29
+The Outline view can draw \alpha as α and lower or raise H_2O and x^{2} (Settings → Appearance, or org-pretty-entities in the init file), as Emacs does. %%(org-weather) shows today's forecast from Open-Meteo, and defun in the init file works in diary sexps, so (defun today-p ...) is yours to define. Scheduling or setting a deadline drops CLOSED, %u and %U use user-login-name and user-full-name, C-c / c cycles the dates of C-c / b, a and D, and C-u N C-c / d sets the days ahead. The Agenda gets a Calendar button and a × in the title row like the Calendar.
+
+* 0.11.28
+Notes now follow Emacs: saving one empty logs the heading line alone, and Skip or the cross cancels it and logs nothing. C-u C-c C-s and C-u C-c C-d remove a schedule or deadline and log it; C-u C-c . on a stamp asks for its time; scheduling drops CLOSED; leaving a done keyword with a log mark drops CLOSED. The Outline view draws radio links over a line break, and init files can set line numbers and wrapping at startup.
+
 * 0.11.27
 The message line at the bottom is never dimmed behind a sheet, so command results such as the sunrise and sunset text are readable everywhere.
 

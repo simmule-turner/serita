@@ -5,14 +5,28 @@ import { scanLine, unescapeLink } from '../../core/links.js';
 import { scanEmphasis, emphasisByLine } from '../../core/emphasis.js';
 import { analyze } from '../../core/outline.js';
 import { h } from './dom.js';
+import { pretty } from '../../core/pretty.js';
+
+/** What the Outline view draws of \\name and of _ and ^ scripts (org-pretty-entities and org-use-sub-superscripts); the app sets it from the settings. */
+export const display = { entities: false, scripts: false, braces: false };
+
+/** `text` with entities and scripts drawn as `display` says; a plain string when there is nothing to draw. */
+function drawn(text) {
+  if ((!display.entities && !display.scripts) || !/[\\_^]/.test(text)) return text;
+  const parts = pretty(text, display);
+  if (parts.every((p) => p.text !== undefined)) return text;
+  const nodes = (ps) => ps.flatMap((p) => (p.text !== undefined ? [p.text] : p.entity !== undefined ? [p.entity] : [h(p.sub ? 'sub' : 'sup', { class: 'em-script' }, ...nodes(p.parts))]));
+  return nodes(parts);
+}
+
 
 const LINKS = new Set(['bracket', 'angle', 'plain', 'radio-link']);
 const MARK = { bold: '*', italic: '/', underline: '_', 'strike-through': '+', verbatim: '=', code: '~' };
 const TAG = { bold: 'b', italic: 'i', underline: 'u', 'strike-through': 's', verbatim: 'code', code: 'code' };
 
 /** The links of a line, and the ranges where a link's own text (its path) must not start emphasis. */
-function objects(line, spans, radios = []) {
-  const links = scanLine(line, radios).filter((o) => LINKS.has(o.kind) && !(o.kind !== 'bracket' && false));
+function objects(line, spans, radios = [], pieces = []) {
+  const links = [...scanLine(line, radios).filter((o) => LINKS.has(o.kind) && !(o.kind !== 'bracket' && false)), ...pieces];
   const skip = links.map((o) => (o.kind === 'bracket' ? [o.start, o.desc !== undefined ? o.end - o.desc.length - 2 : o.end] : [o.start, o.end]));
   return { links, emphasis: spans ?? scanEmphasis(line, skip) };
 }
@@ -28,17 +42,17 @@ export const linkLabel = (o, line = '') => (o.kind === 'radio-link' ? line.slice
 
 /**
  * The nodes for a line (or any text): `at(col)` is called by a tapped link with the column where that link starts.
- * Text with no markup comes back as one string.
+ * Text with no markup comes back as one string. `pieces` are the parts of radio links that run over a line break, as radioBreaks gives them.
  */
-export function inlineNodes(line, onLink, base = 0, spans = undefined, radios = []) {
-  const { links, emphasis } = objects(line, spans, radios);
-  if (links.length === 0 && emphasis.length === 0) return [line];
+export function inlineNodes(line, onLink, base = 0, spans = undefined, radios = [], pieces = []) {
+  const { links, emphasis } = objects(line, spans, radios, pieces);
+  if (links.length === 0 && emphasis.length === 0) return [drawn(line)].flat();
   const items = [...links.map((o) => ({ ...o, link: true })), ...emphasis].sort((a, b) => a.start - b.start || b.end - a.end);
   const out = [];
   let pos = 0;
   for (const o of items) {
     if (o.start < pos) continue;
-    if (o.start > pos) out.push(line.slice(pos, o.start));
+    if (o.start > pos) out.push(...[drawn(line.slice(pos, o.start))].flat());
     if (o.link) {
       const label = linkLabel(o, line);
       out.push(h('span', { class: 'ol-link', role: 'link', tabindex: '0', title: o.kind === 'bracket' ? unescapeLink(o.raw) : label, onclick: (e) => { e.stopPropagation(); onLink(base + o.start); } }, ...(o.kind === 'bracket' && o.desc !== undefined ? inlineNodes(label, () => onLink(base + o.start)) : [label])));
@@ -50,7 +64,7 @@ export function inlineNodes(line, onLink, base = 0, spans = undefined, radios = 
     }
     pos = o.end;
   }
-  if (pos < line.length) out.push(line.slice(pos));
+  if (pos < line.length) out.push(...[drawn(line.slice(pos))].flat());
   return out;
 }
 

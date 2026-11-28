@@ -31,7 +31,7 @@ test('the author\'s init.el loads its files and sets the settings the app has', 
 test('settings the app does not use yet are kept and reported, not dropped', async () => {
   const r = await loadInit({ file: 'github:org/init.el', read: fromFixtures, trusted: yes });
   const kept = r.report.filter((x) => x.kind === 'kept').map((x) => x.message.split(' ')[0]);
-  for (const n of ['org-xx-extra-menu', 'org-weather-format', 'org-babel-load-languages']) assert.ok(kept.includes(n), n);
+  for (const n of ['org-xx-extra-menu', 'display-time-mode', 'org-babel-load-languages']) assert.ok(kept.includes(n), n);
   assert.ok(!kept.includes('holiday-hebrew-holidays'));
 });
 

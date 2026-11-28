@@ -49,11 +49,26 @@ ok(/^\w{3} \d+, \d{4}: Sunrise .* at 36\.0N, 78\.9W /.test(await said()), 'the S
 const clear = await page.evaluate(() => { const r = document.getElementById('message').getBoundingClientRect(); return document.elementFromPoint(r.left + 20, r.top + r.height / 2)?.id === 'message'; });
 ok(clear, 'the message is not under the dimming layer in the Calendar');
 const names = await page.locator('.sheet.calendar .abar:last-child button').allInnerTexts();
-ok(names.join(',') === 'Today,Sun,Agenda,Close', `the bottom row is ${names.join(',')}`);
+ok(names.join(',') === 'Sun,Agenda,Today', `the bottom row is ${names.join(',')}`);
 const boxes = await page.locator('.sheet.calendar .abar:last-child button').evaluateAll((b) => b.map((x) => Math.round(x.getBoundingClientRect().width)));
 await page.screenshot({ path: '/tmp/cal-sun.png' });
 const right = await page.locator('.sheet.calendar .abar:last-child button').last().evaluate((x) => Math.round(x.getBoundingClientRect().right));
 ok(right <= 393, `the row fits the phone (${boxes.join(', ')} px wide, ends at ${right})`);
+// The × is the last button of the title row on both screens; the Agenda has a Calendar button to go back
+ok((await page.locator('.sheet.calendar .abar:first-child button').last().getAttribute('aria-label')) === 'Close', 'the Calendar has × at the end of its title row');
+await page.locator('.sheet.calendar').getByRole('button', { name: 'Agenda', exact: true }).click();
+await page.locator('.sheet.agenda').waitFor();
+ok((await page.locator('.sheet.agenda .abar:first-child button').last().getAttribute('aria-label')) === 'Close', 'the Agenda has × at the end of its title row');
+const agendaRow = await page.locator('.sheet.agenda .abar:last-child button').allInnerTexts();
+ok(agendaRow.join(',') === 'Filter,Mark,Views,Calendar,Today', `the Agenda's bottom row is ${agendaRow.join(',')}`);
+const todayRight = await page.locator('.sheet.agenda .abar:last-child button', { hasText: 'Today' }).evaluate((x) => Math.round(innerWidth - x.getBoundingClientRect().right));
+ok(todayRight >= 0 && todayRight <= 12, `Today sits at the far right of the Agenda's bottom row (${todayRight} px from the edge)`);
+await page.locator('.sheet.agenda .abar:last-child button', { hasText: 'Calendar' }).click();
+await page.locator('.sheet.calendar').waitFor();
+ok(true, 'the Calendar button on the Agenda opens the Calendar');
+await page.locator('.sheet.calendar .abar button[aria-label="Close"]').click();
+ok((await page.locator('.sheet').count()) === 0, '× closes the screen');
+
 ok(errors.length === 0, `no page errors ${errors.join('; ')}`);
 await close();
 process.exit(failed ? 1 : 0);

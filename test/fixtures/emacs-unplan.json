@@ -1,0 +1,18 @@
+[
+ {
+  "id": "ds-unsched-time",
+  "buffer": "* TODO a\n- Not scheduled, was \"[2026-11-20 Fri]\" on [2026-11-26 Thu 09:30]"
+ },
+ {
+  "id": "ds-unsched-note",
+  "buffer": "* TODO a\n- Not scheduled, was \"[2026-11-20 Fri]\" on [2026-11-26 Thu 09:30] \\\\\n  why"
+ },
+ {
+  "id": "ds-undead-time",
+  "buffer": "* TODO a\n- Removed deadline, was \"[2026-11-20 Fri]\" on [2026-11-26 Thu 09:30]"
+ },
+ {
+  "id": "ds-undead-note",
+  "buffer": "* TODO a\n- Removed deadline, was \"[2026-11-20 Fri]\" on [2026-11-26 Thu 09:30] \\\\\n  why"
+ }
+]

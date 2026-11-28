@@ -67,7 +67,9 @@ org-archive-mark-done is nil, t or a done keyword; org-archive-save-context-info
 ** Stars and indentation
 calendar-latitude, calendar-longitude and calendar-location-name give the place for %%(diary-sunrise-sunset) (see examples/diary.org).
 calendar-time-display-form sets how those times read, for example '(24-hours ":" minutes).
-org-hide-leading-stars is t to show only the last star of a heading, and org-startup-indented is t to open files with org-indent-mode on. A file can decide for itself with #+STARTUP: indent or #+STARTUP: noindent.
+org-pretty-entities t shows \alpha as α and draws x_{1} and y^2 as a lowered or raised 1 and 2 in the Outline view; org-use-sub-superscripts is t (every _ and ^ after a letter) or {} (only x_{1} and y^{2}), and org-pretty-entities-include-sub-superscripts nil keeps the scripts as typed. user-login-name and user-full-name are what %u and %U give in org-log-note-headings.
+org-weather-format, org-weather-refresh-interval, org-weather-temperature-unit and org-weather-speed-unit shape %%(org-weather) (see examples/diary.org).
+org-hide-leading-stars is t to show only the last star of a heading, and org-startup-indented is t to open files with org-indent-mode on. display-line-numbers-mode is t to start with line numbers in the Text view, and org-startup-truncated is nil to start with long lines wrapped; the tool row changes both afterwards. A file can decide for itself with #+STARTUP: indent or #+STARTUP: noindent.
 ** Tables
 org-table-widget-wrap-columns is t to wrap long cells in the Outline view's table grid, org-table-widget-max-width-fraction is the share of the screen a table may use (0.3 to 1), and org-table-widget-zebra-stripe, serita-extra-menu is t to shade every other row.
 ** Diary

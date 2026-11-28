@@ -83,6 +83,13 @@ await ctrl('c'); await ctrl('o');
 await page.waitForTimeout(150);
 ok(await page.evaluate(() => { const e = document.getElementById('editor'); return e.value.slice(0, e.selectionStart).split('\n').length === 2; }), 'C-c C-o on the second part goes to the radio target');
 
+// The Outline view shows a radio link over a line break as links on both lines
+await page.click('#btn-view'); await btn('Outline').click();
+ok((await page.locator('#outline .ol-link').count()) === 2, 'the Outline draws both parts of a radio link over a line break as links');
+await page.locator('#outline .ol-link').nth(1).click();
+await page.waitForTimeout(200);
+ok((await page.locator('#outline .ol-line.flash[data-line="1"]').count()) === 1, 'a tap on the second part goes to the target');
+
 ok(errors.length === 0, `no page errors ${errors.join('; ')}`);
 await close();
 process.exit(failed ? 1 : 0);

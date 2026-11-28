@@ -25,6 +25,8 @@ export function createKeymap(bindings) {
   return {
     pending: () => pending.join(' '),
     reset() { pending = []; },
+    /** Goes back into a prefix (C-c / c shows the sparse-tree menu again and reads the next key). */
+    enter(seq) { pending = seq.split(' '); },
     /** @returns {{ kind: 'run', command: string } | { kind: 'prefix', echo: string } | { kind: 'none', echo?: string }} */
     press(chord) {
       if (chord === 'C-g' && pending.length > 0) { pending = []; return { kind: 'none', echo: 'Quit' }; }
@@ -79,6 +81,7 @@ export const TEXT_KEYS = Object.freeze({
   'C-c / b': 'sparse-tree-before',
   'C-c / a': 'sparse-tree-after',
   'C-c / D': 'sparse-tree-between',
+  'C-c / c': 'sparse-tree-date-type',
   'M-RET': 'insert-heading-here',
   'M-S-RET': 'insert-todo-item',
   'RET': 'table-next-row',

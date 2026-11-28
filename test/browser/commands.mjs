@@ -278,6 +278,21 @@ await ctrl('c'); await page.keyboard.press('.');
 await page.keyboard.type('2026-12-25'); await page.keyboard.press('Enter');
 ok((await page.evaluate(() => document.getElementById('editor').value)).includes('Meet <2026-12-25 Fri +1w -2d> now'), 'C-c . just after a stamp changes it and keeps repeater and warning');
 
+// C-u C-c . on a stamp: the prompt shows its time (00:00 when it has none), the answer keeps it, a range loses its end (conformance v0.1.81: ts-cu-*)
+for (const [src, shown, answer, want] of [
+  ['Meet <2026-12-01 Tue 14:30> now', 'Date+time [2026-12-01 14:30]:', '2026-12-25', 'Meet <2026-12-25 Fri 14:30> now'],
+  ['Meet <2026-12-01 Tue 10:00-11:00> now', 'Date+time [2026-12-01 10:00]:', '', 'Meet <2026-12-01 Tue 10:00> now'],
+  ['Meet <2026-12-01 Tue +1w> now', 'Date+time [2026-12-01 00:00]:', '', 'Meet <2026-12-01 Tue 00:00 +1w> now'],
+]) {
+  await at(`* H\n${src}\n`, 2);
+  await page.evaluate(() => { const e = document.getElementById('editor'); const o = e.value.indexOf('2026-12-01') + 2; e.setSelectionRange(o, o); });
+  await ctrl('u'); await ctrl('c'); await page.keyboard.press('.');
+  ok((await prompt()) === shown, `C-u C-c . asks ${shown}`);
+  if (answer) await page.keyboard.type(answer);
+  await page.keyboard.press('Enter');
+  ok((await page.evaluate(() => document.getElementById('editor').value)).includes(want), `C-u C-c . gives ${want}`);
+}
+
 // A sparse tree keeps the cursor on its text
 await at('* A\nbody\n* B\nneedle here\n', 4);
 await ctrl('c'); await page.keyboard.press('/'); await page.keyboard.press('r'); await page.keyboard.type('needle'); await page.keyboard.press('Enter');
@@ -334,7 +349,7 @@ await page.click('#btn-files'); await btn('Save as').click(); await sheet.getByL
 await page.waitForFunction(() => document.getElementById('message').textContent.startsWith('Wrote'));
 await page.click('#btn-view'); await btn('Agenda').click();
 ok(await page.locator('.sheet.agenda .arow').count() === 0, 'the agenda is empty while no agenda files are listed');
-await page.locator('.sheet.agenda .abar button', { hasText: 'Close' }).click();
+await page.locator('.sheet.agenda .abar button[aria-label="Close"]').click();
 await page.evaluate(() => document.getElementById('editor').focus());
 await page.keyboard.press('Alt+x'); await page.keyboard.type('org-agenda-file-to-front'); await page.keyboard.press('Enter');
 ok((await page.locator('#message').textContent()).includes('File added to front of agenda file list'), 'C-c [ lists the current file');
@@ -377,7 +392,7 @@ await page.waitForFunction(() => document.getElementById('message').textContent.
 await page.locator('.sheet.agenda .abar button', { hasText: /^Filter/ }).click(); await btn('Clear all filters').click();
 ok((await page.locator('.sheet.agenda .arow').first().textContent()).includes('[#A]'), 'the bulk action set the priority of the marked entry');
 await page.locator('.sheet.agenda .abar button', { hasText: 'Views' }).click(); await btn('Agenda').click();
-await page.locator('.sheet.agenda .abar button', { hasText: 'Close' }).click();
+await page.locator('.sheet.agenda .abar button[aria-label="Close"]').click();
 // The calendar: a month, a dot under today (it has an entry), the entries of the tapped day
 await page.click('#btn-view'); await btn(/^Calendar/).click();
 const monthName = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][nowDate.getMonth()];
@@ -395,7 +410,7 @@ await page.locator('.sheet.calendar .arow', { hasText: 'Timed' }).first().click(
 ok((await page.locator('#editor').inputValue()).includes('Timed'), 'tapping an entry opens its heading');
 await page.click('#back');
 ok(await page.locator('.sheet.calendar').count() === 1, 'Back returns to the calendar');
-await page.locator('.sheet.calendar .abar button', { hasText: 'Close' }).click();
+await page.locator('.sheet.calendar .abar button[aria-label="Close"]').click();
 await page.click('#btn-view'); await btn('Agenda').click();
 {
   const head = async () => (await page.locator('.sheet.agenda .abody .aday').first().textContent());
@@ -435,7 +450,7 @@ await page.locator('.sheet.agenda .arow', { hasText: 'Pay rent' }).click();
 ok(await page.locator('.sheet.agenda').count() === 0 && (await sel()).startsWith('0-'), 'tapping a row closes the agenda and goes to the heading');
 await page.locator('#back').click();
 ok(await page.locator('.sheet.agenda').count() === 1, 'Back after an agenda jump returns to the agenda');
-await page.locator('.sheet.agenda .abar button', { hasText: 'Close' }).click();
+await page.locator('.sheet.agenda .abar button[aria-label="Close"]').click();
 
 // Regexp search (C-M-s, M-r)
 await at('Meeting foo2 notes foo9\n', 1);
@@ -556,7 +571,7 @@ await sheet.getByLabel('Dismiss').click();
 await page.click('#btn-view'); await btn(/^Calendar/).click();
 await page.locator('.sheet.calendar .arow', { hasText: 'Every day' }).waitFor({ timeout: 3000 }).catch(() => {});
 ok((await page.locator('.sheet.calendar .arow').allTextContents()).some((t) => t.includes('Diary') && t.includes('Every day')), 'the calendar lists the diary entry of the day with the category Diary');
-await page.locator('.sheet.calendar .abar button', { hasText: 'Close' }).click();
+await page.locator('.sheet.calendar .abar button[aria-label="Close"]').click();
 // Settings: the holiday categories and whether holidays show in the agenda
 await page.click('#btn-menu'); await btn('Settings').click(); await btn(/\d+ settings/).click();
 ok((await btn(/^Holidays General/).textContent()).includes('General, Christian, Solar'), 'all three holiday categories are on by default');
@@ -570,7 +585,7 @@ await page.click('#btn-view'); await btn(/^Calendar/).click();
 for (let i = 0; i < 13 && !/December/.test(await page.locator('.sheet.calendar .atitlebar').textContent()); i++) await page.locator('.sheet.calendar [aria-label="Later"]').click();
 await page.locator('.sheet.calendar .day:not(.other)', { hasText: /^25$/ }).click();
 ok((await page.locator('.sheet.calendar .arow.holiday').allTextContents()).some((t) => t.includes('Christmas')), 'the calendar lists Christmas on December 25');
-await page.locator('.sheet.calendar .abar button', { hasText: 'Close' }).click();
+await page.locator('.sheet.calendar .abar button[aria-label="Close"]').click();
 
 // Tables in the Text view (Emacs: tb-* cases)
 const at2 = async (text, line, col) => { await at(text, line); await page.evaluate((c) => { const e = document.getElementById('editor'); const p = e.selectionStart + c; e.setSelectionRange(p, p); }, col); };

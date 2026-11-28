@@ -91,23 +91,44 @@ export function sparseTree(text, a, { kind, arg = '' }) {
 /**
  * A sparse tree by date: the SCHEDULED and DEADLINE stamps of every entry compared with ISO dates. Before is strictly earlier,
  * after includes the date itself, between includes the start and leaves out the end (as recorded from Emacs).
+ * `type` is the date type C-c / c cycles through: null (scheduled and deadline), 'all' (every active or inactive timestamp in the entry's
+ * text, heading included, but not the SCHEDULED, DEADLINE and CLOSED stamps), 'scheduled' or 'deadline'.
  * @returns {{ lines: number[], count: number, folds: object }}
  */
-export function dateSparse(text, a, { mode, from, to = null }) {
+export function dateSparse(text, a, { mode, from, to = null, type = null }) {
   const rows = text.split('\n');
   const keep = [];
   let count = 0;
-  for (const h of a.heads) {
-    const row = rows[h.line + 1] ?? '';
-    if (!/^\s*(?:CLOSED|DEADLINE|SCHEDULED):/.test(row)) continue;
+  const inRange = (d) => (mode === 'before' ? d < from : mode === 'after' ? d >= from : d >= from && d < to);
+  const planning = type === 'scheduled' ? /SCHEDULED:\s*<(\d{4}-\d\d-\d\d)/g : type === 'deadline' ? /DEADLINE:\s*<(\d{4}-\d\d-\d\d)/g : /(?:DEADLINE|SCHEDULED):\s*<(\d{4}-\d\d-\d\d)/g;
+  for (const [k, h] of a.heads.entries()) {
     let hit = 0;
-    for (const m of row.matchAll(/(?:DEADLINE|SCHEDULED):\s*<(\d{4}-\d\d-\d\d)/g)) {
-      const d = m[1];
-      if (mode === 'before' ? d < from : mode === 'after' ? d >= from : d >= from && d < to) hit++;
+    let at = h.line + 1;
+    if (type === 'all') {
+      const end = a.heads[k + 1]?.line ?? rows.length;
+      for (let n = h.line; n < end; n++) {
+        const row = (rows[n] ?? '').replace(/(?:CLOSED|DEADLINE|SCHEDULED):\s*[<[][^>\]]*[>\]]/g, '');
+        for (const m of row.matchAll(/[<[](\d{4}-\d\d-\d\d)/g)) if (inRange(m[1])) { hit++; at = n; }
+      }
+    } else {
+      const row = rows[h.line + 1] ?? '';
+      if (!/^\s*(?:CLOSED|DEADLINE|SCHEDULED):/.test(row)) continue;
+      for (const m of row.matchAll(planning)) if (inRange(m[1])) hit++;
     }
-    if (hit) { count += hit; keep.push(h.line + 1); }
+    if (hit) { count += hit; keep.push(at); }
   }
-  return { lines: keep, count, folds: sparseFolds(a.heads, keep) };
+  return { lines: keep, count, folds: sparseFolds(a.heads, withBodies(a, keep)) };
+}
+
+/** Emacs reveals the whole text of an entry a date matched, not only the line that matched (v0.1.89 sp3-*). */
+function withBodies(a, lines) {
+  const out = new Set(lines);
+  for (const line of lines) {
+    const h = a.heads.find((x) => x.line <= line && line < x.end);
+    const next = a.heads.find((x) => x.line > h.line);
+    for (let n = h.line + 1; n < (next ? next.line : Infinity) && n < h.end; n++) out.add(n);
+  }
+  return [...out];
 }
 
 /**
@@ -118,7 +139,7 @@ export function dateSparse(text, a, { mode, from, to = null }) {
 export function deadlineSparse(text, a, { days = 14, today }) {
   const rows = text.split('\n');
   const [y, m, d] = today.split('-').map(Number);
-  const limit = new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+  const limit = new Date(Date.UTC(y, m - 1, d + days + 2)).toISOString().slice(0, 10); // Emacs counts a deadline up to `days` + 2 away as within `days`, at any hour (v0.1.89 dd-*, v0.1.90 dw-*)
   const keep = [];
   let count = 0;
   for (const h of a.heads) {

@@ -61,12 +61,16 @@ ok(/Date\+time \[2026-11-23\]/.test(await page.locator('#findbar').textContent()
 await page.keyboard.type('++1d'); await page.keyboard.press('Enter');
 ok((await text()).includes('SCHEDULED: <2026-11-24 Tue>'), '++1d counts from the date already set');
 
-// org-log-reschedule note: Skip logs the line alone, the cross leaves it out; the new date stays either way
+// org-log-reschedule note: saving it empty logs the line alone; Skip and the cross cancel it, so nothing is logged; the new date stays either way
 await setting({ 'view.emacsKeys': 'true', 'org-log-reschedule': 'note' });
 const planned = '* TODO a\nSCHEDULED: <2026-11-23 Mon>\n';
 await at(planned, 1); await ctrl('c'); await ctrl('s'); await page.keyboard.type('+1d'); await page.keyboard.press('Enter');
+await page.locator('.sheet').getByRole('button', { name: 'Save', exact: true }).click();
+ok(/^\* TODO a\nSCHEDULED: <\d{4}-\d\d-\d\d \w{3}>\n- Rescheduled from "\[2026-11-23 Mon\]" on \[[^\]]+\]$/.test(await text()), 'saving an empty reschedule note logs the line alone');
+ok((await page.textContent('#message')).includes('Note stored'), 'and says the note is stored');
+await at(planned, 1); await ctrl('c'); await ctrl('s'); await page.keyboard.type('+1d'); await page.keyboard.press('Enter');
 await page.locator('.sheet').getByRole('button', { name: 'Skip', exact: true }).click();
-ok(/^\* TODO a\nSCHEDULED: <\d{4}-\d\d-\d\d \w{3}>\n- Rescheduled from "\[2026-11-23 Mon\]" on \[[^\]]+\]$/.test(await text()), 'Skip in the reschedule note logs the line alone');
+ok(/^\* TODO a\nSCHEDULED: <\d{4}-\d\d-\d\d \w{3}>\n$/.test(await text()) && !(await text()).includes('2026-11-23'), 'Skip in the reschedule note keeps the new date and logs nothing');
 await at(planned, 1); await ctrl('c'); await ctrl('s'); await page.keyboard.type('+1d'); await page.keyboard.press('Enter');
 await page.locator('.sheet .dismiss').click();
 ok(/^\* TODO a\nSCHEDULED: <\d{4}-\d\d-\d\d \w{3}>\n$/.test(await text()) && !(await text()).includes('2026-11-23'), 'the cross in the reschedule note keeps the new date and logs nothing');
@@ -126,6 +130,25 @@ await at('* TODO a\n', 1);
 await ctrl('c'); await ctrl('x'); await ctrl('i');
 await ctrl('c'); await ctrl('x'); await ctrl('o'); await saveNote('stopped');
 ok((await norm()).replace(/=>  0:0\d/, '=>  0:00') === '* TODO a\n:LOGBOOK:\nCLOCK: [T]--[T] =>  0:00\n- stopped\n:END:\n', 'a clock-out note goes under the clock line');
+
+// C-u C-c C-s and C-u C-c C-d take the date away and log it (Emacs: ds-*); a log mark on any keyword makes leaving done drop CLOSED
+await setting({ 'view.emacsKeys': 'true', 'org-log-reschedule': 'time', 'org-log-redeadline': 'time' });
+await at('* TODO a\nSCHEDULED: <2026-11-20 Fri>\n', 1);
+await ctrl('u'); await ctrl('c'); await ctrl('s');
+ok(/^\* TODO a\n- Not scheduled, was "\[2026-11-20 Fri\]" on \[[^\]]+\]$/.test(await text()), 'C-u C-c C-s removes the schedule and logs it');
+ok((await page.textContent('#message')).includes('Entry is no longer scheduled.'), 'and says so');
+await at('* TODO a\nDEADLINE: <2026-11-20 Fri>\n', 1);
+await ctrl('u'); await ctrl('c'); await ctrl('d');
+ok(/^\* TODO a\n- Removed deadline, was "\[2026-11-20 Fri\]" on \[[^\]]+\]$/.test(await text()), 'C-u C-c C-d removes the deadline and logs it');
+await at('* TODO a\n', 1);
+await ctrl('u'); await ctrl('c'); await ctrl('s');
+ok((await text()) === '* TODO a\n' && (await page.textContent('#message')).includes('Entry was not scheduled'), 'with nothing scheduled it only says so');
+await setting({ 'view.emacsKeys': 'true' });
+await at('#+TODO: TODO(t) WAIT(w@/!) | DONE(d!)\n* DONE a\nCLOSED: [2026-11-01 Sun 08:00]\n', 2);
+await page.evaluate(() => document.getElementById('editor').dispatchEvent(new Event('input')));
+await ctrl('c'); await ctrl('t');
+ok(!(await text()).includes('CLOSED'), 'leaving a done keyword that has a log mark drops CLOSED');
+
 
 ok(errors.length === 0, 'no page errors');
 await close();

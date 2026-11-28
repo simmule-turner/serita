@@ -42,6 +42,8 @@ const SIMPLE = {
   'calendar-date-style': ['calendar-date-style', word],
   'org-tags-column': ['org.tagsColumn', (v) => { if (!Number.isInteger(v)) throw new Error('Expected an integer'); return String(v); }],
   'org-startup-indented': ['org-startup-indented', bool],
+  'display-line-numbers-mode': ['view.lineNumbers', (v) => (v === null || v === 0 ? 'false' : 'true')],
+  'org-startup-truncated': ['view.wrap', (v) => (v === null ? 'true' : 'false')],
   'org-hide-leading-stars': ['org-hide-leading-stars', bool],
   'org-archive-location': ['org-archive-location', text],
   'org-archive-mark-done': ['org-archive-mark-done', word],
@@ -53,9 +55,18 @@ const SIMPLE = {
   'org-support-shift-select': ['org-support-shift-select', bool],
   'org-log-redeadline': ['org-log-redeadline', word],
   'org-log-refile': ['org-log-refile', word],
+  'org-weather-format': ['org-weather-format', (v) => { if (typeof v !== 'string') throw new Error('Expected a string'); return v; }],
+  'org-weather-refresh-interval': ['org-weather-refresh-interval', (v) => { if (v !== null && typeof v !== 'number') throw new Error('Expected a number of hours or nil'); return v === null ? '' : String(v); }],
+  'org-weather-temperature-unit': ['org-weather-temperature-unit', (v) => String(v?.sym ?? v)],
+  'org-weather-speed-unit': ['org-weather-speed-unit', (v) => String(v?.sym ?? v)],
   'calendar-latitude': ['calendar-latitude', (v) => { if (typeof v !== 'number') throw new Error('Expected a number'); return String(v); }],
   'calendar-longitude': ['calendar-longitude', (v) => { if (typeof v !== 'number') throw new Error('Expected a number'); return String(v); }],
   'calendar-location-name': ['calendar-location-name', text],
+  'org-pretty-entities': ['org-pretty-entities', bool],
+  'org-pretty-entities-include-sub-superscripts': ['org-pretty-entities-include-sub-superscripts', bool],
+  'org-use-sub-superscripts': ['org-use-sub-superscripts', word],
+  'user-login-name': ['user-login-name', text],
+  'user-full-name': ['user-full-name', text],
   'calendar-time-display-form': ['calendar-time-display-form', (v) => { if (!Array.isArray(v)) throw new Error('Expected a list'); return printLisp(v); }],
   'org-log-note-clock-out': ['org-log-note-clock-out', bool],
   // ((done . "CLOSING NOTE %t") (state . "State %-12s from %-12S %t") ...) held as JSON; a kind that is left out keeps its Emacs heading
@@ -187,7 +198,7 @@ export async function loadInit({ file, read, trusted, now }) {
       settings['org-capture-templates'] = t;
     } catch (e) { problem('org-capture-templates', e); }
   }
-  return { settings, files, report };
+  return { settings, files, report, functions: [...defuns.values()].join('\n\n') };
 }
 
 const valueText = (v) => (Array.isArray(v) || isSym(v) ? `'${printLisp(v)}` : printLisp(v));

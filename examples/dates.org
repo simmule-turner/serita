@@ -1,5 +1,5 @@
 #+TITLE: Dates, repeaters and deadlines
-# CC0 1.0: public domain. Put the cursor on a timestamp and press S-up or S-down; C-c C-s and C-c C-d set a date.
+# CC0 1.0: public domain. Put the cursor on a timestamp and press S-up or S-down; C-c C-s and C-c C-d set a date, and C-u C-c C-s or C-u C-c C-d takes it away. C-u C-c . on a stamp asks for its time too.
 
 * TODO Pay the rent
 SCHEDULED: <2026-12-01 Tue +1m>
@@ -13,4 +13,4 @@ The -3d warns three days ahead in the agenda.
 <2026-11-25 Wed 14:00-15:30>
 An active timestamp shows in the agenda; an inactive one, [2026-11-25 Wed], stays in the text.
 * Sparse trees by date
-Press C-c / b and type =2026-12-01= to show the entries scheduled or due before that day. C-c / a shows those on or after a date; C-c / D asks for a start and an end date and shows the entries from the start up to, but not including, the end. C-c C-c clears the tree.
+Press C-c / b and type =2026-12-01= to show the entries scheduled or due before that day. C-c / a shows those on or after a date; C-c / D asks for a start and an end date and shows the entries from the start up to, but not including, the end. C-c / c before the date key changes which dates count: all timestamps, only scheduled, only deadline, then back to scheduled and deadline (the echo area names the choice). C-u 3 C-c / d shows deadlines past due or due within 3 days instead of the default 14. C-c C-c clears the tree.

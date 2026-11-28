@@ -1,0 +1,186 @@
+{
+ "dd": {
+  "dd-3": {
+   "msg": "4 deadlines past-due or due within 3 days",
+   "visible": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    7,
+    9,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ]
+  },
+  "dd-20": {
+   "msg": "5 deadlines past-due or due within 20 days",
+   "visible": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    9,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ]
+  },
+  "dd-0": {
+   "msg": "3 deadlines past-due or due within 0 days",
+   "visible": [
+    1,
+    2,
+    3,
+    5,
+    7,
+    9,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ]
+  },
+  "dd-neg": {
+   "msg": "1 deadlines past-due or due within -3 days",
+   "visible": [
+    1,
+    3,
+    5,
+    7,
+    9,
+    11,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ]
+  },
+  "dd-none": {
+   "msg": "5 deadlines past-due or due within 14 days",
+   "visible": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    9,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ]
+  }
+ },
+ "sp3": {
+  "sp3-allb": {
+   "msg": "4 entries before 2026-11-21",
+   "visible": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+   ]
+  },
+  "sp3-alla": {
+   "msg": "1 entries after 2026-11-21",
+   "visible": [
+    1,
+    4,
+    6,
+    7,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+   ]
+  },
+  "sp3-dateb": {
+   "msg": "1 entries before 2026-11-21",
+   "visible": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    7,
+    9,
+    11,
+    12,
+    13,
+    14,
+    15
+   ]
+  },
+  "sp3-schedb": {
+   "msg": "1 entries before 2026-11-21",
+   "visible": [
+    1,
+    2,
+    3,
+    4,
+    6,
+    7,
+    9,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+   ]
+  }
+ }
+}

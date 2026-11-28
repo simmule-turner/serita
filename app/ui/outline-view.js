@@ -5,7 +5,7 @@ import { analyze, ellipsisLines, hiddenLines } from '../../core/outline.js';
 import { tableView } from '../../core/table.js';
 import { h } from './dom.js';
 import { inlineNodes, emphasisOf } from './inline.js';
-import { radioNames } from '../../core/links.js';
+import { radioNames, radioBreaks } from '../../core/links.js';
 
 /** A line's emphasis spans for the part of it that starts at `base` (the text after a checkbox). */
 const shift = (list = [], base) => list.map((e) => ({ ...e, start: Math.max(0, e.start - base), end: e.end - base, inner: e.inner.map((x) => Math.max(0, x - base)) })).filter((e) => e.end > 0);
@@ -24,6 +24,7 @@ export function renderOutline(root, { text, folds, hideStars, indent = false, ta
   const itemAt = new Map([...items, ...drawers].map((x) => [x.line, x]));
   const headAt = new Map(heads.map((x) => [x.line, x]));
   const radios = on.link ? radioNames(text) : [];
+  const broken = on.link ? radioBreaks(text, radios) : new Map();
   const spans = on.link ? emphasisOf(text) : new Map();
   const rows = [];
   let level = 0;
@@ -52,7 +53,7 @@ export function renderOutline(root, { text, folds, hideStars, indent = false, ta
     }
     const raw = node.line.text;
     const plainLine = node.type === 'text' || node.type === 'list-item';
-    const rich = (str, base) => (on.link && plainLine ? inlineNodes(str, (c) => on.link(line, c), base, base === 0 ? (spans.get(line) ?? []) : shift(spans.get(line), base), radios) : [str]);
+    const rich = (str, base) => (on.link && plainLine ? inlineNodes(str, (c) => on.link(line, c), base, base === 0 ? (spans.get(line) ?? []) : shift(spans.get(line), base), radios, (broken.get(line) ?? []).map((p) => ({ ...p, start: p.start - base, end: p.end - base })).filter((p) => p.start >= 0)) : [str]);
     const m = CHECKBOX.exec(raw);
     const it = itemAt.get(line);
     const chev = it && it.end > it.line + 1 ? h('button', { class: 'ichev', 'aria-label': folds[line] ? 'Show' : 'Hide', onclick: () => on.cycle(line) }, folds[line] ? '▸' : '▾') : null;

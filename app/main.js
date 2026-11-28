@@ -28,12 +28,13 @@ import { parseExtraMenu } from '../core/extra-menu.js';
 import { cutSubtree, subtreeAt, pasteSubtree } from '../core/subtree.js';
 import * as lists from '../core/lists.js';
 import { NONE as NO_ARG, argLabel, argValue, pressDigit, pressU } from '../core/universal.js';
+import { defineFunctions } from '../core/diary.js';
 import { agenda, searchView, tagsView, todoList } from '../core/agenda.js';
 import { filterActive, filterLabel, noFilter, parseEffort, parseSigned } from '../core/agenda-filter.js';
 import { holidayList } from '../core/holidays.js';
 import { startReplace } from '../core/replace.js';
 import { sparseTree, dateSparse, deadlineSparse } from '../core/sparse.js';
-import { formatHeading, timePrefill, addLogEntry, completeRepeat, dropClosed, formatStamp, logLine, planningStamp, setClosed, insertStamp, parseDate, setPlanning, shiftStamp, stampAt } from '../core/timestamp.js';
+import { user, formatHeading, timePrefill, addLogEntry, completeRepeat, dropClosed, formatStamp, logLine, planningStamp, removePlanning, setClosed, insertStamp, parseDate, setPlanning, shiftStamp, stampAt } from '../core/timestamp.js';
 import { createMinibuffer } from './ui/minibuffer.js';
 import { duplicateLine, indentLine, killLine, killWholeLine, lineInfo, lineStart, moveLine } from '../core/lines.js';
 import { createKillRing } from '../core/killring.js';
@@ -48,7 +49,8 @@ import { renderOutline } from './ui/outline-view.js';
 import { TEXT_KEYS, chordOf, createKeymap } from './ui/keys.js';
 import { createHistory } from './ui/history.js';
 import { createLinkCommands } from './ui/linkcmds.js';
-import { decorations, emphasisOf } from './ui/inline.js';
+import { decorations, emphasisOf, display as scriptDisplay } from './ui/inline.js';
+import { weather, weatherLine, forecastUrl, parseForecast, due as weatherDue, DEFAULT_FORMAT as WEATHER_FORMAT } from '../core/weather.js';
 import { where as solarWhere, sunriseSunset, monthSunTimes, dateLabel, localZone } from '../core/solar.js';
 import { radioLineSet, radioNames, radioBreaks } from '../core/links.js';
 import { readForms } from '../core/lisp-read.js';
@@ -93,11 +95,14 @@ const INIT_RESULT = 'serita.init';
 const INIT_TRUST = 'serita.trust';
 const EMPTY_INIT = { settings: {}, report: [], files: [], at: null };
 let initResult = localStorage.getItem(INIT_RESULT) === null ? EMPTY_INIT : JSON.parse(localStorage.getItem(INIT_RESULT));
+defineFunctions(initResult.functions ?? '');
 const settingsNow = () => ({ ...config.settings(), ...initResult.settings });
 const setting = (k) => settingsNow()[k];
+Object.defineProperties(user, { login: { get: () => setting('user-login-name') ?? '' }, full: { get: () => setting('user-full-name') ?? '' } });
 const fromInit = (k) => k in initResult.settings;
 const viewMode = () => (setting('view.mode') === 'outline' ? 'outline' : 'text');
 const emacsKeys = () => setting('view.emacsKeys') === 'true';
+const prettyEntities = () => setting('org-pretty-entities') === 't';
 const hideStars = () => setting('org-hide-leading-stars') === 't';
 const wrapCells = () => setting('org-table-widget-wrap-columns') === 't';
 /** C-c } and C-c { are on for this session only, as Emacs's are for the buffer. */
@@ -128,6 +133,29 @@ const customHeadings = () => { try { return JSON.parse(setting('org-log-note-hea
 const headingFor = (kind, vars) => formatHeading(kind, { ...vars, now: localNow() }, customHeadings());
 /** calendar-latitude, calendar-longitude and calendar-location-name for diary-sunrise-sunset. */
 const placeForSun = () => { const n = (k) => (setting(k) !== undefined && setting(k) !== '' && Number.isFinite(Number(setting(k))) ? Number(setting(k)) : null); Object.assign(solarWhere, { lat: n('calendar-latitude'), lon: n('calendar-longitude'), name: setting('calendar-location-name') || null, form: setting('calendar-time-display-form') ? readForms(setting('calendar-time-display-form'))[0] : null }); };
+
+/** %%(org-weather): the saved snapshot, the options of org-weather-format and the units. */
+const WEATHER_KEY = 'serita.weather';
+const placeForWeather = () => {
+  if (weather.snapshot === null && localStorage.getItem(WEATHER_KEY) !== null) weather.snapshot = JSON.parse(localStorage.getItem(WEATHER_KEY));
+  weather.options = { format: setting('org-weather-format') || WEATHER_FORMAT, temperature: setting('org-weather-temperature-unit'), speed: setting('org-weather-speed-unit') };
+};
+
+/** Fetches the forecast when it is due (or `force`), as org-weather-refresh-interval says; a failed fetch keeps the saved one. Returns true when a new forecast arrived. */
+async function refreshWeather(force = false) {
+  placeForWeather();
+  placeForSun();
+  if (solarWhere.lat === null || solarWhere.lon === null) return false;
+  const hours = Number(setting('org-weather-refresh-interval')) || 0;
+  if (!force && !weatherDue(weather.snapshot, hours)) return false;
+  try {
+    const r = await fetch(forecastUrl({ lat: solarWhere.lat, lon: solarWhere.lon, temperature: weather.options.temperature, speed: weather.options.speed }));
+    if (!r.ok) throw new Error(`Open-Meteo answered ${r.status}`);
+    weather.snapshot = parseForecast(await r.json(), Date.now());
+    localStorage.setItem(WEATHER_KEY, JSON.stringify(weather.snapshot));
+    return true;
+  } catch (e) { message(`Weather not refreshed: ${e.message}`, true); return false; }
+}
 
 /** The place the sun commands look from; says so when the init file has not set calendar-latitude and calendar-longitude. */
 function sunPlace() {
@@ -315,6 +343,7 @@ function renderModeLine() {
 }
 
 function render() {
+  Object.assign(scriptDisplay, { entities: prettyEntities(), scripts: prettyEntities() && !['', 'nil'].includes(setting('org-pretty-entities-include-sub-superscripts')), braces: setting('org-use-sub-superscripts') === '{}' || setting('org-use-sub-superscripts') === 'nil' });
   const s = session.state();
   $('tabs').replaceChildren(...s.buffers.map((b) => h('span', { class: `tab${b.id === s.current ? ' current' : ''}` },
     h('button', { class: 'title', onclick: () => { if (b.id !== shownId) leaveHere(); session.select(b.id); checkChanged(b.id); }, title: b.name ?? b.title }, b.title + (b.dirty ? ' *' : '')),
@@ -775,7 +804,7 @@ async function sparse(kind, preset) {
 /** C-c / d: the unfinished entries with a deadline that is past due or within 14 days. */
 function sparseDeadlines() {
   if (finding || shownId === null) return;
-  const days = 14;
+  const days = arg?.num ?? (arg?.list ? 100000 : 14); // C-u alone: Emacs says 100000 days and shows every deadline (v0.1.90 dw-cu)
   const t = todayDate();
   const b = currentBuffer();
   const r = deadlineSparse(b.text, cur.a, { days, today: t.toISOString().slice(0, 10) });
@@ -788,16 +817,22 @@ function sparseDeadlines() {
   message(`${r.count} deadlines past-due or due within ${days} days`);
 }
 
+/** The date type C-c / c cycles through for the next b, a or D (org-sparse-tree-default-date-type's choices). */
+const SPARSE_TYPES = [null, 'all', 'scheduled', 'deadline'];
+const SPARSE_LABELS = { '': 'scheduled/deadline', all: 'all timestamps', scheduled: 'only scheduled', deadline: 'only deadline' };
+let sparseType = null;
+
 /** A sparse tree of the entries whose SCHEDULED or DEADLINE date is before, after or between dates (C-c / b, a, D). */
 async function sparseDates(mode) {
   if (finding || shownId === null) return;
+  const type = sparseType;
   const iso = async (label) => { const st = await askStamp('', false, false, null, '', label); return st === null ? null : /\d{4}-\d\d-\d\d/.exec(st)[0]; };
   const from = await iso(mode === 'before' ? 'Before date' : mode === 'after' ? 'After date' : 'Start date');
   if (from === null) return;
   const to = mode === 'between' ? await iso('End date') : null;
   if (mode === 'between' && to === null) return;
   const b = currentBuffer();
-  const r = dateSparse(b.text, cur.a, { mode, from, to });
+  const r = dateSparse(b.text, cur.a, { mode, from, to, type });
   const at = cursorOffset();
   session.setFolds(b.id, r.folds);
   marks = [];
@@ -1054,7 +1089,7 @@ function settingsIndex() {
   const look = (label, meta, words) => ({ where: 'Appearance', label, meta, names: '', words, run: () => appearance() });
   const appearanceRows = [['tools-text', 'Tool row in the Text view', onOff(toolRowOn('text')), 'buttons undo redo', 'view.toolRowText'], ['tools-outline', 'Tool row in the Outline view', onOff(toolRowOn('outline')), 'buttons undo redo', 'view.toolRowOutline'],
     ['table-wrap', 'Wrap table cells', onOff(wrapCells()), 'grid', 'org-table-widget-wrap-columns'], ['table-width', 'Table width', `${Math.round(widthFraction() * 100)}%`, 'grid', 'org-table-widget-max-width-fraction'],
-    ['table-zebra', 'Stripe table rows', onOff(zebraRows()), 'grid zebra', 'org-table-widget-zebra-stripe']].map(([key, label, meta, words, names]) => ({ where: 'Appearance · ' + (key.startsWith('tools') ? 'Tool rows' : 'Tables'), label, meta, names, words, run: () => appearanceRow(key) }));
+    ['table-zebra', 'Stripe table rows', onOff(zebraRows()), 'grid zebra', 'org-table-widget-zebra-stripe'], ['pretty', 'Show scripts and entities', onOff(prettyEntities()), 'subscript superscript entity alpha', 'org-pretty-entities'], ['scripts', 'Scripts', setting('org-use-sub-superscripts') === '{}' ? 'Braces only' : 'All', 'subscript superscript braces underscore', 'org-use-sub-superscripts']].map(([key, label, meta, words, names]) => ({ where: 'Appearance · ' + (key.startsWith('tools') ? 'Tool rows' : ['pretty', 'scripts'].includes(key) ? 'Text' : 'Tables'), label, meta, names, words, run: () => appearanceRow(key) }));
   const accounts = ['github', 'webdav'].flatMap((p) => [...FIELDS[p].fields.map(([, label]) => label.replace(/ \(.*\)$/, '')), FIELDS[p].secret[1]].map((label) => ({ where: FIELDS[p].title, label, meta: summary(p), names: '', words: p === 'github' ? 'repo repository branch owner storage' : 'url server storage', run: () => setup(p) })));
   return [...accounts, ...rows, look('Theme', cap(theme()), 'dark light system color'), look('Font', fontChoice(), 'monospace serif typeface'), look('Font size', `${fontSize()}px`, 'text size'), look('Paragraph spacing', `${paragraphSpacing()}px`, 'gap'), ...appearanceRows,
     { where: 'Debugging', label: 'Key event log', meta: onOff(keyLogOn()), names: '', words: 'keyboard keys record', run: () => debugging() },
@@ -1175,6 +1210,8 @@ async function appearanceRow(what) {
   else if (what === 'table-wrap') config.update({ settings: { 'org-table-widget-wrap-columns': wrapCells() ? '' : 't' } });
   else if (what === 'table-zebra') config.update({ settings: { 'org-table-widget-zebra-stripe': zebraRows() ? '' : 't' } });
   else if (what === 'table-width') await tableWidthDialog();
+  else if (what === 'pretty') config.update({ settings: { 'org-pretty-entities': prettyEntities() ? '' : 't' } });
+  else if (what === 'scripts') config.update({ settings: { 'org-use-sub-superscripts': setting('org-use-sub-superscripts') === '{}' ? 't' : '{}' } });
   else return false;
   return true;
 }
@@ -1197,6 +1234,8 @@ async function appearance() {
           h('p', {}, 'With a font that is not monospace, columns such as the tag column do not line up on screen.')),
         h('div', { class: 'card' }, h('div', { class: 'cap' }, 'Font size'), step('Font size', `${fontSize()}px`, 'size:-1', 'size:1'), h('p', {}, '12 to 32. The A− and A+ buttons change the same size.')),
         h('div', { class: 'card' }, h('div', { class: 'cap' }, 'Paragraph spacing'), step('Paragraph spacing', `${paragraphSpacing()}px`, 'space:-1', 'space:1'), h('p', {}, 'The gap between paragraphs in the Outline view, 0 to 32.')),
+        h('div', { class: 'sec' }, 'Text'),
+        h('div', { class: 'list' }, row('pretty', 'Show scripts and entities', prettyEntities() ? 'On' : 'Off'), row('scripts', 'Scripts', setting('org-use-sub-superscripts') === '{}' ? 'Braces only' : 'All')),
         h('div', { class: 'sec' }, 'Tool rows'),
         h('div', { class: 'list' }, row('tools-text', 'Tool row in the Text view', toolRowOn('text') ? 'On' : 'Off'), row('tools-outline', 'Tool row in the Outline view', toolRowOn('outline') ? 'On' : 'Off')),
         h('div', { class: 'sec' }, 'Tables'),
@@ -1678,11 +1717,11 @@ async function refileHere(copy0 = false, hd0 = enclosingHead()) {
     if (settings.cache && t !== 'new') checkTarget(t, (files.find((f) => f.name === t.file) ?? b).text);
     const other = same ? null : files.find((f) => f.name === t.file);
     const r = refile(b.text, hd.line, t, { otherText: other?.text ?? null, reverse: settings.reverse, copy, column: tagsColumn() });
-    // org-log-refile: the moved heading gets a Refiled on line (and a note, when asked for); Skip logs the line alone, the cross logs nothing
+    // org-log-refile: the moved heading gets a Refiled on line (and a note, when asked for); cancelling the note logs nothing
     const mode = logMode('org-log-refile');
     if (mode !== 'off') {
-      const asked = mode === 'note' ? await askNote('', '', 'Insert note for refiling.', true) : undefined;
-      if (!(mode === 'note' && asked === undefined)) {
+      const asked = mode === 'note' ? await askNote('', '', 'Insert note for refiling.') : undefined;
+      if (!(mode === 'note' && asked === null)) {
         const into = other ? 'otherText' : 'text';
         r[into] = addLogEntry(r[into], r.placed, { heading: headingFor('refile'), note: typeof asked === 'string' ? asked : undefined, drawer: logDrawer(r[into], r.placed), bare: true });
       }
@@ -1988,6 +2027,7 @@ async function pickView() {
 /** The agenda over the agenda files: a full screen of rows for the dates, the TODO list, tags or a search. Tapping a row goes to that heading. */
 async function agendaScreen(loaded = null) {
   agendaState.anchor ??= todayDate();
+  await refreshWeather();
   let files = loaded?.files;
   try { files ??= await agendaSources(); } catch (e) { failure(e); return; }
   let diary = loaded?.diary ?? await diaryData();
@@ -1995,6 +2035,7 @@ async function agendaScreen(loaded = null) {
     const st = agendaState;
     dismissed = false; // an [x] on a sheet opened from the agenda ends that sheet's chain, not the agenda
     placeForSun();
+    placeForWeather();
     let view;
     try {
       view = st.kind === 'todo' ? todoList(files, { keyword: st.keyword, filter: st.filter, prefix: prefixOpts() }) : st.kind === 'tags' ? tagsView(files, { match: st.match, filter: st.filter, prefix: prefixOpts() }) : st.kind === 'search' ? searchView(files, { words: st.words, filter: st.filter, prefix: prefixOpts() })
@@ -2031,17 +2072,18 @@ async function agendaScreen(loaded = null) {
         : view.entries.length ? view.entries.map(row) : [h('p', { class: 'aempty' }, 'No entries')];
       const nav = st.kind === 'agenda' ? [h('button', { 'aria-label': 'Earlier', onclick: () => close({ move: -1 }) }, h('span', { class: 'chev left' })), h('button', { 'aria-label': 'Later', onclick: () => close({ move: 1 }) }, h('span', { class: 'chev right' }))] : [];
       put(sheet,
-        h('div', { class: 'abar' }, nav[0] ?? null, st.kind === 'agenda' ? h('button', { onclick: () => close({ today: true }) }, 'Today') : null, h('div', { class: 'atitlebar' }, `${view.title.replace(/:$/, '')}${filterActive(st.filter) ? ` ${filterLabel(st.filter)}` : ''}`), nav[1] ?? null),
+        h('div', { class: 'abar' }, nav[0] ?? null, h('div', { class: 'atitlebar' }, `${view.title.replace(/:$/, '')}${filterActive(st.filter) ? ` ${filterLabel(st.filter)}` : ''}`), nav[1] ?? null, h('button', { 'aria-label': 'Close', onclick: () => close(undefined) }, '×')),
         Object.assign(h('div', { class: 'abody' }, ...body), st.kind === 'agenda' ? sidewaysSwipe((dir) => close({ move: dir })) : {}),
         st.kind === 'agenda' ? h('div', { class: 'abar' }, ...SPANS.map(([v, l]) => h('button', { class: st.span === v ? 'primary' : '', onclick: () => close({ span: v }) }, l))) : null,
         h('div', { class: 'abar' },
           ...(st.marking ? [h('button', { onclick: () => close({ markAll: true }) }, 'All'), h('button', { onclick: () => close({ markNone: true }) }, 'None'), counter, h('button', { onclick: () => close({ marking: false }) }, 'Done')]
             : [h('button', { onclick: async () => { if (await agendaFilterDialog(st)) close({ refresh: true }); } }, filterActive(st.filter) ? 'Filter ●' : 'Filter'), h('button', { onclick: () => close({ marking: true }) }, 'Mark'),
-              h('button', { onclick: async () => { const pick = await pickView(); if (pick) close({ view: pick }); } }, 'Views'), h('button', { onclick: () => close(undefined) }, 'Close')])));
+              h('button', { onclick: async () => { const pick = await pickView(); if (pick) close({ view: pick }); } }, 'Views'), h('button', { onclick: () => close({ calendar: true }) }, 'Calendar'), st.kind === 'agenda' ? h('button', { class: 'right', onclick: () => close({ today: true }) }, 'Today') : null])));
       count();
     });
     if (onMoveKey) document.removeEventListener('keydown', onMoveKey, true);
     if (!act) return;
+    if (act.calendar) { await calendarScreen(); return; }
     if (act.today) agendaToday();
     else if (act.move) agendaMove(act.move);
     else if (act.refresh) { /* the filter changed; the loop draws it again */ }
@@ -2116,12 +2158,12 @@ async function calendarScreen() {
         h('span', { class: 'atitle' }, [e.todo, e.priority ? `[#${e.priority}]` : null, e.title].filter(Boolean).join(' ')),
         e.tags.length ? h('span', { class: 'atags' }, `:${e.tags.join(':')}:`) : null);
       put(sheet,
-        h('div', { class: 'abar' }, h('button', { 'aria-label': 'Earlier', onclick: () => close({ move: -1 }) }, h('span', { class: 'chev left' })), h('div', { class: 'atitlebar' }, `${MONTH_NAMES[m - 1]} ${y}`), h('button', { 'aria-label': 'Later', onclick: () => close({ move: 1 }) }, h('span', { class: 'chev right' }))),
+        h('div', { class: 'abar' }, h('button', { 'aria-label': 'Earlier', onclick: () => close({ move: -1 }) }, h('span', { class: 'chev left' })), h('div', { class: 'atitlebar' }, `${MONTH_NAMES[m - 1]} ${y}`), h('button', { 'aria-label': 'Later', onclick: () => close({ move: 1 }) }, h('span', { class: 'chev right' })), h('button', { 'aria-label': 'Close', onclick: () => close(undefined) }, '×')),
         Object.assign(h('div', { class: 'abody' },
           h('div', { class: 'cal' }, ...['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((n) => h('span', { class: 'dow' }, n)), ...monthGrid(y, m).map(cell)),
           h('div', { class: 'aday' }, calendarState.day),
           ...(picked.length || holidays.length ? [...holidays, ...picked].map(row) : [h('p', { class: 'aempty' }, 'Nothing on this day')])), sidewaysSwipe((dir) => close({ move: dir }))),
-        h('div', { class: 'abar' }, h('button', { onclick: () => close({ today: true }) }, 'Today'), h('button', { onclick: () => close({ sun: true }) }, 'Sun'), h('button', { onclick: () => close({ agenda: true }) }, 'Agenda'), h('button', { onclick: () => close(undefined) }, 'Close')));
+        h('div', { class: 'abar' }, h('button', { onclick: () => close({ sun: true }) }, 'Sun'), h('button', { onclick: () => close({ agenda: true }) }, 'Agenda'), h('button', { class: 'right', onclick: () => close({ today: true }) }, 'Today')));
     });
     document.removeEventListener('keydown', sunKey);
     if (!act) return;
@@ -2860,14 +2902,14 @@ function sayPriority(line) {
   message(p ? `Priority of current item set to ${p}` : 'Priority removed');
 }
 
-/** The note asked for when a repeating task is finished (org-log-repeat note): its text, or null when cancelled. */
-function askNote(from, to, text = `Insert note for state change from "${from}" to "${to}".`, crossLeavesOut = false) {
+/** The note Emacs asks for after a logged change: its text (empty included, which logs the heading alone), or null when cancelled (C-c C-k), which logs nothing. */
+function askNote(from, to, text = `Insert note for state change from "${from}" to "${to}".`) {
   return panel((sheet, close) => {
     const input = h('textarea', { rows: '6', autocapitalize: 'sentences', 'aria-label': 'Note' });
     put(sheet, h('h2', {}, 'Insert note'), h('p', {}, text), input,
       h('div', { class: 'row' }, h('button', { onclick: () => close(null) }, 'Skip'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
     input.focus();
-  }).then((v) => (v === undefined && !crossLeavesOut ? null : v));
+  }).then((v) => v ?? null);
 }
 
 /** Changes the TODO state of the enclosing heading and says the new state. */
@@ -2916,8 +2958,8 @@ async function todoStep(dir) {
     const c = cycleTodo(t, l, dir, tagsColumn(), to);
     if (to !== undefined && c.state === from) { same = true; return c; }
     const fromDone = from !== null && before.todo.done.includes(from);
-    // org-log-done time or note: leaving a done state takes the CLOSED stamp away
-    if (!c.state || !before.todo.done.includes(c.state)) return logDoneMode() !== 'off' && fromDone ? { ...c, text: dropClosed(c.text, l) } : c;
+    // org-log-done time or note, or a log mark on any keyword: leaving a done state takes the CLOSED stamp away
+    if (!c.state || !before.todo.done.includes(c.state)) return (logDoneMode() !== 'off' || Object.keys(before.todo.marks).length) && fromDone ? { ...c, text: dropClosed(c.text, l) } : c;
     if (fromDone) return c;
     // Finishing a repeating task: the date moves on and the task is open again
     const rep = completeRepeat({ text: c.text, line: l, from: from ?? '', to: c.state, reopen: before.todo.open[0], now: localNow(), drawer: logDrawer(), log: logRepeatOn(), note, closing: logDoneMode() === 'note', headings: customHeadings() });
@@ -3007,17 +3049,22 @@ function askDateSheet({ label, base, active, canToggle, initial = '' }) {
 }
 
 /** Asks for a date ("2026-12-01", "+3d", "tomorrow 14:30") and returns the stamp text, or null when cancelled. */
-async function askStamp(label, active = true, canToggle = false, preset = null, initial = '', sheetLabel = '') {
+async function askStamp(label, active = true, canToggle = false, preset = null, initial = '', sheetLabel = '', defaultTime = null) {
   const base = preset ?? todayDate();
   let typed;
-  if (viewMode() === 'text') typed = await mini.ask({ prompt: `${label ? `${label} ` : ''}Date+time [${dayOf(base)}]:`, value: initial, complete: null, inputMode: 'text' });
+  if (viewMode() === 'text') typed = await mini.ask({ prompt: `${label ? `${label} ` : ''}Date+time [${dayOf(base)}${defaultTime ? ` ${defaultTime}` : ''}]:`, value: initial, complete: null, inputMode: 'text' });
   else {
     const got = await askDateSheet({ label: sheetLabel || label || (active ? 'Timestamp' : 'Inactive timestamp'), base, active, canToggle, initial });
     if (got === undefined) return null;
     typed = got.typed; active = got.active;
   }
   if (typed === undefined) return null;
-  try { const d = parseDate(typed, base, todayDate()); return formatStamp(d.date, { time: d.time, until: d.until, active }); } catch (e) { failure(e); return null; }
+  try {
+    const d = parseDate(typed, base, todayDate());
+    // C-u: an answer without a time takes the time shown in the prompt
+    if (defaultTime && !d.time) { const [hh, mm] = defaultTime.split(':').map(Number); return formatStamp(new Date(d.date.getTime() + (hh * 60 + mm) * 60000), { time: true, active }); }
+    return formatStamp(d.date, { time: d.time, until: d.until, active });
+  } catch (e) { failure(e); return null; }
 }
 
 /** S-up and S-down: on a timestamp they change the part under the cursor; elsewhere they are the priority keys. */
@@ -3065,7 +3112,7 @@ async function stopClock(c, now) {
   let text = r.text;
   // org-log-note-clock-out: a note, under the clock line, with the clock-out heading (empty unless org-log-note-headings sets one)
   if (setting('org-log-note-clock-out') === 't') {
-    const note = await askNote('', '', 'Insert note for stopped clock.', true);
+    const note = await askNote('', '', 'Insert note for stopped clock.');
     if (typeof note === 'string' && note.trim() !== '') {
       const lines = text.split('\n');
       const head = headingFor('clock-out');
@@ -3158,16 +3205,34 @@ async function planHere(keyword, label, said, hd = enclosingHead()) {
   const old = mode === 'off' ? null : planningStamp(currentBuffer().text, hd.line, keyword);
   const what = keyword === 'SCHEDULED' ? 'Rescheduled from' : 'New deadline from';
   const changed = old !== null && old !== `[${stamp.slice(1, -1)}]`;
-  // Skip logs the line alone; the cross leaves the line out, as C-c C-k does in Emacs. The new date stays either way.
-  const asked = changed && mode === 'note' ? await askNote('', '', keyword === 'SCHEDULED' ? 'Insert note for rescheduling.' : 'Insert note for changing deadline.', true) : undefined;
+  // Cancelling the note leaves the line out, as C-c C-k does in Emacs. The new date stays either way.
+  const asked = changed && mode === 'note' ? await askNote('', '', keyword === 'SCHEDULED' ? 'Insert note for rescheduling.' : 'Insert note for changing deadline.') : undefined;
   const note = typeof asked === 'string' ? asked : undefined;
   runEdit((t) => {
-    const r = setPlanning(t, hd.line, keyword, stamp);
-    if (!changed || (mode === 'note' && asked === undefined)) return r;
+    // org-schedule takes the CLOSED stamp away
+    const r = setPlanning(dropClosed(t, hd.line), hd.line, keyword, stamp);
+    if (!changed || (mode === 'note' && asked === null)) return r;
     return { ...r, text: addLogEntry(r.text, hd.line, { heading: headingFor(keyword === 'SCHEDULED' ? 'reschedule' : 'redeadline', { state: `[${stamp.slice(1, -1)}]`, old }), note, drawer: logDrawer(r.text, hd.line), bare: true }) };
   });
   message(`${said} ${stamp}`);
-  if (typeof note === 'string' && note !== '') message('Note stored');
+  if (typeof note === 'string') message('Note stored');
+}
+
+/** C-u C-c C-s and C-u C-c C-d: takes the schedule or the deadline away, leaving a log line (and a note, when asked for) as org-log-reschedule and org-log-redeadline say. */
+async function unplanHere(keyword, hd = enclosingHead()) {
+  if (!hd) { message('Not at a heading'); return; }
+  const sched = keyword === 'SCHEDULED';
+  const old = planningStamp(currentBuffer().text, hd.line, keyword);
+  if (old === null) { message(sched ? 'Entry was not scheduled' : 'Entry had no deadline to remove'); return; }
+  const mode = logMode(sched ? 'org-log-reschedule' : 'org-log-redeadline');
+  const asked = mode === 'note' ? await askNote('', '', sched ? 'Insert note for no longer scheduled.' : 'Insert note for removing deadline.') : undefined;
+  runEdit((t) => {
+    const r = removePlanning(t, hd.line, keyword);
+    if (mode === 'off' || asked === null) return r;
+    return { ...r, text: addLogEntry(r.text, hd.line, { heading: headingFor(sched ? 'delschedule' : 'deldeadline', { old }), note: typeof asked === 'string' ? asked : undefined, drawer: logDrawer(r.text, hd.line), bare: true }) };
+  });
+  message(sched ? 'Entry is no longer scheduled.' : 'Entry no longer has a deadline.');
+  if (typeof asked === 'string') message('Note stored');
 }
 
 /** Adds a timestamp at the end of the heading's own text, as a new body line. */
@@ -3184,7 +3249,9 @@ async function insertTimestamp(active) {
   // the cursor may also be just after the closing bracket
   const old = viewMode() === 'text' ? (stampAt(currentBuffer().text, at0) ?? (at0 > 0 ? stampAt(currentBuffer().text, at0 - 1) : null)) : null;
   const base = old ? new Date(Date.UTC(old.y, old.m - 1, old.d)) : null;
-  let stamp = await askStamp('', active, true, base);
+  // C-u on a stamp: the prompt shows its time (the start of a range; 00:00 when it has none) and the stamp keeps one
+  const withTime = old && arg?.list === 4 ? (old.hasTime ? `${String(old.h).padStart(2, '0')}:${String(old.mi).padStart(2, '0')}` : '00:00') : null;
+  let stamp = await askStamp('', active, true, base, '', '', withTime);
   if (stamp === null) return;
   if (old) {
     if (old.repeater) stamp = `${stamp.slice(0, -1)}${old.repeater}${stamp.slice(-1)}`;
@@ -3335,8 +3402,8 @@ const COMMANDS = {
   'todo-previous': () => shiftDayOrTodo(-1),
   'priority-up': () => shiftOrPriority(-1),
   'priority-down': () => shiftOrPriority(1),
-  schedule: () => planHere('SCHEDULED', 'SCHEDULED', 'Scheduled to'),
-  deadline: () => planHere('DEADLINE', 'DEADLINE', 'Deadline on'),
+  schedule: () => (arg?.list === 4 ? unplanHere('SCHEDULED') : planHere('SCHEDULED', 'SCHEDULED', 'Scheduled to')),
+  deadline: () => (arg?.list === 4 ? unplanHere('DEADLINE') : planHere('DEADLINE', 'DEADLINE', 'Deadline on')),
   'timestamp': () => insertTimestamp(true),
   'timestamp-inactive': () => insertTimestamp(false),
   'priority': () => {
@@ -3357,6 +3424,7 @@ const COMMANDS = {
   agenda: () => openAgenda('agenda'),
   'agenda-todo': () => openAgenda('todo'),
   'calendar': () => calendarScreen(),
+  'org-weather-refresh': async () => { placeForSun(); if (solarWhere.lat === null || solarWhere.lon === null) { message('Set calendar-latitude and calendar-longitude in the init file', true); return; } if (await refreshWeather(true)) message('Weather refreshed'); },
   'sunrise-sunset': () => sunriseSunsetCommand(),
   'sunrise-sunset-month': () => sunMonthCommand(),
   'agenda-tags': () => openAgenda('tags'),
@@ -3366,6 +3434,7 @@ const COMMANDS = {
   'sparse-tree-todo': () => sparse('todo'),
   'sparse-tree-todo-keyword': () => sparse('todo-keyword'),
   'sparse-tree-deadlines': () => sparseDeadlines(),
+  'sparse-tree-date-type': () => { sparseType = SPARSE_TYPES[(SPARSE_TYPES.indexOf(sparseType) + 1) % SPARSE_TYPES.length]; message(`Sparse tree: [r]egexp [t]odo [T]odo-kwd [m]atch [p]roperty\n             [d]eadlines [b]efore-date [a]fter-date [D]ates range\n             [c]ycle through date types: ${SPARSE_LABELS[sparseType ?? '']}`); keymap.enter('C-c /'); },
   'sparse-tree-before': () => sparseDates('before'),
   'sparse-tree-after': () => sparseDates('after'),
   'sparse-tree-between': () => sparseDates('between'),
@@ -3821,7 +3890,8 @@ const outlineOn = {
 // Every command has a plain label, its Emacs name and (below) the key it is on. `outline` marks the ones that make sense with no cursor.
 const PALETTE = [
   ['calendar', 'calendar', 'Calendar', true],
-  ['sunrise-sunset', 'sunrise-sunset', 'Show sunrise and sunset', true], ['sunrise-sunset-month', 'calendar-sunrise-sunset-month', 'Show sunrise and sunset for the month', true],
+  ['sunrise-sunset', 'sunrise-sunset', 'Show sunrise and sunset', true],
+  ['org-weather-refresh', 'org-weather-refresh', 'Refresh the weather', true], ['sunrise-sunset-month', 'calendar-sunrise-sunset-month', 'Show sunrise and sunset for the month', true],
   ['unsent-saves', 'unsent-saves', 'Send queued saves', true],
   ['indent', 'org-indent-mode', 'Indent mode', true],
   ['cycle', 'org-cycle', 'Fold or unfold'], ['cycle-global', 'org-shifttab', 'Fold or unfold everything', true],
@@ -3957,11 +4027,13 @@ function page(dir) {
 function runChord(chord, event, fromRow) {
   const r = keymap.press(chord);
   klog('chord', chord, r.kind, r.command ?? r.echo ?? '');
+  if (r.echo === 'Quit') sparseType = null;
   if (r.kind === 'run') {
     event.preventDefault();
     message('');
     if (!VERTICAL.has(r.command)) goal = null;
     invoke(r.command);
+    if (r.command !== 'sparse-tree-date-type') sparseType = null;
     if ($('message').classList.contains('error')) beep();
   } else if (r.kind === 'prefix') { event.preventDefault(); const a = argLabel(argState); message(a ? `${a} ${r.echo}` : r.echo); } // C-2 C-c- keeps the argument in the echo, as Emacs does
   else if (r.echo) { event.preventDefault(); message(r.echo, true); beep(); }
@@ -4231,8 +4303,14 @@ async function askTrust(name, hash, text) {
 const problemsOf = (r) => r.report.filter((x) => x.kind !== 'kept');
 const reportLine = (x) => (x.kind === 'kept' ? x.message : `${pathOf(x.file)}${x.line ? `, line ${x.line}` : ''}: ${x.message}`);
 
+/** Settings an init file gives only the value they start with; the tool row changes them afterwards, as the toggle commands do in Emacs. */
+const STARTUP_ONLY = ['view.lineNumbers', 'view.wrap'];
+
 function setInit(r) {
+  const startup = Object.fromEntries(STARTUP_ONLY.filter((k) => k in r.settings).map((k) => [k, r.settings[k]]));
+  if (Object.keys(startup).length) { r = { ...r, settings: Object.fromEntries(Object.entries(r.settings).filter(([k]) => !(k in startup))) }; config.update({ settings: startup }); }
   initResult = r;
+  defineFunctions(r.functions ?? '');
   if (r === EMPTY_INIT) localStorage.removeItem(INIT_RESULT); else localStorage.setItem(INIT_RESULT, JSON.stringify(r));
   render();
 }

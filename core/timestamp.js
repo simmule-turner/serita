@@ -11,7 +11,7 @@ const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'frida
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const REPEAT_UNITS = ['d', 'w', 'm', 'y'];
 const two = (n) => String(n).padStart(2, '0');
-const STAMP = /([<[])(\d{4})-(\d\d)-(\d\d)(?: ([^\s\d>\]+.-][^\s>\]]*))?(?: (\d{1,2}):(\d\d))?((?: (?:\+\+|\.\+|\+|--|-)\d+[hdwmy])*)([>\]])/g;
+const STAMP = /([<[])(\d{4})-(\d\d)-(\d\d)(?: ([^\s\d>\]+.-][^\s>\]]*))?(?: (\d{1,2}):(\d\d)(?:-\d{1,2}:\d\d)?)?((?: (?:\+\+|\.\+|\+|--|-)\d+[hdwmy])*)([>\]])/g;
 
 /** @returns {Date} a UTC date for the parts, normalized as a calendar does (month 12 is January of the next year). */
 const utc = (y, m, d, h = 0, mi = 0) => new Date(Date.UTC(y, m - 1, d, h, mi));
@@ -181,6 +181,16 @@ export function setPlanning(text, line, keyword, stamp) {
   return { text: lines.map((l) => l.text + l.eol).join(''), line };
 }
 
+/** The entry's planning line without `keyword`; the line goes when nothing else is on it. */
+export function removePlanning(text, line, keyword) {
+  const lines = splitLines(text);
+  if (!lines[line + 1] || !/^\s*(?:CLOSED|DEADLINE|SCHEDULED):/.test(lines[line + 1].text)) return { text, line };
+  const kept = planningOf(lines[line + 1].text).filter(([k]) => k !== keyword);
+  if (kept.length === 0) lines.splice(line + 1, 1);
+  else lines[line + 1] = { ...lines[line + 1], text: kept.map(([k, v]) => `${k}: ${v}`).join(' ') };
+  return { text: lines.map((l) => l.text + l.eol).join(''), line };
+}
+
 /** Inserts a timestamp at the offset. */
 export function insertStamp(text, offset, stamp) {
   return { text: text.slice(0, offset) + stamp + text.slice(offset), pos: offset + stamp.length };
@@ -220,13 +230,16 @@ export const HEADINGS = {
 
 /**
  * The text of a log heading: %t and %T the time as an inactive or active stamp, %d and %D the date only, %s the new value and %S the old one
- * (quoted, empty when there is none), %u and %U the user's name (empty here); a width as in %-12s pads. `custom` replaces entries of HEADINGS.
+ * (quoted, empty when there is none), %u and %U the user's name (user-login-name and user-full-name); a width as in %-12s pads. `custom` replaces entries of HEADINGS.
  */
+/** The names %u and %U stand for (user-login-name and user-full-name); the app points these at the init file's values. */
+export const user = { login: '', full: '' };
+
 export function formatHeading(kind, { state = '', old = '', now }, custom = {}) {
   const template = custom[kind] ?? HEADINGS[kind] ?? '';
   const q = (v) => (v === '' ? '' : quote(v));
   return template.replace(/%(-?)(\d*)([sStTdDuU])/g, (all, left, width, c) => {
-    const v = { s: q(state), S: q(old), t: formatStamp(now, { time: true, active: false }), T: formatStamp(now, { time: true, active: true }), d: formatStamp(now, { active: false }), D: formatStamp(now, { active: true }), u: '', U: '' }[c];
+    const v = { s: q(state), S: q(old), t: formatStamp(now, { time: true, active: false }), T: formatStamp(now, { time: true, active: true }), d: formatStamp(now, { active: false }), D: formatStamp(now, { active: true }), u: user.login, U: user.full }[c];
     return width ? (left ? v.padEnd(+width) : v.padStart(+width)) : v;
   });
 }

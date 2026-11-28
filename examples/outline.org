@@ -35,5 +35,8 @@ Select the next two lines and press C-c - to make them items.
 a line of text
 another line of text
 
+* Scripts and entities
+With Show scripts and entities on (Settings → Appearance), this line reads: water is H_2O, x_{1} and x^{2}, and \alpha, \beta and \rarr.
+
 * Notes and logging
 C-c C-z on this heading asks for a note and files it under the heading as "Note taken on [time]". With org-log-done set to note in the settings file, finishing a TODO adds CLOSED: and a closing note.

@@ -28,7 +28,7 @@ Planned work only. Phase order is in SPEC.md section 12.
 - The heading title popup's three buttons, which insert at the cursor: footnote (A with a superscript 1), timer (stopwatch), and timestamp (calendar: C-c ., C-c !, C-u C-c ., S-up and S-down change it). They arrive with their features: timestamps and timers in the dates phase; the footnote command (C-c C-x f) exists, its button does not.
 
 * Later: init file
-- Settings an init file can set that Serita keeps but does not use yet: org-weather-format, calendar-time-display-form, display-time-mode, org-babel-load-languages, org-startup-truncated, org-startup-with-inline-images, org-use-sub-superscripts, display-line-numbers-mode.
+- Settings an init file can set that Serita keeps but does not use yet: display-time-mode, display-time-format, org-babel-load-languages, org-cycle-open-archived-trees, org-startup-with-inline-images.
 
 * Later: tables
 - Sorting a table with a function of your own (lambda or any Lisp function), which needs the Lisp interpreter; the built-in names work.
@@ -39,11 +39,9 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Agenda files: a file that cannot be read (batch Emacs crashes, so the wording is unknown) and the restricted agenda for one file (Emacs shows only that file).
 - Agenda: agenda files other than the open ones, filters by top headline and by saved views, bulk actions that need a prompt Emacs shows (refile, scatter, function), the order of items of equal priority beyond what was recorded, an effort filter's sign (Emacs ignored it in our results).
 
-- C-u C-c . on a timestamp starts the prompt from its time too (v0.1.81 ts-cu-*).
-- Sparse trees by date: C-c / c cycles between scheduled and deadline dates, and C-u N C-c / d sets the days ahead.
 
 * Later: capture, refile and archive
-- Logging: removing a schedule or deadline (C-u C-c C-s, C-u C-c C-d) with its log line, results recorded in conformance v0.1.81 (ds-*); %u and %U in org-log-note-headings; leaving a done keyword that has a log mark also removes CLOSED.
+- Export: no HTML or other export of whole documents yet; when there is, #+OPTIONS: ^: (t, nil or {}) decides scripts and org-use-sub-superscripts does not (v0.1.88 exo-*, exv-*).
 - Refile: ~org-refile-use-cache~ as a setting (the list is built each time here).
 
 * Later: Appearance
@@ -58,7 +56,6 @@ Planned work only. Phase order is in SPEC.md section 12.
 - Examples for the chapters not built yet (Babel in Lisp and JavaScript, an export sample) as each arrives.
 
 * Later: links and markup
-- Radio links over a line break are found in the Text view; the Outline view still shows them split.
 - Emphasis over a line break shows unstyled; Emacs finds it across line breaks.
 - The Text view underlines links and marks code, strike-through and underline, but cannot show bold or italic without moving letters; a later layer could.
 - Link types that need other programs (info, gnus, rmail, bbdb, w3m).

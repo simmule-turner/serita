@@ -2,6 +2,7 @@
 // (conformance v0.1.25): which forms match, what the text is, the order within a day, and the calendar sexps.
 import { readForms, isSym } from './lisp-read.js';
 import { emacsRegexp } from './regexp.js';
+import { weather, weatherLine } from './weather.js';
 import { sunriseSunset, sunTimes, timeString, localZone, where } from './solar.js';
 
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
@@ -119,6 +120,20 @@ const unquote = (f) => (f && typeof f === 'object' && 'quote' in f ? f.quote : A
 const truthy = (v) => v !== null && v !== false && v !== undefined && !(Array.isArray(v) && v.length === 0);
 
 /** Evaluates the calendar sexps a diary entry may use. `date` is [month, day, year]. Returns null/false, true, a number or a string. */
+/** Functions the init file defines with defun, callable from diary sexps; `date` stays the date being checked, as it does in Emacs. */
+const userFunctions = new Map();
+
+/** Reads the defun forms in `text` (an init file's own code) and makes them callable. */
+export function defineFunctions(text) {
+  userFunctions.clear();
+  for (const f of readForms(text)) {
+    if (!Array.isArray(f) || !isSym(f[0], 'defun') || !isSym(f[1]) || !Array.isArray(f[2])) continue;
+    const body = f.slice(3);
+    if (typeof body[0] === 'string' && body.length > 1) body.shift();
+    userFunctions.set(f[1].sym, { params: f[2].map((p) => p.sym), body });
+  }
+}
+
 export function ev(form, date, env = new Map()) {
   if (isSym(form) && env.has(form.sym)) return env.get(form.sym);
   if (form === null || form === true || typeof form === 'number' || typeof form === 'string') return form;
@@ -208,6 +223,7 @@ export function ev(form, date, env = new Map()) {
     case 'solar-sunrise-sunset': { const [m, dd, yy] = val(0); return where.lat === null || where.lon === null ? null : sunTimes({ y: yy, m, d: dd }, { lat: where.lat, lon: where.lon, zone: localZone }); }
     case 'solar-sunrise-sunset-string': { const [m, dd, yy] = val(0); return where.lat === null || where.lon === null ? null : sunriseSunset({ y: yy, m, d: dd }, { lat: where.lat, lon: where.lon, zone: localZone, place: where.name }); }
     case 'solar-time-string': return timeString(val(0), val(1));
+    case 'org-weather': return weather.snapshot && absDay(y, mo, d) === absDay(now.date().getFullYear(), now.date().getMonth() + 1, now.date().getDate()) ? weatherLine(weather.snapshot, weather.options) : null;
     case 'diary-sunrise-sunset': return where.lat === null || where.lon === null ? null : sunriseSunset({ y, m: mo, d }, { lat: where.lat, lon: where.lon, zone: localZone, place: where.name });
     case 'diary-remind': {
       const inner = unquote(args[0]); const days = val(1);
@@ -220,9 +236,16 @@ export function ev(form, date, env = new Map()) {
       }
       return null;
     }
-    default:
+    default: {
+      const fn = userFunctions.get(name);
+      if (fn) {
+        const scope = new Map();
+        fn.params.forEach((p, i) => scope.set(p, val(i)));
+        return progn(fn.body, scope);
+      }
       if (hooks[name]) return hooks[name](args.map((_, i) => val(i)), date);
       throw new Error(`Unsupported diary expression ${name}`);
+    }
   }
 }
 
