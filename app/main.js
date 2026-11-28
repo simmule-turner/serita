@@ -49,7 +49,7 @@ import { TEXT_KEYS, chordOf, createKeymap } from './ui/keys.js';
 import { createHistory } from './ui/history.js';
 import { createLinkCommands } from './ui/linkcmds.js';
 import { decorations, emphasisOf } from './ui/inline.js';
-import { where as solarWhere } from '../core/solar.js';
+import { where as solarWhere, sunriseSunset, monthSunTimes, dateLabel, localZone } from '../core/solar.js';
 import { radioLineSet, radioNames, radioBreaks } from '../core/links.js';
 import { readForms } from '../core/lisp-read.js';
 import { createKeyRow } from './ui/keyrow.js';
@@ -128,6 +128,42 @@ const customHeadings = () => { try { return JSON.parse(setting('org-log-note-hea
 const headingFor = (kind, vars) => formatHeading(kind, { ...vars, now: localNow() }, customHeadings());
 /** calendar-latitude, calendar-longitude and calendar-location-name for diary-sunrise-sunset. */
 const placeForSun = () => { const n = (k) => (setting(k) !== undefined && setting(k) !== '' && Number.isFinite(Number(setting(k))) ? Number(setting(k)) : null); Object.assign(solarWhere, { lat: n('calendar-latitude'), lon: n('calendar-longitude'), name: setting('calendar-location-name') || null, form: setting('calendar-time-display-form') ? readForms(setting('calendar-time-display-form'))[0] : null }); };
+
+/** The place the sun commands look from; says so when the init file has not set calendar-latitude and calendar-longitude. */
+function sunPlace() {
+  placeForSun();
+  if (solarWhere.lat === null || solarWhere.lon === null) { message('Set calendar-latitude and calendar-longitude in the init file', true); return null; }
+  return { lat: solarWhere.lat, lon: solarWhere.lon, zone: localZone, place: solarWhere.name };
+}
+
+/** M-x sunrise-sunset: today's times in the echo area; with an argument it asks for the date and starts the message with it. */
+async function sunriseSunsetCommand() {
+  const withDate = arg !== null;
+  const o = sunPlace();
+  if (!o) return;
+  let day = todayDate();
+  if (withDate) {
+    const st = await askStamp('', false, false, null, '', 'Date');
+    if (st === null) return;
+    day = new Date(`${/\d{4}-\d\d-\d\d/.exec(st)[0]}T00:00:00Z`);
+  }
+  const date = { y: day.getUTCFullYear(), m: day.getUTCMonth() + 1, d: day.getUTCDate() };
+  message(`${withDate ? `${dateLabel(date, true)}: ` : ''}${sunriseSunset(date, o)}`);
+}
+
+/** M-x calendar-sunrise-sunset-month: a line for each day of the month the Calendar shows (this month when it is not open). */
+async function sunMonthCommand() {
+  const o = sunPlace();
+  if (!o) return;
+  const t = todayDate();
+  const text = monthSunTimes({ y: calendarState.y ?? t.getUTCFullYear(), m: calendarState.m ?? t.getUTCMonth() + 1 }, o);
+  const [title, , ...lines] = text.split('\n');
+  await panel((sheet, close) => put(sheet, h('h2', {}, title),
+    h('textarea', { rows: 14, readonly: 'readonly', spellcheck: 'false', 'aria-label': 'Sunrise and sunset times', class: 'mono' }, lines.join('\n').trimEnd()),
+    h('div', { class: 'row' },
+      h('button', { onclick: () => { navigator.clipboard.writeText(text).then(() => message('Copied'), () => message('Could not copy to the clipboard', true)); } }, 'Copy'),
+      h('button', { onclick: () => close(undefined) }, 'Close'))));
+}
 const startupOf = (name) => { const b = currentBuffer(); return b ? startupLog(b.text)[name] : undefined; };
 const logDrawer = (text, line) => (text !== undefined && propertiesOf(text, line).find(([k]) => k.toUpperCase() === 'LOG_INTO_DRAWER')?.[1]) || (startupOf('org-log-into-drawer') !== undefined ? startupOf('org-log-into-drawer') : setting('org-log-into-drawer')) || null;
 const logRepeatMode = () => { const v = startupOf('org-log-repeat') ?? setting('org-log-repeat'); return v === 'nil' ? 'off' : v === 'note' ? 'note' : 'time'; };
@@ -2058,8 +2094,11 @@ async function calendarScreen() {
     const byDay = new Map(view.days.map((d) => [isoOf(d.date), d.entries]));
     const hol = new Map();
     for (const x of holidayList(y, m, holidayOpts())) { const k = `${x.y}-${String(x.m).padStart(2, '0')}-${String(x.d).padStart(2, '0')}`; hol.set(k, [...(hol.get(k) ?? []), x.name]); }
+    let sunKey;
     const act = await panel((sheet, close) => {
       sheet.classList.add('full', 'calendar');
+      sunKey = (e) => { if (e.key === 'S' && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); close({ sun: true }); } };
+      document.addEventListener('keydown', sunKey);
       const two = (n) => String(n).padStart(2, '0');
       const cell = (c) => {
         const iso = `${c.y}-${two(c.m)}-${two(c.d)}`;
@@ -2084,8 +2123,12 @@ async function calendarScreen() {
           ...(picked.length || holidays.length ? [...holidays, ...picked].map(row) : [h('p', { class: 'aempty' }, 'Nothing on this day')])), sidewaysSwipe((dir) => close({ move: dir }))),
         h('div', { class: 'abar' }, h('button', { onclick: () => close({ today: true }) }, 'Today'), h('button', { onclick: () => close({ agenda: true }) }, 'Agenda'), h('button', { onclick: () => close(undefined) }, 'Close')));
     });
+    document.removeEventListener('keydown', sunKey);
     if (!act) return;
-    if (act.move) { const n = stepMonth(y, m, act.move); calendarState.y = n.y; calendarState.m = n.m; }
+    if (act.sun) {
+      const o = sunPlace();
+      if (o) { const [yy, mm, dd] = calendarState.day.split('-').map(Number); message(`${dateLabel({ y: yy, m: mm, d: dd })}: ${sunriseSunset({ y: yy, m: mm, d: dd }, o)}`); }
+    } else if (act.move) { const n = stepMonth(y, m, act.move); calendarState.y = n.y; calendarState.m = n.m; }
     else if (act.today) { calendarState.y = t.getUTCFullYear(); calendarState.m = t.getUTCMonth() + 1; calendarState.day = isoOf(t); }
     else if (act.day) { calendarState.day = act.day; const [yy, mm] = act.day.split('-').map(Number); calendarState.y = yy; calendarState.m = mm; }
     else if (act.agenda) { agendaState.kind = 'agenda'; agendaState.span = 'day'; agendaState.anchor = new Date(`${calendarState.day}T00:00:00Z`); await agendaScreen({ files, diary }); return; }
@@ -3314,6 +3357,8 @@ const COMMANDS = {
   agenda: () => openAgenda('agenda'),
   'agenda-todo': () => openAgenda('todo'),
   'calendar': () => calendarScreen(),
+  'sunrise-sunset': () => sunriseSunsetCommand(),
+  'sunrise-sunset-month': () => sunMonthCommand(),
   'agenda-tags': () => openAgenda('tags'),
   'agenda-search': () => openAgenda('search'),
   'sparse-tree-regexp': () => sparse('regexp'),
@@ -3776,6 +3821,7 @@ const outlineOn = {
 // Every command has a plain label, its Emacs name and (below) the key it is on. `outline` marks the ones that make sense with no cursor.
 const PALETTE = [
   ['calendar', 'calendar', 'Calendar', true],
+  ['sunrise-sunset', 'sunrise-sunset', 'Show sunrise and sunset', true], ['sunrise-sunset-month', 'calendar-sunrise-sunset-month', 'Show sunrise and sunset for the month', true],
   ['unsent-saves', 'unsent-saves', 'Send queued saves', true],
   ['indent', 'org-indent-mode', 'Indent mode', true],
   ['cycle', 'org-cycle', 'Fold or unfold'], ['cycle-global', 'org-shifttab', 'Fold or unfold everything', true],

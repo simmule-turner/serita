@@ -112,18 +112,37 @@ const hm = (min) => `${Math.floor(Math.round(min) / 60)}:${String(Math.round(min
  * `zone(y, m, d)` gives { offset (hours east of UTC), name }; `place` replaces the coordinates as the name of the location.
  * @returns {string}
  */
-export function sunriseSunset({ y, m, d }, { lat, lon, zone, place = null }) {
+export function sunriseSunset({ y, m, d }, { lat, lon, zone, place = null, omitPlace = false }) {
   const z = zone(y, m, d);
   const rise = eventMinutes(y, m, d, lat, lon, z.offset, true);
   const set = eventMinutes(y, m, d, lat, lon, z.offset, false);
-  const at = place ?? `${Math.abs(lat).toFixed(1)}${lat > 0 ? 'N' : 'S'}, ${Math.abs(lon).toFixed(1)}${lon > 0 ? 'E' : 'W'}`;
+  const at = placeName(lat, lon, place);
+  const where = omitPlace ? '' : ` at ${at}`;
   if (rise === null || set === null) {
     // the sun stays up or down all day: the sign of the declination against the latitude tells which
-    return `No sunrise, no sunset at ${at} (${polarDay(y, m, d, lat) ? '24:00' : '0:00'} hrs daylight)`;
+    return `No sunrise, no sunset${where} (${polarDay(y, m, d, lat) ? '24:00' : '0:00'} hrs daylight)`;
   }
   const r = Math.round(rise);
   const s = Math.round(set);
-  return `Sunrise ${timeString(rise / 60, z.name)}, sunset ${timeString(set / 60, z.name)} at ${at} (${hm(s - r)} hrs daylight)`;
+  return `Sunrise ${timeString(rise / 60, z.name)}, sunset ${timeString(set / 60, z.name)}${where} (${hm(s - r)} hrs daylight)`;
+}
+
+/** calendar-location-name: the given name, else the coordinates as "36.0N, 78.9W". */
+export const placeName = (lat, lon, place = null) => place ?? `${Math.abs(lat).toFixed(1)}${lat > 0 ? 'N' : 'S'}, ${Math.abs(lon).toFixed(1)}${lon > 0 ? 'E' : 'W'}`;
+
+const MONTH_FULL = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const MONTH_ABBR = MONTH_FULL.map((n) => n.slice(0, 3));
+const DAY_ABBR = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+/** The date a one-day message starts with: "Nov 26, 2026" (from the calendar) or "Sun, Jun 21, 2026" (with a day name). */
+export const dateLabel = ({ y, m, d }, dayName = false) => `${dayName ? `${DAY_ABBR[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]}, ` : ''}${MONTH_ABBR[m - 1]} ${d}, ${y}`;
+
+/** The text of calendar-sunrise-sunset-month: a heading, a blank line and a line for each day. */
+export function monthSunTimes({ y, m }, o) {
+  const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const lines = [];
+  for (let d = 1; d <= days; d++) lines.push(`${MONTH_ABBR[m - 1]} ${String(d).padStart(2, ' ')}: ${sunriseSunset({ y, m, d }, { ...o, omitPlace: true })}`);
+  return `Sunrise/sunset times for ${MONTH_FULL[m - 1]} ${y} at ${placeName(o.lat, o.lon, o.place ?? null)}:\n\n${lines.join('\n')}\n`;
 }
 
 /**

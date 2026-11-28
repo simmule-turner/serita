@@ -93,3 +93,33 @@ test('string-replace and replace-regexp-in-string reshape the duration', () => {
   assert.equal(one('replace-regexp-in-string "\\\\([0-9]+\\\\):\\\\([0-9]+\\\\)" "\\\\1h\\\\2" "9:56"'), '9h56');
   assert.equal(one('replace-regexp-in-string ":" "[\\\\&]" "9:56"'), '9[:]56');
 });
+
+import { monthSunTimes, dateLabel } from '../core/solar.js';
+const M = JSON.parse(fs.readFileSync(new URL('./fixtures/emacs-sunrise-month.json', import.meta.url)));
+test('the month list has the lines Emacs shows (calendar-sunrise-sunset-month), times within a minute', () => {
+  for (const c of M) {
+    where.form = c.form ? readForms(c.form)[0] : null;
+    const mine = monthSunTimes({ y: c.y, m: c.m }, { ...here, zone: ny, place: c.place }).split('\n');
+    const theirs = c.text.replace(/ at nil:/, ` at ${c.place ?? '36.0N, 78.9W'}:`).split('\n');
+    assert.equal(mine.length, theirs.length, c.id);
+    mine.forEach((l, i) => {
+      const t = (x) => x.replace(/\d{1,2}:\d\d/g, 'T');
+      assert.equal(t(l), t(theirs[i]), `${c.id} line ${i}`);
+      const a = [...l.matchAll(/(\d{1,2}):(\d\d)/g)].map((x) => +x[1] * 60 + +x[2]);
+      const b = [...theirs[i].matchAll(/(\d{1,2}):(\d\d)/g)].map((x) => +x[1] * 60 + +x[2]);
+      a.forEach((v, k) => assert.ok(Math.abs(v - b[k]) <= (k === 2 ? 2 : 1) || Math.abs(Math.abs(v - b[k]) - 720) <= 1, `${c.id} line ${i}: ${l} vs ${theirs[i]}`));
+    });
+  }
+  where.form = null;
+});
+
+test('a polar month says there is no sunrise and no sunset on each day', () => {
+  const t = monthSunTimes({ y: 2026, m: 6 }, { lat: 70, lon: 25, zone: () => ({ offset: 2, name: 'CEST' }) }).split('\n');
+  assert.equal(t[0], 'Sunrise/sunset times for June 2026 at 70.0N, 25.0E:');
+  assert.equal(t[2], 'Jun  1: No sunrise, no sunset (24:00 hrs daylight)');
+});
+
+test('the date a one-day message starts with', () => {
+  assert.equal(dateLabel({ y: 2026, m: 11, d: 26 }), 'Nov 26, 2026');
+  assert.equal(dateLabel({ y: 2026, m: 6, d: 21 }, true), 'Sun, Jun 21, 2026');
+});

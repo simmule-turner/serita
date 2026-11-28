@@ -247,5 +247,8 @@ A separate repository holds questions (case files written by us) and results rec
 ### 0.11.22: `core/agenda.js` (sexpStamps, headline timestamps), `test/sexp-stamps.test.js`, `test/fixtures/emacs-sexp-stamps.json`
 - Written from observed Emacs 30.1 results with Org 9.7.11 (conformance v0.1.82: ts-*): a timestamp in a headline and `<%%(sexp)>` in a headline, a body line or after SCHEDULED/DEADLINE show the heading on each day the sexp holds. Conformance v0.1.83 (ss-*) shows that the heading appears as written whatever the sexp returns (a string, a cons), and that a sexp that is nil or fails shows nothing.
 
+### 0.11.24: `core/solar.js` (placeName, dateLabel, monthSunTimes), `app/main.js`, `test/sunrise.test.js`, `test/fixtures/emacs-sunrise-month.json`, `test/browser/sun.mjs`
+- The sunrise-sunset message, its date prefix with an argument, the month list and the Calendar's S key follow Emacs 30.1's results (conformance v0.1.84: sr-*, v0.1.85: mo-*, v0.1.86: cm-*); the month sheet and its Copy and Close buttons are our own layout. The browser test was written by us.
+
 ### 0.11.23: `core/diary.js` (string-replace, replace-regexp-in-string, cons), `test/sunrise.test.js`
 - string-replace and replace-regexp-in-string follow the Emacs manual; the regexp goes through the Emacs regexp translator. The sunrise tests fix their time zone, so they pass anywhere.

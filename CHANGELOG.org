@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.24
+Sunrise and sunset commands, as in Emacs: sunrise-sunset in the palette says today's times (with C-u it asks for a date), calendar-sunrise-sunset-month lists every day of the month the Calendar shows, and S in the Calendar says the times of the chosen day. They use calendar-latitude and calendar-longitude from the init file and follow calendar-time-display-form.
+
 * 0.11.23
 Diary sexps can reshape text with string-replace and replace-regexp-in-string, so a sun-times line can show the length as 9h56 instead of 9:56. The sunrise tests no longer depend on the machine's time zone, which had failed in CI.
 
