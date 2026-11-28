@@ -159,7 +159,7 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 #findbar.longprompt .prompt { flex: 1 1 100%; white-space: normal; }
 #findbar.longprompt input { flex: 1 1 100%; height: 28px; }
 #findbar.stack button { flex: 1; width: auto; }
-.keylogtext { margin: 0; max-height: 45vh; overflow: auto; padding: 8px; border: 1px solid var(--line); border-radius: 8px; font: 11px/1.3 monospace; white-space: pre-wrap; word-break: break-all; user-select: text; }
+.sheet pre.keylogtext { margin: 0; max-height: 45vh; overflow: auto; padding: 8px; border: 1px solid var(--line); border-radius: 8px; font: 11px/1.3 monospace; white-space: pre; user-select: text; }
 
 /* The agenda's time grid: thin rows between the timed entries. */
 .agrid { display: flex; align-items: center; gap: 8px; padding: 2px 8px; font-size: 12px; color: var(--muted); }

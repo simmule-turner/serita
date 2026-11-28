@@ -61,6 +61,16 @@ ok(/Date\+time \[2026-11-23\]/.test(await page.locator('#findbar').textContent()
 await page.keyboard.type('++1d'); await page.keyboard.press('Enter');
 ok((await text()).includes('SCHEDULED: <2026-11-24 Tue>'), '++1d counts from the date already set');
 
+// org-log-reschedule note: Skip logs the line alone, the cross leaves it out; the new date stays either way
+await setting({ 'view.emacsKeys': 'true', 'org-log-reschedule': 'note' });
+const planned = '* TODO a\nSCHEDULED: <2026-11-23 Mon>\n';
+await at(planned, 1); await ctrl('c'); await ctrl('s'); await page.keyboard.type('+1d'); await page.keyboard.press('Enter');
+await page.locator('.sheet').getByRole('button', { name: 'Skip', exact: true }).click();
+ok(/^\* TODO a\nSCHEDULED: <\d{4}-\d\d-\d\d \w{3}>\n- Rescheduled from "\[2026-11-23 Mon\]" on \[[^\]]+\]$/.test(await text()), 'Skip in the reschedule note logs the line alone');
+await at(planned, 1); await ctrl('c'); await ctrl('s'); await page.keyboard.type('+1d'); await page.keyboard.press('Enter');
+await page.locator('.sheet .dismiss').click();
+ok(/^\* TODO a\nSCHEDULED: <\d{4}-\d\d-\d\d \w{3}>\n$/.test(await text()) && !(await text()).includes('2026-11-23'), 'the cross in the reschedule note keeps the new date and logs nothing');
+
 ok(errors.length === 0, 'no page errors');
 await close();
 process.exit(failed ? 1 : 0);

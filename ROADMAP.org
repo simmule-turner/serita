@@ -28,7 +28,7 @@ Planned work only. Phase order is in SPEC.md section 12.
 - The heading title popup's three buttons, which insert at the cursor: footnote (A with a superscript 1), timer (stopwatch), and timestamp (calendar: C-c ., C-c !, C-u C-c ., S-up and S-down change it). They arrive with their features: timestamps and timers in the dates phase; the footnote command (C-c C-x f) exists, its button does not.
 
 * Later: init file
-- Settings an init file can set that Serita keeps but does not use yet: org-weather-format, calendar-latitude and calendar-longitude, calendar-time-display-form, display-time-mode, org-babel-load-languages, org-log-done, org-startup-truncated, org-startup-with-inline-images, org-use-sub-superscripts, display-line-numbers-mode.
+- Settings an init file can set that Serita keeps but does not use yet: org-weather-format, calendar-latitude and calendar-longitude, calendar-time-display-form, display-time-mode, org-babel-load-languages, org-startup-truncated, org-startup-with-inline-images, org-use-sub-superscripts, display-line-numbers-mode.
 
 * Later: tables
 - Sorting a table with a function of your own (lambda or any Lisp function), which needs the Lisp interpreter; the built-in names work.

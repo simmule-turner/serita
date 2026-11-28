@@ -57,7 +57,7 @@ To type C-c or C-x, use Ctrl on the key row and then the letter; a keyboard's ow
 
 Above the mode line, a row of keys stands in for a keyboard: Meta, Ctrl and Shift apply to the next key, and a letter typed on the on-screen keyboard after Ctrl or Meta is the key chord, for example Ctrl then n is C-n. Tab and the arrows follow; the arrows move as C-p, C-n, C-b and C-f do, and with Shift they extend the selection. The keyboard button shows or hides the on-screen keyboard. Float turns the row into a panel you can drag; Dock puts it back. Pressing a key never opens the keyboard.
 
-Settings, Debugging, Key event log, records what the keyboard sends and which key chord Serita made of it. Turn it on, press the keys in the editor, then open it again to read the log, Copy it or Clear it; it helps when a key does not do what it should.
+Settings, Debugging, Record key events, records what the keyboard sends and which key chord Serita made of it. Turn it on, press the keys in the editor, then open Debugging again to read the log, Copy it or Clear it; it helps when a key does not do what it should.
 
 Settings, Emacs, Hide leading stars, shows only the last star of each heading. Indent files on open turns on org-indent-mode: each level is indented two columns and the text under a heading lines up with the heading's text, with nothing added to the file. A file can ask for it with ~#+STARTUP: indent~ or refuse with ~#+STARTUP: noindent~, and the palette command Indent mode toggles it for the file you are in. Both apply to the Text view; the Outline view always shows every star and its own indentation.
 
@@ -142,7 +142,7 @@ View, then Agenda, lists what is scheduled, due or dated in the open files, by D
 Filter keeps some of the rows: by tag (~+work -home~), category (~+calls~), effort (~<1:00~, ~>0:30~, ~=2:00~; entries with no effort stay only for ~>~) and an Emacs regexp (~+rent~ keeps lines that match, ~-rent~ hides them). The filters show in the title and Clear all filters removes them. Mark turns a tap into a mark; All and None mark every row or none, and Act on N sets the TODO state, adds or removes a tag, sets the priority, schedules, sets a deadline or archives every marked entry. In the Text view C-c a a opens the agenda, C-c a t the TODO list, C-c a m tags and C-c a s a search.
 
 ** Capture
-C-c c (or Menu, Capture) lists the capture templates by key and description. Tap one, answer its questions, edit the text, and Save files it into the template's target; Cancel drops it.
+C-c c (or Menu, Commands, Capture) lists the capture templates by key and description. Tap one, answer its questions, edit the text, and Save files it into the template's target; Cancel drops it.
 
 Emacs's own template, ~t~ Task, which files a TODO under Tasks, is there until you set your own; it files to ~.notes~ in your storage, since Emacs's ~~/.notes~ has no home folder here. A template is set as ~init.el~ writes it, in Settings, Emacs, Capture templates (Reset brings the default back):
 
@@ -186,7 +186,9 @@ Settings, Emacs, Archive marks done (nil, t or a keyword such as CANCELLED) mark
 ** Settings
 Menu, then Settings, sets up GitHub (owner, repository, branch, token) and WebDAV (address, user, password). They are kept in this browser, on this device.
 
-Emacs holds the settings that are Emacs's own, in sections: Tasks and logging, Agenda and calendar, Capture, refile and archive, Links and footnotes, Keys and editing, and Startup. Type in the search field to find a setting by its name, its Emacs variable (org-log) or a related word (shift arrow); the sections that have a match stay as headings. When a task is done, When rescheduled and When a deadline changes are each Off, Time or Note. Shift-selection lets S-left and S-right select text where Org has no use for them. Appearance holds the look of the app; Debugging holds the Key event log.
+The search field at the top of Settings finds any setting, whichever screen it is on: type part of its name, its Emacs variable (~org-log~, ~org-tags-column~) or a related word (shift arrow). Tap a result to change it there; you return to the results.
+
+Emacs holds the settings that are Emacs's own, in sections: Tasks and logging, Agenda and calendar, Capture, refile and archive, Links and footnotes, Keys and editing, and Startup. When a task is done, When rescheduled and When a deadline changes are each Off, Time or Note; with Note, a change of a date that was already set asks for a note (Skip logs the line alone, the cross logs nothing, and the new date stays). Shift-selection lets S-left and S-right select text where Org has no use for them. Appearance holds the look of the app; Debugging holds the key event log.
 
 Export writes an Org file of your settings. Give it a passphrase to encrypt the tokens and passwords; without one they are written in plain text, so keep the file private. Import reads such a file on another device and replaces its settings.
 

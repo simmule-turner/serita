@@ -836,22 +836,43 @@ function summary(p) {
 }
 
 async function settings() {
+  let query = '';
+  let note = '';
   for (;;) {
     const what = await panel((sheet, close) => {
-      put(sheet, h('h2', {}, 'Settings'),
-        h('div', { class: 'list' },
-          h('button', { class: 'item', onclick: () => close('github') }, h('span', {}, 'GitHub'), h('span', { class: 'meta' }, `${summary('github')} ›`)),
-          h('button', { class: 'item', onclick: () => close('webdav') }, h('span', {}, 'WebDAV'), h('span', { class: 'meta' }, `${summary('webdav')} ›`)),
-          h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, `${EMACS_ROWS.length} settings ›`)),
-          h('button', { class: 'item', onclick: () => close('appearance') }, h('span', {}, 'Appearance'), h('span', { class: 'meta' }, `${theme()[0].toUpperCase()}${theme().slice(1)}, ${fontSize()}px ›`)),
-          h('button', { class: 'item', onclick: () => close('debugging') }, h('span', {}, 'Debugging'), h('span', { class: 'meta' }, '›')),
-          h('div', { class: 'item' }, h('span', {}, 'Settings file'),
-            h('span', { class: 'btns' }, h('button', { onclick: () => close('export') }, 'Export'), h('button', { onclick: () => close('import') }, 'Import'))),
-          h('p', { class: 'note' }, 'Tokens and passwords are stored on this device.'),
-          h('div', { class: 'item' }, h('span', {}, 'Versions (latest/installed)'), h('span', { class: 'meta' }, `${waiting?.version ?? VERSION}/${VERSION}`))),
+      const normal = h('div', { class: 'list' },
+        h('button', { class: 'item', onclick: () => close('github') }, h('span', {}, 'GitHub'), h('span', { class: 'meta' }, `${summary('github')} ›`)),
+        h('button', { class: 'item', onclick: () => close('webdav') }, h('span', {}, 'WebDAV'), h('span', { class: 'meta' }, `${summary('webdav')} ›`)),
+        h('button', { class: 'item', onclick: () => close('emacs-settings') }, h('span', {}, 'Emacs'), h('span', { class: 'meta' }, `${EMACS_ROWS.length} settings ›`)),
+        h('button', { class: 'item', onclick: () => close('appearance') }, h('span', {}, 'Appearance'), h('span', { class: 'meta' }, `${theme()[0].toUpperCase()}${theme().slice(1)}, ${fontSize()}px ›`)),
+        h('button', { class: 'item', onclick: () => close('debugging') }, h('span', {}, 'Debugging'), h('span', { class: 'meta' }, '›')),
+        h('div', { class: 'item' }, h('span', {}, 'Settings file'),
+          h('span', { class: 'btns' }, h('button', { onclick: () => close('export') }, 'Export'), h('button', { onclick: () => close('import') }, 'Import'))),
+        h('p', { class: 'note' }, 'Tokens and passwords are stored on this device.'),
+        h('div', { class: 'item' }, h('span', {}, 'Versions (latest/installed)'), h('span', { class: 'meta' }, `${waiting?.version ?? VERSION}/${VERSION}`)));
+      const found = h('div', { class: 'list' });
+      const index = settingsIndex();
+      const fill = () => {
+        const on = searchWords(query).length > 0;
+        normal.hidden = on; found.hidden = !on;
+        found.replaceChildren();
+        if (!on) return;
+        let last = '';
+        for (const r of index.filter((x) => rowAnswers(x, query))) {
+          if (r.where !== last) { found.append(h('div', { class: 'sec' }, r.where)); last = r.where; }
+          found.append(h('button', { class: 'item', onclick: () => close({ run: r.run }) }, h('span', {}, r.label), h('span', { class: 'meta' }, r.meta ? `${r.meta} ›` : '›')));
+        }
+        if (!found.children.length) found.append(h('p', { class: 'none' }, 'No setting matches.'));
+      };
+      const input = h('input', { type: 'search', value: query, placeholder: 'Search settings', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Search settings' });
+      input.addEventListener('input', () => { query = input.value; fill(); });
+      fill();
+      put(sheet, h('h2', {}, 'Settings'), note ? h('p', {}, note) : null, input, normal, found,
         waiting ? h('div', { class: 'row' }, h('button', { class: 'primary', onclick: () => { close(undefined); restart(); } }, 'Restart to update')) : null,
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, 'Close')));
     });
+    note = '';
+    if (what?.run) { const r = await what.run(); if (r === 'closed') return; if (typeof r === 'string') note = r; continue; }
     if (what === undefined) return;
     if (what === 'github' || what === 'webdav') await setup(what);
     else if (what === 'emacs-settings') await emacsSettings();
@@ -914,38 +935,55 @@ const LOCK = { 'agenda-files': 'org-agenda-files', archive: 'org-archive-locatio
   'log-done': 'org-log-done', 'log-reschedule': 'org-log-reschedule', 'log-redeadline': 'org-log-redeadline', 'shift-select': 'org-support-shift-select',
   'log-repeat': 'org-log-repeat', 'link-abbrev': 'org-link-abbrev-alist', 'link-search': 'org-link-search-must-match-exact-headline', 'link-keep': 'org-link-keep-stored-after-insertion', 'link-id': 'org-id-link-to-org-use-id', 'fn-label': 'org-footnote-auto-label', 'fn-section': 'org-footnote-section', 'fn-inline': 'org-footnote-define-inline', 'fn-adjust': 'org-footnote-auto-adjust', 'agenda-prefix': 'org-agenda-prefix-settings', refile: 'org-refile-settings', 'refile-new': 'org-refile-allow-creating-parent-nodes', 'tags-column': 'org.tagsColumn' };
 
-/** Whether a row answers a search: every word typed is part of its label, its Emacs variable or its other words. */
-const rowMatches = (row, query) => {
-  const hay = `${row[2]} ${LOCK[row[1]] ?? ''} ${row[4]}`.toLowerCase();
-  return query.toLowerCase().split(/\s+/).filter(Boolean).every((w) => hay.includes(w));
-};
+/** The Emacs variables a row sets, where more than the one the init file locks (or none of its own key) apply. */
+const NAMES = { 'tags-column': 'org-tags-column', 'agenda-prefix': 'org-agenda-prefix-format org-agenda-category-icon-alist', refile: 'org-refile-targets org-refile-use-outline-path org-reverse-note-order org-refile-use-cache',
+  holidays: 'calendar-holidays holiday-general-holidays holiday-christian-holidays holiday-solar-holidays', 'init-file': 'serita-init-file' };
+const emacsNames = (key) => NAMES[key] ?? LOCK[key] ?? '';
 
-/** Settings, Emacs: the settings that are Emacs's own, in sections, with a search field. */
+/** Whether a search answers a row: every word typed is part of its label, section, Emacs variables or other words; - and _ count as spaces. */
+const searchWords = (q) => q.toLowerCase().replace(/[-_]/g, ' ').split(/\s+/).filter(Boolean);
+const rowAnswers = (r, q) => { const hay = `${r.label} ${r.where} ${r.names} ${r.words}`.toLowerCase().replace(/[-_]/g, ' '); return searchWords(q).every((w) => hay.includes(w)); };
+
+/** Everything the search at the top of Settings finds. `run` is what tapping the result does. */
+function settingsIndex() {
+  const cap = (x) => `${x[0].toUpperCase()}${x.slice(1)}`;
+  const onOff = (b) => (b ? 'On' : 'Off');
+  const rows = EMACS_ROWS.map(([sec, key, label, meta, words]) => ({ where: `Emacs · ${sec}`, label, meta: fromInit(LOCK[key]) ? 'Init file' : meta(), names: emacsNames(key), words, run: () => emacsAction(key) }));
+  const look = (label, meta, words) => ({ where: 'Appearance', label, meta, names: '', words, run: () => appearance() });
+  const appearanceRows = [['tools-text', 'Tool row in the Text view', onOff(toolRowOn('text')), 'buttons undo redo', 'view.toolRowText'], ['tools-outline', 'Tool row in the Outline view', onOff(toolRowOn('outline')), 'buttons undo redo', 'view.toolRowOutline'],
+    ['table-wrap', 'Wrap table cells', onOff(wrapCells()), 'grid', 'org-table-widget-wrap-columns'], ['table-width', 'Table width', `${Math.round(widthFraction() * 100)}%`, 'grid', 'org-table-widget-max-width-fraction'],
+    ['table-zebra', 'Stripe table rows', onOff(zebraRows()), 'grid zebra', 'org-table-widget-zebra-stripe']].map(([key, label, meta, words, names]) => ({ where: 'Appearance · ' + (key.startsWith('tools') ? 'Tool rows' : 'Tables'), label, meta, names, words, run: () => appearanceRow(key) }));
+  const accounts = ['github', 'webdav'].flatMap((p) => [...FIELDS[p].fields.map(([, label]) => label.replace(/ \(.*\)$/, '')), FIELDS[p].secret[1]].map((label) => ({ where: FIELDS[p].title, label, meta: summary(p), names: '', words: p === 'github' ? 'repo repository branch owner storage' : 'url server storage', run: () => setup(p) })));
+  return [...accounts, ...rows, look('Theme', cap(theme()), 'dark light system color'), look('Font', fontChoice(), 'monospace serif typeface'), look('Font size', `${fontSize()}px`, 'text size'), look('Paragraph spacing', `${paragraphSpacing()}px`, 'gap'), ...appearanceRows,
+    { where: 'Debugging', label: 'Key event log', meta: onOff(keyLogOn()), names: '', words: 'keyboard keys record', run: () => debugging() },
+    { where: 'Settings file', label: 'Export settings', meta: '', names: '', words: 'save backup', run: async () => { await exportDialog(); return 'closed'; } },
+    { where: 'Settings file', label: 'Import settings', meta: '', names: '', words: 'load restore', run: async () => { $('import-file').click(); return 'closed'; } }];
+}
+
+/** Settings, Emacs: the settings that are Emacs's own, in sections. */
 async function emacsSettings() {
   let note = '';
-  let query = '';
   for (;;) {
     const what = await panel((sheet, close) => {
       const list = h('div', { class: 'list' });
-      const fill = () => {
-        list.replaceChildren();
-        let last = '';
-        for (const row of EMACS_ROWS.filter((r) => rowMatches(r, query))) {
-          if (row[0] !== last) { list.append(h('div', { class: 'sec' }, row[0])); last = row[0]; }
-          list.append(h('button', { class: 'item', onclick: () => close(row[1]) }, h('span', {}, row[2]), h('span', { class: 'meta' }, `${fromInit(LOCK[row[1]]) ? 'Init file' : row[3]()} ›`)));
-        }
-        if (!list.children.length) list.append(h('p', { class: 'none' }, 'No setting matches.'));
-      };
-      const input = h('input', { type: 'search', value: query, placeholder: 'Search settings', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false', 'aria-label': 'Search settings' });
-      input.addEventListener('input', () => { query = input.value; fill(); });
-      fill();
-      put(sheet, h('h2', {}, 'Emacs'), note ? h('p', {}, note) : null, input, list,
+      let last = '';
+      for (const row of EMACS_ROWS) {
+        if (row[0] !== last) { list.append(h('div', { class: 'sec' }, row[0])); last = row[0]; }
+        list.append(h('button', { class: 'item', onclick: () => close(row[1]) }, h('span', {}, row[2]), h('span', { class: 'meta' }, `${fromInit(LOCK[row[1]]) ? 'Init file' : row[3]()} ›`)));
+      }
+      put(sheet, h('h2', {}, 'Emacs'), note ? h('p', {}, note) : null, list,
         h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
     });
     if (what === undefined) return;
-    note = '';
+    note = await emacsAction(what);
+  }
+}
+
+/** Changes the setting of one Emacs row (a toggle, or its dialog); says why when the init file sets it. */
+async function emacsAction(what) {
+  {
     $('message').textContent = '';
-    if (fromInit(LOCK[what])) { note = 'The init file sets this. Edit it there.'; continue; }
+    if (fromInit(LOCK[what])) return 'The init file sets this. Edit it there.';
     if (what === 'init-file') await initFileDialog();
     else if (what === 'agenda-files') await agendaFilesDialog();
     else if (what === 'archive') await archiveLocationDialog();
@@ -984,7 +1022,7 @@ async function emacsSettings() {
     else if (what === 'stars') config.update({ settings: { 'org-hide-leading-stars': hideStars() ? '' : 't' } });
     else if (what === 'indented') config.update({ settings: { 'org-startup-indented': indentSetting() ? '' : 't' } });
     else await tagsColumnDialog();
-    note = $('message').classList.contains('error') ? '' : $('message').textContent;
+    return $('message').classList.contains('error') ? '' : $('message').textContent;
   }
 }
 
@@ -1026,6 +1064,17 @@ async function tableWidthDialog() {
   config.update({ settings: { 'org-table-widget-max-width-fraction': String(n / 100) } });
 }
 
+/** The rows of Appearance that are a toggle or a dialog; true when `what` is one of them. */
+async function appearanceRow(what) {
+  if (what === 'tools-text') config.update({ settings: { 'view.toolRowText': String(!toolRowOn('text')) } });
+  else if (what === 'tools-outline') config.update({ settings: { 'view.toolRowOutline': String(!toolRowOn('outline')) } });
+  else if (what === 'table-wrap') config.update({ settings: { 'org-table-widget-wrap-columns': wrapCells() ? '' : 't' } });
+  else if (what === 'table-zebra') config.update({ settings: { 'org-table-widget-zebra-stripe': zebraRows() ? '' : 't' } });
+  else if (what === 'table-width') await tableWidthDialog();
+  else return false;
+  return true;
+}
+
 /** The Appearance screen: theme, font, text size, paragraph spacing, tool rows and tables. Each change shows at once. */
 async function appearance() {
   const FONT_NAMES = [['monospace', 'Monospace'], ['sans-serif', 'Sans-serif'], ['serif', 'Serif'], ['system', 'System']];
@@ -1052,12 +1101,8 @@ async function appearance() {
     });
     if (what === undefined) return;
     const [kind, arg] = what.split(':');
-    if (what === 'tools-text') config.update({ settings: { 'view.toolRowText': String(!toolRowOn('text')) } });
-    else if (what === 'tools-outline') config.update({ settings: { 'view.toolRowOutline': String(!toolRowOn('outline')) } });
-    else if (what === 'table-wrap') config.update({ settings: { 'org-table-widget-wrap-columns': wrapCells() ? '' : 't' } });
-    else if (what === 'table-zebra') config.update({ settings: { 'org-table-widget-zebra-stripe': zebraRows() ? '' : 't' } });
-    else if (what === 'table-width') await tableWidthDialog();
-    else if (kind === 'theme') config.update({ settings: { 'view.theme': arg } });
+    if (await appearanceRow(what)) continue;
+    if (kind === 'theme') config.update({ settings: { 'view.theme': arg } });
     else if (kind === 'font') config.update({ settings: { 'view.font': arg } });
     else if (kind === 'size') setTextSize(Number(arg));
     else if (kind === 'space') config.update({ settings: { 'view.paragraphSpacing': String(Math.min(32, Math.max(0, paragraphSpacing() + Number(arg)))) } });
@@ -1187,16 +1232,14 @@ $('btn-view').addEventListener('click', async () => {
   else if (what === 'calendar') await calendarScreen();
   else if (what) setView(what);
 });
-/** The Menu button: Commands, Capture and Settings. */
+/** The Menu button: Commands and Settings; Capture is C-c c or the Commands palette. */
 async function builtinMenu() {
   const what = await choose(null, [
     waiting ? { label: 'Restart to update', meta: `${VERSION} to ${waiting.version}`, value: 'restart' } : null,
     { label: 'Commands', value: 'commands' },
-    { label: 'Capture', value: 'capture' },
     { label: 'Settings', value: 'settings' }].filter(Boolean));
   if (what === 'restart') restart();
   else if (what === 'commands') await commandPalette();
-  else if (what === 'capture') await capture();
   else if (what === 'settings') await settings();
 }
 
@@ -2678,13 +2721,13 @@ function sayPriority(line) {
 }
 
 /** The note asked for when a repeating task is finished (org-log-repeat note): its text, or null when cancelled. */
-function askNote(from, to, text = `Insert note for state change from "${from}" to "${to}".`) {
+function askNote(from, to, text = `Insert note for state change from "${from}" to "${to}".`, crossLeavesOut = false) {
   return panel((sheet, close) => {
     const input = h('textarea', { rows: '6', autocapitalize: 'sentences', 'aria-label': 'Note' });
     put(sheet, h('h2', {}, 'Insert note'), h('p', {}, text), input,
       h('div', { class: 'row' }, h('button', { onclick: () => close(null) }, 'Skip'), h('button', { class: 'primary', onclick: () => close(input.value) }, 'Save')));
     input.focus();
-  }).then((v) => (v === undefined ? null : v));
+  }).then((v) => (v === undefined && !crossLeavesOut ? null : v));
 }
 
 /** Changes the TODO state of the enclosing heading and says the new state. */
@@ -2961,15 +3004,17 @@ async function planHere(keyword, label, said, hd = enclosingHead()) {
   const old = mode === 'off' ? null : planningStamp(currentBuffer().text, hd.line, keyword);
   const what = keyword === 'SCHEDULED' ? 'Rescheduled from' : 'New deadline from';
   const changed = old !== null && old !== `[${stamp.slice(1, -1)}]`;
-  const note = changed && mode === 'note' ? await askNote('', '', `Insert note for ${what.toLowerCase().replace(' from', '')}.`) : undefined;
+  // Skip logs the line alone; the cross leaves the line out, as C-c C-k does in Emacs. The new date stays either way.
+  const asked = changed && mode === 'note' ? await askNote('', '', `Insert note for ${what.toLowerCase().replace(' from', '')}.`, true) : undefined;
+  const note = typeof asked === 'string' ? asked : undefined;
   runEdit((t) => {
     const r = setPlanning(t, hd.line, keyword, stamp);
-    if (!changed || note === null) return r;
+    if (!changed || (mode === 'note' && asked === undefined)) return r;
     const at = formatStamp(localNow(), { time: true, active: false });
     return { ...r, text: addLogEntry(r.text, hd.line, { heading: `${what} "${old}" on ${at}`, note, drawer: logDrawer(r.text, hd.line), bare: true }) };
   });
   message(`${said} ${stamp}`);
-  if (typeof note === 'string') message('Note stored');
+  if (typeof note === 'string' && note !== '') message('Note stored');
 }
 
 /** Adds a timestamp at the end of the heading's own text, as a new body line. */
@@ -3817,36 +3862,22 @@ function klog(...parts) {
 }
 
 /** The key event log as a screen of its own: what was recorded, with Copy, Clear and On or Off. */
-/** Settings, Debugging: tools for finding out why something does not work; for now the key event log. */
+/** Settings, Debugging: tools for finding out why something does not work; for now the key event log, all on this panel. */
 async function debugging() {
   for (;;) {
-    const what = await panel((sheet, close) => {
-      put(sheet, h('h2', {}, 'Debugging'),
-        h('div', { class: 'list' }, h('button', { class: 'item', onclick: () => close('keylog') }, h('span', {}, 'Key event log'), h('span', { class: 'meta' }, keyLogOn() ? 'On ›' : 'Off ›'))),
-        h('p', {}, 'Records what the keyboard sends the editor, to find out why a key does not do what it should.'),
-        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
-    });
-    if (what === undefined) return;
-    await keyLogScreen();
-  }
-}
-
-async function keyLogScreen() {
-  for (;;) {
     const act = await panel((sheet, close) => {
-      put(sheet, h('h2', {}, 'Key event log'),
+      put(sheet, h('h2', {}, 'Debugging'),
+        h('div', { class: 'sec' }, 'Key event log'),
+        h('div', { class: 'list' }, h('button', { class: 'item', onclick: () => close('toggle') }, h('span', {}, 'Record key events'), h('span', { class: 'meta' }, keyLogOn() ? 'On' : 'Off'))),
         h('p', {}, keyLogOn() ? 'Recording. Press keys in the editor, then come back here to copy the log.' : 'Off. Turn it on, press keys in the editor, then come back here.'),
         h('pre', { class: 'keylogtext', 'aria-label': 'Recorded key events' }, keyLines.length ? keyLines.join('\n') : '(nothing recorded yet)'),
-        h('div', { class: 'row' },
-          h('button', { onclick: () => close('toggle') }, keyLogOn() ? 'Turn off' : 'Turn on'),
-          h('button', { onclick: () => close('clear') }, 'Clear'),
-          h('button', { class: 'primary', onclick: () => close('copy') }, 'Copy'),
-          h('button', { onclick: () => close(undefined) }, '‹ Debugging')));
+        h('div', { class: 'row' }, h('button', { onclick: () => close('clear') }, 'Clear'), h('button', { class: 'primary', onclick: () => close('copy') }, 'Copy')),
+        h('div', { class: 'row' }, h('button', { onclick: () => close(undefined) }, '‹ Settings')));
     });
+    if (act === undefined) return;
     if (act === 'toggle') config.update({ settings: { 'view.keyLog': String(!keyLogOn()) } });
     else if (act === 'clear') keyLines.length = 0;
     else if (act === 'copy') { try { await navigator.clipboard.writeText(keyLines.join('\n')); message('Copied the key event log'); } catch { message('Could not copy to the clipboard', true); } }
-    else return;
   }
 }
 for (const type of ['keydown', 'keyup', 'beforeinput', 'input', 'compositionstart', 'compositionupdate', 'compositionend']) {
