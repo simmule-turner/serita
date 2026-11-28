@@ -25,3 +25,10 @@ Monday Standup
 %%(diary-remind '(diary-date 12 25 2026) 3) Christmas
 * Birthdays from your contacts
 %%(org-contacts-anniversaries)
+* Sunrise and sunset
+%%(diary-sunrise-sunset)
+Set calendar-latitude and calendar-longitude in the init file (for example =(setq calendar-latitude 35.994 calendar-longitude -78.8986)=), and every day of the agenda shows its sunrise and sunset.
+
+* Sun times today only, in your own format
+%%(when (equal date (calendar-current-date)) (let ((l (solar-sunrise-sunset date))) (format "Sun times: 🌅 %s | 🌇 %s | ⌛ %s" (apply 'solar-time-string (car l)) (apply 'solar-time-string (cadr l)) (nth 2 l))))
+The test (equal date (calendar-current-date)) is true only on the current day. Add =(setq calendar-time-display-form '(24-hours ":" minutes))= to the init file for 24-hour times without the zone.

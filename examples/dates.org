@@ -12,3 +12,5 @@ The -3d warns three days ahead in the agenda.
 * A meeting
 <2026-11-25 Wed 14:00-15:30>
 An active timestamp shows in the agenda; an inactive one, [2026-11-25 Wed], stays in the text.
+* Sparse trees by date
+Press C-c / b and type =2026-12-01= to show the entries scheduled or due before that day. C-c / a shows those on or after a date; C-c / D asks for a start and an end date and shows the entries from the start up to, but not including, the end. C-c C-c clears the tree.

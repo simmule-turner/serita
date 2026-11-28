@@ -227,3 +227,5 @@ main.nowrap #hl, main.nowrap #mirror { white-space: pre; overflow-wrap: normal; 
 #hl .tv-code { background: var(--bar); }
 .ol-head.flash, .ol-line.flash { background: var(--hit); }
 .sheet input[type=search] { position: sticky; top: 0; flex: none; background: var(--bg); z-index: 1; }
+.sheet input.keysink { position: absolute; width: 1px; height: 1px; opacity: 0; padding: 0; border: 0; pointer-events: none; }
+.sheet [hidden] { display: none; }

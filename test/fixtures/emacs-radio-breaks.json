@@ -1,0 +1,26 @@
+[
+ {
+  "id": "rt3-break",
+  "input": "* A\n<<<rad one>>>\nuse rad\none here\n",
+  "line": 2,
+  "text": "rad\none"
+ },
+ {
+  "id": "rt3-break2",
+  "input": "* A\n<<<rad one>>>\nuse rad\n  one here\n",
+  "line": 2,
+  "text": "rad\n  one"
+ },
+ {
+  "id": "rt3-break-3",
+  "input": "* A\n<<<a b c>>>\nuse a b\nc here\n",
+  "line": 2,
+  "text": "a b\nc"
+ },
+ {
+  "id": "rt3-break-item",
+  "input": "* A\n<<<rad one>>>\n- use rad\n  one here\n",
+  "line": 2,
+  "text": "rad\n  one"
+ }
+]

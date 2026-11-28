@@ -1,0 +1,121 @@
+[
+ {
+  "id": "cd-default",
+  "input": "* A\nDEADLINE: <2026-11-20 Fri>\n* B\nDEADLINE: <2026-11-27 Fri>\n* C\nDEADLINE: <2026-12-05 Sat>\n* D\nDEADLINE: <2026-12-20 Sun>\n* E\nDEADLINE: <2026-12-06 Sun -10d>\n* DONE F\nDEADLINE: <2026-11-27 Fri>\n* G\nSCHEDULED: <2026-11-27 Fri>\n* H\nDEADLINE: [2026-11-27 Fri]\n* I\nDEADLINE: <2026-11-28 Sat -0d>",
+  "days": 14,
+  "today": "2026-11-28",
+  "visible": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   true,
+   false,
+   true,
+   true,
+   true,
+   false,
+   true,
+   false,
+   true,
+   false,
+   true,
+   true
+  ],
+  "message": "5 deadlines past-due or due within 14 days"
+ },
+ {
+  "id": "cd-3",
+  "input": "* A\nDEADLINE: <2026-11-20 Fri>\n* B\nDEADLINE: <2026-11-27 Fri>\n* C\nDEADLINE: <2026-12-05 Sat>\n* D\nDEADLINE: <2026-12-20 Sun>\n* E\nDEADLINE: <2026-12-06 Sun -10d>\n* DONE F\nDEADLINE: <2026-11-27 Fri>\n* G\nSCHEDULED: <2026-11-27 Fri>\n* H\nDEADLINE: [2026-11-27 Fri]\n* I\nDEADLINE: <2026-11-28 Sat -0d>",
+  "days": 3,
+  "today": "2026-11-28",
+  "visible": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   false,
+   true,
+   false,
+   true,
+   false,
+   true,
+   false,
+   true,
+   false,
+   true,
+   false,
+   true,
+   true
+  ],
+  "message": "3 deadlines past-due or due within 3 days"
+ },
+ {
+  "id": "cd-0",
+  "input": "* A\nDEADLINE: <2026-11-20 Fri>\n* B\nDEADLINE: <2026-11-27 Fri>\n* C\nDEADLINE: <2026-12-05 Sat>\n* D\nDEADLINE: <2026-12-20 Sun>\n* E\nDEADLINE: <2026-12-06 Sun -10d>\n* DONE F\nDEADLINE: <2026-11-27 Fri>\n* G\nSCHEDULED: <2026-11-27 Fri>\n* H\nDEADLINE: [2026-11-27 Fri]\n* I\nDEADLINE: <2026-11-28 Sat -0d>",
+  "days": 0,
+  "today": "2026-11-28",
+  "visible": [
+   true,
+   true,
+   true,
+   true,
+   true,
+   false,
+   true,
+   false,
+   true,
+   false,
+   true,
+   false,
+   true,
+   false,
+   true,
+   false,
+   true,
+   true
+  ],
+  "message": "3 deadlines past-due or due within 0 days"
+ },
+ {
+  "id": "cd-neg",
+  "input": "* A\nDEADLINE: <2026-11-20 Fri>\n* B\nDEADLINE: <2026-11-27 Fri>\n* C\nDEADLINE: <2026-12-05 Sat>\n* D\nDEADLINE: <2026-12-20 Sun>\n* E\nDEADLINE: <2026-12-06 Sun -10d>\n* DONE F\nDEADLINE: <2026-11-27 Fri>\n* G\nSCHEDULED: <2026-11-27 Fri>\n* H\nDEADLINE: [2026-11-27 Fri]\n* I\nDEADLINE: <2026-11-28 Sat -0d>",
+  "days": -3,
+  "today": "2026-11-28",
+  "visible": [
+   true,
+   true,
+   true,
+   false,
+   true,
+   false,
+   true,
+   false,
+   true,
+   false,
+   true,
+   false,
+   true,
+   false,
+   true,
+   false,
+   true,
+   false
+  ],
+  "message": "1 deadlines past-due or due within -3 days"
+ },
+ {
+  "id": "cd-none",
+  "input": "* A\n* B",
+  "days": 14,
+  "today": "2026-11-28",
+  "visible": [
+   true,
+   true
+  ],
+  "message": "0 deadlines past-due or due within 14 days"
+ }
+]

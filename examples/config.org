@@ -57,7 +57,7 @@
 %s_archive::
 #+end_src
 ** Logging
-Settings, Emacs, Tasks and logging sets these too. org-log-done, org-log-reschedule and org-log-redeadline are nil, time or note (a note asks for text and adds it under the log line); org-log-into-drawer is a drawer name such as LOGBOOK; org-log-repeat is on unless set to nil, or note to ask for a note too.
+Settings, Emacs, Tasks and logging sets these too. org-log-done, org-log-refile, org-log-reschedule and org-log-redeadline are nil, time or note (a note asks for text and adds it under the log line); org-log-into-drawer is a drawer name such as LOGBOOK; org-log-repeat is on unless set to nil, or note to ask for a note too. org-log-note-clock-out is t to ask for a note when a clock stops. In the init file, =(setq org-log-note-headings '((done . "CLOSED on %t") (note . "Note, %d")))= changes the headings of log lines; %t is the time, %d the date, %s and %S the new and old values. A file can also say =#+STARTUP: lognotedone nologdrawer= (see examples/logging.org).
 
 org-support-shift-select is t to let S-left and S-right select text where Org has no use for them; it is off by default, as in Emacs, and they then say so in the echo area.
 ** Links and footnotes
@@ -65,6 +65,8 @@ org-link-abbrev-alist is a list of (name . replacement) pairs; %s stands for the
 ** Archive and refile options
 org-archive-mark-done is nil, t or a done keyword; org-archive-save-context-info lists the properties kept on an archived entry; org-refile-allow-creating-parent-nodes is nil, confirm or t; org-agenda-use-time-grid is on unless set to nil.
 ** Stars and indentation
+calendar-latitude, calendar-longitude and calendar-location-name give the place for %%(diary-sunrise-sunset) (see examples/diary.org).
+calendar-time-display-form sets how those times read, for example '(24-hours ":" minutes).
 org-hide-leading-stars is t to show only the last star of a heading, and org-startup-indented is t to open files with org-indent-mode on. A file can decide for itself with #+STARTUP: indent or #+STARTUP: noindent.
 ** Tables
 org-table-widget-wrap-columns is t to wrap long cells in the Outline view's table grid, org-table-widget-max-width-fraction is the share of the screen a table may use (0.3 to 1), and org-table-widget-zebra-stripe, serita-extra-menu is t to shade every other row.

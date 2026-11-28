@@ -87,3 +87,45 @@ export function sparseTree(text, a, { kind, arg = '' }) {
   }
   return { lines, ranges, folds: sparseFolds(a.heads, lines) };
 }
+
+/**
+ * A sparse tree by date: the SCHEDULED and DEADLINE stamps of every entry compared with ISO dates. Before is strictly earlier,
+ * after includes the date itself, between includes the start and leaves out the end (as recorded from Emacs).
+ * @returns {{ lines: number[], count: number, folds: object }}
+ */
+export function dateSparse(text, a, { mode, from, to = null }) {
+  const rows = text.split('\n');
+  const keep = [];
+  let count = 0;
+  for (const h of a.heads) {
+    const row = rows[h.line + 1] ?? '';
+    if (!/^\s*(?:CLOSED|DEADLINE|SCHEDULED):/.test(row)) continue;
+    let hit = 0;
+    for (const m of row.matchAll(/(?:DEADLINE|SCHEDULED):\s*<(\d{4}-\d\d-\d\d)/g)) {
+      const d = m[1];
+      if (mode === 'before' ? d < from : mode === 'after' ? d >= from : d >= from && d < to) hit++;
+    }
+    if (hit) { count += hit; keep.push(h.line + 1); }
+  }
+  return { lines: keep, count, folds: sparseFolds(a.heads, keep) };
+}
+
+/**
+ * A sparse tree of the unfinished entries whose DEADLINE is past due or within `days` of `today` (ISO dates): C-c / d. An entry's own
+ * warning period is not used; the count is of deadline stamps.
+ * @returns {{ lines: number[], count: number, folds: object }}
+ */
+export function deadlineSparse(text, a, { days = 14, today }) {
+  const rows = text.split('\n');
+  const [y, m, d] = today.split('-').map(Number);
+  const limit = new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+  const keep = [];
+  let count = 0;
+  for (const h of a.heads) {
+    if (h.todo && a.todo.done.includes(h.todo)) continue;
+    const row = rows[h.line + 1] ?? '';
+    const hit = [...row.matchAll(/DEADLINE:\s*<(\d{4}-\d\d-\d\d)/g)].filter((x) => x[1] <= limit).length;
+    if (hit) { count += hit; keep.push(h.line + 1); }
+  }
+  return { lines: keep, count, folds: sparseFolds(a.heads, keep) };
+}

@@ -34,3 +34,7 @@ C-u C-c C-x f asks for s (sort), r (renumber), n (normalize) or d (delete); the 
 
 * Footnotes
 [fn:2] The second note, to try C-u C-c C-x f with n or d.
+
+<<<broken name>>>
+A radio link may be split over a line, as in broken
+  name here: the break and indentation count as the space.

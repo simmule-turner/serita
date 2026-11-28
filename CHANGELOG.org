@@ -1,5 +1,8 @@
 #+TITLE: Changelog
 
+* 0.11.21
+Sparse trees by date (C-c / b, a, D) and past-due deadlines (C-c / d); C-c . on a stamp edits it and keeps its repeater; radio links work across a line break. Logging follows Emacs more closely: notes for refiling and clock-out, STARTUP log words, closing notes on repeats and custom org-log-note-headings. Sunrise and sunset appear with %%(diary-sunrise-sunset) from calendar-latitude and calendar-longitude, shaped by calendar-time-display-form, and your own diary lines can use solar-sunrise-sunset, solar-time-string, let, format and apply.
+
 * 0.11.20
 The on-screen keyboard now stays as it was: closing a sheet (a log note, Skip, Save, Cancel) and pressing the Menu button no longer dismiss it. Changing a setting keeps the screen scrolled where it was, instead of jumping back to the top. In the capture menu, a template's key typed on the screen keyboard picks it.
 

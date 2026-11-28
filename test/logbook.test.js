@@ -35,3 +35,33 @@ test('notes: newest first, at the end of the text no line end (lg-note-cmd, lg-n
   const sched = r.input.replace('<2026-11-20 Fri>', '<2026-12-01 Tue>');
   assert.equal(addLogEntry(sched, 0, { heading: `Rescheduled from "[2026-11-20 Fri]" on ${STAMP}`, note: 'why', bare: true }), r.output);
 });
+
+// Finishing a repeating task with org-log-repeat and org-log-done each nil, time or note (Emacs 30.1, conformance v0.1.80: rp-*).
+import { completeRepeat } from '../core/timestamp.js';
+const repeatCases = JSON.parse(fs.readFileSync(new URL('./fixtures/emacs-repeat-log.json', import.meta.url), 'utf8'));
+for (const c of repeatCases) {
+  test(`Emacs repeat log ${c.id}`, () => {
+    const [, repeat, done] = c.id.split('-');
+    const closing = done === 'note';
+    const note = closing || repeat === 'note' || c.id === 'rp-drawer' ? 'n1' : undefined;
+    const r = completeRepeat({ text: c.input, line: 0, from: 'TODO', to: 'DONE', reopen: 'TODO', now: new Date(Date.UTC(2026, 10, 26, 9, 30)), drawer: c.id === 'rp-drawer' ? 'LOGBOOK' : null, log: repeat !== 'nil', note, closing });
+    // A line logged without a note keeps the buffer's final line end here; the batch oracle's deferred insertion leaves it off.
+    assert.equal(note === undefined ? r.text.replace(/\n$/, '') : r.text, note === undefined ? c.expected.replace(/\n$/, '') : c.expected);
+  });
+}
+
+// Custom org-log-note-headings: the heading Emacs 30.1 wrote for each template (conformance v0.1.80: nh-*; %u and %U are left empty here).
+import { formatHeading } from '../core/timestamp.js';
+test('log note headings take %t %T %d %D %s %S and a width as Emacs does', () => {
+  const now = new Date(Date.UTC(2026, 10, 26, 9, 30));
+  const f = (kind, template, vars) => formatHeading(kind, { ...vars, now }, { [kind]: template });
+  assert.equal(f('state', 'S %s -> %S at %T %d', { state: 'WAIT', old: 'TODO' }), 'S "WAIT" -> "TODO" at <2026-11-26 Thu 09:30> [2026-11-26 Thu]');
+  assert.equal(f('reschedule', 'R %s -> %S %t', { state: '[2026-12-01 Tue]', old: '[2026-11-20 Fri]' }), 'R "[2026-12-01 Tue]" -> "[2026-11-20 Fri]" [2026-11-26 Thu 09:30]');
+  assert.equal(f('redeadline', 'RD %s -> %S', { state: '[2026-12-01 Tue]', old: '[2026-11-20 Fri]' }), 'RD "[2026-12-01 Tue]" -> "[2026-11-20 Fri]"');
+  assert.equal(f('delschedule', 'D %s %t', {}), 'D  [2026-11-26 Thu 09:30]');
+  assert.equal(f('deldeadline', 'DD %s', {}), 'DD ');
+  assert.equal(f('note', 'N %t', {}), 'N [2026-11-26 Thu 09:30]');
+  assert.equal(f('clock-out', 'CO %t', {}), 'CO [2026-11-26 Thu 09:30]');
+  assert.equal(f('note', '%t|%T|%d|%D|%s|%S|%%', {}), '[2026-11-26 Thu 09:30]|<2026-11-26 Thu 09:30>|[2026-11-26 Thu]|<2026-11-26 Thu>|||%%');
+  assert.equal(formatHeading('state', { state: 'DONE', old: 'TODO', now }), 'State "DONE"       from "TODO"       [2026-11-26 Thu 09:30]');
+});

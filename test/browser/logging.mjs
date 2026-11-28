@@ -82,6 +82,51 @@ await at('* TODO a\n', 1);
 await ctrl('c'); await ctrl('t'); await page.locator('.sheet textarea').fill('done'); await page.locator('.sheet').getByRole('button', { name: 'Save', exact: true }).click();
 ok(await page.evaluate(() => document.activeElement.id) === 'editor', 'after Save the editor has the focus again');
 
+// The cursor stays on the same text when an edit adds lines above it
+await setting({ 'view.emacsKeys': 'true', 'org-log-reschedule': 'note' });
+await at('* TODO a\nSCHEDULED: <2026-11-23 Mon>\nbody text\n', 3);
+await page.evaluate(() => { const e = document.getElementById('editor'); const o = e.value.indexOf('text'); e.setSelectionRange(o, o); });
+await ctrl('c'); await ctrl('s'); await page.keyboard.type('+2d'); await page.keyboard.press('Enter');
+await page.locator('.sheet textarea').fill('moved'); await page.locator('.sheet').getByRole('button', { name: 'Save', exact: true }).click();
+ok(await page.evaluate(() => { const e = document.getElementById('editor'); return e.value.slice(e.selectionStart, e.selectionStart + 4); }) === 'text', 'after a reschedule with a note the cursor is still in the body text');
+
+// org-log-refile: texts as Emacs gave them (conformance lg-refile*): the line goes after the planning line, in the drawer when one is set
+const refileWith = async (settings, input, note) => {
+  await setting({ 'view.emacsKeys': 'true', ...settings });
+  await at(input, 1); await ctrl('c'); await ctrl('w');
+  await page.locator('.sheet').getByRole('button', { name: /^B/ }).first().click();
+  if (note !== undefined) { await page.locator('.sheet textarea').fill(note); await page.locator('.sheet').getByRole('button', { name: 'Save', exact: true }).click(); }
+  return text();
+};
+const RT = '\\[\\d{4}-\\d\\d-\\d\\d \\w{3} \\d\\d:\\d\\d\\]';
+ok(new RegExp(`^\\* B\\n\\*\\* A\\n- Refiled on ${RT}$`).test(await refileWith({ 'org-log-refile': 'time' }, '* A\n* B\n')), 'org-log-refile time adds a Refiled on line under the moved heading');
+ok(new RegExp(`^\\* B\\n\\*\\* C\\n\\*\\* A\\nSCHEDULED: <2026-12-01 Tue>\\n- Refiled on ${RT}\\nbody\\n$`).test(await refileWith({ 'org-log-refile': 'time' }, '* A\nSCHEDULED: <2026-12-01 Tue>\nbody\n* B\n** C\n')), 'the line comes after the planning line and before the body');
+ok(new RegExp(`^\\* B\\n\\*\\* TODO A\\n- Refiled on ${RT}$`).test(await refileWith({ 'org-log-refile': 'time' }, '* TODO A\n* B\n')), 'a TODO heading gets the same line');
+ok(new RegExp(`^\\* B\\n\\*\\* A\\n:LOGBOOK:\\n- Refiled on ${RT}\\n:END:$`).test(await refileWith({ 'org-log-refile': 'time', 'org-log-into-drawer': 'LOGBOOK' }, '* A\n* B\n')), 'with a log drawer the line is in it');
+ok(new RegExp(`^\\* B\\n\\*\\* A\\n- Refiled on ${RT} \\\\\\\\\\n  n$`).test(await refileWith({ 'org-log-refile': 'note' }, '* A\n* B\n', 'n')), 'org-log-refile note adds the note under the line');
+ok(!(await refileWith({}, '* A\n* B\n')).includes('Refiled'), 'without org-log-refile nothing is logged');
+
+// #+STARTUP log options beat the settings; org-log-note-headings and the clock-out note
+const norm = async () => (await text()).replace(/\[\d{4}-\d\d-\d\d \w{3} \d\d:\d\d\]/g, '[T]');
+const saveNote = async (t) => { await page.locator('.sheet textarea').fill(t); await page.locator('.sheet').getByRole('button', { name: 'Save', exact: true }).click(); };
+await setting({ 'view.emacsKeys': 'true' });
+await at('#+STARTUP: lognotedone\n* TODO a\n', 2);
+await ctrl('c'); await ctrl('t'); await saveNote('why');
+ok((await norm()) === '#+STARTUP: lognotedone\n* DONE a\nCLOSED: [T]\n- CLOSING NOTE [T] \\\\\n  why', '#+STARTUP: lognotedone asks for a closing note');
+await setting({ 'view.emacsKeys': 'true', 'org-log-done': 'time' });
+await at('#+STARTUP: nologdone\n* TODO a\n', 2);
+await ctrl('c'); await ctrl('t');
+ok((await text()) === '#+STARTUP: nologdone\n* DONE a\n', '#+STARTUP: nologdone beats org-log-done');
+await setting({ 'view.emacsKeys': 'true', 'org-log-done': 'note', 'org-log-note-headings': JSON.stringify({ done: 'CLOSE %t' }) });
+await at('* TODO a\n', 1);
+await ctrl('c'); await ctrl('t'); await saveNote('n');
+ok((await norm()) === '* DONE a\nCLOSED: [T]\n- CLOSE [T] \\\\\n  n', 'org-log-note-headings changes the closing note heading');
+await setting({ 'view.emacsKeys': 'true', 'org-log-note-clock-out': 't' });
+await at('* TODO a\n', 1);
+await ctrl('c'); await ctrl('x'); await ctrl('i');
+await ctrl('c'); await ctrl('x'); await ctrl('o'); await saveNote('stopped');
+ok((await norm()).replace(/=>  0:0\d/, '=>  0:00') === '* TODO a\n:LOGBOOK:\nCLOCK: [T]--[T] =>  0:00\n- stopped\n:END:\n', 'a clock-out note goes under the clock line');
+
 ok(errors.length === 0, 'no page errors');
 await close();
 process.exit(failed ? 1 : 0);

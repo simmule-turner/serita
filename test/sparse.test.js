@@ -65,3 +65,30 @@ test('what a sparse tree highlights: the matched text, or the TODO keyword', () 
     });
   }
 }
+
+// By date (C-c / b, a, D): visible lines and the count Emacs reported for each case.
+import { dateSparse } from '../core/sparse.js';
+const dateCases = JSON.parse(readFileSync(new URL('./fixtures/emacs-sparse-dates.json', import.meta.url), 'utf8'));
+for (const c of dateCases) {
+  test(`Emacs sparse tree by date ${c.id}`, () => {
+    const a = analyze(c.input);
+    const r = dateSparse(c.input, a, { mode: c.mode, from: c.from, to: c.to });
+    const hidden = hiddenLines(a.foldables, r.folds);
+    const n = c.input.split('\n').length;
+    assert.deepEqual(Array.from({ length: n }, (_, i) => !hidden.has(i)), c.visible.slice(0, n));
+    assert.equal(r.count, Number(/^(\d+)/.exec(c.message)[1]));
+  });
+}
+
+// C-c / d: deadlines past due or coming up (Emacs 30.1, run on 2026-11-28).
+import { deadlineSparse } from '../core/sparse.js';
+const dlCases = JSON.parse(readFileSync(new URL('./fixtures/emacs-sparse-deadlines.json', import.meta.url), 'utf8'));
+for (const c of dlCases) {
+  test(`Emacs deadline sparse tree ${c.id}`, () => {
+    const a = analyze(c.input);
+    const r = deadlineSparse(c.input, a, { days: c.days, today: c.today });
+    const hidden = hiddenLines(a.foldables, r.folds);
+    assert.deepEqual(c.visible.map((_, i) => !hidden.has(i)), c.visible);
+    assert.equal(r.count, Number(/^(\d+)/.exec(c.message)[1]));
+  });
+}

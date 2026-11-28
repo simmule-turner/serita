@@ -11,7 +11,7 @@ const WEEKDAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'frida
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const REPEAT_UNITS = ['d', 'w', 'm', 'y'];
 const two = (n) => String(n).padStart(2, '0');
-const STAMP = /([<[])(\d{4})-(\d\d)-(\d\d)(?: ([^\s\d>\]+.-][^\s>\]]*))?(?: (\d{1,2}):(\d\d))?((?: (?:\+\+|\.\+|\+)\d+[hdwmy])*)([>\]])/g;
+const STAMP = /([<[])(\d{4})-(\d\d)-(\d\d)(?: ([^\s\d>\]+.-][^\s>\]]*))?(?: (\d{1,2}):(\d\d))?((?: (?:\+\+|\.\+|\+|--|-)\d+[hdwmy])*)([>\]])/g;
 
 /** @returns {Date} a UTC date for the parts, normalized as a calendar does (month 12 is January of the next year). */
 const utc = (y, m, d, h = 0, mi = 0) => new Date(Date.UTC(y, m - 1, d, h, mi));
@@ -210,7 +210,28 @@ export function nextRepeat(date, spec, now) {
 }
 
 const quote = (s) => `"${s}"`;
-export const logLine = (to, from, now) => `- State ${quote(to).padEnd(12)} from ${quote(from).padEnd(12)} ${formatStamp(now, { time: true, active: false })}`;
+
+/** The headings of log lines by kind: org-log-note-headings as Emacs ships it. */
+export const HEADINGS = {
+  done: 'CLOSING NOTE %t', state: 'State %-12s from %-12S %t', note: 'Note taken on %t', reschedule: 'Rescheduled from %S on %t',
+  delschedule: 'Not scheduled, was %S on %t', redeadline: 'New deadline from %S on %t', deldeadline: 'Removed deadline, was %S on %t',
+  refile: 'Refiled on %t', 'clock-out': '',
+};
+
+/**
+ * The text of a log heading: %t and %T the time as an inactive or active stamp, %d and %D the date only, %s the new value and %S the old one
+ * (quoted, empty when there is none), %u and %U the user's name (empty here); a width as in %-12s pads. `custom` replaces entries of HEADINGS.
+ */
+export function formatHeading(kind, { state = '', old = '', now }, custom = {}) {
+  const template = custom[kind] ?? HEADINGS[kind] ?? '';
+  const q = (v) => (v === '' ? '' : quote(v));
+  return template.replace(/%(-?)(\d*)([sStTdDuU])/g, (all, left, width, c) => {
+    const v = { s: q(state), S: q(old), t: formatStamp(now, { time: true, active: false }), T: formatStamp(now, { time: true, active: true }), d: formatStamp(now, { active: false }), D: formatStamp(now, { active: true }), u: '', U: '' }[c];
+    return width ? (left ? v.padEnd(+width) : v.padStart(+width)) : v;
+  });
+}
+
+export const logLine = (to, from, now, custom = {}) => `- ${formatHeading('state', { state: to, old: from, now }, custom)}`;
 
 /**
  * Finishing a repeating task: every active timestamp with a repeater in the entry (up to the next heading) moves to its next date, the state
@@ -218,7 +239,7 @@ export const logLine = (to, from, now) => `- State ${quote(to).padEnd(12)} from 
  * A CLOSED stamp is dropped. Returns null when the entry has nothing that repeats.
  * @param {{ text: string, line: number, from: string, to: string, reopen: string, now: Date }} o `from` is the state before, `to` the done state
  */
-export function completeRepeat({ text, line, from, to, reopen, now, drawer = null, log = true, note }) {
+export function completeRepeat({ text, line, from, to, reopen, now, drawer = null, log = true, note, closing = false, headings = {} }) {
   const lines = splitLines(text);
   let any = false;
   const REPEATING = /<(\d{4})-(\d\d)-(\d\d)(?: [^\s\d>\]+.-][^\s>\]]*)?(?: (\d{1,2}):(\d\d))?((?: (?:\+\+|\.\+|\+)\d+[hdwmy])+)>/g;
@@ -241,11 +262,13 @@ export function completeRepeat({ text, line, from, to, reopen, now, drawer = nul
   lines[line] = { ...head, text: head.text.replace(new RegExp(`^(\\*+ +)${to}(?=\\s|$)`), `$1${reopen}`) };
   let out = lines.map((l) => l.text + l.eol).join('');
   // With org-log-repeat nil nothing is recorded: no :LAST_REPEAT: and no log line.
-  if (!log) return { text: out, line };
-  out = setProperty(out, line, 'LAST_REPEAT', formatStamp(now, { time: true, active: false })).text;
+  // With org-log-done set to note, the closing note takes the place of the log line, whatever org-log-repeat says (which still decides :LAST_REPEAT:).
+  if (!log && !closing) return { text: out, line };
+  if (log) out = setProperty(out, line, 'LAST_REPEAT', formatStamp(now, { time: true, active: false })).text;
   // The log line goes after the properties drawer, or inside the log drawer (org-log-into-drawer) that follows it.
   if (note === null) return { text: out, line };
-  return { text: addLogEntry(out, line, { heading: logLine(to, from, now).slice(2), note, drawer, bare: note !== undefined }), line };
+  const heading = closing ? formatHeading('done', { state: to, old: from, now }, headings) : logLine(to, from, now, headings).slice(2);
+  return { text: addLogEntry(out, line, { heading, note, drawer, bare: note !== undefined }), line };
 }
 
 /**
@@ -261,11 +284,11 @@ export function addLogEntry(text, line, { heading, note, drawer = null, bare = f
   const insertAt = /^\s*:END:/i.test(after[at]?.text ?? '') ? at + 1 : at;
   if (after[insertAt - 1] && after[insertAt - 1].eol === '') after[insertAt - 1] = { ...after[insertAt - 1], eol: '\n' };
   const noteLines = typeof note === 'string' && note.trim() !== '' ? ` \\\\\n${note.replace(/\n+$/, '').split('\n').map((l) => (l === '' ? '' : `  ${l}`)).join('\n')}` : '';
-  const entry = { text: `- ${heading}${noteLines}`, eol: bare && drawer === null && insertAt >= after.length ? '' : '\n' };
+  const entry = { text: heading === '' && noteLines !== '' ? `- ${note.replace(/\n+$/, '').split('\n').map((l, i) => (i === 0 || l === '' ? l : `  ${l}`)).join('\n')}` : `- ${heading}${noteLines}`, eol: bare && drawer === null && insertAt >= after.length ? '' : '\n' };
   const open = drawer === null ? -1 : after.findIndex((l, i) => i >= insertAt && l.text.trim().toUpperCase() === `:${drawer.toUpperCase()}:`);
   if (drawer === null) after.splice(insertAt, 0, entry);
   else if (open >= 0 && open === insertAt) after.splice(open + 1, 0, entry);
-  else after.splice(insertAt, 0, { text: `:${drawer}:`, eol: '\n' }, entry, { text: ':END:', eol: '\n' });
+  else after.splice(insertAt, 0, { text: `:${drawer}:`, eol: '\n' }, entry, { text: ':END:', eol: bare && insertAt >= after.length && noteLines === '' ? '' : '\n' });
   return after.map((l) => l.text + l.eol).join('');
 }
 

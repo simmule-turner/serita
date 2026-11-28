@@ -123,9 +123,10 @@ const em = await sheet.textContent();
 ok(['When a task is done', 'When rescheduled', 'When a deadline changes', 'Shift-selection', 'Restore open files on start'].every((n) => em.includes(n)) && !em.includes('Wrap table cells') && !em.includes('Tool row'), 'Settings, Emacs has the new rows and not the appearance ones');
 await btn('‹ Settings').click();
 await find('org-log');
-ok((await sheet.locator('.list:not([hidden]) .item').count()) === 5 && (await sheet.locator('.sec').allTextContents()).join() === 'Emacs · Tasks and logging', 'search finds rows by their Emacs variable name, under the screen and section they are in');
-await find('org log done'); ok((await sheet.locator('.list:not([hidden]) .item').count()) === 1, 'hyphens in a name count as spaces');
-await find('shift arrow'); ok((await sheet.locator('.list:not([hidden]) .item').count()) === 1 && (await btn(/Shift-selection/).count()) === 1, 'search matches other words a setting goes by');
+ok(!(await btn(/^GitHub/).isVisible()) && !(await btn(/^Debugging/).isVisible()) && (await sheet.locator('.sec').first().boundingBox()).y - (await sheet.getByRole('searchbox').boundingBox()).y < 60, 'while searching, the normal Settings rows are gone and the results start under the field');
+ok((await sheet.locator('.item:visible').count()) === 7 && (await sheet.locator('.sec').allTextContents()).join() === 'Emacs · Tasks and logging', 'search finds rows by their Emacs variable name, under the screen and section they are in');
+await find('org log done'); ok((await sheet.locator('.item:visible').count()) === 1, 'hyphens in a name count as spaces');
+await find('shift arrow'); ok((await sheet.locator('.item:visible').count()) === 1 && (await btn(/Shift-selection/).count()) === 1, 'search matches other words a setting goes by');
 await find('org-tags-column'); ok((await btn(/Tag column/).count()) === 1, 'Tag column is found by org-tags-column');
 await find('org-table-widget-zebra'); ok((await sheet.locator('.sec').allTextContents()).join() === 'Appearance · Tables' && (await btn(/Stripe table rows/).count()) === 1, 'search reaches Appearance rows by their variable');
 await find('token'); ok((await sheet.locator('.sec').allTextContents()).join() === 'GitHub' && (await btn(/Access token/).count()) === 1, 'search finds the GitHub token field');
@@ -253,6 +254,29 @@ await at('* TODO A\n* TODO B\n* C\n', 1); await ctrl('c'); await page.keyboard.p
 ok(await page.locator('#hl mark').count() === 2 && (await page.locator('#hl mark').first().textContent()) === 'TODO', 'C-c / t highlights the TODO keyword of each entry');
 await page.keyboard.press('Tab');
 ok(!(await page.evaluate(() => document.getElementById('editor').value)).includes('match here'), 'the first TAB folds the heading');
+
+// A sparse tree by date: C-c / b asks for a date and keeps the entries before it
+await at('* A\nSCHEDULED: <2020-01-05 Sun>\n* B\nDEADLINE: <2099-01-05 Mon>\n', 1);
+await ctrl('c'); await page.keyboard.press('/'); await page.keyboard.press('b');
+ok(/Date\+time \[/.test(await prompt()), 'C-c / b asks for a date');
+await page.keyboard.type('2021-01-01'); await page.keyboard.press('Enter');
+const byDate = await page.evaluate(() => document.getElementById('editor').value);
+ok(byDate.includes('2020-01-05') && !byDate.includes('2099-01-05'), 'C-c / b shows the entries dated before the date');
+
+// C-c . on a timestamp changes it: the prompt starts from its date, a repeater stays and a time goes
+await at('* H\nMeet <2026-12-01 Tue 14:30 +1w> now\n', 2);
+await page.evaluate(() => { const e = document.getElementById('editor'); const o = e.value.indexOf('2026-12-01') + 2; e.setSelectionRange(o, o); });
+await ctrl('c'); await page.keyboard.press('.');
+ok((await prompt()) === 'Date+time [2026-12-01]:', 'C-c . on a stamp starts from its date');
+await page.keyboard.type('2026-12-05'); await page.keyboard.press('Enter');
+ok((await page.evaluate(() => document.getElementById('editor').value)).includes('Meet <2026-12-05 Sat +1w> now'), 'the stamp is replaced, keeping its repeater');
+
+// just after the closing bracket still edits the stamp, and a warning period stays (conformance v0.1.81: ts-after-gt, ts-warning)
+await at('* H\nMeet <2026-12-01 Tue +1w -2d> now\n', 2);
+await page.evaluate(() => { const e = document.getElementById('editor'); const o = e.value.indexOf('>') + 1; e.setSelectionRange(o, o); });
+await ctrl('c'); await page.keyboard.press('.');
+await page.keyboard.type('2026-12-25'); await page.keyboard.press('Enter');
+ok((await page.evaluate(() => document.getElementById('editor').value)).includes('Meet <2026-12-25 Fri +1w -2d> now'), 'C-c . just after a stamp changes it and keeps repeater and warning');
 
 // A sparse tree keeps the cursor on its text
 await at('* A\nbody\n* B\nneedle here\n', 4);

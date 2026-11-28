@@ -1,6 +1,7 @@
 // The diary file: entries that start with a date or a %%(sexp), and the ones that fall on a day. Written from the behavior Emacs 30.1 showed
 // (conformance v0.1.25): which forms match, what the text is, the order within a day, and the calendar sexps.
 import { readForms, isSym } from './lisp-read.js';
+import { sunriseSunset, sunTimes, timeString, localZone, where } from './solar.js';
 
 const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
 const DAYS = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
@@ -87,13 +88,38 @@ export function parseDiary(text, style = 'american') {
 /** Extra sexp functions, set by the caller for the calls it makes: name to (args, date) => result. */
 export const hooks = {};
 
+/** The clock calendar-current-date reads; tests replace `date`. */
+export const now = { date: () => new Date() };
+
+const princ = (v) => (v === null || v === false || v === undefined ? 'nil' : v === true ? 't' : Array.isArray(v) ? `(${v.map(princ).join(' ')})` : isSym(v) ? v.sym : String(v));
+
+/** format: %s, %d and %f with flags, width and precision, and %%; any other directive is an error, as in Emacs. */
+function formatString(fmt, vals) {
+  let i = 0;
+  return fmt.replace(/%([-0 +#]*)(\d+)?(?:\.(\d+))?(.?)/g, (_, flags, width, prec, c) => {
+    if (c === '%') return '%';
+    if (!'sdf'.includes(c) || c === '') throw new Error('Invalid format operation');
+    if (i >= vals.length) throw new Error('Not enough arguments for format string');
+    const v = vals[i++];
+    let out;
+    if (c === 's') out = prec === undefined ? princ(v) : princ(v).slice(0, Number(prec));
+    else if (typeof v !== 'number') throw new Error('Format specifier doesn’t match argument type');
+    else out = c === 'd' ? String(Math.trunc(v)) : v.toFixed(prec === undefined ? 6 : Number(prec));
+    if (c !== 's' && flags.includes('+') && v >= 0) out = `+${out}`;
+    const w = Number(width ?? 0);
+    if (out.length >= w) return out;
+    return flags.includes('-') ? out.padEnd(w) : flags.includes('0') && c !== 's' ? out.padStart(w, '0') : out.padStart(w);
+  });
+}
+
 /** The form inside 'x or (quote x). */
 const unquote = (f) => (f && typeof f === 'object' && 'quote' in f ? f.quote : Array.isArray(f) && isSym(f[0], 'quote') ? f[1] : f);
 
 const truthy = (v) => v !== null && v !== false && v !== undefined && !(Array.isArray(v) && v.length === 0);
 
 /** Evaluates the calendar sexps a diary entry may use. `date` is [month, day, year]. Returns null/false, true, a number or a string. */
-export function ev(form, date) {
+export function ev(form, date, env = new Map()) {
+  if (isSym(form) && env.has(form.sym)) return env.get(form.sym);
   if (form === null || form === true || typeof form === 'number' || typeof form === 'string') return form;
   if (isSym(form, 't')) return true;
   if (isSym(form, 'nil')) return null;
@@ -105,15 +131,16 @@ export function ev(form, date) {
   if (!Array.isArray(form) || !form.length) return null;
   const name = form[0].sym;
   const args = form.slice(1);
-  const val = (i) => ev(args[i], date);
+  const val = (i) => ev(args[i], date, env);
+  const progn = (forms, scope = env) => { let r = null; for (const f of forms) r = ev(f, date, scope); return r; };
   const [mo, d, y] = date;
   const wild = (a, v) => a === true || a === null && false || (Array.isArray(a) ? a.includes(v) : a === v);
   switch (name) {
-    case 'and': { let r = true; for (const a of args) { r = ev(a, date); if (!truthy(r)) return null; } return r; }
-    case 'or': { for (const a of args) { const r = ev(a, date); if (truthy(r)) return r; } return null; }
+    case 'and': { let r = true; for (const a of args) { r = ev(a, date, env); if (!truthy(r)) return null; } return r; }
+    case 'or': { for (const a of args) { const r = ev(a, date, env); if (truthy(r)) return r; } return null; }
     case 'list': return args.map((_, i) => val(i));
     case 'not': return truthy(val(0)) ? null : true;
-    case 'if': return truthy(val(0)) ? val(1) : args.length > 2 ? ev(args[2], date) : null;
+    case 'if': return truthy(val(0)) ? val(1) : args.length > 2 ? progn(args.slice(2)) : null;
     case '=': return val(0) === val(1) ? true : null;
     case '<': return val(0) < val(1) ? true : null;
     case '>': return val(0) > val(1) ? true : null;
@@ -151,13 +178,37 @@ export function ev(form, date) {
       const day = absDay(y, mo, d) - absDay(y, 1, 1) + 1; const total = absDay(y + 1, 1, 1) - absDay(y, 1, 1);
       return `Day ${day} of ${y}; ${total - day} days remaining in the year`;
     }
+    case 'when': return truthy(val(0)) ? progn(args.slice(1)) : null;
+    case 'let': case 'let*': {
+      const scope = new Map(env);
+      for (const b of Array.isArray(args[0]) ? args[0] : []) {
+        const [v, init] = Array.isArray(b) ? b : [b];
+        scope.set(v.sym, init === undefined ? null : ev(init, date, name === 'let*' ? scope : env));
+      }
+      return progn(args.slice(1), scope);
+    }
+    case 'equal': return JSON.stringify(val(0)) === JSON.stringify(val(1)) ? true : null;
+    case 'car': return val(0)?.[0] ?? null;
+    case 'cdr': { const l = val(0); return Array.isArray(l) && l.length > 1 ? l.slice(1) : null; }
+    case 'cadr': return val(0)?.[1] ?? null;
+    case 'nth': return val(1)?.[val(0)] ?? null;
+    case 'apply': { // (apply 'f a b '(c d)): the last argument is a list of more arguments
+      const f = val(0); const vals = args.slice(1).map((_, i) => val(i + 1)); const last = vals.pop();
+      return ev([f, ...[...vals, ...(last ?? [])].map((v) => ({ quote: v }))], date, env);
+    }
+    case 'format': return formatString(val(0), args.slice(1).map((_, i) => val(i + 1)));
+    case 'calendar-current-date': { const t = now.date(); return [t.getMonth() + 1, t.getDate(), t.getFullYear()]; }
+    case 'solar-sunrise-sunset': { const [m, dd, yy] = val(0); return where.lat === null || where.lon === null ? null : sunTimes({ y: yy, m, d: dd }, { lat: where.lat, lon: where.lon, zone: localZone }); }
+    case 'solar-sunrise-sunset-string': { const [m, dd, yy] = val(0); return where.lat === null || where.lon === null ? null : sunriseSunset({ y: yy, m, d: dd }, { lat: where.lat, lon: where.lon, zone: localZone, place: where.name }); }
+    case 'solar-time-string': return timeString(val(0), val(1));
+    case 'diary-sunrise-sunset': return where.lat === null || where.lon === null ? null : sunriseSunset({ y, m: mo, d }, { lat: where.lat, lon: where.lon, zone: localZone, place: where.name });
     case 'diary-remind': {
       const inner = unquote(args[0]); const days = val(1);
       const list = [...(Array.isArray(days) ? days : [days]), 0]; // the day itself always shows
       const target = absDay(y, mo, d);
       for (const n of list) {
         const there = fromAbs(target + n);
-        const r = ev(inner, [there.m, there.d, there.y]);
+        const r = ev(inner, [there.m, there.d, there.y], env);
         if (truthy(r)) return { remind: n, inner: r };
       }
       return null;

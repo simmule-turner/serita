@@ -133,3 +133,18 @@ test('radio targets make matching words links (Emacs 30.1, tg-radio-*)', () => {
   assert.deepEqual(kinds, ['radio-link', 'radio-link', 'bracket', 'radio-link']);
   assert.deepEqual(rt2(t, 'RAD  one'), { line: 1, col: 0 });
 });
+
+// A radio link over a line break: the link text Emacs found (Emacs 30.1).
+import { radioBreaks } from '../core/links.js';
+const breakCases = JSON.parse(fs.readFileSync(new URL('./fixtures/emacs-radio-breaks.json', import.meta.url)));
+for (const c of breakCases) {
+  test(`Emacs radio link over a break ${c.id}`, () => {
+    const rows = c.input.split('\n');
+    const pieces = radioBreaks(c.input, radioNames(c.input));
+    const first = pieces.get(c.line);
+    assert.ok(first, 'the link starts on the line Emacs found');
+    const parts = []; let l = c.line;
+    for (let k = 0; k < 4 && pieces.has(l); k++, l++) { const p = pieces.get(l)[0]; parts.push(rows[l].slice(k === 0 ? p.start : 0, p.end)); }
+    assert.equal(parts.join('\n'), c.text);
+  });
+}

@@ -1,0 +1,52 @@
+[
+ {
+  "id": "rp-drawer",
+  "input": "* TODO a\nSCHEDULED: <2026-11-20 Fri +1w>\n",
+  "expected": "* TODO a\nSCHEDULED: <2026-11-27 Fri +1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-26 Thu 09:30]\n:END:\n:LOGBOOK:\n- State \"DONE\"       from \"TODO\"       [2026-11-26 Thu 09:30] \\\\\n  n1\n:END:\n"
+ },
+ {
+  "id": "rp-nil-nil",
+  "input": "* TODO a\nSCHEDULED: <2026-11-20 Fri +1w>\n",
+  "expected": "* TODO a\nSCHEDULED: <2026-11-27 Fri +1w>\n"
+ },
+ {
+  "id": "rp-nil-note",
+  "input": "* TODO a\nSCHEDULED: <2026-11-20 Fri +1w>\n",
+  "expected": "* TODO a\nSCHEDULED: <2026-11-27 Fri +1w>\n- CLOSING NOTE [2026-11-26 Thu 09:30] \\\\\n  n1"
+ },
+ {
+  "id": "rp-nil-time",
+  "input": "* TODO a\nSCHEDULED: <2026-11-20 Fri +1w>\n",
+  "expected": "* TODO a\nSCHEDULED: <2026-11-27 Fri +1w>\n"
+ },
+ {
+  "id": "rp-note-nil",
+  "input": "* TODO a\nSCHEDULED: <2026-11-20 Fri +1w>\n",
+  "expected": "* TODO a\nSCHEDULED: <2026-11-27 Fri +1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-26 Thu 09:30]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-26 Thu 09:30] \\\\\n  n1"
+ },
+ {
+  "id": "rp-note-note",
+  "input": "* TODO a\nSCHEDULED: <2026-11-20 Fri +1w>\n",
+  "expected": "* TODO a\nSCHEDULED: <2026-11-27 Fri +1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-26 Thu 09:30]\n:END:\n- CLOSING NOTE [2026-11-26 Thu 09:30] \\\\\n  n1"
+ },
+ {
+  "id": "rp-note-time",
+  "input": "* TODO a\nSCHEDULED: <2026-11-20 Fri +1w>\n",
+  "expected": "* TODO a\nSCHEDULED: <2026-11-27 Fri +1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-26 Thu 09:30]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-26 Thu 09:30] \\\\\n  n1"
+ },
+ {
+  "id": "rp-time-nil",
+  "input": "* TODO a\nSCHEDULED: <2026-11-20 Fri +1w>\n",
+  "expected": "* TODO a\nSCHEDULED: <2026-11-27 Fri +1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-26 Thu 09:30]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-26 Thu 09:30]"
+ },
+ {
+  "id": "rp-time-note",
+  "input": "* TODO a\nSCHEDULED: <2026-11-20 Fri +1w>\n",
+  "expected": "* TODO a\nSCHEDULED: <2026-11-27 Fri +1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-26 Thu 09:30]\n:END:\n- CLOSING NOTE [2026-11-26 Thu 09:30] \\\\\n  n1"
+ },
+ {
+  "id": "rp-time-time",
+  "input": "* TODO a\nSCHEDULED: <2026-11-20 Fri +1w>\n",
+  "expected": "* TODO a\nSCHEDULED: <2026-11-27 Fri +1w>\n:PROPERTIES:\n:LAST_REPEAT: [2026-11-26 Thu 09:30]\n:END:\n- State \"DONE\"       from \"TODO\"       [2026-11-26 Thu 09:30]"
+ }
+]

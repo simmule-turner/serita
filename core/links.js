@@ -71,6 +71,49 @@ export function radioLineSet(text) {
   return new Set(analyze(text).nodes.flatMap((n, i) => (ok.has(n.type) ? [i] : [])));
 }
 
+/**
+ * Radio links that run over a line break: a space in a target also matches a break and the indentation after it, within one paragraph.
+ * Returns the pieces by line number: { start, end, kind: 'radio-link', name } for the part on that line, the first piece to the end of its line.
+ */
+export function radioBreaks(text, names) {
+  const out = new Map();
+  const multi = names.filter((n) => n.includes(' '));
+  if (multi.length === 0) return out;
+  const lines = text.split('\n');
+  const types = analyze(text).nodes.map((n) => n.type);
+  const esc = (w) => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const res = multi.sort((a, b) => b.length - a.length).map((n) => ({ n, re: new RegExp(`(?<![\\p{L}\\p{N}])${n.split(' ').map(esc).join('(?:[ \\t]+|[ \\t]*\\n[ \\t]*)')}(?![\\p{L}\\p{N}])`, 'giu'), words: n.split(' ').length }));
+  const take = (l, piece) => { if (!out.has(l)) out.set(l, []); out.get(l).push(piece); };
+  const used = new Set();
+  for (let l = 0; l < lines.length - 1; l++) {
+    if (!['text', 'list-item'].includes(types[l]) || lines[l].trim() === '') continue;
+    let joined = lines[l];
+    let reach = l;
+    while (reach + 1 < lines.length && reach - l < 4 && types[reach + 1] === 'text' && lines[reach + 1].trim() !== '') { reach++; joined += `\n${lines[reach]}`; }
+    if (reach === l) continue;
+    const taken = scanLine(lines[l]).filter((o) => o.kind !== 'footnote');
+    for (const { n, re } of res) {
+      for (const m of joined.matchAll(re)) {
+        if (!m[0].includes('\n') || m.index >= lines[l].length || used.has(`${l}:${m.index}`)) continue;
+        if (taken.some((o) => o.start < lines[l].length && o.end > m.index)) continue;
+        used.add(`${l}:${m.index}`);
+        let at = l;
+        let pos = m.index;
+        const pieces = [];
+        for (const part of m[0].split('\n')) {
+          const lead = at === l ? 0 : part.length - part.trimStart().length;
+          const from = at === l ? m.index : lead;
+          const to = at === l ? m.index + part.trimEnd().length : part.length;
+          pieces.push([at, from, to]);
+          at++;
+        }
+        for (const [ln, from, to] of pieces) take(ln, { start: from, end: to, kind: 'radio-link', name: n });
+      }
+    }
+  }
+  return out;
+}
+
 /** Where the text of a line matches a radio target (case folded, whole words): { start, end, kind: 'radio-link', name }, outside other objects. */
 function radioLinks(line, names, taken) {
   const out = [];
@@ -222,7 +265,7 @@ export function atPoint(text, line, col) {
   const lines = text.split('\n');
   const radios = radioNames(text);
   const lineOk = radioLineSet(text);
-  const here = scanLine(lines[line] ?? '', lineOk.has(line) ? radios : []);
+  const here = [...scanLine(lines[line] ?? '', lineOk.has(line) ? radios : []), ...(radioBreaks(text, radios).get(line) ?? [])];
   // a target is not a link: on one the entry's links are offered, as when the cursor is elsewhere
   const hit = here.find((o) => col >= o.start && col < o.end && o.kind !== 'target' && o.kind !== 'radio');
   if (hit) return { object: { line, ...hit } };

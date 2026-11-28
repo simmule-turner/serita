@@ -75,6 +75,14 @@ await page.locator('#outline .ol-link').first().click();
 await page.waitForTimeout(200);
 ok((await page.locator('#outline .ol-line.flash[data-line="1"]').count()) === 1, 'a tap on a radio link marks the line of its target');
 
+// A radio link over a line break: C-c C-o on its second part goes to the target
+await page.click('#btn-view'); await btn('Text').click();
+await at('* A\n<<<rad one>>>\n* B\nuse rad\none here\n', 5, 1);
+ok((await page.locator('#hl .tv-link').count()) === 2, 'both parts of a radio link over a line break are drawn as a link');
+await ctrl('c'); await ctrl('o');
+await page.waitForTimeout(150);
+ok(await page.evaluate(() => { const e = document.getElementById('editor'); return e.value.slice(0, e.selectionStart).split('\n').length === 2; }), 'C-c C-o on the second part goes to the radio target');
+
 ok(errors.length === 0, `no page errors ${errors.join('; ')}`);
 await close();
 process.exit(failed ? 1 : 0);

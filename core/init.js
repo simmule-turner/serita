@@ -52,6 +52,20 @@ const SIMPLE = {
   'org-log-reschedule': ['org-log-reschedule', word],
   'org-support-shift-select': ['org-support-shift-select', bool],
   'org-log-redeadline': ['org-log-redeadline', word],
+  'org-log-refile': ['org-log-refile', word],
+  'calendar-latitude': ['calendar-latitude', (v) => { if (typeof v !== 'number') throw new Error('Expected a number'); return String(v); }],
+  'calendar-longitude': ['calendar-longitude', (v) => { if (typeof v !== 'number') throw new Error('Expected a number'); return String(v); }],
+  'calendar-location-name': ['calendar-location-name', text],
+  'calendar-time-display-form': ['calendar-time-display-form', (v) => { if (!Array.isArray(v)) throw new Error('Expected a list'); return printLisp(v); }],
+  'org-log-note-clock-out': ['org-log-note-clock-out', bool],
+  // ((done . "CLOSING NOTE %t") (state . "State %-12s from %-12S %t") ...) held as JSON; a kind that is left out keeps its Emacs heading
+  'org-log-note-headings': ['org-log-note-headings', (v) => {
+    if (v === null) return '{}';
+    if (!Array.isArray(v)) throw new Error('Expected a list of (kind . "heading") pairs');
+    const out = {};
+    for (const e of v) { if (!Array.isArray(e) || e.length !== 1 || !isSym(e[0]) || typeof e.tail !== 'string') throw new Error('Expected (kind . "heading")'); out[e[0].sym] = e.tail; }
+    return JSON.stringify(out);
+  }],
   'org-link-abbrev-alist': ['org-link-abbrev-alist', (v) => (v === null ? '' : printLisp(v))],
   'org-link-search-must-match-exact-headline': ['org-link-search-must-match-exact-headline', word],
   'org-link-keep-stored-after-insertion': ['org-link-keep-stored-after-insertion', bool],

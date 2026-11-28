@@ -55,10 +55,10 @@ export function inlineNodes(line, onLink, base = 0, spans = undefined, radios = 
 }
 
 /** Ranges of a line the Text view decorates: { from, to, cls }. Only what keeps the letters where they are. */
-export function decorations(line, spans, radios = []) {
+export function decorations(line, spans, radios = [], pieces = []) {
   if (!/[[*/_+=~<:]/.test(line) && !(spans && spans.length) && radios.length === 0) return [];
   const { links, emphasis } = objects(line, spans ?? [], radios);
-  const out = links.map((o) => ({ from: o.start, to: o.end, cls: 'tv-link' }));
+  const out = [...links, ...pieces].map((o) => ({ from: o.start, to: o.end, cls: 'tv-link' }));
   for (const e of emphasis) {
     if (e.kind === 'underline') out.push({ from: e.start, to: e.end, cls: 'tv-u' });
     else if (e.kind === 'strike-through') out.push({ from: e.start, to: e.end, cls: 'tv-s' });

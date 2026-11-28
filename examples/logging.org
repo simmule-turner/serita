@@ -1,0 +1,13 @@
+#+TITLE: Logging
+# CC0 1.0: public domain. The STARTUP line asks for a note when a task is done and keeps log lines in a drawer.
+#+STARTUP: lognotedone logdrawer lognoterepeat
+#+CATEGORY: log
+
+* TODO Write the report
+SCHEDULED: <2026-12-01 Tue>
+Press C-c C-t to finish it: you are asked for a closing note. Press C-c C-s and pick another date: with lognotereschedule a note is asked for too.
+* TODO Water the plants
+SCHEDULED: <2026-12-01 Tue +1w>
+Finishing a repeating task asks for a note (lognoterepeat) and moves the date a week on.
+* A clocked task
+Press C-c C-x C-i to clock in and C-c C-x C-o to clock out; with Note when a clock stops on, you are asked for a note.

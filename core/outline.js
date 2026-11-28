@@ -250,6 +250,25 @@ export function startupIndent(text) {
   return on;
 }
 
+/**
+ * What #+STARTUP says about logging, by the Emacs variable it sets: 'time', 'note' or 'nil' for org-log-done, org-log-repeat, org-log-reschedule,
+ * org-log-redeadline and org-log-refile, and 'LOGBOOK' or null for org-log-into-drawer. A variable that STARTUP does not mention is left out;
+ * where several words name the same variable the last one wins.
+ */
+export function startupLog(text) {
+  const out = {};
+  const forms = { done: 'org-log-done', repeat: 'org-log-repeat', reschedule: 'org-log-reschedule', redeadline: 'org-log-redeadline', refile: 'org-log-refile' };
+  for (const m of text.matchAll(/^[ \t]*#\+STARTUP:[ \t]*(.*)$/gim)) {
+    for (const w of m[1].toLowerCase().split(/\s+/)) {
+      const x = /^(log|lognote|nolog)(done|repeat|reschedule|redeadline|refile)$/.exec(w);
+      if (x) out[forms[x[2]]] = x[1] === 'log' ? 'time' : x[1] === 'lognote' ? 'note' : 'nil';
+      else if (w === 'logdrawer') out['org-log-into-drawer'] = 'LOGBOOK';
+      else if (w === 'nologdrawer') out['org-log-into-drawer'] = null;
+    }
+  }
+  return out;
+}
+
 const count = (s) => (s.match(/\n/g) ?? []).length;
 
 /** Moves fold line numbers along with a text edit, dropping folds in removed lines. */
